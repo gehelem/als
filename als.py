@@ -73,6 +73,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.pbReset.clicked.connect(self.cb_reset)
         self.ui.bBrowseFolder.clicked.connect(self.cb_browse_folder)
         self.ui.bBrowseDark.clicked.connect(self.cb_browse_dark)
+        self.ui.bBrowseWork.clicked.connect(self.cb_browse_work)
 
     # ------------------------------------------------------------------------------
     # Callbacks
@@ -87,6 +88,11 @@ class als_main_window(QtWidgets.QMainWindow):
                                                             "Fit Files (*.fit);;All Files (*)")
         if fileName:
             self.ui.tDark.setText(fileName)
+
+    def cb_browse_work(self):
+        DirName = QtWidgets.QFileDialog.getExistingDirectory(self, "Répertoire de travail", self.ui.tWork.text())
+        if DirName:
+            self.ui.tWork.setText(DirName)
 
     def cb_play(self):
         if self.ui.tFolder.text() != "":
