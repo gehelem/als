@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-
+import os
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from watchdog.observers import Observer
@@ -19,7 +19,8 @@ class MyEventHandler(FileSystemEventHandler, QtCore.QThread):
         super(MyEventHandler, self).__init__()
 
     def on_created(self, event):
-        if not event.is_directory:
+        #if not event.is_directory:
+        if event.event_type == 'created':
             print("New image arrive: %s" % event.src_path)
             self.new_image_path = event.src_path
             self.created_signal.emit()
@@ -28,18 +29,20 @@ class MyEventHandler(FileSystemEventHandler, QtCore.QThread):
 # ------------------------------------------------------------------------------
 
 class WatchOutForFileCreations(QtCore.QThread):
-    def __init__(self, path, work_folder, first_image):
+    def __init__(self, path, work_folder):
         super(WatchOutForFileCreations, self).__init__()
         self.path = path
         self.work_folder = work_folder
-        self.first_image = first_image
+        print(self.work_folder)
+        print(self.path)
         self.observer = Observer()
         self.event_handler = MyEventHandler()
         self.observer.schedule(self.event_handler, self.path, recursive=False)
         self.observer.start()
-        # self.connect(self.event_handler, QtCore.SIGNAL("fileCreated"), self.modified)
-        self.event_handler.created_signal.connect(self.created(self.event_handler.new_image_path))
-        stk.create_first_ref_im(self.work_folder, self.first_image, "stack_ref_image.fit")
+        #self.connect(self.event_handler, QtCore.SIGNAL("fileCreated"), self.modified)
+        #self.event_handler.created_signal.connect(self.created(self.event_handler.new_image_path))
+        self.event_handler.created_signal.connect(print("test"))
+        stk.create_first_ref_im(self.work_folder, self.event_handler.new_image_path, "stack_ref_image.fit")
 
     def run(self):
         pass
@@ -89,7 +92,9 @@ class als_main_window(QtWidgets.QMainWindow):
         if self.ui.tFolder.text() != "":
 
             # Print scan folder
-            self.ui.log.append("Dossier a scanner: <" + self.ui.tFolder.text() + ">")
+            self.ui.log.append("Dossier a scanner: <" + os.path.expanduser(self.ui.tFolder.text()) + ">")
+            # Print work folder
+            self.ui.log.append("Dossier de travail : <" + os.path.expanduser(self.ui.tWork.text()) + ">")
 
             # check align
             if self.ui.cbAlign.isChecked():
@@ -97,13 +102,12 @@ class als_main_window(QtWidgets.QMainWindow):
 
             # check dark
             if (self.ui.cbDark.isChecked()) & (self.ui.tDark.text() != ""):
-                self.ui.log.append("Dark : <" + self.ui.tDark.text() + ">")
+                self.ui.log.append("Dark : <" + os.path.expanduser(self.ui.tDark.text()) + ">")
                 self.dark = True
 
             # Lancement du watchdog
 
-            # /!\ besoin de créer 2 nouvelle zone, un pour le dossier de travail et un pour pointer la première image
-            self.fileWatcher = WatchOutForFileCreations(self.ui.tFolder.text(), work_folder, first_image)
+            self.fileWatcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()), os.path.expanduser(self.ui.tWork.text()))
             self.fileWatcher.start()
 
             # Print live method
