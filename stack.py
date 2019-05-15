@@ -66,21 +66,20 @@ def stack_live(work_path, new_image, ref_name, mode="rgb", save_im=True):
     else:
         raise ValueError("Mode not support")
 
-    if save_im:
-        os.remove(work_path + ref_name)
-        # save stack image in fit (for save all)
-        red = fits.PrimaryHDU(data=stack_image)
-        red.writeto(work_path + ref_name)
-
-    # save stack image in fit (new ref image)
+    # save new stack ref image in fit
+    os.remove(work_path + ref_name)
     red = fits.PrimaryHDU(data=stack_image)
-    red.writeto(work_path + "/stack_image_" + number + ".fits")
+    red.writeto(work_path + ref_name)
+    if save_im:
+        # save stack image in fit
+        red = fits.PrimaryHDU(data=stack_image)
+        red.writeto(work_path + "/stack_image_" + number + ".fits")
 
     # save stack image in tiff (print image)
     # invert Red and Blue for cv2
     new_stack_image = np.rollaxis(stack_image, 0, 3)
     new_stack_image[:, :, 0] = stack_image[2, :, :]
     new_stack_image[:, :, 2] = stack_image[0, :, :]
-    cv2.imwrite(work_path + "/stack_image_" + number, new_stack_image)
+    cv2.imwrite(work_path + "/stack_image.tiff", new_stack_image)
 
-    return "./stack_image_" + number + ".tiff", "./stack_image_" + number + ".fits"
+    return 1
