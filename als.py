@@ -111,9 +111,9 @@ class als_main_window(QtWidgets.QMainWindow):
         if self.ui.tFolder.text() != "":
 
             # Print scan folder
-            self.ui.log.append("Dossier a scanner: <" + os.path.expanduser(self.ui.tFolder.text()) + ">")
+            self.ui.log.append("Dossier a scanner : " + os.path.expanduser(self.ui.tFolder.text()))
             # Print work folder
-            self.ui.log.append("Dossier de travail : <" + os.path.expanduser(self.ui.tWork.text()) + ">")
+            self.ui.log.append("Dossier de travail : " + os.path.expanduser(self.ui.tWork.text()))
 
             # check align
             if self.ui.cbAlign.isChecked():
@@ -121,7 +121,7 @@ class als_main_window(QtWidgets.QMainWindow):
 
             # check dark
             if (self.ui.cbDark.isChecked()) & (self.ui.tDark.text() != ""):
-                self.ui.log.append("Dark : <" + os.path.expanduser(self.ui.tDark.text()) + ">")
+                self.ui.log.append("Dark : " + os.path.expanduser(self.ui.tDark.text()))
                 self.dark = True
 
             # Lancement du watchdog
@@ -129,6 +129,8 @@ class als_main_window(QtWidgets.QMainWindow):
             self.fileWatcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()),
                                                         os.path.expanduser(self.ui.tWork.text()))
             self.fileWatcher.start()
+            #self.ui.cnt.text=0
+            #os.remove(os.path.expanduser(self.ui.tWork.text())+"/*")
 
             # Print live method
             if self.align and self.dark:
@@ -147,6 +149,7 @@ class als_main_window(QtWidgets.QMainWindow):
             self.counter = 0
         else:
             self.ui.log.append("No have path")
+        
 
     def cb_stop(self):
         self.fileWatcher.observer.stop()
