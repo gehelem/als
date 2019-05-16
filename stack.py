@@ -7,11 +7,13 @@ from tqdm import tqdm
 import shutil
 
 
-def save_tiff(work_path, stack_image):
+def save_tiff(work_path, stack_image, mode="rgb"):
     # invert Red and Blue for cv2
-    new_stack_image = np.rollaxis(stack_image, 0, 3)
-    new_stack_image[:, :, 0] = stack_image[2, :, :]
-    new_stack_image[:, :, 2] = stack_image[0, :, :]
+
+    if mode == "rgb":
+        new_stack_image = np.rollaxis(stack_image, 0, 3)
+        new_stack_image[:, :, 0] = stack_image[2, :, :]
+        new_stack_image[:, :, 2] = stack_image[0, :, :]
     cv2.imwrite(work_path + "/stack_image.tiff", new_stack_image)
     print("New image create : %s" % work_path + "/stack_image.tiff")
 
@@ -23,10 +25,18 @@ def create_first_ref_im(work_path, im_path, ref_name):
     ref_fit = fits.open(work_path + "/" + ref_name)
     ref = ref_fit[0].data
     ref_fit.close()
-    save_tiff(work_path, ref)
+
+    if len(ref.shape) == 2:
+        mode = "gray"
+    elif len(ref.shape) == 3:
+        mode = "rgb"
+    else:
+        raise ValueError("fit format not support")
+    save_tiff(work_path, ref, mode=mode)
 
 
 def stack_live(work_path, new_image, ref_name, save_im=True):
+
     # search number
     new_name = new_image.split('_')
 
@@ -40,6 +50,7 @@ def stack_live(work_path, new_image, ref_name, save_im=True):
     new_fit = fits.open(new_image)
     new = new_fit[0].data
     new_fit.close()
+
     # search type
     new_type = new.dtype.name
     if new_type == 'uint8':
@@ -115,6 +126,6 @@ def stack_live(work_path, new_image, ref_name, save_im=True):
 
     # save stack image in tiff (print image)
     os.remove(work_path + "/stack_image.tiff")
-    save_tiff(work_path, np.array(stack_image))
+    save_tiff(work_path, np.array(stack_image), mode=mode)
 
     return 1
