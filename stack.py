@@ -44,7 +44,7 @@ def stack_live(work_path, new_image, ref_name, save_im=True):
     else:
         extension = ".fits"
     name = new_image.replace(extension, '')
-
+    name = name[name.rfind("/") + 1:]
     # open new image
     new_fit = fits.open(new_image)
     new = new_fit[0].data
