@@ -73,7 +73,7 @@ def create_first_ref_im(work_path, im_path, ref_name):
     save_tiff(work_path, ref, mode=mode)
 
 
-def stack_live(work_path, new_image, ref_name, save_im=True):
+def stack_live(work_path, new_image, ref_name, save_im=True, align=True):
 
     # test image format ".fit" or ".fits"
     if new_image.find(".fits") == -1:
@@ -123,24 +123,34 @@ def stack_live(work_path, new_image, ref_name, save_im=True):
 
     # choix rgb ou gray scale
     if mode == "rgb":
-        # alignement
-        p, __ = al.find_transform(new[1], ref[1])
+        if align:
+            # alignement
+            p, __ = al.find_transform(new[1], ref[1])
         # stacking
         stack_image = []
         for j in tqdm(range(3)):
-            if im_type == 'uint8':
-                stack_image.append(np.uint8(al.apply_transform(p, new[j], ref[j])) + ref[j])
-            elif im_type == 'uint16':
-                stack_image.append(np.uint16(al.apply_transform(p, new[j], ref[j])) + ref[j])
+            if align:
+                if im_type == 'uint8':
+                    align_image = np.uint8(al.apply_transform(p, new[j], ref[j]))
+                elif im_type == 'uint16':
+                    align_image = np.uint16(al.apply_transform(p, new[j], ref[j]))
+            else:
+                align_image = new[j]
+            stack_image.append(align_image+ref[j])
 
     elif mode == "gray":
-        # alignement
-        p, __ = al.find_transform(new, ref)
+        if align:
+            # alignement
+            p, __ = al.find_transform(new, ref)
         # stacking
-        if im_type == 'uint8':
-            stack_image = np.uint8(al.apply_transform(p, new, ref)) + ref
-        if im_type == 'uint16':
-            stack_image = np.uint16(al.apply_transform(p, new, ref)) + ref
+        if align:
+            if im_type == 'uint8':
+                align_image = np.uint8(al.apply_transform(p, new, ref))
+            elif im_type == 'uint16':
+                align_image = np.uint16(al.apply_transform(p, new, ref))
+        else:
+            align_image = new
+        stack_image = align_image + ref
     else:
         raise ValueError("Mode not support")
 
