@@ -4,7 +4,6 @@ import astroalign as al
 import numpy as np
 from astropy.io import fits
 from tqdm import tqdm
-import shutil
 
 
 def save_tiff(work_path, stack_image, mode="rgb"):
@@ -20,11 +19,14 @@ def save_tiff(work_path, stack_image, mode="rgb"):
 
 
 def test_and_debayer_to_rgb(header, image):
-    if len(image.shape) == 2 and not ("BAYERPAT" == header):
+    if len(image.shape) == 2 and not ("BAYERPAT" in header):
+        print("B&W mode...")
         new_mode = "gray"
     elif len(image.shape) == 3:
+        print("RGB mode...")
         new_mode = "rgb"
-    elif len(image.shape) == 2 and "BAYERPAT" == header:
+    elif len(image.shape) == 2 and "BAYERPAT" in header:
+        print("debayering...")
         debay = header["BAYERPAT"]
         cv_debay = debay[3] + debay[2]
         if cv_debay == "BG":
@@ -60,7 +62,7 @@ def test_utype(image):
 
 def create_first_ref_im(work_path, im_path, ref_name):
     # copy first image in work path
-    shutil.copy2(im_path, work_path + "/" + ref_name)
+    # shutil.copy2(im_path, work_path + "/" + ref_name)
     # open ref image
     ref_fit = fits.open(im_path)
     ref = ref_fit[0].data
@@ -69,6 +71,8 @@ def create_first_ref_im(work_path, im_path, ref_name):
     ref_fit.close()
     # test rgb or gray
     ref, mode = test_and_debayer_to_rgb(ref_header, ref)
+    red = fits.PrimaryHDU(data=ref)
+    red.writeto(work_path + "/" + ref_name)
 
     save_tiff(work_path, ref, mode=mode)
 
