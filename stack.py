@@ -39,14 +39,11 @@ def create_first_ref_im(work_path, im_path, ref_name):
 
 def stack_live(work_path, new_image, ref_name, save_im=True):
 
-    # search number
-    new_name = new_image.split('_')
-
-    if new_name[1].find(".fits") == -1:
+    if new_image.find(".fits") == -1:
         extension = ".fit"
     else:
         extension = ".fits"
-    number = new_name[1].replace(extension, '')
+    name = new_image.replace(extension, '')
 
     # open new image
     new_fit = fits.open(new_image)
@@ -112,7 +109,7 @@ def stack_live(work_path, new_image, ref_name, save_im=True):
         # alignement
         p, __ = al.find_transform(new, ref)
         # stacking
-        stack_image = [al.apply_transform(p, new, ref) + ref]
+        stack_image = al.apply_transform(p, new, ref) + ref
         stack_image = np.where(stack_image < ref_limit, stack_image, ref_limit)
     else:
         raise ValueError("Mode not support")
@@ -124,7 +121,7 @@ def stack_live(work_path, new_image, ref_name, save_im=True):
     if save_im:
         # save stack image in fit
         red = fits.PrimaryHDU(data=stack_image)
-        red.writeto(work_path + "/stack_image_" + number + extension)
+        red.writeto(work_path + "/stack_image_" + name + extension)
 
     # save stack image in tiff (print image)
     os.remove(work_path + "/stack_image.tiff")
