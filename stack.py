@@ -7,9 +7,23 @@ from tqdm import tqdm
 import shutil
 
 
+def save_tiff(work_path, stack_image):
+    # invert Red and Blue for cv2
+    new_stack_image = np.rollaxis(stack_image, 0, 3)
+    new_stack_image[:, :, 0] = stack_image[2, :, :]
+    new_stack_image[:, :, 2] = stack_image[0, :, :]
+    cv2.imwrite(work_path + "/stack_image.tiff", new_stack_image)
+    print("New image arrive")
+
+
 def create_first_ref_im(work_path, im_path, ref_name):
     # copy first image in work path
     shutil.copy2(im_path, work_path + "/" + ref_name)
+    # open ref image
+    ref_fit = fits.open(work_path + "/" + ref_name)
+    ref = ref_fit[0].data
+    ref_fit.close()
+    save_tiff(work_path, ref)
 
 
 def stack_live(work_path, new_image, ref_name, mode="rgb", save_im=True):
@@ -31,7 +45,7 @@ def stack_live(work_path, new_image, ref_name, mode="rgb", save_im=True):
         raise ValueError("format not support")
 
     # open ref image
-    ref_fit = fits.open(work_path + ref_name)
+    ref_fit = fits.open(work_path + "/" + ref_name)
     ref = ref_fit[0].data
     ref_fit.close()
     # search type
@@ -76,10 +90,6 @@ def stack_live(work_path, new_image, ref_name, mode="rgb", save_im=True):
         red.writeto(work_path + "/stack_image_" + number + ".fits")
 
     # save stack image in tiff (print image)
-    # invert Red and Blue for cv2
-    new_stack_image = np.rollaxis(stack_image, 0, 3)
-    new_stack_image[:, :, 0] = stack_image[2, :, :]
-    new_stack_image[:, :, 2] = stack_image[0, :, :]
-    cv2.imwrite(work_path + "/stack_image.tiff", new_stack_image)
+    save_tiff(work_path, stack_image)
 
     return 1
