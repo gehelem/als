@@ -9,7 +9,7 @@ import shutil
 
 def create_first_ref_im(work_path, im_path, ref_name):
     # copy first image in work path
-    shutil.copy2(im_path, work_path + ref_name)
+    shutil.copy2(im_path, work_path + "/" + ref_name)
 
 
 def stack_live(work_path, new_image, ref_name, mode="rgb", save_im=True):

@@ -19,7 +19,7 @@ class MyEventHandler(FileSystemEventHandler, QtCore.QThread):
         super(MyEventHandler, self).__init__()
 
     def on_created(self, event):
-        #if not event.is_directory:
+        # if not event.is_directory:
         if event.event_type == 'created':
             print("New image arrive: %s" % event.src_path)
             self.new_image_path = event.src_path
@@ -28,29 +28,40 @@ class MyEventHandler(FileSystemEventHandler, QtCore.QThread):
 
 # ------------------------------------------------------------------------------
 
+
 class WatchOutForFileCreations(QtCore.QThread):
+    first_signal = QtCore.pyqtSignal()
+
     def __init__(self, path, work_folder):
         super(WatchOutForFileCreations, self).__init__()
         self.path = path
         self.work_folder = work_folder
+        self.first = 0
         print(self.work_folder)
         print(self.path)
         self.observer = Observer()
         self.event_handler = MyEventHandler()
         self.observer.schedule(self.event_handler, self.path, recursive=False)
         self.observer.start()
-        #self.connect(self.event_handler, QtCore.SIGNAL("fileCreated"), self.modified)
-        #self.event_handler.created_signal.connect(self.created(self.event_handler.new_image_path))
-        self.event_handler.created_signal.connect(print("test"))
-        stk.create_first_ref_im(self.work_folder, self.event_handler.new_image_path, "stack_ref_image.fit")
+        self.event_handler.created_signal.connect(lambda: self.created(self.event_handler.new_image_path,
+                                                                       self.work_folder, first=self.first))
+        self.first_signal.connect(lambda: self.first_call())
 
     def run(self):
         pass
 
-    def created(self, new_image_path):
-        # appelle de la fonction stack live
-        # stk.stack_live(self.work_folder, new_image_path, "stack_ref_image.fit", mode="rgb", save_im=True)
-        print("file created : %s" % new_image_path)
+    def first_call(self):
+        self.first = 1
+
+    def created(self, new_image_path, work_folder, first=0):
+        if first == 0:
+            stk.create_first_ref_im(work_folder, new_image_path, "stack_ref_image.fit")
+            print("first file created : %s" % work_folder + "/stack_ref_image.fit")
+            self.first_signal.emit()
+        else:
+            # appelle de la fonction stack live
+            # stk.stack_live(work_folder, new_image_path, "stack_ref_image.fit", mode="rgb", save_im=True)
+            print("file created : %s" % work_folder + "/stack_ref_image.fit")
 
 
 # ------------------------------------------------------------------------------
@@ -65,6 +76,8 @@ class als_main_window(QtWidgets.QMainWindow):
         self.connect_actions()
         self.running = False
         self.counter = 0
+        self.align = False
+        self.dark = False
 
     def connect_actions(self):
 
@@ -113,7 +126,8 @@ class als_main_window(QtWidgets.QMainWindow):
 
             # Lancement du watchdog
 
-            self.fileWatcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()), os.path.expanduser(self.ui.tWork.text()))
+            self.fileWatcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()),
+                                                        os.path.expanduser(self.ui.tWork.text()))
             self.fileWatcher.start()
 
             # Print live method
@@ -135,20 +149,14 @@ class als_main_window(QtWidgets.QMainWindow):
             self.ui.log.append("No have path")
 
     def cb_stop(self):
+        self.fileWatcher.observer.stop()
         self.running = False
-        # /!\ impossible d'arreter le watchdog
-
-        # self.fileWatcher.stop()
-        # Observer.stop(self.fileWatcher)
-        self.counter = 0
-        self.ui.progressBar.setValue(self.counter)
-
         self.ui.pbStop.setEnabled(False)
         self.ui.pbPlay.setEnabled(True)
         self.ui.log.append("Stop")
 
     def cb_reset(self):
-        self.counter = 0
+        self.ui.log.append("Reset")
 
     def main(self):
         self.show()
