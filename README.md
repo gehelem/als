@@ -1,12 +1,12 @@
 # als
-Astro Live Stacking
+Astro Live Stacker
 
-Need have Python 3 package : 
-- pyqt5 (for GUI)
-- watchdog ( for check new file)
+Python 3 required
+- pyqt5 (GUI)
+- watchdog (new file checking)
 - numpy 
-- astropy (for save and read fit file)
+- astropy (to save and read fit file)
 - tqdm (for %)
-- astroalign (for align image)
-- cv2 ( for save in TIFF)
-- matplotlib (for plot image)
+- astroalign (frame alignement)
+- cv2 ( TIFF saving)
+- matplotlib (display frame)
