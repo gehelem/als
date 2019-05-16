@@ -26,10 +26,15 @@ def create_first_ref_im(work_path, im_path, ref_name):
     save_tiff(work_path, ref)
 
 
-def stack_live(work_path, new_image, ref_name, mode="rgb", save_im=True):
+def stack_live(work_path, new_image, ref_name, save_im=True):
     # search number
     new_name = new_image.split('_')
-    number = new_name[1].replace('.fit', '')
+
+    if new_name[1].find(".fits") == -1:
+        extension = ".fit"
+    else:
+        extension = ".fits"
+    number = new_name[1].replace(extension, '')
 
     # open new image
     new_fit = fits.open(new_image)
@@ -42,7 +47,14 @@ def stack_live(work_path, new_image, ref_name, mode="rgb", save_im=True):
     elif new_type == 'uint16':
         new_limit = 65535
     else:
-        raise ValueError("format not support")
+        raise ValueError("fit format not support")
+
+    if len(new.shape) == 2:
+        new_mode = "gray"
+    elif len(new.shape) == 3:
+        new_mode = "rgb"
+    else:
+        raise ValueError("fit format not support")
 
     # open ref image
     ref_fit = fits.open(work_path + "/" + ref_name)
@@ -57,9 +69,21 @@ def stack_live(work_path, new_image, ref_name, mode="rgb", save_im=True):
     else:
         raise ValueError("format not support")
 
+    if len(ref.shape) == 2:
+        ref_mode = "gray"
+    elif len(ref.shape) == 3:
+        ref_mode = "rgb"
+    else:
+        raise ValueError("fit format not support")
+
     # format verification
     if ref_limit != new_limit:
         raise ValueError("ref image and new image is not same format")
+    if ref_mode == new_mode:
+        mode = ref_mode
+    else:
+        raise ValueError("ref image and new image is not same format")
+
 
     # choix rgb ou gray scale
     if mode == "rgb":
@@ -87,7 +111,7 @@ def stack_live(work_path, new_image, ref_name, mode="rgb", save_im=True):
     if save_im:
         # save stack image in fit
         red = fits.PrimaryHDU(data=stack_image)
-        red.writeto(work_path + "/stack_image_" + number + ".fits")
+        red.writeto(work_path + "/stack_image_" + number + extension)
 
     # save stack image in tiff (print image)
     os.remove(work_path + "/stack_image.tiff")

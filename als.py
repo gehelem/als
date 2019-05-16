@@ -60,7 +60,7 @@ class WatchOutForFileCreations(QtCore.QThread):
             self.first_signal.emit()
         else:
             # appelle de la fonction stack live
-            stk.stack_live(work_folder, new_image_path, "stack_ref_image.fit", mode="rgb", save_im=True)
+            stk.stack_live(work_folder, new_image_path, "stack_ref_image.fit", save_im=True)
             print("file created : %s" % work_folder + "/stack_ref_image.fit")
 
 
