@@ -14,6 +14,8 @@ def save_tiff(work_path, stack_image, mode="rgb"):
         new_stack_image = np.rollaxis(stack_image, 0, 3)
         new_stack_image[:, :, 0] = stack_image[2, :, :]
         new_stack_image[:, :, 2] = stack_image[0, :, :]
+    else:
+        new_stack_image = stack_image
     cv2.imwrite(work_path + "/stack_image.tiff", new_stack_image)
     print("New image create : %s" % work_path + "/stack_image.tiff")
 
