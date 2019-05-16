@@ -13,7 +13,7 @@ def save_tiff(work_path, stack_image):
     new_stack_image[:, :, 0] = stack_image[2, :, :]
     new_stack_image[:, :, 2] = stack_image[0, :, :]
     cv2.imwrite(work_path + "/stack_image.tiff", new_stack_image)
-    print("New image arrive")
+    print("New image create : %s" % work_path + "/stack_image.tiff")
 
 
 def create_first_ref_im(work_path, im_path, ref_name):
@@ -81,15 +81,16 @@ def stack_live(work_path, new_image, ref_name, mode="rgb", save_im=True):
         raise ValueError("Mode not support")
 
     # save new stack ref image in fit
-    os.remove(work_path + ref_name)
+    os.remove(work_path + "/" + ref_name)
     red = fits.PrimaryHDU(data=stack_image)
-    red.writeto(work_path + ref_name)
+    red.writeto(work_path + "/" + ref_name)
     if save_im:
         # save stack image in fit
         red = fits.PrimaryHDU(data=stack_image)
         red.writeto(work_path + "/stack_image_" + number + ".fits")
 
     # save stack image in tiff (print image)
-    save_tiff(work_path, stack_image)
+    os.remove(work_path + "/stack_image.tiff")
+    save_tiff(work_path, np.array(stack_image))
 
     return 1
