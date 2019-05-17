@@ -93,6 +93,8 @@ class als_main_window(QtWidgets.QMainWindow):
         effect.setStrength(0.0)
         self.ui.image_stack.setGraphicsEffect(effect)
         pixmap_tiff = QtGui.QPixmap(os.path.expanduser(self.ui.tWork.text() + "/" + "stack_image.tiff"))
+        if pixmap_tiff.isNull():
+            print("Image non valide !")
         pixmap_tiff_resize = pixmap_tiff.scaled(self.ui.image_stack.frameGeometry().width(),
                                                 self.ui.image_stack.frameGeometry().height(),
                                                 QtCore.Qt.KeepAspectRatio)
