@@ -113,7 +113,6 @@ def create_first_ref_im(work_path, im_path, ref_name, save_im=False):
         red.writeto(work_path + "/stack_image_" + name + extension)
 
 
-
 def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=True, stack_methode="Sum"):
 
     # test image format ".fit" or ".fits"
@@ -181,16 +180,16 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
                 align_image = al.apply_transform(p, new[j], ref[j])
             else:
                 align_image = new[j]
+
             if stack_methode == "Sum":
-                if im_type == 'uint8':
-                    stack_image.append(np.uint8(align_image+ref[j]))
-                elif im_type == 'uint16':
-                    stack_image.append(np.uint16(align_image + ref[j]))
+                stack = np.float32(align_image) + np.float32(ref[j])
             elif stack_methode == "Mean":
-                if im_type == 'uint8':
-                    stack_image.append(np.uint8(((counter - 1) * ref[j] + align_image) / counter))
-                elif im_type == 'uint16':
-                    stack_image.append(np.uint16(((counter - 1) * ref[j] + align_image) / counter))
+                stack = ((counter - 1) * np.float32(ref[j]) + np.float32(align_image)) / counter
+
+            if im_type == 'uint8':
+                stack_image.append(np.uint8(np.where(stack < 2 ** 8 - 1, stack, 2 ** 8 - 1)))
+            elif im_type == 'uint16':
+                stack_image.append(np.uint16(np.where(stack < 2 ** 16 - 1, stack, 2 ** 16 - 1)))
             else:
                 raise ValueError("Stack methode is not support")
 
@@ -201,20 +200,20 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
             align_image = al.apply_transform(p, new, ref)
         else:
             align_image = new
+
         # stacking
         if stack_methode == "Sum":
-            if im_type == 'uint8':
-                stack_image = np.uint8(align_image + ref)
-            elif im_type == 'uint16':
-                stack_image = np.uint8(align_image + ref)
+            stack = np.float32(align_image) + np.float32(ref)
         elif stack_methode == "Mean":
-            if im_type == 'uint8':
-                stack_image = np.uint8(((counter-1) * ref + align_image) / counter)
-            elif im_type == 'uint16':
-                stack_image = np.uint16(((counter-1) * ref + align_image) / counter)
-
+            stack = ((counter - 1) * np.float32(ref) + np.float32(align_image)) / counter
         else:
             raise ValueError("Stack methode is not support")
+
+        if im_type == 'uint8':
+            stack_image = np.uint8(stack)
+        elif im_type == 'uint16':
+            stack_image = np.uint16(stack)
+
     else:
         raise ValueError("Mode not support")
 

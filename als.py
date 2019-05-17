@@ -116,6 +116,8 @@ class als_main_window(QtWidgets.QMainWindow):
                     os.path.expanduser(self.ui.tWork.text())+"/stack-"+timestamp+".fit")
 
     def update_image(self):
+        self.counter = self.counter+1
+        self.ui.cnt.setText(str(self.counter))
         effect = QtWidgets.QGraphicsColorizeEffect(self.ui.image_stack)
         effect.setStrength(0.0)
         self.ui.image_stack.setGraphicsEffect(effect)
@@ -163,17 +165,17 @@ class als_main_window(QtWidgets.QMainWindow):
 
             # Print live method
             if self.align and self.dark:
-                self.ui.log.append("Play with alignement and Dark")
+                self.ui.log.append("Play with alignement type: " + self.ui.cmMode.currentText() + " and Dark")
             elif self.align:
-                self.ui.log.append("Play with alignement")
+                self.ui.log.append("Play with alignement type: " + self.ui.cmMode.currentText())
             else:
-                self.ui.log.append("Play")
-            # Lancement du watchdog
+                self.ui.log.append("Play with NO alignement")
 
+            # Lancement du watchdog
             self.fileWatcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()),
                                                         os.path.expanduser(self.ui.tWork.text()),
                                                         self.align,
-                                                        self.ui.cbKeep.isChecked,
+                                                        self.ui.cbKeep.isChecked(),
                                                         self.ui.cmMode.currentText())
 
             if os.path.exists(os.path.expanduser(self.ui.tWork.text())):
