@@ -2,31 +2,26 @@
 
 # Form implementation generated from reading ui file 'alsui.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Ui_stack_window(object):
     def setupUi(self, stack_window):
         stack_window.setObjectName("stack_window")
-        stack_window.resize(867, 792)
+        stack_window.resize(870, 792)
         self.centralwidget = QtWidgets.QWidget(stack_window)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayoutWidget = QtWidgets.QWidget(self.centralwidget)
-        self.gridLayoutWidget.setGeometry(QtCore.QRect(9, 9, 378, 101))
+        self.gridLayoutWidget.setGeometry(QtCore.QRect(0, 5, 435, 101))
         self.gridLayoutWidget.setObjectName("gridLayoutWidget")
         self.gridLayout = QtWidgets.QGridLayout(self.gridLayoutWidget)
         self.gridLayout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.gridLayout.setObjectName("gridLayout")
-        self.pbPlay = QtWidgets.QPushButton(self.gridLayoutWidget)
-        self.pbPlay.setObjectName("pbPlay")
-        self.gridLayout.addWidget(self.pbPlay, 0, 3, 1, 1)
-        self.pbReset = QtWidgets.QPushButton(self.gridLayoutWidget)
-        self.pbReset.setObjectName("pbReset")
-        self.gridLayout.addWidget(self.pbReset, 3, 3, 1, 1)
         self.tWork = QtWidgets.QLineEdit(self.gridLayoutWidget)
         self.tWork.setEnabled(False)
         self.tWork.setObjectName("tWork")
@@ -45,6 +40,12 @@ class Ui_stack_window(object):
         self.cbDark.setMaximumSize(QtCore.QSize(150, 16777215))
         self.cbDark.setObjectName("cbDark")
         self.gridLayout.addWidget(self.cbDark, 1, 2, 1, 1)
+        self.pbPlay = QtWidgets.QPushButton(self.gridLayoutWidget)
+        self.pbPlay.setObjectName("pbPlay")
+        self.gridLayout.addWidget(self.pbPlay, 0, 3, 1, 1)
+        self.pbReset = QtWidgets.QPushButton(self.gridLayoutWidget)
+        self.pbReset.setObjectName("pbReset")
+        self.gridLayout.addWidget(self.pbReset, 3, 3, 1, 1)
         self.tDark = QtWidgets.QLineEdit(self.gridLayoutWidget)
         self.tDark.setEnabled(False)
         self.tDark.setObjectName("tDark")
@@ -76,22 +77,27 @@ class Ui_stack_window(object):
         self.cmMode.addItem("")
         self.cmMode.addItem("")
         self.gridLayout.addWidget(self.cmMode, 3, 2, 1, 1)
+        self.pbSave = QtWidgets.QPushButton(self.gridLayoutWidget)
+        self.pbSave.setObjectName("pbSave")
+        self.gridLayout.addWidget(self.pbSave, 4, 3, 1, 1)
+        self.cnt = QtWidgets.QLabel(self.gridLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        self.cnt.setFont(font)
+        self.cnt.setAlignment(QtCore.Qt.AlignCenter)
+        self.cnt.setObjectName("cnt")
+        self.gridLayout.addWidget(self.cnt, 4, 1, 1, 1)
+        self.cbKeep = QtWidgets.QCheckBox(self.gridLayoutWidget)
+        self.cbKeep.setObjectName("cbKeep")
+        self.gridLayout.addWidget(self.cbKeep, 4, 2, 1, 1)
+        self.cbWww = QtWidgets.QCheckBox(self.gridLayoutWidget)
+        self.cbWww.setObjectName("cbWww")
+        self.gridLayout.addWidget(self.cbWww, 4, 0, 1, 1)
         self.gridLayout.setColumnMinimumWidth(1, 50)
         self.log = QtWidgets.QTextBrowser(self.centralwidget)
-        self.log.setGeometry(QtCore.QRect(400, 10, 391, 90))
-        self.log.setMaximumSize(QtCore.QSize(16777215, 90))
+        self.log.setGeometry(QtCore.QRect(436, 5, 431, 100))
+        self.log.setMaximumSize(QtCore.QSize(16777215, 500))
         self.log.setObjectName("log")
-        self.cnt = QtWidgets.QTextEdit(self.centralwidget)
-        self.cnt.setGeometry(QtCore.QRect(800, 17, 61, 81))
-        font = QtGui.QFont()
-        font.setPointSize(50)
-        font.setBold(True)
-        font.setWeight(75)
-        self.cnt.setFont(font)
-        self.cnt.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
-        self.cnt.setAutoFormatting(QtWidgets.QTextEdit.AutoBulletList)
-        self.cnt.setReadOnly(True)
-        self.cnt.setObjectName("cnt")
         self.image_stack = QtWidgets.QLabel(self.centralwidget)
         self.image_stack.setGeometry(QtCore.QRect(16, 126, 841, 621))
         self.image_stack.setText("")
@@ -112,11 +118,11 @@ class Ui_stack_window(object):
     def retranslateUi(self, stack_window):
         _translate = QtCore.QCoreApplication.translate
         stack_window.setWindowTitle(_translate("stack_window", "Astro Live Stacker"))
-        self.pbPlay.setText(_translate("stack_window", "Play"))
-        self.pbReset.setText(_translate("stack_window", "Reset"))
         self.tWork.setText(_translate("stack_window", "~/als/wrk"))
         self.bBrowseFolder.setText(_translate("stack_window", "Rep. scan"))
         self.cbDark.setText(_translate("stack_window", "Utiliser un dark"))
+        self.pbPlay.setText(_translate("stack_window", "Play"))
+        self.pbReset.setText(_translate("stack_window", "Reset"))
         self.tDark.setText(_translate("stack_window", "~/als/dark.fits"))
         self.tFolder.setText(_translate("stack_window", "~/als/scan"))
         self.bBrowseDark.setText(_translate("stack_window", "Fic. dark"))
@@ -125,12 +131,13 @@ class Ui_stack_window(object):
         self.cbAlign.setText(_translate("stack_window", "Aligner"))
         self.cmMode.setItemText(0, _translate("stack_window", "Sum"))
         self.cmMode.setItemText(1, _translate("stack_window", "Mean"))
-        self.cnt.setHtml(_translate("stack_window", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'Ubuntu\'; font-size:50pt; font-weight:600; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:11pt; font-weight:400;\">0</span></p></body></html>"))
+        self.pbSave.setText(_translate("stack_window", "Save"))
+        self.cnt.setText(_translate("stack_window", "0"))
+        self.cbKeep.setText(_translate("stack_window", "Conserver les images"))
+        self.cbWww.setText(_translate("stack_window", "www"))
         self.actionQuit.setText(_translate("stack_window", "&Quit"))
+
+
 
 
 if __name__ == "__main__":
@@ -141,4 +148,3 @@ if __name__ == "__main__":
     ui.setupUi(stack_window)
     stack_window.show()
     sys.exit(app.exec_())
-

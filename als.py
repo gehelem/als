@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import os
+from datetime import datetime
+import shutil
 from PyQt5 import QtCore, QtGui, QtWidgets
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -83,12 +85,18 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.pbPlay.clicked.connect(self.cb_play)
         self.ui.pbStop.clicked.connect(self.cb_stop)
         self.ui.pbReset.clicked.connect(self.cb_reset)
+        self.ui.pbSave.clicked.connect(self.cb_save)
         self.ui.bBrowseFolder.clicked.connect(self.cb_browse_folder)
         self.ui.bBrowseDark.clicked.connect(self.cb_browse_dark)
         self.ui.bBrowseWork.clicked.connect(self.cb_browse_work)
 
     # ------------------------------------------------------------------------------
     # Callbacks
+    def cb_save(self):
+        timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now())))
+        self.ui.log.append("Saving : stack-"+timestamp+".fit")
+        shutil.copy(os.path.expanduser(self.ui.tWork.text())+"/stack_ref_image.fit",os.path.expanduser(self.ui.tWork.text())+"/stack-"+timestamp+".fit")
+
     def update_image(self):
         effect = QtWidgets.QGraphicsColorizeEffect(self.ui.image_stack)
         effect.setStrength(0.0)
