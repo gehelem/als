@@ -173,12 +173,12 @@ class als_main_window(QtWidgets.QMainWindow):
                                                         self.align,
                                                         self.ui.cbKeep.isChecked,
                                                         self.ui.cmMode.currentText())
+
+            if os.path.exists(os.path.expanduser(self.ui.tWork.text())):
+                shutil.rmtree(os.path.expanduser(self.ui.tWork.text())+"/")
+            os.mkdir(os.path.expanduser(self.ui.tWork.text())) 
+
             self.fileWatcher.start()
-            # self.ui.cnt.text=0
-            # os.remove(os.path.expanduser(self.ui.tWork.text())+"/*")
-
-
-
             self.running = True
 
             # desactivate play button
