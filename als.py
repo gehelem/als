@@ -19,6 +19,7 @@
 import os
 from datetime import datetime
 import shutil
+import cv2
 from PyQt5 import QtCore, QtGui, QtWidgets
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -70,7 +71,7 @@ class WatchOutForFileCreations(QtCore.QThread):
     def created(self, new_image_path, align_on, save_on, stack_methode):
         self.counter = self.counter + 1
         if self.first == 0:
-            stk.create_first_ref_im(self.work_folder, new_image_path, "stack_ref_image.fit")
+            stk.create_first_ref_im(self.work_folder, new_image_path, "stack_ref_image.fit", save_im=save_on)
             print("first file created : %s" % self.work_folder + "/stack_ref_image.fit")
             self.first = 1
         else:
@@ -111,7 +112,8 @@ class als_main_window(QtWidgets.QMainWindow):
     def cb_save(self):
         timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now())))
         self.ui.log.append("Saving : stack-"+timestamp+".fit")
-        shutil.copy(os.path.expanduser(self.ui.tWork.text())+"/stack_ref_image.fit",os.path.expanduser(self.ui.tWork.text())+"/stack-"+timestamp+".fit")
+        shutil.copy(os.path.expanduser(self.ui.tWork.text())+"/stack_ref_image.fit",
+                    os.path.expanduser(self.ui.tWork.text())+"/stack-"+timestamp+".fit")
 
     def update_image(self):
         effect = QtWidgets.QGraphicsColorizeEffect(self.ui.image_stack)

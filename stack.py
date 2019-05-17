@@ -76,13 +76,23 @@ def test_utype(image):
     return limit, im_type
 
 
-def create_first_ref_im(work_path, im_path, ref_name):
+def create_first_ref_im(work_path, im_path, ref_name, save_im=False):
     # cleaning work folder
     import os
     if os.path.exists(os.path.expanduser(work_path + "/stack_ref_image.fit")):
         os.remove(os.path.expanduser(work_path + "/stack_ref_image.fit"))
     else:
         print("The file does not exist")
+
+    # test image format ".fit" or ".fits"
+    if im_path.find(".fits") == -1:
+        extension = ".fit"
+    else:
+        extension = ".fits"
+    # remove extension
+    name = im_path.replace(extension, '')
+    # remove path
+    name = name[name.rfind("/") + 1:]
 
     # open ref image
     ref_fit = fits.open(im_path)
@@ -94,8 +104,14 @@ def create_first_ref_im(work_path, im_path, ref_name):
     ref, mode = test_and_debayer_to_rgb(ref_header, ref)
     red = fits.PrimaryHDU(data=ref)
     red.writeto(work_path + "/" + ref_name)
+    red.writeto(work_path + "/" + "first_" + ref_name)
 
     save_tiff(work_path, ref, mode=mode)
+
+    if save_im:
+        # save stack image in fit
+        red.writeto(work_path + "/stack_image_" + name + extension)
+
 
 
 def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=True, stack_methode="Sum"):
@@ -128,6 +144,12 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
     # test data type
     ref_limit, ref_type = test_utype(ref)
 
+    if align:
+        # open first ref image (for align)
+        first_ref_fit = fits.open(work_path + "/" + "first_" + ref_name)
+        first_ref = first_ref_fit[0].data
+        first_ref_fit.close()
+
     # test rgb or gray
     if len(ref.shape) == 2:
         ref_mode = "gray"
@@ -151,20 +173,19 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
     if mode == "rgb":
         if align:
             # alignement
-            p, __ = al.find_transform(new[1], ref[1])
+            p, __ = al.find_transform(new[1], first_ref[1])
         # stacking
         stack_image = []
         for j in tqdm(range(3)):
             if align:
                 align_image = al.apply_transform(p, new[j], ref[j])
-                if im_type == 'uint8' and stack_methode == "Sum":
-                    align_image = np.uint8(align_image)
-                elif im_type == 'uint16' and stack_methode == "Sum":
-                    align_image = np.uint16(align_image)
             else:
                 align_image = new[j]
             if stack_methode == "Sum":
-                stack_image.append(align_image+ref[j])
+                if im_type == 'uint8':
+                    stack_image.append(np.uint8(align_image+ref[j]))
+                elif im_type == 'uint16':
+                    stack_image.append(np.uint16(align_image + ref[j]))
             elif stack_methode == "Mean":
                 if im_type == 'uint8':
                     stack_image.append(np.uint8(((counter - 1) * ref[j] + align_image) / counter))
@@ -176,21 +197,20 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
     elif mode == "gray":
         if align:
             # alignement
-            p, __ = al.find_transform(new, ref)
+            p, __ = al.find_transform(new, first_ref)
             align_image = al.apply_transform(p, new, ref)
-            if im_type == 'uint8' and stack_methode == "Sum":
-                align_image = np.uint8(align_image)
-            elif im_type == 'uint16' and stack_methode == "Sum":
-                align_image = np.uint16(align_image)
         else:
             align_image = new
         # stacking
         if stack_methode == "Sum":
-            stack_image = align_image + ref
+            if im_type == 'uint8':
+                stack_image = np.uint8(align_image + ref)
+            elif im_type == 'uint16':
+                stack_image = np.uint8(align_image + ref)
         elif stack_methode == "Mean":
             if im_type == 'uint8':
                 stack_image = np.uint8(((counter-1) * ref + align_image) / counter)
-            elif im_type == 'uint8':
+            elif im_type == 'uint16':
                 stack_image = np.uint16(((counter-1) * ref + align_image) / counter)
 
         else:
