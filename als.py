@@ -89,8 +89,14 @@ class als_main_window(QtWidgets.QMainWindow):
     # ------------------------------------------------------------------------------
     # Callbacks
     def update_image(self):
-        self.ui.image_stack.setPixmap(QtGui.QPixmap(os.path.expanduser(self.ui.tWork.text() + "/" + "stack_image.tiff")))
-        self.ui.image_stack.setAlignment(QtCore.Qt.AlignCenter)
+        effect = QtWidgets.QGraphicsColorizeEffect(self.ui.image_stack)
+        effect.setStrength(0.0)
+        self.ui.image_stack.setGraphicsEffect(effect)
+        pixmap_tiff = QtGui.QPixmap(os.path.expanduser(self.ui.tWork.text() + "/" + "stack_image.tiff"))
+        pixmap_tiff_resize = pixmap_tiff.scaled(self.ui.image_stack.frameGeometry().width(),
+                                                self.ui.image_stack.frameGeometry().height(),
+                                                QtCore.Qt.KeepAspectRatio)
+        self.ui.image_stack.setPixmap(pixmap_tiff_resize)
 
     def cb_browse_folder(self):
         DirName = QtWidgets.QFileDialog.getExistingDirectory(self, "Répertoire à scanner", self.ui.tFolder.text())
