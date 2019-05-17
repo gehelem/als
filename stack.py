@@ -63,6 +63,8 @@ def test_utype(image):
 def create_first_ref_im(work_path, im_path, ref_name):
     # copy first image in work path
     # shutil.copy2(im_path, work_path + "/" + ref_name)
+    # cleaning work folder
+    os.remove(os.path.expanduser(work_path + "/stack_ref_image.fit"))
     # open ref image
     ref_fit = fits.open(im_path)
     ref = ref_fit[0].data
@@ -77,7 +79,7 @@ def create_first_ref_im(work_path, im_path, ref_name):
     save_tiff(work_path, ref, mode=mode)
 
 
-def stack_live(work_path, new_image, ref_name, save_im=True, align=True):
+def stack_live(work_path, new_image, ref_name, save_im=False, align=True):
 
     # test image format ".fit" or ".fits"
     if new_image.find(".fits") == -1:
