@@ -155,7 +155,7 @@ class als_main_window(QtWidgets.QMainWindow):
             self.fileWatcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()),
                                                         os.path.expanduser(self.ui.tWork.text()),
                                                         self.align,
-                                                        False,
+                                                        self.ui.cbKeep.isChecked,
                                                         self.ui.cmMode.currentText())
             self.fileWatcher.start()
             # self.ui.cnt.text=0
