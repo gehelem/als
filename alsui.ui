@@ -159,6 +159,9 @@
        <property name="text">
         <string>Aligner</string>
        </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
       </widget>
      </item>
      <item row="3" column="2">
@@ -193,37 +196,6 @@
      </size>
     </property>
    </widget>
-   <widget class="QGraphicsView" name="image_scene">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>110</y>
-      <width>851</width>
-      <height>631</height>
-     </rect>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>640</width>
-      <height>480</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>5000</width>
-      <height>3000</height>
-     </size>
-    </property>
-   </widget>
    <widget class="QTextEdit" name="cnt">
     <property name="geometry">
      <rect>
@@ -240,6 +212,12 @@
       <bold>true</bold>
      </font>
     </property>
+    <property name="sizeAdjustPolicy">
+     <enum>QAbstractScrollArea::AdjustToContents</enum>
+    </property>
+    <property name="autoFormatting">
+     <set>QTextEdit::AutoBulletList</set>
+    </property>
     <property name="readOnly">
      <bool>true</bool>
     </property>
@@ -248,7 +226,26 @@
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:50pt; font-weight:600; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt; font-weight:400;&quot;&gt;0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:11pt; font-weight:400;&quot;&gt;0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="image_stack">
+    <property name="geometry">
+     <rect>
+      <x>16</x>
+      <y>126</y>
+      <width>841</width>
+      <height>621</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>dslr-camera.svg</pixmap>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>
@@ -258,7 +255,7 @@ p, li { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>867</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -301,12 +298,12 @@ p, li { white-space: pre-wrap; }
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>106</x>
-     <y>184</y>
+     <x>268</x>
+     <y>92</y>
     </hint>
     <hint type="destinationlabel">
-     <x>116</x>
-     <y>215</y>
+     <x>164</x>
+     <y>93</y>
     </hint>
    </hints>
   </connection>
@@ -317,12 +314,28 @@ p, li { white-space: pre-wrap; }
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>474</x>
-     <y>179</y>
+     <x>299</x>
+     <y>92</y>
     </hint>
     <hint type="destinationlabel">
-     <x>536</x>
-     <y>217</y>
+     <x>89</x>
+     <y>93</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbAlign</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>cmMode</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>230</x>
+     <y>51</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>238</x>
+     <y>124</y>
     </hint>
    </hints>
   </connection>

@@ -79,7 +79,7 @@ def create_first_ref_im(work_path, im_path, ref_name):
     save_tiff(work_path, ref, mode=mode)
 
 
-def stack_live(work_path, new_image, ref_name, save_im=False, align=True):
+def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=True, stack_methode="Sum"):
 
     # test image format ".fit" or ".fits"
     if new_image.find(".fits") == -1:
@@ -142,21 +142,33 @@ def stack_live(work_path, new_image, ref_name, save_im=False, align=True):
                     align_image = np.uint16(al.apply_transform(p, new[j], ref[j]))
             else:
                 align_image = new[j]
-            stack_image.append(align_image+ref[j])
+            if stack_methode == "Sum":
+                stack_image.append(align_image+ref[j])
+            elif stack_methode == "Mean":
+                print("TODO %i" % counter)
+                # stackn = ((n-1)*(stackn-1) + stack-n)/n
+            else:
+                raise ValueError("Stack methode is not support")
 
     elif mode == "gray":
         if align:
             # alignement
             p, __ = al.find_transform(new, ref)
-        # stacking
-        if align:
+            align_image = al.apply_transform(p, new, ref)
             if im_type == 'uint8':
-                align_image = np.uint8(al.apply_transform(p, new, ref))
+                align_image = np.uint8(align_image)
             elif im_type == 'uint16':
-                align_image = np.uint16(al.apply_transform(p, new, ref))
+                align_image = np.uint16(align_image)
         else:
             align_image = new
-        stack_image = align_image + ref
+        # stacking
+        if stack_methode == "Sum":
+            stack_image = align_image + ref
+        elif stack_methode == "Mean":
+            print("TODO %i" % counter)
+            # stackn = ((n-1)*(stackn-1) + stack-n)/n
+        else:
+            raise ValueError("Stack methode is not support")
     else:
         raise ValueError("Mode not support")
 

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'alsui.ui'
+# Form implementation generated from reading ui file '/home/sdurand/git/perso/als/alsui.ui'
 #
-# Created by: PyQt5 UI code generator 5.10.1
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -68,6 +68,7 @@ class Ui_stack_window(object):
         self.gridLayout.addWidget(self.pbStop, 1, 3, 1, 1)
         self.cbAlign = QtWidgets.QCheckBox(self.gridLayoutWidget)
         self.cbAlign.setMaximumSize(QtCore.QSize(150, 16777215))
+        self.cbAlign.setChecked(True)
         self.cbAlign.setObjectName("cbAlign")
         self.gridLayout.addWidget(self.cbAlign, 0, 2, 1, 1)
         self.cmMode = QtWidgets.QComboBox(self.gridLayoutWidget)
@@ -80,17 +81,6 @@ class Ui_stack_window(object):
         self.log.setGeometry(QtCore.QRect(400, 10, 391, 90))
         self.log.setMaximumSize(QtCore.QSize(16777215, 90))
         self.log.setObjectName("log")
-        self.image_scene = QtWidgets.QGraphicsView(self.centralwidget)
-        self.image_scene.setEnabled(True)
-        self.image_scene.setGeometry(QtCore.QRect(10, 110, 851, 631))
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.image_scene.sizePolicy().hasHeightForWidth())
-        self.image_scene.setSizePolicy(sizePolicy)
-        self.image_scene.setMinimumSize(QtCore.QSize(640, 480))
-        self.image_scene.setMaximumSize(QtCore.QSize(5000, 3000))
-        self.image_scene.setObjectName("image_scene")
         self.cnt = QtWidgets.QTextEdit(self.centralwidget)
         self.cnt.setGeometry(QtCore.QRect(800, 17, 61, 81))
         font = QtGui.QFont()
@@ -98,11 +88,19 @@ class Ui_stack_window(object):
         font.setBold(True)
         font.setWeight(75)
         self.cnt.setFont(font)
+        self.cnt.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        self.cnt.setAutoFormatting(QtWidgets.QTextEdit.AutoBulletList)
         self.cnt.setReadOnly(True)
         self.cnt.setObjectName("cnt")
+        self.image_stack = QtWidgets.QLabel(self.centralwidget)
+        self.image_stack.setGeometry(QtCore.QRect(16, 126, 841, 621))
+        self.image_stack.setText("")
+        self.image_stack.setPixmap(QtGui.QPixmap("dslr-camera.svg"))
+        self.image_stack.setAlignment(QtCore.Qt.AlignCenter)
+        self.image_stack.setObjectName("image_stack")
         stack_window.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(stack_window)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 867, 25))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 867, 22))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
@@ -119,6 +117,7 @@ class Ui_stack_window(object):
         self.actionQuit.triggered.connect(stack_window.close)
         self.cbDark.clicked['bool'].connect(self.tDark.setEnabled)
         self.cbDark.clicked['bool'].connect(self.bBrowseDark.setEnabled)
+        self.cbAlign.clicked['bool'].connect(self.cmMode.setEnabled)
         QtCore.QMetaObject.connectSlotsByName(stack_window)
 
     def retranslateUi(self, stack_window):
@@ -141,7 +140,7 @@ class Ui_stack_window(object):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'Ubuntu\'; font-size:50pt; font-weight:600; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:11pt; font-weight:400;\">0</span></p></body></html>"))
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:11pt; font-weight:400;\">0</span></p></body></html>"))
         self.menuFile.setTitle(_translate("stack_window", "Fi&le"))
         self.actionQuit.setText(_translate("stack_window", "&Quit"))
 

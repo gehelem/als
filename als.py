@@ -1,8 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import os
-from PyQt5 import QtWidgets
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui, QtWidgets
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from alsui import Ui_stack_window  # import du fichier alsui.py généré par : pyuic5 alsui.ui -x -o alsui.py
@@ -30,38 +29,37 @@ class MyEventHandler(FileSystemEventHandler, QtCore.QThread):
 
 
 class WatchOutForFileCreations(QtCore.QThread):
-    first_signal = QtCore.pyqtSignal()
+    print_image = QtCore.pyqtSignal()
 
     def __init__(self, path, work_folder):
         super(WatchOutForFileCreations, self).__init__()
         self.path = path
         self.work_folder = work_folder
         self.first = 0
+        self.counter = 0
         print(self.work_folder)
         print(self.path)
         self.observer = Observer()
         self.event_handler = MyEventHandler()
         self.observer.schedule(self.event_handler, self.path, recursive=False)
         self.observer.start()
-        self.event_handler.created_signal.connect(lambda: self.created(self.event_handler.new_image_path,
-                                                                       self.work_folder, first=self.first))
-        self.first_signal.connect(lambda: self.first_call())
+        self.event_handler.created_signal.connect(lambda: self.created(self.event_handler.new_image_path))
 
     def run(self):
         pass
 
-    def first_call(self):
-        self.first = 1
-
-    def created(self, new_image_path, work_folder, first=0):
-        if first == 0:
-            stk.create_first_ref_im(work_folder, new_image_path, "stack_ref_image.fit")
-            print("first file created : %s" % work_folder + "/stack_ref_image.fit")
-            self.first_signal.emit()
+    def created(self, new_image_path):
+        if self.first == 0:
+            stk.create_first_ref_im(self.work_folder, new_image_path, "stack_ref_image.fit")
+            print("first file created : %s" % self.work_folder + "/stack_ref_image.fit")
+            self.first = 1
         else:
             # appelle de la fonction stack live
-            stk.stack_live(work_folder, new_image_path, "stack_ref_image.fit", save_im=False)
-            print("file created : %s" % work_folder + "/stack_ref_image.fit")
+            stk.stack_live(self.work_folder, new_image_path, "stack_ref_image.fit", self.counter,
+                           save_im=False, align=True, stack_methode="Sum")
+            print("file created : %s" % self.work_folder + "/stack_ref_image.fit")
+        self.print_image.emit()
+        self.counter = self.counter + 1
 
 
 # ------------------------------------------------------------------------------
@@ -88,8 +86,12 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.bBrowseDark.clicked.connect(self.cb_browse_dark)
         self.ui.bBrowseWork.clicked.connect(self.cb_browse_work)
 
+
     # ------------------------------------------------------------------------------
     # Callbacks
+    def update_image(self):
+        self.image_stack.setPixmap(QtGui.QPixmap(os.path.expanduser(self.ui.tWork.text()+"/"+"stack_image.tiff")))
+
     def cb_browse_folder(self):
         DirName = QtWidgets.QFileDialog.getExistingDirectory(self, "Répertoire à scanner", self.ui.tFolder.text())
         if DirName:
@@ -147,6 +149,7 @@ class als_main_window(QtWidgets.QMainWindow):
             # activate stop button
             self.ui.pbStop.setEnabled(True)
             self.counter = 0
+            self.fileWatcher.print_image.connect(lambda: self.update_image())
         else:
             self.ui.log.append("No have path")
         
