@@ -52,6 +52,7 @@ class WatchOutForFileCreations(QtCore.QThread):
         pass
 
     def created(self, new_image_path, align_on, save_on, stack_methode):
+        self.counter = self.counter + 1
         if self.first == 0:
             stk.create_first_ref_im(self.work_folder, new_image_path, "stack_ref_image.fit")
             print("first file created : %s" % self.work_folder + "/stack_ref_image.fit")
@@ -62,7 +63,6 @@ class WatchOutForFileCreations(QtCore.QThread):
                            save_im=save_on, align=align_on, stack_methode=stack_methode)
             print("file created : %s" % self.work_folder + "/stack_ref_image.fit")
         self.print_image.emit()
-        self.counter = self.counter + 1
 
 
 # ------------------------------------------------------------------------------

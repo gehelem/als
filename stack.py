@@ -15,7 +15,7 @@ def save_tiff(work_path, stack_image, mode="rgb"):
     else:
         new_stack_image = stack_image
         cv2.imwrite(work_path + "/stack_image.tiff", new_stack_image)
-    print("New image create : %s" % work_path + "/stack_image.tiff")
+    print("TIFF image create : %s" % work_path + "/stack_image.tiff")
 
 
 def test_and_debayer_to_rgb(header, image):
@@ -131,6 +131,7 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
         raise ValueError("ref image and new image is not same format")
 
     # choix rgb ou gray scale
+    print("alignement and stacking...")
     if mode == "rgb":
         if align:
             # alignement
@@ -139,18 +140,20 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
         stack_image = []
         for j in tqdm(range(3)):
             if align:
-                if im_type == 'uint8':
-                    align_image = np.uint8(al.apply_transform(p, new[j], ref[j]))
-                elif im_type == 'uint16':
-                    align_image = np.uint16(al.apply_transform(p, new[j], ref[j]))
+                align_image = al.apply_transform(p, new[j], ref[j])
+                if im_type == 'uint8' and stack_methode == "Sum":
+                    align_image = np.uint8(align_image)
+                elif im_type == 'uint16' and stack_methode == "Sum":
+                    align_image = np.uint16(align_image)
             else:
                 align_image = new[j]
             if stack_methode == "Sum":
                 stack_image.append(align_image+ref[j])
             elif stack_methode == "Mean":
-                print("TODO %i" % counter)
-                stack_image = ((counter - 1) * ref[j] + align_image) / counter
-                # stackn = ((n-1)*(stackn-1) + stack-n)/n
+                if im_type == 'uint8':
+                    stack_image.append(np.uint8(((counter - 1) * ref[j] + align_image) / counter))
+                elif im_type == 'uint16':
+                    stack_image.append(np.uint16(((counter - 1) * ref[j] + align_image) / counter))
             else:
                 raise ValueError("Stack methode is not support")
 
@@ -159,9 +162,9 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
             # alignement
             p, __ = al.find_transform(new, ref)
             align_image = al.apply_transform(p, new, ref)
-            if im_type == 'uint8':
+            if im_type == 'uint8' and stack_methode == "Sum":
                 align_image = np.uint8(align_image)
-            elif im_type == 'uint16':
+            elif im_type == 'uint16' and stack_methode == "Sum":
                 align_image = np.uint16(align_image)
         else:
             align_image = new
@@ -169,9 +172,11 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
         if stack_methode == "Sum":
             stack_image = align_image + ref
         elif stack_methode == "Mean":
-            print("TODO %i" % counter)
-            stack_image = ((counter-1) * ref + align_image) / counter
-            # stackn = ((n-1)*(stackn-1) + stack-n)/n
+            if im_type == 'uint8':
+                stack_image = np.uint8(((counter-1) * ref + align_image) / counter)
+            elif im_type == 'uint8':
+                stack_image = np.uint16(((counter-1) * ref + align_image) / counter)
+
         else:
             raise ValueError("Stack methode is not support")
     else:
