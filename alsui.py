@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/home/sdurand/git/perso/als/alsui.ui'
+# Form implementation generated from reading ui file 'alsui.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -99,19 +99,8 @@ class Ui_stack_window(object):
         self.image_stack.setAlignment(QtCore.Qt.AlignCenter)
         self.image_stack.setObjectName("image_stack")
         stack_window.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(stack_window)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 867, 22))
-        self.menubar.setObjectName("menubar")
-        self.menuFile = QtWidgets.QMenu(self.menubar)
-        self.menuFile.setObjectName("menuFile")
-        stack_window.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(stack_window)
-        self.statusbar.setObjectName("statusbar")
-        stack_window.setStatusBar(self.statusbar)
         self.actionQuit = QtWidgets.QAction(stack_window)
         self.actionQuit.setObjectName("actionQuit")
-        self.menuFile.addAction(self.actionQuit)
-        self.menubar.addAction(self.menuFile.menuAction())
 
         self.retranslateUi(stack_window)
         self.actionQuit.triggered.connect(stack_window.close)
@@ -141,7 +130,6 @@ class Ui_stack_window(object):
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'Ubuntu\'; font-size:50pt; font-weight:600; font-style:normal;\">\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:11pt; font-weight:400;\">0</span></p></body></html>"))
-        self.menuFile.setTitle(_translate("stack_window", "Fi&le"))
         self.actionQuit.setText(_translate("stack_window", "&Quit"))
 
 

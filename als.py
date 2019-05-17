@@ -31,7 +31,7 @@ class MyEventHandler(FileSystemEventHandler, QtCore.QThread):
 class WatchOutForFileCreations(QtCore.QThread):
     print_image = QtCore.pyqtSignal()
 
-    def __init__(self, path, work_folder):
+    def __init__(self, path, work_folder, align_on, save_on, stack_methode):
         super(WatchOutForFileCreations, self).__init__()
         self.path = path
         self.work_folder = work_folder
@@ -43,12 +43,13 @@ class WatchOutForFileCreations(QtCore.QThread):
         self.event_handler = MyEventHandler()
         self.observer.schedule(self.event_handler, self.path, recursive=False)
         self.observer.start()
-        self.event_handler.created_signal.connect(lambda: self.created(self.event_handler.new_image_path))
+        self.event_handler.created_signal.connect(lambda: self.created(self.event_handler.new_image_path,
+                                                                       align_on, save_on, stack_methode))
 
     def run(self):
         pass
 
-    def created(self, new_image_path):
+    def created(self, new_image_path, align_on, save_on, stack_methode):
         if self.first == 0:
             stk.create_first_ref_im(self.work_folder, new_image_path, "stack_ref_image.fit")
             print("first file created : %s" % self.work_folder + "/stack_ref_image.fit")
@@ -56,7 +57,7 @@ class WatchOutForFileCreations(QtCore.QThread):
         else:
             # appelle de la fonction stack live
             stk.stack_live(self.work_folder, new_image_path, "stack_ref_image.fit", self.counter,
-                           save_im=False, align=True, stack_methode="Sum")
+                           save_im=save_on, align=align_on, stack_methode=stack_methode)
             print("file created : %s" % self.work_folder + "/stack_ref_image.fit")
         self.print_image.emit()
         self.counter = self.counter + 1
@@ -134,14 +135,6 @@ class als_main_window(QtWidgets.QMainWindow):
                 self.ui.log.append("Dark : " + os.path.expanduser(self.ui.tDark.text()))
                 self.dark = True
 
-            # Lancement du watchdog
-
-            self.fileWatcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()),
-                                                        os.path.expanduser(self.ui.tWork.text()))
-            self.fileWatcher.start()
-            # self.ui.cnt.text=0
-            # os.remove(os.path.expanduser(self.ui.tWork.text())+"/*")
-
             # Print live method
             if self.align and self.dark:
                 self.ui.log.append("Play with alignement and Dark")
@@ -149,6 +142,18 @@ class als_main_window(QtWidgets.QMainWindow):
                 self.ui.log.append("Play with alignement")
             else:
                 self.ui.log.append("Play")
+            # Lancement du watchdog
+
+            self.fileWatcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()),
+                                                        os.path.expanduser(self.ui.tWork.text()),
+                                                        self.align,
+                                                        False,
+                                                        self.ui.cmMode.currentText())
+            self.fileWatcher.start()
+            # self.ui.cnt.text=0
+            # os.remove(os.path.expanduser(self.ui.tWork.text())+"/*")
+
+
 
             self.running = True
 

@@ -149,6 +149,7 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
                 stack_image.append(align_image+ref[j])
             elif stack_methode == "Mean":
                 print("TODO %i" % counter)
+                stack_image = ((counter - 1) * ref[j] + align_image) / counter
                 # stackn = ((n-1)*(stackn-1) + stack-n)/n
             else:
                 raise ValueError("Stack methode is not support")
@@ -169,6 +170,7 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
             stack_image = align_image + ref
         elif stack_methode == "Mean":
             print("TODO %i" % counter)
+            stack_image = ((counter-1) * ref + align_image) / counter
             # stackn = ((n-1)*(stackn-1) + stack-n)/n
         else:
             raise ValueError("Stack methode is not support")
