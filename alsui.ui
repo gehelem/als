@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Astro Live Stacker</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QWidget" name="gridLayoutWidget">
@@ -162,15 +162,15 @@
       </widget>
      </item>
      <item row="3" column="2">
-      <widget class="QComboBox" name="cmBayer">
+      <widget class="QComboBox" name="cmMode">
        <item>
         <property name="text">
-         <string>BW</string>
+         <string>Sum</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>RGB</string>
+         <string>Mean</string>
         </property>
        </item>
       </widget>
@@ -224,7 +224,7 @@
      </size>
     </property>
    </widget>
-   <widget class="QTextEdit" name="textEdit">
+   <widget class="QTextEdit" name="cnt">
     <property name="geometry">
      <rect>
       <x>800</x>

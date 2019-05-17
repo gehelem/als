@@ -70,11 +70,11 @@ class Ui_stack_window(object):
         self.cbAlign.setMaximumSize(QtCore.QSize(150, 16777215))
         self.cbAlign.setObjectName("cbAlign")
         self.gridLayout.addWidget(self.cbAlign, 0, 2, 1, 1)
-        self.cmBayer = QtWidgets.QComboBox(self.gridLayoutWidget)
-        self.cmBayer.setObjectName("cmBayer")
-        self.cmBayer.addItem("")
-        self.cmBayer.addItem("")
-        self.gridLayout.addWidget(self.cmBayer, 3, 2, 1, 1)
+        self.cmMode = QtWidgets.QComboBox(self.gridLayoutWidget)
+        self.cmMode.setObjectName("cmMode")
+        self.cmMode.addItem("")
+        self.cmMode.addItem("")
+        self.gridLayout.addWidget(self.cmMode, 3, 2, 1, 1)
         self.gridLayout.setColumnMinimumWidth(1, 50)
         self.log = QtWidgets.QTextBrowser(self.centralwidget)
         self.log.setGeometry(QtCore.QRect(400, 10, 391, 90))
@@ -91,15 +91,15 @@ class Ui_stack_window(object):
         self.image_scene.setMinimumSize(QtCore.QSize(640, 480))
         self.image_scene.setMaximumSize(QtCore.QSize(5000, 3000))
         self.image_scene.setObjectName("image_scene")
-        self.textEdit = QtWidgets.QTextEdit(self.centralwidget)
-        self.textEdit.setGeometry(QtCore.QRect(800, 17, 61, 81))
+        self.cnt = QtWidgets.QTextEdit(self.centralwidget)
+        self.cnt.setGeometry(QtCore.QRect(800, 17, 61, 81))
         font = QtGui.QFont()
         font.setPointSize(50)
         font.setBold(True)
         font.setWeight(75)
-        self.textEdit.setFont(font)
-        self.textEdit.setReadOnly(True)
-        self.textEdit.setObjectName("textEdit")
+        self.cnt.setFont(font)
+        self.cnt.setReadOnly(True)
+        self.cnt.setObjectName("cnt")
         stack_window.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(stack_window)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 867, 25))
@@ -123,7 +123,7 @@ class Ui_stack_window(object):
 
     def retranslateUi(self, stack_window):
         _translate = QtCore.QCoreApplication.translate
-        stack_window.setWindowTitle(_translate("stack_window", "MainWindow"))
+        stack_window.setWindowTitle(_translate("stack_window", "Astro Live Stacker"))
         self.pbPlay.setText(_translate("stack_window", "Play"))
         self.pbReset.setText(_translate("stack_window", "Reset"))
         self.tWork.setText(_translate("stack_window", "~/als/wrk"))
@@ -135,9 +135,9 @@ class Ui_stack_window(object):
         self.bBrowseWork.setText(_translate("stack_window", "Rep. wrk"))
         self.pbStop.setText(_translate("stack_window", "Stop"))
         self.cbAlign.setText(_translate("stack_window", "Aligner"))
-        self.cmBayer.setItemText(0, _translate("stack_window", "BW"))
-        self.cmBayer.setItemText(1, _translate("stack_window", "RGB"))
-        self.textEdit.setHtml(_translate("stack_window", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.cmMode.setItemText(0, _translate("stack_window", "Sum"))
+        self.cmMode.setItemText(1, _translate("stack_window", "Mean"))
+        self.cnt.setHtml(_translate("stack_window", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'Ubuntu\'; font-size:50pt; font-weight:600; font-style:normal;\">\n"
