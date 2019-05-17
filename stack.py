@@ -61,10 +61,13 @@ def test_utype(image):
 
 
 def create_first_ref_im(work_path, im_path, ref_name):
-    # copy first image in work path
-    # shutil.copy2(im_path, work_path + "/" + ref_name)
     # cleaning work folder
-    os.remove(os.path.expanduser(work_path + "/stack_ref_image.fit"))
+    import os
+    if os.path.exists(os.path.expanduser(work_path + "/stack_ref_image.fit")):
+        os.remove(os.path.expanduser(work_path + "/stack_ref_image.fit"))
+    else:
+        print("The file does not exist")
+
     # open ref image
     ref_fit = fits.open(im_path)
     ref = ref_fit[0].data

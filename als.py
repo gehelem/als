@@ -86,11 +86,11 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.bBrowseDark.clicked.connect(self.cb_browse_dark)
         self.ui.bBrowseWork.clicked.connect(self.cb_browse_work)
 
-
     # ------------------------------------------------------------------------------
     # Callbacks
     def update_image(self):
-        self.image_stack.setPixmap(QtGui.QPixmap(os.path.expanduser(self.ui.tWork.text()+"/"+"stack_image.tiff")))
+        self.ui.image_stack.setPixmap(QtGui.QPixmap(os.path.expanduser(self.ui.tWork.text() + "/" + "stack_image.tiff")))
+        self.ui.image_stack.setAlignment(QtCore.Qt.AlignCenter)
 
     def cb_browse_folder(self):
         DirName = QtWidgets.QFileDialog.getExistingDirectory(self, "Répertoire à scanner", self.ui.tFolder.text())
@@ -131,8 +131,8 @@ class als_main_window(QtWidgets.QMainWindow):
             self.fileWatcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()),
                                                         os.path.expanduser(self.ui.tWork.text()))
             self.fileWatcher.start()
-            #self.ui.cnt.text=0
-            #os.remove(os.path.expanduser(self.ui.tWork.text())+"/*")
+            # self.ui.cnt.text=0
+            # os.remove(os.path.expanduser(self.ui.tWork.text())+"/*")
 
             # Print live method
             if self.align and self.dark:
@@ -152,7 +152,6 @@ class als_main_window(QtWidgets.QMainWindow):
             self.fileWatcher.print_image.connect(lambda: self.update_image())
         else:
             self.ui.log.append("No have path")
-        
 
     def cb_stop(self):
         self.fileWatcher.observer.stop()
