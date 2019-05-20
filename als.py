@@ -55,12 +55,13 @@ class MyEventHandler(FileSystemEventHandler, QtCore.QThread):
 class WatchOutForFileCreations(QtCore.QThread):
     print_image = QtCore.pyqtSignal()
 
-    def __init__(self, path, work_folder, align_on, save_on, stack_methode):
+    def __init__(self, path, work_folder, align_on, save_on, stack_methode, param):
         super(WatchOutForFileCreations, self).__init__()
         self.path = path
         self.work_folder = work_folder
         self.first = 0
         self.counter = 0
+        self.param = param
         print(self.work_folder)
         print(self.path)
         self.observer = Observer()
@@ -76,13 +77,14 @@ class WatchOutForFileCreations(QtCore.QThread):
     def created(self, new_image_path, align_on, save_on, stack_methode):
         self.counter = self.counter + 1
         if self.first == 0:
-            stk.create_first_ref_im(self.work_folder, new_image_path, name_of_fit_image, save_im=save_on)
+            stk.create_first_ref_im(self.work_folder, new_image_path, name_of_fit_image, save_im=save_on,
+                                    param=self.param)
             print("first file created : %s" % self.work_folder + "/" + name_of_fit_image)
             self.first = 1
         else:
             # appelle de la fonction stack live
             stk.stack_live(self.work_folder, new_image_path, name_of_fit_image, self.counter,
-                           save_im=save_on, align=align_on, stack_methode=stack_methode)
+                           save_im=save_on, align=align_on, stack_methode=stack_methode, param=self.param)
             print("file created : %s" % self.work_folder + "/" + name_of_fit_image)
         self.print_image.emit()
 
@@ -132,7 +134,8 @@ class als_main_window(QtWidgets.QMainWindow):
         self.black_value = self.ui.black_slider.value()
         self.white_value = self.ui.white_slider.value()
         if counter > 0:
-            self.update_image(work_folder, tiff_image, add=False)
+            new_tiff_image = self.ajuste_value(work_folder, tiff_image)
+            self.update_image(work_folder, new_tiff_image, add=False)
         print("Define new display value")
 
     def ajuste_value(self, work_folder, tiff_image):
@@ -147,17 +150,14 @@ class als_main_window(QtWidgets.QMainWindow):
         # cv2.imshow("image", image/65525.)
         cv2.imwrite(os.path.expanduser(work_folder+"/"+"new_" + name_of_tiff_image), image)
         print("Adjusted GUI image")
-        return os.path.expanduser(work_folder+"/"+"new_" + name_of_tiff_image)
+        return "new_" + name_of_tiff_image
 
     def update_image(self, work_folder, tiff_image, add=True):
         if add:
             self.counter = self.counter+1
-        self.ui.cnt.setText(str(self.counter))
-        if self.contrast_value != 1 or self.luminosity_value != 0 or self.black_value != 0 or self.white_value != 65525:
-            new_tiff_image = self.ajuste_value(work_folder, tiff_image)
-        else:
-            new_tiff_image = os.path.expanduser(work_folder+"/"+tiff_image)
-        pixmap_tiff = QtGui.QPixmap(new_tiff_image)
+            self.ui.cnt.setText(str(self.counter))
+
+        pixmap_tiff = QtGui.QPixmap(os.path.expanduser(work_folder+"/"+tiff_image))
 
         if pixmap_tiff.isNull():
             print("Image non valide !")
@@ -210,12 +210,15 @@ class als_main_window(QtWidgets.QMainWindow):
             else:
                 self.ui.log.append("Play with NO alignement")
 
+            param = [self.contrast_value, self.luminosity_value, self.black_value, self.white_value]
+
             # Lancement du watchdog
             self.fileWatcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()),
                                                         os.path.expanduser(self.ui.tWork.text()),
                                                         self.align,
                                                         self.ui.cbKeep.isChecked(),
-                                                        self.ui.cmMode.currentText())
+                                                        self.ui.cmMode.currentText(),
+                                                        param)
 
             if os.path.exists(os.path.expanduser(self.ui.tWork.text())):
                 shutil.rmtree(os.path.expanduser(self.ui.tWork.text())+"/")
