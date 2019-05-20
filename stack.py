@@ -21,17 +21,20 @@ import numpy as np
 from astropy.io import fits
 from tqdm import tqdm
 
+name_of_tiff_image = "stack_image.tiff"
+name_of_fit_image = "stack_ref_image.fit"
+
 
 def save_tiff(work_path, stack_image, mode="rgb"):
     # invert Red and Blue for cv2
 
     if mode == "rgb":
         new_stack_image = np.rollaxis(stack_image, 0, 3)
-        cv2.imwrite(work_path + "/stack_image.tiff", cv2.cvtColor(new_stack_image, cv2.COLOR_RGB2BGR))
+        cv2.imwrite(work_path + "/" + name_of_tiff_image, cv2.cvtColor(new_stack_image, cv2.COLOR_RGB2BGR))
     else:
         new_stack_image = stack_image
-        cv2.imwrite(work_path + "/stack_image.tiff", new_stack_image)
-    print("TIFF image create : %s" % work_path + "/stack_image.tiff")
+        cv2.imwrite(work_path + "/" + name_of_tiff_image, new_stack_image)
+    print("TIFF image create : %s" % work_path + "/" + name_of_tiff_image)
 
 
 def test_and_debayer_to_rgb(header, image):
@@ -67,9 +70,9 @@ def test_utype(image):
     # search type
     im_type = image.dtype.name
     if im_type == 'uint8':
-        limit = 2**8-1
+        limit = 2.**8-1
     elif im_type == 'uint16':
-        limit = 2**16-1
+        limit = 2.**16-1
     else:
         raise ValueError("fit format not support")
 
@@ -79,8 +82,8 @@ def test_utype(image):
 def create_first_ref_im(work_path, im_path, ref_name, save_im=False):
     # cleaning work folder
     import os
-    if os.path.exists(os.path.expanduser(work_path + "/stack_ref_image.fit")):
-        os.remove(os.path.expanduser(work_path + "/stack_ref_image.fit"))
+    if os.path.exists(os.path.expanduser(work_path + "/" + name_of_fit_image)):
+        os.remove(os.path.expanduser(work_path + "/" + name_of_fit_image))
     else:
         print("The file does not exist")
 
@@ -110,7 +113,7 @@ def create_first_ref_im(work_path, im_path, ref_name, save_im=False):
 
     if save_im:
         # save stack image in fit
-        red.writeto(work_path + "/stack_image_" + name + extension)
+        red.writeto(work_path + "/" + "stack_image_" + name + extension)
 
 
 def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=True, stack_methode="Sum"):
@@ -191,7 +194,7 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
             elif im_type == 'uint16':
                 stack_image.append(np.uint16(np.where(stack < 2 ** 16 - 1, stack, 2 ** 16 - 1)))
             else:
-                raise ValueError("Stack methode is not support")
+                raise ValueError("Stack method is not support")
 
     elif mode == "gray":
         if align:
@@ -207,7 +210,7 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
         elif stack_methode == "Mean":
             stack = ((counter - 1) * np.float32(ref) + np.float32(align_image)) / counter
         else:
-            raise ValueError("Stack methode is not support")
+            raise ValueError("Stack method is not support")
 
         if im_type == 'uint8':
             stack_image = np.uint8(stack)
@@ -224,10 +227,10 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
     if save_im:
         # save stack image in fit
         red = fits.PrimaryHDU(data=stack_image)
-        red.writeto(work_path + "/stack_image_" + name + extension)
+        red.writeto(work_path + "/" + "stack_image_" + name + extension)
 
     # save stack image in tiff (print image)
-    os.remove(work_path + "/stack_image.tiff")
+    os.remove(work_path + "/" + name_of_tiff_image)
     save_tiff(work_path, np.array(stack_image), mode=mode)
 
     return 1

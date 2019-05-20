@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>818</width>
-    <height>877</height>
+    <height>886</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -249,6 +249,19 @@
      </widget>
     </item>
     <item>
+     <widget class="Line" name="line">
+      <property name="frameShadow">
+       <enum>QFrame::Plain</enum>
+      </property>
+      <property name="lineWidth">
+       <number>2</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -262,7 +275,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
-           <widget class="QSlider" name="horizontalSlider">
+           <widget class="QSlider" name="contrast_silder">
             <property name="minimum">
              <number>1</number>
             </property>
@@ -275,7 +288,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="label">
+           <widget class="QLabel" name="contrast">
             <property name="text">
              <string>1</string>
             </property>
@@ -293,7 +306,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
-           <widget class="QSlider" name="horizontalSlider_2">
+           <widget class="QSlider" name="luminosity_slider">
             <property name="maximum">
              <number>32000</number>
             </property>
@@ -303,7 +316,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="label_4">
+           <widget class="QLabel" name="luminosity">
             <property name="text">
              <string>0</string>
             </property>
@@ -325,7 +338,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
           <item>
-           <widget class="QSlider" name="horizontalSlider_3">
+           <widget class="QSlider" name="black_slider">
             <property name="maximum">
              <number>65525</number>
             </property>
@@ -335,7 +348,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="label_7">
+           <widget class="QLabel" name="black">
             <property name="text">
              <string>0</string>
             </property>
@@ -353,7 +366,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_6">
           <item>
-           <widget class="QSlider" name="horizontalSlider_4">
+           <widget class="QSlider" name="white_slider">
             <property name="maximum">
              <number>65525</number>
             </property>
@@ -366,7 +379,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="label_8">
+           <widget class="QLabel" name="white">
             <property name="text">
              <string>65525</string>
             </property>
@@ -379,7 +392,7 @@
      </layout>
     </item>
     <item>
-     <widget class="QPushButton" name="pushButton">
+     <widget class="QPushButton" name="pb_apply_value">
       <property name="text">
        <string>Apply</string>
       </property>
@@ -460,65 +473,65 @@
    </hints>
   </connection>
   <connection>
-   <sender>horizontalSlider</sender>
-   <signal>actionTriggered(int)</signal>
-   <receiver>label</receiver>
+   <sender>contrast_silder</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>contrast</receiver>
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>139</x>
-     <y>772</y>
+     <x>350</x>
+     <y>784</y>
     </hint>
     <hint type="destinationlabel">
-     <x>403</x>
-     <y>775</y>
+     <x>398</x>
+     <y>780</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>horizontalSlider_2</sender>
-   <signal>rangeChanged(int,int)</signal>
-   <receiver>label_4</receiver>
+   <sender>luminosity_slider</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>luminosity</receiver>
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>76</x>
-     <y>827</y>
+     <x>333</x>
+     <y>824</y>
     </hint>
     <hint type="destinationlabel">
-     <x>403</x>
+     <x>396</x>
      <y>826</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>horizontalSlider_3</sender>
-   <signal>actionTriggered(int)</signal>
-   <receiver>label_7</receiver>
+   <sender>black_slider</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>black</receiver>
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>706</x>
-     <y>777</y>
+     <x>585</x>
+     <y>782</y>
     </hint>
     <hint type="destinationlabel">
-     <x>800</x>
-     <y>773</y>
+     <x>798</x>
+     <y>784</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>horizontalSlider_4</sender>
-   <signal>actionTriggered(int)</signal>
-   <receiver>label_8</receiver>
+   <sender>white_slider</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>white</receiver>
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>667</x>
-     <y>823</y>
+     <x>689</x>
+     <y>831</y>
     </hint>
     <hint type="destinationlabel">
-     <x>784</x>
+     <x>775</x>
      <y>831</y>
     </hint>
    </hints>
