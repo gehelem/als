@@ -184,7 +184,7 @@ class als_main_window(QtWidgets.QMainWindow):
             image = np.uint8(image)
 
         # write tiff file
-        # cv2.imshow("image", image/65525.)
+        # cv2.imshow("image", image/65535.)
         cv2.imwrite(os.path.expanduser(work_folder + "/" + name_of_tiff_image), image)
         print("Adjusted GUI image")
         return name_of_tiff_image
@@ -310,12 +310,12 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.contrast_silder.setValue(1)
         self.ui.luminosity_slider.setValue(0)
         self.ui.black_slider.setValue(0)
-        self.ui.white_slider.setValue(65525)
+        self.ui.white_slider.setValue(65535)
         self.ui.image_stack.setPixmap(QtGui.QPixmap("dslr-camera.svg"))
         self.ui.contrast.setText(str(1))
         self.ui.luminosity.setText(str(0))
         self.ui.black.setText(str(0))
-        self.ui.white.setText(str(65525))
+        self.ui.white.setText(str(65535))
         self.counter = 0
         self.ui.cnt.setText(str(self.counter))
 

@@ -25,6 +25,53 @@ name_of_tiff_image = "stack_image.tiff"
 name_of_fit_image = "stack_ref_image.fit"
 
 
+def SCNR(rgb_image, im_type, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=1):
+    # SCNR Average Neutral Protection
+    if rgb_type == "RGB":
+        red = 0
+        blue = 2
+    elif rgb_type == "BGR":
+        red = 2
+        blue = 0
+
+    rgb_image = np.float32(rgb_image)
+
+    if scnr_type == "ne_m":
+        m = (rgb_image[red] + rgb_image[blue]) * 0.5
+        compare = rgb_image[1] < m
+        rgb_image[1] = compare * rgb_image[1] + np.invert(compare) * m
+
+    elif scnr_type == "ne_max":
+        compare = rgb_image[red] > rgb_image[blue]
+        m = compare * rgb_image[red] + np.invert(compare) * rgb_image[blue]
+        compare = rgb_image[1] < m
+        rgb_image[1] = compare * rgb_image[1] + np.invert(compare) * m
+
+    elif scnr_type == "ma_ad":
+        rgb_image = rgb_image/im_limit
+        unity_m = np.ones((rgb_image[1].shape[0], rgb_image[1].shape[1]))
+        compare = unity_m < (rgb_image[blue] + rgb_image[red])
+        m = compare * unity_m + np.invert(compare) * (rgb_image[blue] + rgb_image[red])
+        rgb_image[1] = rgb_image[1] * (1 - amount) * (1 - m) + m * rgb_image[1]
+        rgb_image = rgb_image*im_limit
+
+    elif scnr_type == "ma_max":
+        rgb_image = rgb_image/im_limit
+        compare = rgb_image[red] > rgb_image[blue]
+        m = compare * rgb_image[red] + np.invert(compare) * rgb_image[blue]
+        rgb_image[1] = rgb_image[1] * (1 - amount) * (1 - m) + m * rgb_image[1]
+        rgb_image = rgb_image*im_limit
+
+    if im_type == "uint16":
+        rgb_image = np.where(rgb_image < im_limit, rgb_image, im_limit)
+        rgb_image = np.uint16(rgb_image)
+    elif im_type == "uint8":
+        rgb_image = np.where(rgb_image < im_limit, rgb_image, im_limit)
+        rgb_image = np.uint8(rgb_image)
+
+    return rgb_image
+
+
 def save_tiff(work_path, stack_image, mode="rgb", param=[]):
     # invert Red and Blue for cv2
 
@@ -82,9 +129,9 @@ def test_utype(image):
     # search type
     im_type = image.dtype.name
     if im_type == 'uint8':
-        limit = 2.**8-1
+        limit = 2. ** 8 - 1
     elif im_type == 'uint16':
-        limit = 2.**16-1
+        limit = 2. ** 16 - 1
     else:
         raise ValueError("fit format not support")
 
@@ -129,7 +176,6 @@ def create_first_ref_im(work_path, im_path, ref_name, save_im=False, param=[]):
 
 
 def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=True, stack_methode="Sum", param=[]):
-
     # test image format ".fit" or ".fits"
     if new_image.find(".fits") == -1:
         extension = ".fit"
