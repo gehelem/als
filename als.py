@@ -32,6 +32,7 @@ import stack as stk
 
 name_of_tiff_image = "stack_image.tiff"
 name_of_fit_image = "stack_ref_image.fit"
+param = [1, 0, 0, 65525]
 
 
 class MyEventHandler(FileSystemEventHandler, QtCore.QThread):
@@ -55,13 +56,12 @@ class MyEventHandler(FileSystemEventHandler, QtCore.QThread):
 class WatchOutForFileCreations(QtCore.QThread):
     print_image = QtCore.pyqtSignal()
 
-    def __init__(self, path, work_folder, align_on, save_on, stack_methode, param):
+    def __init__(self, path, work_folder, align_on, save_on, stack_methode):
         super(WatchOutForFileCreations, self).__init__()
         self.path = path
         self.work_folder = work_folder
         self.first = 0
         self.counter = 0
-        self.param = param
         print(self.work_folder)
         print(self.path)
         self.observer = Observer()
@@ -103,10 +103,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.counter = 0
         self.align = False
         self.dark = False
-        self.contrast_value = 1
-        self.luminosity_value = 0
-        self.black_value = 0
-        self.white_value = 65525
+        self.pause = False
 
     def connect_actions(self):
 
@@ -129,10 +126,10 @@ class als_main_window(QtWidgets.QMainWindow):
                     os.path.expanduser(self.ui.tWork.text()) + "/stack-" + timestamp + ".fit")
 
     def apply_value(self, counter, work_folder, tiff_image):
-        self.contrast_value = self.ui.contrast_silder.value()
-        self.luminosity_value = self.ui.luminosity_slider.value()
-        self.black_value = self.ui.black_slider.value()
-        self.white_value = self.ui.white_slider.value()
+        param[0] = self.ui.contrast_silder.value()
+        param[1] = self.ui.luminosity_slider.value()
+        param[2] = self.ui.black_slider.value()
+        param[3] = self.ui.white_slider.value()
         if counter > 0:
             new_tiff_image = self.ajuste_value(work_folder, tiff_image)
             self.update_image(work_folder, new_tiff_image, add=False)
@@ -185,55 +182,61 @@ class als_main_window(QtWidgets.QMainWindow):
         if DirName:
             self.ui.tWork.setText(DirName)
 
+
     def cb_play(self):
+
         if self.ui.tFolder.text() != "":
-
-            # Print scan folder
-            self.ui.log.append("Dossier a scanner : " + os.path.expanduser(self.ui.tFolder.text()))
-            # Print work folder
-            self.ui.log.append("Dossier de travail : " + os.path.expanduser(self.ui.tWork.text()))
-
-            # check align
-            if self.ui.cbAlign.isChecked():
-                self.align = True
-
-            # check dark
-            if (self.ui.cbDark.isChecked()) & (self.ui.tDark.text() != ""):
-                self.ui.log.append("Dark : " + os.path.expanduser(self.ui.tDark.text()))
-                self.dark = True
-
-            # Print live method
-            if self.align and self.dark:
-                self.ui.log.append("Play with alignement type: " + self.ui.cmMode.currentText() + " and Dark")
-            elif self.align:
-                self.ui.log.append("Play with alignement type: " + self.ui.cmMode.currentText())
+            if self.pause:
+                self.fileWatcher.observer.start()
+                self.pause = False
+                # desactivate play button
+                self.ui.pbPlay.setEnabled(False)
+                # activate stop button
+                self.ui.pbStop.setEnabled(True)
             else:
-                self.ui.log.append("Play with NO alignement")
+                # Print scan folder
+                self.ui.log.append("Dossier a scanner : " + os.path.expanduser(self.ui.tFolder.text()))
+                # Print work folder
+                self.ui.log.append("Dossier de travail : " + os.path.expanduser(self.ui.tWork.text()))
 
-            param = [self.contrast_value, self.luminosity_value, self.black_value, self.white_value]
+                # check align
+                if self.ui.cbAlign.isChecked():
+                    self.align = True
 
-            # Lancement du watchdog
-            self.fileWatcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()),
-                                                        os.path.expanduser(self.ui.tWork.text()),
-                                                        self.align,
-                                                        self.ui.cbKeep.isChecked(),
-                                                        self.ui.cmMode.currentText(),
-                                                        param)
+                # check dark
+                if (self.ui.cbDark.isChecked()) & (self.ui.tDark.text() != ""):
+                    self.ui.log.append("Dark : " + os.path.expanduser(self.ui.tDark.text()))
+                    self.dark = True
 
-            if os.path.exists(os.path.expanduser(self.ui.tWork.text())):
-                shutil.rmtree(os.path.expanduser(self.ui.tWork.text())+"/")
-            os.mkdir(os.path.expanduser(self.ui.tWork.text())) 
+                # Print live method
+                if self.align and self.dark:
+                    self.ui.log.append("Play with alignement type: " + self.ui.cmMode.currentText() + " and Dark")
+                elif self.align:
+                    self.ui.log.append("Play with alignement type: " + self.ui.cmMode.currentText())
+                else:
+                    self.ui.log.append("Play with NO alignement")
 
-            self.fileWatcher.start()
-            self.running = True
+                # Lancement du watchdog
+                self.fileWatcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()),
+                                                            os.path.expanduser(self.ui.tWork.text()),
+                                                            self.align,
+                                                            self.ui.cbKeep.isChecked(),
+                                                            self.ui.cmMode.currentText())
 
-            # desactivate play button
-            self.ui.pbPlay.setEnabled(False)
-            # activate stop button
-            self.ui.pbStop.setEnabled(True)
-            self.counter = 0
-            self.ui.cnt.setText(str(self.counter))
-            self.fileWatcher.print_image.connect(lambda: self.update_image(self.ui.tWork.text(), name_of_tiff_image))
+                if os.path.exists(os.path.expanduser(self.ui.tWork.text())):
+                    shutil.rmtree(os.path.expanduser(self.ui.tWork.text())+"/")
+                os.mkdir(os.path.expanduser(self.ui.tWork.text()))
+
+                self.fileWatcher.start()
+                self.running = True
+
+                # desactivate play button
+                self.ui.pbPlay.setEnabled(False)
+                # activate stop button
+                self.ui.pbStop.setEnabled(True)
+                self.counter = 0
+                self.ui.cnt.setText(str(self.counter))
+                self.fileWatcher.print_image.connect(lambda: self.update_image(self.ui.tWork.text(), name_of_tiff_image))
         else:
             self.ui.log.append("No have path")
 
@@ -244,8 +247,33 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.pbPlay.setEnabled(True)
         self.ui.log.append("Stop")
 
+    def cb_pause(self):
+        self.fileWatcher.observer.stop()
+        self.running = False
+        self.pause = True
+        self.ui.pbStop.setEnabled(False)
+        self.ui.pbPlay.setEnabled(True)
+        self.ui.log.append("Stop")
+
     def cb_reset(self):
         self.ui.log.append("Reset")
+        # reset slider, label, image, global value
+
+        param[0] = 1
+        param[1] = 0
+        param[2] = 0
+        param[3] = 65525
+        self.ui.contrast_silder.setValue(1)
+        self.ui.luminosity_slider.setValue(0)
+        self.ui.black_slider.setValue(0)
+        self.ui.white_slider.setValue(65525)
+        self.ui.image_stack.setPixmap(QtGui.QPixmap("dslr-camera.svg"))
+        self.ui.contrast.setText(str(1))
+        self.ui.luminosity.setText(str(0))
+        self.ui.black.setText(str(0))
+        self.ui.white.setText(str(65525))
+        self.counter = 0
+        self.ui.cnt.setText(str(self.counter))
 
     def main(self):
         self.show()
