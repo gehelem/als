@@ -25,7 +25,7 @@ name_of_tiff_image = "stack_image.tiff"
 name_of_fit_image = "stack_ref_image.fit"
 
 
-def SCNR(rgb_image, im_type, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=1):
+def SCNR(rgb_image, im_type, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
     # SCNR Average Neutral Protection
     if rgb_type == "RGB":
         red = 0
