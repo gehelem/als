@@ -35,12 +35,14 @@ def save_tiff(work_path, stack_image, mode="rgb", param=[]):
         new_stack_image = stack_image
 
     limit, im_type = test_utype(new_stack_image)
-    new_stack_image = np.float32(new_stack_image) * param[0] + param[1]
-    new_stack_image = np.where(new_stack_image < limit, new_stack_image, limit)
-    if im_type == "uint16":
-        new_stack_image = np.uint16(new_stack_image)
-    elif im_type == "uint8":
-        new_stack_image = np.uint8(new_stack_image)
+    if param[0] != 1 or param[1] != 0 or param[2] != 0 or param[0] != limit:
+        new_stack_image = np.float32(new_stack_image) * param[0] + param[1]
+        new_stack_image = np.where(new_stack_image < limit, new_stack_image, limit)
+        if im_type == "uint16":
+            new_stack_image = np.uint16(new_stack_image)
+        elif im_type == "uint8":
+            new_stack_image = np.uint8(new_stack_image)
+
     cv2.imwrite(work_path + "/" + name_of_tiff_image, new_stack_image)
     print("TIFF image create : %s" % work_path + "/" + name_of_tiff_image)
 
@@ -241,6 +243,6 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
 
     # save stack image in tiff (print image)
     os.remove(work_path + "/" + name_of_tiff_image)
-    save_tiff(work_path, np.array(stack_image), mode=mode, param=param)
+    tiff_name_path = save_tiff(work_path, np.array(stack_image), mode=mode, param=param)
 
-    return 1
+    return tiff_name_path

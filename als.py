@@ -25,6 +25,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from alsui import Ui_stack_window  # import du fichier alsui.py généré par : pyuic5 alsui.ui -x -o alsui.py
+from astropy.io import fits
 
 # from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import stack as stk
@@ -78,13 +79,13 @@ class WatchOutForFileCreations(QtCore.QThread):
         self.counter = self.counter + 1
         if self.first == 0:
             stk.create_first_ref_im(self.work_folder, new_image_path, name_of_fit_image, save_im=save_on,
-                                    param=self.param)
+                                    param=param)
             print("first file created : %s" % self.work_folder + "/" + name_of_fit_image)
             self.first = 1
         else:
             # appelle de la fonction stack live
             stk.stack_live(self.work_folder, new_image_path, name_of_fit_image, self.counter,
-                           save_im=save_on, align=align_on, stack_methode=stack_methode, param=self.param)
+                           save_im=save_on, align=align_on, stack_methode=stack_methode, param=param)
             print("file created : %s" % self.work_folder + "/" + name_of_fit_image)
         self.print_image.emit()
 
@@ -114,8 +115,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.bBrowseFolder.clicked.connect(self.cb_browse_folder)
         self.ui.bBrowseDark.clicked.connect(self.cb_browse_dark)
         self.ui.bBrowseWork.clicked.connect(self.cb_browse_work)
-        self.ui.pb_apply_value.clicked.connect(lambda: self.apply_value(self.counter, self.ui.tWork.text(),
-                                                                        name_of_tiff_image))
+        self.ui.pb_apply_value.clicked.connect(lambda: self.apply_value(self.counter, self.ui.tWork.text()))
 
     # ------------------------------------------------------------------------------
     # Callbacks
@@ -125,29 +125,51 @@ class als_main_window(QtWidgets.QMainWindow):
         shutil.copy(os.path.expanduser(self.ui.tWork.text()) + "/" + name_of_fit_image,
                     os.path.expanduser(self.ui.tWork.text()) + "/stack-" + timestamp + ".fit")
 
-    def apply_value(self, counter, work_folder, tiff_image):
+    def apply_value(self, counter, work_folder):
         param[0] = self.ui.contrast_silder.value()
         param[1] = self.ui.luminosity_slider.value()
         param[2] = self.ui.black_slider.value()
         param[3] = self.ui.white_slider.value()
         if counter > 0:
-            new_tiff_image = self.ajuste_value(work_folder, tiff_image)
+            new_tiff_image = self.ajuste_value(work_folder)
             self.update_image(work_folder, new_tiff_image, add=False)
         print("Define new display value")
 
-    def ajuste_value(self, work_folder, tiff_image):
-        image = cv2.imread(os.path.expanduser(work_folder+"/"+tiff_image), -1)
+    def ajuste_value(self, work_folder):
+        # open ref image
+        image_fit = fits.open(os.path.expanduser(work_folder+"/"+name_of_fit_image))
+        image = image_fit[0].data
+        image_fit.close()
+
+        # test rgb or gray
+        if len(image.shape) == 2:
+            mode = "gray"
+        elif len(image.shape) == 3:
+            mode = "rgb"
+        else:
+            raise ValueError("fit format not support")
+        # apply cv2 transformation in rgb image
+        if mode == "rgb":
+            image = np.rollaxis(image, 0, 3)
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        else:
+            image = image
+        # test type image
         limit, im_type = stk.test_utype(image)
-        image = np.float32(image)*self.contrast_value+self.luminosity_value
+
+        # apply value transformation
+        image = np.float32(image)*param[0]+param[1]
         image = np.where(image < limit, image, limit)
         if im_type == "uint16":
             image = np.uint16(image)
         elif im_type == "uint8":
             image = np.uint8(image)
+
+        # write tiff file
         # cv2.imshow("image", image/65525.)
-        cv2.imwrite(os.path.expanduser(work_folder+"/"+"new_" + name_of_tiff_image), image)
+        cv2.imwrite(os.path.expanduser(work_folder+"/" + name_of_tiff_image), image)
         print("Adjusted GUI image")
-        return "new_" + name_of_tiff_image
+        return name_of_tiff_image
 
     def update_image(self, work_folder, tiff_image, add=True):
         if add:
