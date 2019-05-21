@@ -272,6 +272,7 @@ class als_main_window(QtWidgets.QMainWindow):
 
                 # desactivate play button
                 self.ui.pbPlay.setEnabled(False)
+                self.ui.pbReset.setEnabled(False)
                 # activate stop button
                 self.ui.pbStop.setEnabled(True)
                 self.counter = 0
@@ -286,6 +287,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.running = False
         self.ui.pbStop.setEnabled(False)
         self.ui.pbPlay.setEnabled(True)
+        self.ui.pbReset.setEnabled(True)
         self.ui.log.append("Stop")
 
     def cb_pause(self):
@@ -294,6 +296,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.pause = True
         self.ui.pbStop.setEnabled(False)
         self.ui.pbPlay.setEnabled(True)
+        self.ui.pbReset.setEnabled(True)
         self.ui.log.append("Stop")
 
     def cb_reset(self):
