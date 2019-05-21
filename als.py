@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#!/usr/bin/python3
+# !/usr/bin/python3
 # -*- coding: utf-8 -*-
 import os
 from datetime import datetime
@@ -30,10 +30,16 @@ from astropy.io import fits
 # from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import stack as stk
 
-
 name_of_tiff_image = "stack_image.tiff"
 name_of_fit_image = "stack_ref_image.fit"
-param = [1, 0, 0, 65525]
+
+
+class ColorParam:
+    def __init__(self):
+        self.contrast = 1
+        self.brightness = 0
+        self.black = 0
+        self.white = 65535
 
 
 class MyEventHandler(FileSystemEventHandler, QtCore.QThread):
@@ -57,7 +63,7 @@ class MyEventHandler(FileSystemEventHandler, QtCore.QThread):
 class WatchOutForFileCreations(QtCore.QThread):
     print_image = QtCore.pyqtSignal()
 
-    def __init__(self, path, work_folder, align_on, save_on, stack_methode):
+    def __init__(self, path, work_folder, align_on, save_on, stack_methode, color_param):
         super(WatchOutForFileCreations, self).__init__()
         self.path = path
         self.work_folder = work_folder
@@ -71,6 +77,7 @@ class WatchOutForFileCreations(QtCore.QThread):
         self.observer.start()
         self.event_handler.created_signal.connect(lambda: self.created(self.event_handler.new_image_path,
                                                                        align_on, save_on, stack_methode))
+        self.color_param = color_param
 
     def run(self):
         pass
@@ -79,13 +86,22 @@ class WatchOutForFileCreations(QtCore.QThread):
         self.counter = self.counter + 1
         if self.first == 0:
             stk.create_first_ref_im(self.work_folder, new_image_path, name_of_fit_image, save_im=save_on,
-                                    param=param)
+                                    param=[self.color_param.contrast,
+                                           self.color_param.brightness,
+                                           self.color_param.black,
+                                           self.color_param.white
+                                           ])
             print("first file created : %s" % self.work_folder + "/" + name_of_fit_image)
             self.first = 1
         else:
             # appelle de la fonction stack live
             stk.stack_live(self.work_folder, new_image_path, name_of_fit_image, self.counter,
-                           save_im=save_on, align=align_on, stack_methode=stack_methode, param=param)
+                           save_im=save_on, align=align_on, stack_methode=stack_methode,
+                           param=[self.color_param.contrast,
+                                  self.color_param.brightness,
+                                  self.color_param.black,
+                                  self.color_param.white
+                                  ])
             print("file created : %s" % self.work_folder + "/" + name_of_fit_image)
         self.print_image.emit()
 
@@ -106,6 +122,8 @@ class als_main_window(QtWidgets.QMainWindow):
         self.dark = False
         self.pause = False
 
+        self.color_param = ColorParam()
+
     def connect_actions(self):
 
         self.ui.pbPlay.clicked.connect(self.cb_play)
@@ -121,15 +139,15 @@ class als_main_window(QtWidgets.QMainWindow):
     # Callbacks
     def cb_save(self):
         timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now())))
-        self.ui.log.append("Saving : stack-"+timestamp+".fit")
+        self.ui.log.append("Saving : stack-" + timestamp + ".fit")
         shutil.copy(os.path.expanduser(self.ui.tWork.text()) + "/" + name_of_fit_image,
                     os.path.expanduser(self.ui.tWork.text()) + "/stack-" + timestamp + ".fit")
 
     def apply_value(self, counter, work_folder):
-        param[0] = self.ui.contrast_silder.value()
-        param[1] = self.ui.luminosity_slider.value()
-        param[2] = self.ui.black_slider.value()
-        param[3] = self.ui.white_slider.value()
+        self.color_param.contrast = self.ui.contrast_silder.value()
+        self.color_param.brightness = self.ui.luminosity_slider.value()
+        self.color_param.black = self.ui.black_slider.value()
+        self.color_param.white = self.ui.white_slider.value()
         if counter > 0:
             new_tiff_image = self.ajuste_value(work_folder)
             self.update_image(work_folder, new_tiff_image, add=False)
@@ -137,7 +155,7 @@ class als_main_window(QtWidgets.QMainWindow):
 
     def ajuste_value(self, work_folder):
         # open ref image
-        image_fit = fits.open(os.path.expanduser(work_folder+"/"+name_of_fit_image))
+        image_fit = fits.open(os.path.expanduser(work_folder + "/" + name_of_fit_image))
         image = image_fit[0].data
         image_fit.close()
 
@@ -158,7 +176,7 @@ class als_main_window(QtWidgets.QMainWindow):
         limit, im_type = stk.test_utype(image)
 
         # apply value transformation
-        image = np.float32(image)*param[0]+param[1]
+        image = np.float32(image) * self.color_param.contrast + self.color_param.brightness
         image = np.where(image < limit, image, limit)
         if im_type == "uint16":
             image = np.uint16(image)
@@ -167,16 +185,16 @@ class als_main_window(QtWidgets.QMainWindow):
 
         # write tiff file
         # cv2.imshow("image", image/65525.)
-        cv2.imwrite(os.path.expanduser(work_folder+"/" + name_of_tiff_image), image)
+        cv2.imwrite(os.path.expanduser(work_folder + "/" + name_of_tiff_image), image)
         print("Adjusted GUI image")
         return name_of_tiff_image
 
     def update_image(self, work_folder, tiff_image, add=True):
         if add:
-            self.counter = self.counter+1
+            self.counter = self.counter + 1
             self.ui.cnt.setText(str(self.counter))
 
-        pixmap_tiff = QtGui.QPixmap(os.path.expanduser(work_folder+"/"+tiff_image))
+        pixmap_tiff = QtGui.QPixmap(os.path.expanduser(work_folder + "/" + tiff_image))
 
         if pixmap_tiff.isNull():
             print("Image non valide !")
@@ -203,7 +221,6 @@ class als_main_window(QtWidgets.QMainWindow):
         DirName = QtWidgets.QFileDialog.getExistingDirectory(self, "Répertoire de travail", self.ui.tWork.text())
         if DirName:
             self.ui.tWork.setText(DirName)
-
 
     def cb_play(self):
 
@@ -243,10 +260,11 @@ class als_main_window(QtWidgets.QMainWindow):
                                                             os.path.expanduser(self.ui.tWork.text()),
                                                             self.align,
                                                             self.ui.cbKeep.isChecked(),
-                                                            self.ui.cmMode.currentText())
+                                                            self.ui.cmMode.currentText(),
+                                                            self.color_param)
 
                 if os.path.exists(os.path.expanduser(self.ui.tWork.text())):
-                    shutil.rmtree(os.path.expanduser(self.ui.tWork.text())+"/")
+                    shutil.rmtree(os.path.expanduser(self.ui.tWork.text()) + "/")
                 os.mkdir(os.path.expanduser(self.ui.tWork.text()))
 
                 self.fileWatcher.start()
@@ -258,7 +276,8 @@ class als_main_window(QtWidgets.QMainWindow):
                 self.ui.pbStop.setEnabled(True)
                 self.counter = 0
                 self.ui.cnt.setText(str(self.counter))
-                self.fileWatcher.print_image.connect(lambda: self.update_image(self.ui.tWork.text(), name_of_tiff_image))
+                self.fileWatcher.print_image.connect(
+                    lambda: self.update_image(self.ui.tWork.text(), name_of_tiff_image))
         else:
             self.ui.log.append("No have path")
 
@@ -281,10 +300,10 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.log.append("Reset")
         # reset slider, label, image, global value
 
-        param[0] = 1
-        param[1] = 0
-        param[2] = 0
-        param[3] = 65525
+        self.color_param.contrast = 1
+        self.color_param.brightness = 0
+        self.color_param.black = 0
+        self.color_param.white = 65535
         self.ui.contrast_silder.setValue(1)
         self.ui.luminosity_slider.setValue(0)
         self.ui.black_slider.setValue(0)
