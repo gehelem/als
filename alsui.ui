@@ -340,7 +340,7 @@
           <item>
            <widget class="QSlider" name="black_slider">
             <property name="maximum">
-             <number>65525</number>
+             <number>65535</number>
             </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -368,10 +368,10 @@
           <item>
            <widget class="QSlider" name="white_slider">
             <property name="maximum">
-             <number>65525</number>
+             <number>65535</number>
             </property>
             <property name="sliderPosition">
-             <number>65525</number>
+             <number>65535</number>
             </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -381,7 +381,7 @@
           <item>
            <widget class="QLabel" name="white">
             <property name="text">
-             <string>65525</string>
+             <string>65535</string>
             </property>
            </widget>
           </item>
