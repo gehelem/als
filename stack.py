@@ -110,6 +110,7 @@ def save_tiff(work_path, stack_image, mode="rgb", param=[]):
             new_stack_image = new_stack_image * param[0] + param[1]
 
         new_stack_image = np.where(new_stack_image < limit, new_stack_image, limit)
+        new_stack_image = np.where(new_stack_image > 0, new_stack_image, 0)
         if im_type == "uint16":
             new_stack_image = np.uint16(new_stack_image)
         elif im_type == "uint8":

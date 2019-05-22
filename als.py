@@ -108,8 +108,11 @@ class WatchOutForFileCreations(QtCore.QThread):
             self.first = 1
             self.white_slider.setMaximum(np.int(limit))
             self.brightness_slider.setMaximum(np.int(limit) / 2.)
+            self.brightness_slider.setMinimum(np.int(-1*limit) / 2.)
             if self.white_slider.value() > limit:
                 self.white_slider.setSliderPosition(limit)
+            elif self.white_slider.value() < -1*limit:
+                self.white_slider.setSliderPosition(-1*limit)
             self.black_slider.setMaximum(np.int(limit))
             if self.black_slider.value() > limit:
                 self.black_slider.setSliderPosition(limit)
@@ -253,6 +256,7 @@ class als_main_window(QtWidgets.QMainWindow):
 
         image = image * (self.ui.contrast_slider.value() / 10.) + self.ui.brightness_slider.value()
         image = np.where(image < limit, image, limit)
+        image = np.where(image > 0, image, 0)
         if im_type == "uint16":
             image = np.uint16(image)
         elif im_type == "uint8":
