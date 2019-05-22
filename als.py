@@ -134,6 +134,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.bBrowseDark.clicked.connect(self.cb_browse_dark)
         self.ui.bBrowseWork.clicked.connect(self.cb_browse_work)
         self.ui.pb_apply_value.clicked.connect(lambda: self.apply_value(self.counter, self.ui.tWork.text()))
+        # need add event for pause button and add pause button
 
     # ------------------------------------------------------------------------------
     # Callbacks
