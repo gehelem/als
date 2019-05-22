@@ -328,9 +328,9 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
             raise ValueError("Stack method is not support")
 
         if im_type == 'uint8':
-            stack_image = np.uint8(stack)
+            stack_image = np.uint8(np.where(stack < 2 ** 8 - 1, stack, 2 ** 8 - 1))
         elif im_type == 'uint16':
-            stack_image = np.uint16(stack)
+            stack_image = np.uint16(np.where(stack < 2 ** 16 - 1, stack, 2 ** 16 - 1))
 
     else:
         raise ValueError("Mode not support")
