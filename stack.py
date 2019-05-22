@@ -90,7 +90,7 @@ def save_tiff(work_path, stack_image, mode="rgb", param=[]):
         print("correct display image")
         print("contrast value : %f" % param[0])
         print("brightness value : %f" % param[1])
-        print("pente : %f" % (1./((param[3]-param[2])/limit)))
+        print("pente : %f" % (1. / ((param[3] - param[2]) / limit)))
         new_stack_image = np.float32(new_stack_image)
         if param[4] != 1 or param[5] != 1 or param[6] != 1:
             if mode == "rgb":
@@ -164,7 +164,7 @@ def test_utype(image):
     return limit, im_type
 
 
-def create_first_ref_im(work_path, im_path, ref_name, save_im=False, param=[]):
+def create_first_ref_im(work_path, im_path, save_im=False, param=[]):
     # cleaning work folder
     import os
     if os.path.exists(os.path.expanduser(work_path + "/" + name_of_fit_image)):
@@ -206,89 +206,73 @@ def create_first_ref_im(work_path, im_path, ref_name, save_im=False, param=[]):
         limit = 2. ** 16 - 1
         ref = np.rollaxis(ref, 2, 0)
 
-    red = fits.PrimaryHDU(data=ref)
-    red.writeto(work_path + "/" + ref_name)
-    red.writeto(work_path + "/" + "first_" + ref_name)
+    # red = fits.PrimaryHDU(data=ref)
+    # red.writeto(work_path + "/" + ref_name)
+    # red.writeto(work_path + "/" + "first_" + ref_name)
 
     save_tiff(work_path, ref, mode=mode, param=param)
 
     if save_im:
         # save stack image in fit
+        red = fits.PrimaryHDU(data=ref)
         red.writeto(work_path + "/" + "stack_image_" + name + extension)
 
-    return limit, mode
+    return ref, limit, mode
 
 
-def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=True, stack_methode="Sum", param=[]):
+def stack_live(ref, first_ref, work_path, new_image_path, counter, save_im=False, align=True,
+               stack_methode="Sum", param=[]):
     # test image format ".fit" or ".fits" or other
-    if new_image.rfind(".fit") != -1:
-        if new_image[new_image.rfind(".fit"):] == ".fit":
+    if new_image_path.rfind(".fit") != -1:
+        if new_image_path[new_image_path.rfind(".fit"):] == ".fit":
             extension = ".fit"
-        elif new_image[new_image.rfind(".fit"):] == ".fits":
+        elif new_image_path[new_image_path.rfind(".fit"):] == ".fits":
             extension = ".fits"
         raw_im = False
     else:
-        extension = new_image[new_image.rfind("."):]
+        extension = new_image_path[new_image_path.rfind("."):]
         raw_im = True
     # remove extension
-    name = new_image.replace(extension, '')
+    name = new_image_path.replace(extension, '')
     # remove path
     name = name[name.rfind("/") + 1:]
 
     if not raw_im:
         # open new image
-        new_fit = fits.open(new_image)
+        new_fit = fits.open(new_image_path)
         new = new_fit[0].data
         # save header
         new_header = new_fit[0].header
         new_fit.close()
         # test data type
-        new_limit, new_type = test_utype(new)
+        im_limit, im_type = test_utype(new)
         # test rgb or gray
-        new, new_mode = test_and_debayer_to_rgb(new_header, new)
+        new, im_mode = test_and_debayer_to_rgb(new_header, new)
     else:
         print("convert DSLR image ...")
-        new = rawpy.imread(new_image).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16)
-        new_mode = "rgb"
+        new = rawpy.imread(new_image_path).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16)
+        im_mode = "rgb"
         extension = ".fits"
-        new_limit = 2. ** 16 - 1
-        new_type = "uint16"
+        im_limit = 2. ** 16 - 1
+        im_type = "uint16"
         new = np.rollaxis(new, 2, 0)
 
     # open ref image
-    ref_fit = fits.open(work_path + "/" + ref_name)
-    ref = ref_fit[0].data
-    ref_fit.close()
+    # ref_fit = fits.open(work_path + "/" + ref_name)
+    # ref = ref_fit[0].data
+    # ref_fit.close()
     # test data type
-    ref_limit, ref_type = test_utype(ref)
+    # ref_limit, ref_type = test_utype(ref)
 
-    if align:
-        # open first ref image (for align)
-        first_ref_fit = fits.open(work_path + "/" + "first_" + ref_name)
-        first_ref = first_ref_fit[0].data
-        first_ref_fit.close()
-
-    # test rgb or gray
-    if len(ref.shape) == 2:
-        ref_mode = "gray"
-    elif len(ref.shape) == 3:
-        ref_mode = "rgb"
-    else:
-        raise ValueError("fit format not support")
-
-    # format verification
-    if ref_limit != new_limit:
-        raise ValueError("ref image and new image is not same format")
-    else:
-        im_type = ref_type
-    if ref_mode == new_mode:
-        mode = ref_mode
-    else:
-        raise ValueError("ref image and new image is not same format")
+    # if align:
+    #    # open first ref image (for align)
+    #    first_ref_fit = fits.open(work_path + "/" + "first_" + ref_name)
+    #    first_ref = first_ref_fit[0].data
+    #    first_ref_fit.close()
 
     # choix rgb ou gray scale
     print("alignement and stacking...")
-    if mode == "rgb":
+    if im_mode == "rgb":
         if align:
             # alignement
             p, __ = al.find_transform(new[1], first_ref[1])
@@ -312,7 +296,7 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
             else:
                 raise ValueError("Stack method is not support")
 
-    elif mode == "gray":
+    elif im_mode == "gray":
         if align:
             # alignement
             p, __ = al.find_transform(new, first_ref)
@@ -337,9 +321,9 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
         raise ValueError("Mode not support")
 
     # save new stack ref image in fit
-    os.remove(work_path + "/" + ref_name)
-    red = fits.PrimaryHDU(data=stack_image)
-    red.writeto(work_path + "/" + ref_name)
+    # os.remove(work_path + "/" + ref_name)
+    # red = fits.PrimaryHDU(data=stack_image)
+    # red.writeto(work_path + "/" + ref_name)
     if save_im:
         # save stack image in fit
         red = fits.PrimaryHDU(data=stack_image)
@@ -347,4 +331,6 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
 
     # save stack image in tiff (print image)
     os.remove(work_path + "/" + name_of_tiff_image)
-    tiff_name_path = save_tiff(work_path, np.array(stack_image), mode=mode, param=param)
+    tiff_name_path = save_tiff(work_path, np.array(stack_image), mode=im_mode, param=param)
+
+    return stack_image
