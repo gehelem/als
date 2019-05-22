@@ -83,8 +83,32 @@ def save_tiff(work_path, stack_image, mode="rgb", param=[]):
         new_stack_image = stack_image
 
     limit, im_type = test_utype(new_stack_image)
-    if param[0] != 1 or param[1] != 0 or param[2] != 0 or param[0] != limit:
-        new_stack_image = np.float32(new_stack_image) * param[0] + param[1]
+
+    if param[0] != 1 or param[1] != 0 or param[2] != 0 or param[3] != limit \
+            or param[4] != 1 or param[5] != 1 or param[6] != 1:
+
+        print("correct display image")
+        print("contrast value : %f" % param[0])
+        print("brightness value : %f" % param[1])
+        print("pente : %f" % (1./((param[3]-param[2])/limit)))
+        new_stack_image = np.float32(new_stack_image)
+        if param[4] != 1 or param[5] != 1 or param[6] != 1:
+            if mode == "rgb":
+                print("R contrast value : %f" % param[4])
+                print("G contrast value : %f" % param[5])
+                print("B contrast value : %f" % param[6])
+                new_stack_image[:, :, 0] = new_stack_image[:, :, 0] * param[6]
+                new_stack_image[:, :, 1] = new_stack_image[:, :, 1] * param[5]
+                new_stack_image[:, :, 2] = new_stack_image[:, :, 2] * param[4]
+
+        if param[2] != 0 or param[3] != limit:
+            new_stack_image = np.where(new_stack_image < param[3], new_stack_image, param[3])
+            new_stack_image = np.where(new_stack_image > param[2], new_stack_image, param[2])
+            new_stack_image = new_stack_image * (1. / ((param[3] - param[2]) / limit))
+
+        if param[0] != 1 or param[1] != 0:
+            new_stack_image = new_stack_image * param[0] + param[1]
+
         new_stack_image = np.where(new_stack_image < limit, new_stack_image, limit)
         if im_type == "uint16":
             new_stack_image = np.uint16(new_stack_image)
@@ -170,12 +194,16 @@ def create_first_ref_im(work_path, im_path, ref_name, save_im=False, param=[]):
         # save header
         ref_header = ref_fit[0].header
         ref_fit.close()
+        limit, im_type = test_utype(ref)
         # test rgb or gray
         ref, mode = test_and_debayer_to_rgb(ref_header, ref)
     else:
+        print("convert DSLR image ...")
         ref = rawpy.imread(im_path).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16)
         mode = "rgb"
         extension = ".fits"
+        limit = 2. ** 16 - 1
+        ref = np.rollaxis(ref, 2, 0)
 
     red = fits.PrimaryHDU(data=ref)
     red.writeto(work_path + "/" + ref_name)
@@ -186,6 +214,8 @@ def create_first_ref_im(work_path, im_path, ref_name, save_im=False, param=[]):
     if save_im:
         # save stack image in fit
         red.writeto(work_path + "/" + "stack_image_" + name + extension)
+
+    return limit, mode
 
 
 def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=True, stack_methode="Sum", param=[]):
@@ -216,11 +246,13 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
         # test rgb or gray
         new, new_mode = test_and_debayer_to_rgb(new_header, new)
     else:
+        print("convert DSLR image ...")
         new = rawpy.imread(new_image).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16)
         new_mode = "rgb"
         extension = ".fits"
-        new_limit = 2.**16-1
+        new_limit = 2. ** 16 - 1
         new_type = "uint16"
+        new = np.rollaxis(new, 2, 0)
 
     # open ref image
     ref_fit = fits.open(work_path + "/" + ref_name)
@@ -315,5 +347,3 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
     # save stack image in tiff (print image)
     os.remove(work_path + "/" + name_of_tiff_image)
     tiff_name_path = save_tiff(work_path, np.array(stack_image), mode=mode, param=param)
-
-    return tiff_name_path

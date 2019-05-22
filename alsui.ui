@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>818</width>
-    <height>886</height>
+    <width>732</width>
+    <height>723</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,17 +18,79 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <layout class="QGridLayout" name="gridLayout" columnminimumwidth="0,50,0,0">
+       <layout class="QGridLayout" name="gridLayout">
         <property name="sizeConstraint">
          <enum>QLayout::SetMinimumSize</enum>
         </property>
-        <item row="3" column="1">
-         <widget class="QLineEdit" name="tWork">
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="tDark">
           <property name="enabled">
            <bool>false</bool>
           </property>
           <property name="text">
-           <string>~/als/wrk</string>
+           <string>~/als/dark.fits</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="2">
+         <widget class="QComboBox" name="cmMode">
+          <item>
+           <property name="text">
+            <string>Sum</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Mean</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="tFolder">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>~/als/scan</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QPushButton" name="bBrowseWork">
+          <property name="maximumSize">
+           <size>
+            <width>80</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Rep. wrk</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QLabel" name="cnt">
+          <property name="font">
+           <font>
+            <pointsize>16</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>0</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QPushButton" name="pbStop">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Stop</string>
           </property>
          </widget>
         </item>
@@ -54,6 +116,69 @@
           </property>
           <property name="text">
            <string>Rep. scan</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QCheckBox" name="cbWww">
+          <property name="text">
+           <string>www</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QPushButton" name="bBrowseDark">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>80</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Fic. dark</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="2">
+         <widget class="QCheckBox" name="cbKeep">
+          <property name="text">
+           <string>Conserver les images</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLineEdit" name="tWork">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>~/als/wrk</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QCheckBox" name="cbAlign">
+          <property name="maximumSize">
+           <size>
+            <width>150</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Aligner</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="3">
+         <widget class="QPushButton" name="pbSave">
+          <property name="text">
+           <string>Save</string>
           </property>
          </widget>
         </item>
@@ -84,131 +209,6 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
-         <widget class="QLineEdit" name="tDark">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>~/als/dark.fits</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="tFolder">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>~/als/scan</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QPushButton" name="bBrowseDark">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>80</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Fic. dark</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QPushButton" name="bBrowseWork">
-          <property name="maximumSize">
-           <size>
-            <width>80</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Rep. wrk</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="3">
-         <widget class="QPushButton" name="pbStop">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Stop</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <widget class="QCheckBox" name="cbAlign">
-          <property name="maximumSize">
-           <size>
-            <width>150</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Aligner</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="2">
-         <widget class="QComboBox" name="cmMode">
-          <item>
-           <property name="text">
-            <string>Sum</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Mean</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-        <item row="4" column="3">
-         <widget class="QPushButton" name="pbSave">
-          <property name="text">
-           <string>Save</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="1">
-         <widget class="QLabel" name="cnt">
-          <property name="font">
-           <font>
-            <pointsize>16</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>0</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="2">
-         <widget class="QCheckBox" name="cbKeep">
-          <property name="text">
-           <string>Conserver les images</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QCheckBox" name="cbWww">
-          <property name="text">
-           <string>www</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </item>
       <item>
@@ -222,7 +222,7 @@
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>500</height>
+          <height>120</height>
          </size>
         </property>
        </widget>
@@ -233,8 +233,8 @@
      <widget class="QLabel" name="image_stack">
       <property name="minimumSize">
        <size>
-        <width>800</width>
-        <height>600</height>
+        <width>200</width>
+        <height>200</height>
        </size>
       </property>
       <property name="text">
@@ -242,6 +242,9 @@
       </property>
       <property name="pixmap">
        <pixmap>dslr-camera.svg</pixmap>
+      </property>
+      <property name="scaledContents">
+       <bool>false</bool>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -275,12 +278,18 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
-           <widget class="QSlider" name="contrast_silder">
+           <widget class="QSlider" name="contrast_slider">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="minimum">
              <number>1</number>
             </property>
             <property name="maximum">
-             <number>100</number>
+             <number>1000</number>
+            </property>
+            <property name="value">
+             <number>10</number>
             </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -299,14 +308,17 @@
         <item>
          <widget class="QLabel" name="label_3">
           <property name="text">
-           <string>Luminosity :</string>
+           <string>Brightness :</string>
           </property>
          </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
-           <widget class="QSlider" name="luminosity_slider">
+           <widget class="QSlider" name="brightness_slider">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="maximum">
              <number>32000</number>
             </property>
@@ -316,9 +328,130 @@
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="luminosity">
+           <widget class="QLabel" name="brightness">
             <property name="text">
              <string>0</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>RGB :</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>R :</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="R_slider">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>200</number>
+            </property>
+            <property name="value">
+             <number>100</number>
+            </property>
+            <property name="sliderPosition">
+             <number>100</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="R_value">
+            <property name="text">
+             <string>1</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_8">
+          <item>
+           <widget class="QLabel" name="label_8">
+            <property name="text">
+             <string>G :</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="G_slider">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>200</number>
+            </property>
+            <property name="value">
+             <number>100</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="G_value">
+            <property name="text">
+             <string>1</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_9">
+          <item>
+           <widget class="QLabel" name="label_11">
+            <property name="text">
+             <string>B :</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="B_slider">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>200</number>
+            </property>
+            <property name="value">
+             <number>100</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="B_value">
+            <property name="text">
+             <string>1</string>
             </property>
            </widget>
           </item>
@@ -339,6 +472,9 @@
          <layout class="QHBoxLayout" name="horizontalLayout_5">
           <item>
            <widget class="QSlider" name="black_slider">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="maximum">
              <number>65535</number>
             </property>
@@ -367,6 +503,9 @@
          <layout class="QHBoxLayout" name="horizontalLayout_6">
           <item>
            <widget class="QSlider" name="white_slider">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="maximum">
              <number>65535</number>
             </property>
@@ -393,6 +532,9 @@
     </item>
     <item>
      <widget class="QPushButton" name="pb_apply_value">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="text">
        <string>Apply</string>
       </property>
@@ -431,11 +573,11 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>328</x>
+     <x>243</x>
      <y>60</y>
     </hint>
     <hint type="destinationlabel">
-     <x>172</x>
+     <x>153</x>
      <y>61</y>
     </hint>
    </hints>
@@ -447,7 +589,7 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>328</x>
+     <x>243</x>
      <y>60</y>
     </hint>
     <hint type="destinationlabel">
@@ -463,76 +605,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>328</x>
+     <x>243</x>
      <y>29</y>
     </hint>
     <hint type="destinationlabel">
-     <x>347</x>
+     <x>262</x>
      <y>92</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>contrast_silder</sender>
-   <signal>sliderMoved(int)</signal>
-   <receiver>contrast</receiver>
-   <slot>setNum(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>350</x>
-     <y>784</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>398</x>
-     <y>780</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>luminosity_slider</sender>
-   <signal>sliderMoved(int)</signal>
-   <receiver>luminosity</receiver>
-   <slot>setNum(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>333</x>
-     <y>824</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>396</x>
-     <y>826</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>black_slider</sender>
-   <signal>sliderMoved(int)</signal>
-   <receiver>black</receiver>
-   <slot>setNum(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>585</x>
-     <y>782</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>798</x>
-     <y>784</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>white_slider</sender>
-   <signal>sliderMoved(int)</signal>
-   <receiver>white</receiver>
-   <slot>setNum(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>689</x>
-     <y>831</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>775</x>
-     <y>831</y>
     </hint>
    </hints>
   </connection>
