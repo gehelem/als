@@ -20,6 +20,7 @@ import astroalign as al
 import numpy as np
 from astropy.io import fits
 from tqdm import tqdm
+import rawpy
 
 name_of_tiff_image = "stack_image.tiff"
 name_of_fit_image = "stack_ref_image.fit"
@@ -48,19 +49,19 @@ def SCNR(rgb_image, im_type, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=
         rgb_image[1] = compare * rgb_image[1] + np.invert(compare) * m
 
     elif scnr_type == "ma_ad":
-        rgb_image = rgb_image/im_limit
+        rgb_image = rgb_image / im_limit
         unity_m = np.ones((rgb_image[1].shape[0], rgb_image[1].shape[1]))
         compare = unity_m < (rgb_image[blue] + rgb_image[red])
         m = compare * unity_m + np.invert(compare) * (rgb_image[blue] + rgb_image[red])
         rgb_image[1] = rgb_image[1] * (1 - amount) * (1 - m) + m * rgb_image[1]
-        rgb_image = rgb_image*im_limit
+        rgb_image = rgb_image * im_limit
 
     elif scnr_type == "ma_max":
-        rgb_image = rgb_image/im_limit
+        rgb_image = rgb_image / im_limit
         compare = rgb_image[red] > rgb_image[blue]
         m = compare * rgb_image[red] + np.invert(compare) * rgb_image[blue]
         rgb_image[1] = rgb_image[1] * (1 - amount) * (1 - m) + m * rgb_image[1]
-        rgb_image = rgb_image*im_limit
+        rgb_image = rgb_image * im_limit
 
     if im_type == "uint16":
         rgb_image = np.where(rgb_image < im_limit, rgb_image, im_limit)
@@ -146,24 +147,36 @@ def create_first_ref_im(work_path, im_path, ref_name, save_im=False, param=[]):
     else:
         print("The file does not exist")
 
-    # test image format ".fit" or ".fits"
-    if im_path.find(".fits") == -1:
-        extension = ".fit"
+    # test image format ".fit" or ".fits" or other
+    if im_path.rfind(".fit") != -1:
+        if im_path[im_path.rfind(".fit"):] == ".fit":
+            extension = ".fit"
+        elif im_path[im_path.rfind(".fit"):] == ".fits":
+            extension = ".fits"
+        raw_im = False
     else:
-        extension = ".fits"
+        extension = im_path[im_path.rfind("."):]
+        raw_im = True
+
     # remove extension
     name = im_path.replace(extension, '')
     # remove path
     name = name[name.rfind("/") + 1:]
 
-    # open ref image
-    ref_fit = fits.open(im_path)
-    ref = ref_fit[0].data
-    # save header
-    ref_header = ref_fit[0].header
-    ref_fit.close()
-    # test rgb or gray
-    ref, mode = test_and_debayer_to_rgb(ref_header, ref)
+    if not raw_im:
+        # open ref image
+        ref_fit = fits.open(im_path)
+        ref = ref_fit[0].data
+        # save header
+        ref_header = ref_fit[0].header
+        ref_fit.close()
+        # test rgb or gray
+        ref, mode = test_and_debayer_to_rgb(ref_header, ref)
+    else:
+        ref = rawpy.imread(im_path).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16)
+        mode = "rgb"
+        extension = ".fits"
+
     red = fits.PrimaryHDU(data=ref)
     red.writeto(work_path + "/" + ref_name)
     red.writeto(work_path + "/" + "first_" + ref_name)
@@ -176,26 +189,38 @@ def create_first_ref_im(work_path, im_path, ref_name, save_im=False, param=[]):
 
 
 def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=True, stack_methode="Sum", param=[]):
-    # test image format ".fit" or ".fits"
-    if new_image.find(".fits") == -1:
-        extension = ".fit"
+    # test image format ".fit" or ".fits" or other
+    if new_image.rfind(".fit") != -1:
+        if new_image[new_image.rfind(".fit"):] == ".fit":
+            extension = ".fit"
+        elif new_image[new_image.rfind(".fit"):] == ".fits":
+            extension = ".fits"
+        raw_im = False
     else:
-        extension = ".fits"
+        extension = new_image[new_image.rfind("."):]
+        raw_im = True
     # remove extension
     name = new_image.replace(extension, '')
     # remove path
     name = name[name.rfind("/") + 1:]
 
-    # open new image
-    new_fit = fits.open(new_image)
-    new = new_fit[0].data
-    # save header
-    new_header = new_fit[0].header
-    new_fit.close()
-    # test data type
-    new_limit, new_type = test_utype(new)
-    # test rgb or gray
-    new, new_mode = test_and_debayer_to_rgb(new_header, new)
+    if not raw_im:
+        # open new image
+        new_fit = fits.open(new_image)
+        new = new_fit[0].data
+        # save header
+        new_header = new_fit[0].header
+        new_fit.close()
+        # test data type
+        new_limit, new_type = test_utype(new)
+        # test rgb or gray
+        new, new_mode = test_and_debayer_to_rgb(new_header, new)
+    else:
+        new = rawpy.imread(new_image).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16)
+        new_mode = "rgb"
+        extension = ".fits"
+        new_limit = 2.**16-1
+        new_type = "uint16"
 
     # open ref image
     ref_fit = fits.open(work_path + "/" + ref_name)
