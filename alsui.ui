@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>732</width>
-    <height>723</height>
+    <width>806</width>
+    <height>684</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -269,18 +269,24 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Contrast :</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Contrast :</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QSlider" name="contrast_slider">
             <property name="enabled">
              <bool>false</bool>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>250</width>
+              <height>0</height>
+             </size>
             </property>
             <property name="minimum">
              <number>1</number>
@@ -298,6 +304,12 @@
           </item>
           <item>
            <widget class="QLabel" name="contrast">
+            <property name="minimumSize">
+             <size>
+              <width>21</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="text">
              <string>1</string>
             </property>
@@ -306,18 +318,24 @@
          </layout>
         </item>
         <item>
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Brightness :</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Brightness :</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QSlider" name="brightness_slider">
             <property name="enabled">
              <bool>false</bool>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>250</width>
+              <height>0</height>
+             </size>
             </property>
             <property name="maximum">
              <number>32000</number>
@@ -329,6 +347,12 @@
           </item>
           <item>
            <widget class="QLabel" name="brightness">
+            <property name="minimumSize">
+             <size>
+              <width>43</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="text">
              <string>0</string>
             </property>
@@ -357,6 +381,12 @@
             <property name="enabled">
              <bool>false</bool>
             </property>
+            <property name="minimumSize">
+             <size>
+              <width>250</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="minimum">
              <number>1</number>
             </property>
@@ -376,8 +406,14 @@
           </item>
           <item>
            <widget class="QLabel" name="R_value">
+            <property name="minimumSize">
+             <size>
+              <width>21</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="text">
-             <string>1</string>
+             <string>1.25</string>
             </property>
            </widget>
           </item>
@@ -397,6 +433,12 @@
             <property name="enabled">
              <bool>false</bool>
             </property>
+            <property name="minimumSize">
+             <size>
+              <width>250</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="minimum">
              <number>1</number>
             </property>
@@ -413,6 +455,12 @@
           </item>
           <item>
            <widget class="QLabel" name="G_value">
+            <property name="minimumSize">
+             <size>
+              <width>30</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="text">
              <string>1</string>
             </property>
@@ -434,6 +482,12 @@
             <property name="enabled">
              <bool>false</bool>
             </property>
+            <property name="minimumSize">
+             <size>
+              <width>250</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="minimum">
              <number>1</number>
             </property>
@@ -450,6 +504,12 @@
           </item>
           <item>
            <widget class="QLabel" name="B_value">
+            <property name="minimumSize">
+             <size>
+              <width>30</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="text">
              <string>1</string>
             </property>
@@ -462,18 +522,24 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QLabel" name="label_5">
-          <property name="text">
-           <string>Black min value :</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Black/Min :</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QSlider" name="black_slider">
             <property name="enabled">
              <bool>false</bool>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>250</width>
+              <height>0</height>
+             </size>
             </property>
             <property name="maximum">
              <number>65535</number>
@@ -485,6 +551,12 @@
           </item>
           <item>
            <widget class="QLabel" name="black">
+            <property name="minimumSize">
+             <size>
+              <width>43</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="text">
              <string>0</string>
             </property>
@@ -493,18 +565,24 @@
          </layout>
         </item>
         <item>
-         <widget class="QLabel" name="label_6">
-          <property name="text">
-           <string>White max value :</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <item>
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>White/Max :</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QSlider" name="white_slider">
             <property name="enabled">
              <bool>false</bool>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>250</width>
+              <height>0</height>
+             </size>
             </property>
             <property name="maximum">
              <number>65535</number>
@@ -519,6 +597,12 @@
           </item>
           <item>
            <widget class="QLabel" name="white">
+            <property name="minimumSize">
+             <size>
+              <width>43</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="text">
              <string>65535</string>
             </property>
