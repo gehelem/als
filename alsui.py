@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/home/sdurand/git/perso/als/alsui.ui'
+# Form implementation generated from reading ui file 'alsui.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_stack_window(object):
     def setupUi(self, stack_window):
@@ -104,6 +105,40 @@ class Ui_stack_window(object):
         self.pbReset.setMaximumSize(QtCore.QSize(16777215, 30))
         self.pbReset.setObjectName("pbReset")
         self.gridLayout.addWidget(self.pbReset, 3, 3, 1, 1)
+        self.cbSCNR = QtWidgets.QCheckBox(self.centralwidget)
+        self.cbSCNR.setObjectName("cbSCNR")
+        self.gridLayout.addWidget(self.cbSCNR, 5, 0, 1, 1)
+        self.cmSCNR = QtWidgets.QComboBox(self.centralwidget)
+        self.cmSCNR.setEnabled(False)
+        self.cmSCNR.setObjectName("cmSCNR")
+        self.cmSCNR.addItem("")
+        self.cmSCNR.addItem("")
+        self.cmSCNR.addItem("")
+        self.cmSCNR.addItem("")
+        self.gridLayout.addWidget(self.cmSCNR, 5, 1, 1, 1)
+        self.horizontalLayout_10 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_10.setObjectName("horizontalLayout_10")
+        self.SCNR_Slider = QtWidgets.QSlider(self.centralwidget)
+        self.SCNR_Slider.setEnabled(False)
+        self.SCNR_Slider.setMaximum(100)
+        self.SCNR_Slider.setProperty("value", 50)
+        self.SCNR_Slider.setOrientation(QtCore.Qt.Horizontal)
+        self.SCNR_Slider.setObjectName("SCNR_Slider")
+        self.horizontalLayout_10.addWidget(self.SCNR_Slider)
+        self.vSCNR = QtWidgets.QLabel(self.centralwidget)
+        self.vSCNR.setObjectName("vSCNR")
+        self.horizontalLayout_10.addWidget(self.vSCNR)
+        self.gridLayout.addLayout(self.horizontalLayout_10, 5, 2, 1, 1)
+        self.horizontalLayout_11 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_11.setObjectName("horizontalLayout_11")
+        self.label_10 = QtWidgets.QLabel(self.centralwidget)
+        self.label_10.setObjectName("label_10")
+        self.horizontalLayout_11.addWidget(self.label_10)
+        self.lTempo = QtWidgets.QLineEdit(self.centralwidget)
+        self.lTempo.setAlignment(QtCore.Qt.AlignCenter)
+        self.lTempo.setObjectName("lTempo")
+        self.horizontalLayout_11.addWidget(self.lTempo)
+        self.gridLayout.addLayout(self.horizontalLayout_11, 5, 3, 1, 1)
         self.horizontalLayout.addLayout(self.gridLayout)
         self.log = QtWidgets.QTextBrowser(self.centralwidget)
         self.log.setMinimumSize(QtCore.QSize(300, 120))
@@ -308,6 +343,9 @@ class Ui_stack_window(object):
         self.cbDark.clicked['bool'].connect(self.tDark.setEnabled)
         self.cbDark.clicked['bool'].connect(self.bBrowseDark.setEnabled)
         self.cbAlign.clicked['bool'].connect(self.cmMode.setEnabled)
+        self.cbSCNR.clicked['bool'].connect(self.cmSCNR.setEnabled)
+        self.cbSCNR.clicked['bool'].connect(self.SCNR_Slider.setEnabled)
+        self.SCNR_Slider.sliderMoved['int'].connect(self.vSCNR.setNum)
         QtCore.QMetaObject.connectSlotsByName(stack_window)
 
     def retranslateUi(self, stack_window):
@@ -330,6 +368,15 @@ class Ui_stack_window(object):
         self.cbDark.setText(_translate("stack_window", "Utiliser un dark"))
         self.pbPlay.setText(_translate("stack_window", "Play"))
         self.pbReset.setText(_translate("stack_window", "Reset"))
+        self.cbSCNR.setText(_translate("stack_window", "SCNR"))
+        self.cmSCNR.setItemText(0, _translate("stack_window", "Max Mask"))
+        self.cmSCNR.setItemText(1, _translate("stack_window", "Add Mask"))
+        self.cmSCNR.setItemText(2, _translate("stack_window", "Av Neutral"))
+        self.cmSCNR.setItemText(3, _translate("stack_window", "Max Neutral"))
+        self.vSCNR.setText(_translate("stack_window", "1"))
+        self.label_10.setText(_translate("stack_window", "Tempo"))
+        self.lTempo.setInputMask(_translate("stack_window", "000"))
+        self.lTempo.setText(_translate("stack_window", "000"))
         self.label_2.setText(_translate("stack_window", "Contrast :"))
         self.contrast.setText(_translate("stack_window", "1"))
         self.label_3.setText(_translate("stack_window", "Brightness :"))
@@ -349,6 +396,8 @@ class Ui_stack_window(object):
         self.actionQuit.setText(_translate("stack_window", "&Quit"))
 
 
+
+
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
@@ -357,4 +406,3 @@ if __name__ == "__main__":
     ui.setupUi(stack_window)
     stack_window.show()
     sys.exit(app.exec_())
-

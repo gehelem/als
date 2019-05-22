@@ -281,6 +281,91 @@
           </property>
          </widget>
         </item>
+        <item row="5" column="0">
+         <widget class="QCheckBox" name="cbSCNR">
+          <property name="text">
+           <string>SCNR</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
+         <widget class="QComboBox" name="cmSCNR">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <item>
+           <property name="text">
+            <string>Max Mask</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Add Mask</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Av Neutral</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Max Neutral</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="5" column="2">
+         <layout class="QHBoxLayout" name="horizontalLayout_10">
+          <item>
+           <widget class="QSlider" name="SCNR_Slider">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>50</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="vSCNR">
+            <property name="text">
+             <string>1</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="5" column="3">
+         <layout class="QHBoxLayout" name="horizontalLayout_11">
+          <item>
+           <widget class="QLabel" name="label_10">
+            <property name="text">
+             <string>Tempo</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lTempo">
+            <property name="inputMask">
+             <string>000</string>
+            </property>
+            <property name="text">
+             <string>000</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
        </layout>
       </item>
       <item>
@@ -915,6 +1000,54 @@
     <hint type="destinationlabel">
      <x>262</x>
      <y>92</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbSCNR</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>cmSCNR</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>50</x>
+     <y>157</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>139</x>
+     <y>158</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbSCNR</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>SCNR_Slider</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>50</x>
+     <y>157</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>274</x>
+     <y>158</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>SCNR_Slider</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>vSCNR</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>274</x>
+     <y>158</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>356</x>
+     <y>158</y>
     </hint>
    </hints>
   </connection>
