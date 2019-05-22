@@ -11,7 +11,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_stack_window(object):
     def setupUi(self, stack_window):
         stack_window.setObjectName("stack_window")
-        stack_window.resize(806, 684)
+        stack_window.resize(806, 720)
+        stack_window.setMinimumSize(QtCore.QSize(0, 700))
         self.centralwidget = QtWidgets.QWidget(stack_window)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
