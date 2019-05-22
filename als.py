@@ -82,16 +82,18 @@ class WatchOutForFileCreations(QtCore.QThread):
         self.ref_image = []
         print(self.work_folder)
         print(self.path)
-        self.observer.schedule(self.event_handler, self.path, recursive=False)
-        self.observer.start()
-        self.event_handler.created_signal.connect(lambda: self.created(self.event_handler.new_image_path,
-                                                                       align_on, save_on, stack_methode))
 
         # __ call watchdog __
         # call observer :
         self.observer = Observer()
         # call observer class :
         self.event_handler = MyEventHandler()
+        self.observer.schedule(self.event_handler, self.path, recursive=False)
+        self.observer.start()
+
+
+        self.event_handler.created_signal.connect(lambda: self.created(self.event_handler.new_image_path,
+                                                                       align_on, save_on, stack_methode))
 
     def created(self, new_image_path, align_on, save_on, stack_methode):
         self.counter = self.counter + 1
@@ -106,7 +108,7 @@ class WatchOutForFileCreations(QtCore.QThread):
                                                                            self.G_slider.value() / 100.,
                                                                            self.B_slider.value() / 100.
                                                                            ])
-            self.image_ref_save = self.first_image
+            self.image_ref_save.image = self.first_image
             self.first = 1
             self.white_slider.setMaximum(np.int(limit))
             self.brightness_slider.setMaximum(np.int(limit) / 2.)
@@ -145,7 +147,7 @@ class WatchOutForFileCreations(QtCore.QThread):
 
         else:
             # appelle de la fonction stack live
-            self.image_ref_save = stk.stack_live(self.image_ref_save, self.first_image, self.work_folder, new_image_path,
+            self.image_ref_save.image = stk.stack_live(self.image_ref_save.image, self.first_image, self.work_folder, new_image_path,
                                             self.counter,
                                             save_im=save_on, align=align_on, stack_methode=stack_methode,
                                             param=[self.contrast_slider.value() / 10.,
@@ -205,7 +207,7 @@ class als_main_window(QtWidgets.QMainWindow):
         timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now())))
         self.ui.log.append("Saving : stack_image_" + timestamp + ".fit")
         # save stack image in fit
-        red = fits.PrimaryHDU(data=self.image_ref_save)
+        red = fits.PrimaryHDU(data=self.image_ref_save.image)
         red.writeto(self.ui.tWork.text() + "/" + "stack_image_" + timestamp + ".fit")
         red.close()
 
@@ -224,18 +226,18 @@ class als_main_window(QtWidgets.QMainWindow):
         # need add image
 
         # test rgb or gray
-        if len(self.image_ref_save.shape) == 2:
+        if len(self.image_ref_save.image.shape) == 2:
             mode = "gray"
-        elif len(self.image_ref_save.shape) == 3:
+        elif len(self.image_ref_save.image.shape) == 3:
             mode = "rgb"
         else:
             raise ValueError("fit format not support")
         # apply cv2 transformation in rgb image
         if mode == "rgb":
-            image = np.rollaxis(self.image_ref_save, 0, 3)
+            image = np.rollaxis(self.image_ref_save.image, 0, 3)
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         else:
-            image = self.image_ref_save
+            image = self.image_ref_save.image
         # test type image
         limit, im_type = stk.test_utype(image)
 
