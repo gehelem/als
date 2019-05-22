@@ -33,15 +33,6 @@ import stack as stk
 name_of_tiff_image = "stack_image.tiff"
 name_of_fit_image = "stack_ref_image.fit"
 
-
-# class ColorParam:
-#    def __init__(self):
-#        self.contrast = 1
-#        self.brightness = 0
-#        self.black = 0
-#        self.white = 65535
-
-
 class MyEventHandler(FileSystemEventHandler, QtCore.QThread):
     created_signal = QtCore.pyqtSignal()
     new_image_path = ""
@@ -82,15 +73,16 @@ class WatchOutForFileCreations(QtCore.QThread):
         self.counter = 0
         print(self.work_folder)
         print(self.path)
-        self.observer = Observer()
-        self.event_handler = MyEventHandler()
         self.observer.schedule(self.event_handler, self.path, recursive=False)
         self.observer.start()
         self.event_handler.created_signal.connect(lambda: self.created(self.event_handler.new_image_path,
                                                                        align_on, save_on, stack_methode))
 
-    def run(self):
-        pass
+        # __ call watchdog __
+        # call observer :
+        self.observer = Observer()
+        # call observer class :
+        self.event_handler = MyEventHandler()
 
     def created(self, new_image_path, align_on, save_on, stack_methode):
         self.counter = self.counter + 1
@@ -283,6 +275,7 @@ class als_main_window(QtWidgets.QMainWindow):
                                                 QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         self.ui.image_stack.setPixmap(pixmap_tiff_resize)
         self.ui.log.append("Updated GUI image")
+        print("Updated GUI image")
 
     def cb_browse_folder(self):
         DirName = QtWidgets.QFileDialog.getExistingDirectory(self, "Répertoire à scanner", self.ui.tFolder.text())
