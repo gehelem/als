@@ -209,7 +209,8 @@ class als_main_window(QtWidgets.QMainWindow):
         # save stack image in fit
         red = fits.PrimaryHDU(data=self.image_ref_save.image)
         red.writeto(self.ui.tWork.text() + "/" + "stack_image_" + timestamp + ".fit")
-        red.close()
+        #red.close()
+        del red
 
     def apply_value(self, counter, work_folder):
         if counter > 0:

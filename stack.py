@@ -209,7 +209,8 @@ def create_first_ref_im(work_path, im_path, save_im=False, param=[]):
         # save stack image in fit
         red = fits.PrimaryHDU(data=ref)
         red.writeto(work_path + "/" + "stack_image_" + name + extension)
-        red.close()
+        # red.close()
+        del red
 
     return ref, limit, mode
 
@@ -275,6 +276,7 @@ def stack_live(ref, first_ref, work_path, new_image_path, counter, save_im=False
         for j in tqdm(range(3)):
             if align:
                 align_image = al.apply_transform(p, new[j], ref[j])
+
             else:
                 align_image = new[j]
 
@@ -289,14 +291,18 @@ def stack_live(ref, first_ref, work_path, new_image_path, counter, save_im=False
                 stack_image.append(np.uint16(np.where(stack < 2 ** 16 - 1, stack, 2 ** 16 - 1)))
             else:
                 raise ValueError("Stack method is not support")
+        del new
 
     elif im_mode == "gray":
         if align:
             # alignement
             p, __ = al.find_transform(new, first_ref)
             align_image = al.apply_transform(p, new, ref)
+            del p
+            del new
         else:
             align_image = new
+            del new
 
         # stacking
         if stack_methode == "Sum":
@@ -322,10 +328,11 @@ def stack_live(ref, first_ref, work_path, new_image_path, counter, save_im=False
         # save stack image in fit
         red = fits.PrimaryHDU(data=stack_image)
         red.writeto(work_path + "/" + "stack_image_" + name + extension)
-        red.close()
+        # red.close()
+        del red
 
     # save stack image in tiff (print image)
     os.remove(work_path + "/" + name_of_tiff_image)
     tiff_name_path = save_tiff(work_path, np.array(stack_image), mode=im_mode, param=param)
 
-    return stack_image
+    return np.array(stack_image)
