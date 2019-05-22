@@ -31,7 +31,11 @@ from astropy.io import fits
 import stack as stk
 
 name_of_tiff_image = "stack_image.tiff"
-name_of_fit_image = "stack_ref_image.fit"
+
+
+class image_ref_save:
+    def __init__(self):
+        self.image = []
 
 
 class MyEventHandler(FileSystemEventHandler, QtCore.QThread):
@@ -57,7 +61,8 @@ class WatchOutForFileCreations(QtCore.QThread):
 
     def __init__(self, path, work_folder, align_on, save_on, stack_methode,
                  log, white_slider, black_slider, contrast_slider, brightness_slider,
-                 R_slider, G_slider, B_slider, apply_button):
+                 R_slider, G_slider, B_slider, apply_button,
+                 image_ref_save):
         super(WatchOutForFileCreations, self).__init__()
         self.white_slider = white_slider
         self.black_slider = black_slider
@@ -73,6 +78,7 @@ class WatchOutForFileCreations(QtCore.QThread):
         self.first = 0
         self.counter = 0
         self.first_image = []
+        self.image_ref_save = image_ref_save
         self.ref_image = []
         print(self.work_folder)
         print(self.path)
@@ -100,8 +106,7 @@ class WatchOutForFileCreations(QtCore.QThread):
                                                                            self.G_slider.value() / 100.,
                                                                            self.B_slider.value() / 100.
                                                                            ])
-            self.ref_image = self.first_image
-            self.log.append("first file created : %s" % self.work_folder + "/" + name_of_fit_image)
+            self.image_ref_save = self.first_image
             self.first = 1
             self.white_slider.setMaximum(np.int(limit))
             self.brightness_slider.setMaximum(np.int(limit) / 2.)
@@ -140,7 +145,7 @@ class WatchOutForFileCreations(QtCore.QThread):
 
         else:
             # appelle de la fonction stack live
-            self.ref_image = stk.stack_live(self.ref_image, self.first_image, self.work_folder, new_image_path,
+            self.image_ref_save = stk.stack_live(self.image_ref_save, self.first_image, self.work_folder, new_image_path,
                                             self.counter,
                                             save_im=save_on, align=align_on, stack_methode=stack_methode,
                                             param=[self.contrast_slider.value() / 10.,
@@ -149,9 +154,9 @@ class WatchOutForFileCreations(QtCore.QThread):
                                                    self.white_slider.value(),
                                                    self.R_slider.value() / 100.,
                                                    self.G_slider.value() / 100.,
-                                                   self.B_slider.value() / 100.
+                                                   self.B_slider.value() / 100.,
                                                    ])
-            self.log.append("file created : %s" % self.work_folder + "/" + name_of_fit_image)
+            self.log.append("... Stack finish")
         self.print_image.emit()
 
 
@@ -170,6 +175,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.align = False
         self.dark = False
         self.pause = False
+        self.image_ref_save = image_ref_save()
 
     def connect_actions(self):
 
@@ -197,9 +203,11 @@ class als_main_window(QtWidgets.QMainWindow):
     # Callbacks
     def cb_save(self):
         timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now())))
-        self.ui.log.append("Saving : stack-" + timestamp + ".fit")
-        shutil.copy(os.path.expanduser(self.ui.tWork.text()) + "/" + name_of_fit_image,
-                    os.path.expanduser(self.ui.tWork.text()) + "/stack-" + timestamp + ".fit")
+        self.ui.log.append("Saving : stack_image_" + timestamp + ".fit")
+        # save stack image in fit
+        red = fits.PrimaryHDU(data=self.image_ref_save)
+        red.writeto(self.ui.tWork.text() + "/" + "stack_image_" + timestamp + ".fit")
+        red.close()
 
     def apply_value(self, counter, work_folder):
         if counter > 0:
@@ -216,18 +224,18 @@ class als_main_window(QtWidgets.QMainWindow):
         # need add image
 
         # test rgb or gray
-        if len(image.shape) == 2:
+        if len(self.image_ref_save.shape) == 2:
             mode = "gray"
-        elif len(image.shape) == 3:
+        elif len(self.image_ref_save.shape) == 3:
             mode = "rgb"
         else:
             raise ValueError("fit format not support")
         # apply cv2 transformation in rgb image
         if mode == "rgb":
-            image = np.rollaxis(image, 0, 3)
+            image = np.rollaxis(self.image_ref_save, 0, 3)
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         else:
-            image = image
+            image = self.image_ref_save
         # test type image
         limit, im_type = stk.test_utype(image)
 
@@ -265,6 +273,7 @@ class als_main_window(QtWidgets.QMainWindow):
         # write tiff file
         # cv2.imshow("image", image/65535.)
         cv2.imwrite(os.path.expanduser(work_folder + "/" + name_of_tiff_image), image)
+        del image
         self.ui.log.append("Adjusted GUI image")
 
     def update_image(self, work_folder, add=True):
@@ -361,7 +370,8 @@ class als_main_window(QtWidgets.QMainWindow):
                                                             self.ui.R_slider,
                                                             self.ui.G_slider,
                                                             self.ui.B_slider,
-                                                            self.ui.pb_apply_value
+                                                            self.ui.pb_apply_value,
+                                                            self.image_ref_save
                                                             )
 
                 if os.path.exists(os.path.expanduser(self.ui.tWork.text())):

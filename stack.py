@@ -23,7 +23,6 @@ from tqdm import tqdm
 import rawpy
 
 name_of_tiff_image = "stack_image.tiff"
-name_of_fit_image = "stack_ref_image.fit"
 
 
 def SCNR(rgb_image, im_type, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
@@ -165,12 +164,6 @@ def test_utype(image):
 
 
 def create_first_ref_im(work_path, im_path, save_im=False, param=[]):
-    # cleaning work folder
-    import os
-    if os.path.exists(os.path.expanduser(work_path + "/" + name_of_fit_image)):
-        os.remove(os.path.expanduser(work_path + "/" + name_of_fit_image))
-    else:
-        print("The file does not exist")
 
     # test image format ".fit" or ".fits" or other
     if im_path.rfind(".fit") != -1:
@@ -216,6 +209,7 @@ def create_first_ref_im(work_path, im_path, save_im=False, param=[]):
         # save stack image in fit
         red = fits.PrimaryHDU(data=ref)
         red.writeto(work_path + "/" + "stack_image_" + name + extension)
+        red.close()
 
     return ref, limit, mode
 
@@ -328,6 +322,7 @@ def stack_live(ref, first_ref, work_path, new_image_path, counter, save_im=False
         # save stack image in fit
         red = fits.PrimaryHDU(data=stack_image)
         red.writeto(work_path + "/" + "stack_image_" + name + extension)
+        red.close()
 
     # save stack image in tiff (print image)
     os.remove(work_path + "/" + name_of_tiff_image)
