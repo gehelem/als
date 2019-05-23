@@ -14,15 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
 import cv2
 import astroalign as al
 import numpy as np
 from astropy.io import fits
 from tqdm import tqdm
 import rawpy
-
-name_of_tiff_image = "stack_image.tiff"
 
 
 def SCNR(rgb_image, im_type, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
@@ -72,55 +69,6 @@ def SCNR(rgb_image, im_type, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=
     return rgb_image
 
 
-def save_tiff(work_path, stack_image, mode="rgb", param=[]):
-    # invert Red and Blue for cv2
-
-    if mode == "rgb":
-        new_stack_image = np.rollaxis(stack_image, 0, 3)
-        new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_RGB2BGR)
-    else:
-        new_stack_image = stack_image
-
-    limit, im_type = test_utype(new_stack_image)
-
-    if param[0] != 1 or param[1] != 0 or param[2] != 0 or param[3] != limit \
-            or param[4] != 1 or param[5] != 1 or param[6] != 1:
-
-        print("correct display image")
-        print("contrast value : %f" % param[0])
-        print("brightness value : %f" % param[1])
-        print("pente : %f" % (1. / ((param[3] - param[2]) / limit)))
-        new_stack_image = np.float32(new_stack_image)
-        if param[4] != 1 or param[5] != 1 or param[6] != 1:
-            if mode == "rgb":
-                print("R contrast value : %f" % param[4])
-                print("G contrast value : %f" % param[5])
-                print("B contrast value : %f" % param[6])
-                new_stack_image[:, :, 0] = new_stack_image[:, :, 0] * param[6]
-                new_stack_image[:, :, 1] = new_stack_image[:, :, 1] * param[5]
-                new_stack_image[:, :, 2] = new_stack_image[:, :, 2] * param[4]
-
-        if param[2] != 0 or param[3] != limit:
-            new_stack_image = np.where(new_stack_image < param[3], new_stack_image, param[3])
-            new_stack_image = np.where(new_stack_image > param[2], new_stack_image, param[2])
-            new_stack_image = new_stack_image * (1. / ((param[3] - param[2]) / limit))
-
-        if param[0] != 1 or param[1] != 0:
-            new_stack_image = new_stack_image * param[0] + param[1]
-
-        new_stack_image = np.where(new_stack_image < limit, new_stack_image, limit)
-        new_stack_image = np.where(new_stack_image > 0, new_stack_image, 0)
-        if im_type == "uint16":
-            new_stack_image = np.uint16(new_stack_image)
-        elif im_type == "uint8":
-            new_stack_image = np.uint8(new_stack_image)
-
-    cv2.imwrite(work_path + "/" + name_of_tiff_image, new_stack_image)
-    print("TIFF image create : %s" % work_path + "/" + name_of_tiff_image)
-
-    return 1
-
-
 def test_and_debayer_to_rgb(header, image):
     if len(image.shape) == 2 and not ("BAYERPAT" in header):
         print("B&W mode...")
@@ -163,7 +111,7 @@ def test_utype(image):
     return limit, im_type
 
 
-def create_first_ref_im(work_path, im_path, save_im=False, param=[]):
+def create_first_ref_im(work_path, im_path, save_im=False):
 
     # test image format ".fit" or ".fits" or other
     if im_path.rfind(".fit") != -1:
@@ -199,12 +147,6 @@ def create_first_ref_im(work_path, im_path, save_im=False, param=[]):
         limit = 2. ** 16 - 1
         ref = np.rollaxis(ref, 2, 0)
 
-    # red = fits.PrimaryHDU(data=ref)
-    # red.writeto(work_path + "/" + ref_name)
-    # red.writeto(work_path + "/" + "first_" + ref_name)
-
-    save_tiff(work_path, ref, mode=mode, param=param)
-
     if save_im:
         # save stack image in fit
         red = fits.PrimaryHDU(data=ref)
@@ -215,8 +157,9 @@ def create_first_ref_im(work_path, im_path, save_im=False, param=[]):
     return ref, limit, mode
 
 
-def stack_live(ref, first_ref, work_path, new_image_path, counter, save_im=False, align=True,
-               stack_methode="Sum", param=[]):
+def stack_live(work_path, new_image_path, ref, first_ref, counter, save_im=False, align=True,
+               stack_methode="Sum"):
+
     # test image format ".fit" or ".fits" or other
     if new_image_path.rfind(".fit") != -1:
         if new_image_path[new_image_path.rfind(".fit"):] == ".fit":
@@ -251,19 +194,6 @@ def stack_live(ref, first_ref, work_path, new_image_path, counter, save_im=False
         im_limit = 2. ** 16 - 1
         im_type = "uint16"
         new = np.rollaxis(new, 2, 0)
-
-    # open ref image
-    # ref_fit = fits.open(work_path + "/" + ref_name)
-    # ref = ref_fit[0].data
-    # ref_fit.close()
-    # test data type
-    # ref_limit, ref_type = test_utype(ref)
-
-    # if align:
-    #    # open first ref image (for align)
-    #    first_ref_fit = fits.open(work_path + "/" + "first_" + ref_name)
-    #    first_ref = first_ref_fit[0].data
-    #    first_ref_fit.close()
 
     # choix rgb ou gray scale
     print("alignement and stacking...")
@@ -320,10 +250,6 @@ def stack_live(ref, first_ref, work_path, new_image_path, counter, save_im=False
     else:
         raise ValueError("Mode not support")
 
-    # save new stack ref image in fit
-    # os.remove(work_path + "/" + ref_name)
-    # red = fits.PrimaryHDU(data=stack_image)
-    # red.writeto(work_path + "/" + ref_name)
     if save_im:
         # save stack image in fit
         red = fits.PrimaryHDU(data=stack_image)
@@ -331,8 +257,4 @@ def stack_live(ref, first_ref, work_path, new_image_path, counter, save_im=False
         # red.close()
         del red
 
-    # save stack image in tiff (print image)
-    os.remove(work_path + "/" + name_of_tiff_image)
-    tiff_name_path = save_tiff(work_path, np.array(stack_image), mode=im_mode, param=param)
-
-    return np.array(stack_image)
+    return np.array(stack_image), im_limit, im_mode

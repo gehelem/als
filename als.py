@@ -38,6 +38,56 @@ class image_ref_save:
         self.image = []
 
 
+def save_tiff(work_path, stack_image, log, mode="rgb", param=[]):
+    if mode == "rgb":
+        log.append("Save New TIFF Image in RGB...")
+        new_stack_image = np.rollaxis(stack_image, 0, 3)
+        new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_RGB2BGR)
+    elif mode == "gray":
+        log.append("Save New TIFF Image in B&W...")
+        new_stack_image = stack_image
+
+    limit, im_type = stk.test_utype(new_stack_image)
+
+    if param[0] != 1 or param[1] != 0 or param[2] != 0 or param[3] != limit \
+            or param[4] != 1 or param[5] != 1 or param[6] != 1:
+        log.append("Post-Process New TIFF Image...")
+        log.append("correct display image")
+        log.append("contrast value : %f" % param[0])
+        log.append("brightness value : %f" % param[1])
+        log.append("pente : %f" % (1. / ((param[3] - param[2]) / limit)))
+        new_stack_image = np.float32(new_stack_image)
+        if param[4] != 1 or param[5] != 1 or param[6] != 1:
+            if mode == "rgb":
+                # invert Red and Blue for cv2
+                log.append("R contrast value : %f" % param[4])
+                log.append("G contrast value : %f" % param[5])
+                log.append("B contrast value : %f" % param[6])
+                new_stack_image[:, :, 0] = new_stack_image[:, :, 0] * param[6]
+                new_stack_image[:, :, 1] = new_stack_image[:, :, 1] * param[5]
+                new_stack_image[:, :, 2] = new_stack_image[:, :, 2] * param[4]
+
+        if param[2] != 0 or param[3] != limit:
+            new_stack_image = np.where(new_stack_image < param[3], new_stack_image, param[3])
+            new_stack_image = np.where(new_stack_image > param[2], new_stack_image, param[2])
+            new_stack_image = new_stack_image * (1. / ((param[3] - param[2]) / limit))
+
+        if param[0] != 1 or param[1] != 0:
+            new_stack_image = new_stack_image * param[0] + param[1]
+
+        new_stack_image = np.where(new_stack_image < limit, new_stack_image, limit)
+        new_stack_image = np.where(new_stack_image > 0, new_stack_image, 0)
+        if im_type == "uint16":
+            new_stack_image = np.uint16(new_stack_image)
+        elif im_type == "uint8":
+            new_stack_image = np.uint8(new_stack_image)
+
+    cv2.imwrite(work_path + "/" + name_of_tiff_image, new_stack_image)
+    print("TIFF image create : %s" % work_path + "/" + name_of_tiff_image)
+
+    return 1
+
+
 class MyEventHandler(FileSystemEventHandler, QtCore.QThread):
     created_signal = QtCore.pyqtSignal()
     new_image_path = ""
@@ -91,24 +141,26 @@ class WatchOutForFileCreations(QtCore.QThread):
         self.observer.schedule(self.event_handler, self.path, recursive=False)
         self.observer.start()
 
-
         self.event_handler.created_signal.connect(lambda: self.created(self.event_handler.new_image_path,
                                                                        align_on, save_on, stack_methode))
 
     def created(self, new_image_path, align_on, save_on, stack_methode):
         self.counter = self.counter + 1
+        self.log.append("Read New image...")
         if self.first == 0:
+            self.log.append("Read First image...")
+            self.first_image, limit, mode = stk.create_first_ref_im(self.work_folder, new_image_path, save_im=save_on)
 
-            self.first_image, limit, mode = stk.create_first_ref_im(self.work_folder, new_image_path, save_im=save_on,
-                                                                    param=[self.contrast_slider.value() / 10.,
-                                                                           self.brightness_slider.value(),
-                                                                           self.black_slider.value(),
-                                                                           self.white_slider.value(),
-                                                                           self.R_slider.value() / 100.,
-                                                                           self.G_slider.value() / 100.,
-                                                                           self.B_slider.value() / 100.
-                                                                           ])
             self.image_ref_save.image = self.first_image
+            save_tiff(self.work_folder, self.image_ref_save.image, self.log,
+                      mode=mode, param=[self.contrast_slider.value() / 10.,
+                                        self.brightness_slider.value(),
+                                        self.black_slider.value(),
+                                        self.white_slider.value(),
+                                        self.R_slider.value() / 100.,
+                                        self.G_slider.value() / 100.,
+                                        self.B_slider.value() / 100.
+                                        ])
             self.first = 1
             self.white_slider.setMaximum(np.int(limit))
             self.brightness_slider.setMaximum(np.int(limit) / 2.)
@@ -123,9 +175,9 @@ class WatchOutForFileCreations(QtCore.QThread):
             if self.brightness_slider.value() > limit / 2.:
                 self.brightness_slider.setSliderPosition(limit / 2.)
             if limit == 2. ** 16 - 1:
-                self.log.append("Read 16bit image ...")
+                self.log.append("Readed 16bit image ...")
             elif limit == 2. ** 8 - 1:
-                self.log.append("Read 8bit image ...")
+                self.log.append("Readed 8bit image ...")
             self.white_slider.setEnabled(True)
             self.black_slider.setEnabled(True)
             self.contrast_slider.setEnabled(True)
@@ -134,30 +186,39 @@ class WatchOutForFileCreations(QtCore.QThread):
 
             if mode == "rgb":
                 # activation des barre r, g, b
-                self.log.append("Read RGB image ...")
+                self.log.append("Readed RGB image ...")
                 self.R_slider.setEnabled(True)
                 self.G_slider.setEnabled(True)
                 self.B_slider.setEnabled(True)
             elif mode == "gray":
                 # desactivation des barre r, g, b
-                self.log.append("Read B&W image ...")
+                self.log.append("Readed B&W image ...")
                 self.R_slider.setEnabled(False)
                 self.G_slider.setEnabled(False)
                 self.B_slider.setEnabled(False)
 
         else:
             # appelle de la fonction stack live
-            self.image_ref_save.image = stk.stack_live(self.image_ref_save.image, self.first_image, self.work_folder, new_image_path,
-                                            self.counter,
-                                            save_im=save_on, align=align_on, stack_methode=stack_methode,
-                                            param=[self.contrast_slider.value() / 10.,
-                                                   self.brightness_slider.value(),
-                                                   self.black_slider.value(),
-                                                   self.white_slider.value(),
-                                                   self.R_slider.value() / 100.,
-                                                   self.G_slider.value() / 100.,
-                                                   self.B_slider.value() / 100.,
-                                                   ])
+            if align_on:
+                self.log.append("Stack and Align New Image...")
+            else:
+                self.log.append("Stack New Image...")
+
+            self.image_ref_save.image, limit, mode = stk.stack_live(self.work_folder, new_image_path,
+                                                                    self.image_ref_save.image, self.first_image,
+                                                                    self.counter,
+                                                                    save_im=save_on,
+                                                                    align=align_on, stack_methode=stack_methode)
+            save_tiff(self.work_folder, self.image_ref_save.image, self.log,
+                      mode=mode, param=[self.contrast_slider.value() / 10.,
+                                        self.brightness_slider.value(),
+                                        self.black_slider.value(),
+                                        self.white_slider.value(),
+                                        self.R_slider.value() / 100.,
+                                        self.G_slider.value() / 100.,
+                                        self.B_slider.value() / 100.
+                                        ])
+
             self.log.append("... Stack finish")
         self.print_image.emit()
 
@@ -209,7 +270,7 @@ class als_main_window(QtWidgets.QMainWindow):
         # save stack image in fit
         red = fits.PrimaryHDU(data=self.image_ref_save.image)
         red.writeto(self.ui.tWork.text() + "/" + "stack_image_" + timestamp + ".fit")
-        #red.close()
+        # red.close()
         del red
 
     def apply_value(self, counter, work_folder):
@@ -219,12 +280,6 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.log.append("Define new display value")
 
     def ajuste_value(self, work_folder):
-        # open ref image
-        # image_fit = fits.open(os.path.expanduser(work_folder + "/" + name_of_fit_image))
-        # image = image_fit[0].data
-        # image_fit.close()
-
-        # need add image
 
         # test rgb or gray
         if len(self.image_ref_save.image.shape) == 2:
@@ -233,50 +288,17 @@ class als_main_window(QtWidgets.QMainWindow):
             mode = "rgb"
         else:
             raise ValueError("fit format not support")
-        # apply cv2 transformation in rgb image
-        if mode == "rgb":
-            image = np.rollaxis(self.image_ref_save.image, 0, 3)
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        else:
-            image = self.image_ref_save.image
-        # test type image
-        limit, im_type = stk.test_utype(image)
 
-        # apply value transformation
-        image = np.float32(image)
+        save_tiff(self.work_folder, self.image_ref_save.image, self.ui.log,
+                  mode=mode, param=[self.ui.contrast_slider.value() / 10.,
+                                    self.ui.brightness_slider.value(),
+                                    self.ui.black_slider.value(),
+                                    self.ui.white_slider.value(),
+                                    self.ui.R_slider.value() / 100.,
+                                    self.ui.G_slider.value() / 100.,
+                                    self.ui.B_slider.value() / 100.
+                                    ])
 
-        print("correct display image")
-        print("contrast value : %s" % str(self.ui.contrast_slider.value() / 10.))
-        print("brightness value : %s" % str(self.ui.brightness_slider.value()))
-        print("pente : %f" % (1. / ((self.ui.white_slider.value() - self.ui.black_slider.value()) / limit)))
-
-        if (self.ui.R_slider.value() / 100.) != 1 or \
-                (self.ui.G_slider.value() / 100.) != 1 or \
-                (self.ui.B_slider.value() / 100.) != 1:
-            if mode == "rgb":
-                print("R contrast value : %s" % str(self.ui.R_slider.value() / 100.))
-                print("G contrast value : %s" % str(self.ui.G_slider.value() / 100.))
-                print("B contrast value : %s" % str(self.ui.B_slider.value() / 100.))
-                image[:, :, 0] = image[:, :, 0] * (self.ui.B_slider.value() / 100.)
-                image[:, :, 1] = image[:, :, 1] * (self.ui.G_slider.value() / 100.)
-                image[:, :, 2] = image[:, :, 2] * (self.ui.R_slider.value() / 100.)
-        if self.ui.black_slider.value() != 0 or self.ui.white_slider.value() != limit:
-            image = np.where(image < self.ui.white_slider.value(), image, self.ui.white_slider.value())
-            image = np.where(image > self.ui.black_slider.value(), image, self.ui.black_slider.value())
-            image = image * (1. / ((self.ui.white_slider.value() - self.ui.black_slider.value()) / limit))
-
-        image = image * (self.ui.contrast_slider.value() / 10.) + self.ui.brightness_slider.value()
-        image = np.where(image < limit, image, limit)
-        image = np.where(image > 0, image, 0)
-        if im_type == "uint16":
-            image = np.uint16(image)
-        elif im_type == "uint8":
-            image = np.uint8(image)
-
-        # write tiff file
-        # cv2.imshow("image", image/65535.)
-        cv2.imwrite(os.path.expanduser(work_folder + "/" + name_of_tiff_image), image)
-        del image
         self.ui.log.append("Adjusted GUI image")
 
     def update_image(self, work_folder, add=True):
