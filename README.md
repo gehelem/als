@@ -59,8 +59,6 @@ and with RAW camera file : https://www.libraw.org/supported-cameras
 
 ### Output :
 
-ALS produce 3 output in work folder: 
-- first_stack_ref.fit --> Xbits file unsigned, no header, RGB --> It's first image for align reference
-- stack_ref_image.fit --> Xbits file unsigned, no header, RGB --> It's actual stack raw image
+ALS produce 1 output in work folder: 
 - stack_image.tiff --> Xbits file, RGB, TIFF format --> It's preview of actual stack image with contrast/luminosity correction
 - (option) stack_xxxxxx.fit/fits --> It's the recording of the intermediate raw images of the stack
