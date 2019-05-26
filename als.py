@@ -38,7 +38,7 @@ class image_ref_save:
         self.image = []
 
 
-def SCNR(rgb_image, im_type, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
+def SCNR(rgb_image, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
     """
     Function for reduce green noise on image
     SCNR Average Neutral Protection
@@ -62,18 +62,18 @@ def SCNR(rgb_image, im_type, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=
         blue = 0
 
     # process image
-    if scnr_type == "ne_m":
+    if scnr_type == "Av Neutral":
         m = (rgb_image[red] + rgb_image[blue]) * 0.5
         compare = rgb_image[1] < m
         rgb_image[1] = compare * rgb_image[1] + np.invert(compare) * m
 
-    elif scnr_type == "ne_max":
+    elif scnr_type == "Max Neutral":
         compare = rgb_image[red] > rgb_image[blue]
         m = compare * rgb_image[red] + np.invert(compare) * rgb_image[blue]
         compare = rgb_image[1] < m
         rgb_image[1] = compare * rgb_image[1] + np.invert(compare) * m
 
-    elif scnr_type == "ma_ad":
+    elif scnr_type == "Add Mask":
         rgb_image = rgb_image / im_limit
         unity_m = np.ones((rgb_image[1].shape[0], rgb_image[1].shape[1]))
         compare = unity_m < (rgb_image[blue] + rgb_image[red])
@@ -81,7 +81,7 @@ def SCNR(rgb_image, im_type, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=
         rgb_image[1] = rgb_image[1] * (1 - amount) * (1 - m) + m * rgb_image[1]
         rgb_image = rgb_image * im_limit
 
-    elif scnr_type == "ma_max":
+    elif scnr_type == "Max Mask":
         rgb_image = rgb_image / im_limit
         compare = rgb_image[red] > rgb_image[blue]
         m = compare * rgb_image[red] + np.invert(compare) * rgb_image[blue]
@@ -91,7 +91,7 @@ def SCNR(rgb_image, im_type, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=
     return rgb_image
 
 
-def save_tiff(work_path, stack_image, log, mode="rgb", param=[]):
+def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False, param=[]):
     """
     Fonction for create print image and post process this image
 
@@ -99,10 +99,10 @@ def save_tiff(work_path, stack_image, log, mode="rgb", param=[]):
     :param stack_image: np.array(uintX), Image, 3xMxN or MxN
     :param log: QT log for print text in QT GUI
     :param mode: image mode ("rgb" or "gray")
+    :param scnr_on: bool, actuve scnr correction
     :param param: post process param
     :return: no return
 
-    TODO : add SCNR at the beginning of post process
     """
 
     # change action for mode :
@@ -132,6 +132,11 @@ def save_tiff(work_path, stack_image, log, mode="rgb", param=[]):
 
         # need convert to float32 for excess value
         new_stack_image = np.float32(new_stack_image)
+
+        if scnr_on:
+            log.append("apply SCNR")
+            log.append("SCNR type %s" % param[7])
+            new_stack_image = SCNR(new_stack_image, limit, rgb_type="BGR", scnr_type=param[7], amount=param[8])
 
         # if change in RGB value
         if param[4] != 1 or param[5] != 1 or param[6] != 1:
@@ -201,7 +206,8 @@ class WatchOutForFileCreations(QtCore.QThread):
     def __init__(self, path, work_folder, align_on, save_on, stack_methode,
                  log, white_slider, black_slider, contrast_slider, brightness_slider,
                  R_slider, G_slider, B_slider, apply_button,
-                 image_ref_save, dark_on, dark_path):
+                 image_ref_save, dark_on, dark_path,
+                 scnr_on, scnr_mode, scnr_value):
 
         super(WatchOutForFileCreations, self).__init__()
         self.white_slider = white_slider
@@ -222,6 +228,9 @@ class WatchOutForFileCreations(QtCore.QThread):
         self.ref_image = []
         self.dark_on = dark_on  # need add dark in stack_live function
         self.dark_path = dark_path  # need add dark in stack_live function
+        self.scnr_on = scnr_on
+        self.scnr_mode = scnr_mode
+        self.scnr_value = scnr_value
         print(self.work_folder)
         print(self.path)
 
@@ -245,15 +254,19 @@ class WatchOutForFileCreations(QtCore.QThread):
             self.first_image, limit, mode = stk.create_first_ref_im(self.work_folder, new_image_path, save_im=save_on)
 
             self.image_ref_save.image = self.first_image
+
             save_tiff(self.work_folder, self.image_ref_save.image, self.log,
-                      mode=mode, param=[self.contrast_slider.value() / 10.,
-                                        self.brightness_slider.value(),
-                                        self.black_slider.value(),
-                                        self.white_slider.value(),
-                                        self.R_slider.value() / 100.,
-                                        self.G_slider.value() / 100.,
-                                        self.B_slider.value() / 100.
-                                        ])
+                      mode=mode, scnr_on=self.sncr_on,
+                      param=[self.contrast_slider.value() / 10.,
+                             self.brightness_slider.value(),
+                             self.black_slider.value(),
+                             self.white_slider.value(),
+                             self.R_slider.value() / 100.,
+                             self.G_slider.value() / 100.,
+                             self.B_slider.value() / 100.,
+                             self.scnr_mode.currentText(),
+                             self.scnr_value.value()
+                             ])
             self.first = 1
             self.white_slider.setMaximum(np.int(limit))
             self.brightness_slider.setMaximum(np.int(limit) / 2.)
@@ -306,14 +319,17 @@ class WatchOutForFileCreations(QtCore.QThread):
                                                                     stack_methode=stack_methode)
 
             save_tiff(self.work_folder, self.image_ref_save.image, self.log,
-                      mode=mode, param=[self.contrast_slider.value() / 10.,
-                                        self.brightness_slider.value(),
-                                        self.black_slider.value(),
-                                        self.white_slider.value(),
-                                        self.R_slider.value() / 100.,
-                                        self.G_slider.value() / 100.,
-                                        self.B_slider.value() / 100.
-                                        ])
+                      mode=mode, scnr_on=self.sncr_on,
+                      param=[self.contrast_slider.value() / 10.,
+                             self.brightness_slider.value(),
+                             self.black_slider.value(),
+                             self.white_slider.value(),
+                             self.R_slider.value() / 100.,
+                             self.G_slider.value() / 100.,
+                             self.B_slider.value() / 100.,
+                             self.scnr_mode.currentText(),
+                             self.scnr_value.value()
+                             ])
 
             self.log.append("... Stack finish")
         self.print_image.emit()
@@ -358,6 +374,8 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.R_slider.valueChanged['int'].connect(lambda: self.ui.R_value.setNum(self.ui.R_slider.value() / 100.))
         self.ui.G_slider.valueChanged['int'].connect(lambda: self.ui.G_value.setNum(self.ui.G_slider.value() / 100.))
         self.ui.B_slider.valueChanged['int'].connect(lambda: self.ui.B_value.setNum(self.ui.B_slider.value() / 100.))
+        self.ui.SCNR_Slider.valueChanged['int'].connect(
+            lambda: self.ui.SCNR_value.setNum(self.ui.SCNR_Slider.value() / 100.))
 
     # ------------------------------------------------------------------------------
     # Callbacks
@@ -387,14 +405,17 @@ class als_main_window(QtWidgets.QMainWindow):
             raise ValueError("fit format not support")
 
         save_tiff(self.work_folder, self.image_ref_save.image, self.ui.log,
-                  mode=mode, param=[self.ui.contrast_slider.value() / 10.,
-                                    self.ui.brightness_slider.value(),
-                                    self.ui.black_slider.value(),
-                                    self.ui.white_slider.value(),
-                                    self.ui.R_slider.value() / 100.,
-                                    self.ui.G_slider.value() / 100.,
-                                    self.ui.B_slider.value() / 100.
-                                    ])
+                  mode=mode, scnr_on=self.ui.cbSCNR.isChecked(),
+                  param=[self.ui.contrast_slider.value() / 10.,
+                         self.ui.brightness_slider.value(),
+                         self.ui.black_slider.value(),
+                         self.ui.white_slider.value(),
+                         self.ui.R_slider.value() / 100.,
+                         self.ui.G_slider.value() / 100.,
+                         self.ui.B_slider.value() / 100.,
+                         self.ui.cmSCNR.currentText(),
+                         self.ui.SCNR_Slider.value()/100.
+                         ])
 
         self.ui.log.append("Adjusted GUI image")
 
@@ -495,7 +516,10 @@ class als_main_window(QtWidgets.QMainWindow):
                                                             self.ui.pb_apply_value,
                                                             self.image_ref_save,
                                                             self.dark,
-                                                            os.path.expanduser(self.ui.tDark.text())
+                                                            os.path.expanduser(self.ui.tDark.text()),
+                                                            self.ui.cbSCNR,
+                                                            self.ui.cmSCNR,
+                                                            self.ui.SCNR_Slider
                                                             )
 
                 if os.path.exists(os.path.expanduser(self.ui.tWork.text())):
