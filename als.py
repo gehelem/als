@@ -38,50 +38,139 @@ class image_ref_save:
         self.image = []
 
 
+def SCNR(rgb_image, im_type, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
+    """
+    Function for reduce green noise on image
+    SCNR Average Neutral Protection
+
+    :param rgb_image: Numpy array (float32), size 3xMxN
+    :param im_type: string, uint16 or uint8
+    :param im_limit: int, value limit, 255 or 65535
+    :param rgb_type: RGB or BGR
+    :param scnr_type: string, correction type : ne_m, ne_max, ma_ad or ma_max
+    :param amount: float, 0 to 1, param for ma_ad and ma_max
+    :return: image corrected (np.array(float32))
+
+    """
+
+    # Swap blue and red for different mode :
+    if rgb_type == "RGB":
+        red = 0
+        blue = 2
+    elif rgb_type == "BGR":
+        red = 2
+        blue = 0
+
+    # process image
+    if scnr_type == "ne_m":
+        m = (rgb_image[red] + rgb_image[blue]) * 0.5
+        compare = rgb_image[1] < m
+        rgb_image[1] = compare * rgb_image[1] + np.invert(compare) * m
+
+    elif scnr_type == "ne_max":
+        compare = rgb_image[red] > rgb_image[blue]
+        m = compare * rgb_image[red] + np.invert(compare) * rgb_image[blue]
+        compare = rgb_image[1] < m
+        rgb_image[1] = compare * rgb_image[1] + np.invert(compare) * m
+
+    elif scnr_type == "ma_ad":
+        rgb_image = rgb_image / im_limit
+        unity_m = np.ones((rgb_image[1].shape[0], rgb_image[1].shape[1]))
+        compare = unity_m < (rgb_image[blue] + rgb_image[red])
+        m = compare * unity_m + np.invert(compare) * (rgb_image[blue] + rgb_image[red])
+        rgb_image[1] = rgb_image[1] * (1 - amount) * (1 - m) + m * rgb_image[1]
+        rgb_image = rgb_image * im_limit
+
+    elif scnr_type == "ma_max":
+        rgb_image = rgb_image / im_limit
+        compare = rgb_image[red] > rgb_image[blue]
+        m = compare * rgb_image[red] + np.invert(compare) * rgb_image[blue]
+        rgb_image[1] = rgb_image[1] * (1 - amount) * (1 - m) + m * rgb_image[1]
+        rgb_image = rgb_image * im_limit
+
+    return rgb_image
+
+
 def save_tiff(work_path, stack_image, log, mode="rgb", param=[]):
+    """
+    Fonction for create print image and post process this image
+
+    :param work_path: string, path for work folder
+    :param stack_image: np.array(uintX), Image, 3xMxN or MxN
+    :param log: QT log for print text in QT GUI
+    :param mode: image mode ("rgb" or "gray")
+    :param param: post process param
+    :return: no return
+
+    TODO : add SCNR at the beginning of post process
+    """
+
+    # change action for mode :
     if mode == "rgb":
         log.append("Save New TIFF Image in RGB...")
+        # convert clissic classic order to cv2 order
         new_stack_image = np.rollaxis(stack_image, 0, 3)
+        # convert RGB color order to BGR
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_RGB2BGR)
     elif mode == "gray":
         log.append("Save New TIFF Image in B&W...")
         new_stack_image = stack_image
 
+    # read image number type
     limit, im_type = stk.test_utype(new_stack_image)
 
+    # if no have change, no process
     if param[0] != 1 or param[1] != 0 or param[2] != 0 or param[3] != limit \
             or param[4] != 1 or param[5] != 1 or param[6] != 1:
+
+        # print param value for post process
         log.append("Post-Process New TIFF Image...")
         log.append("correct display image")
         log.append("contrast value : %f" % param[0])
         log.append("brightness value : %f" % param[1])
         log.append("pente : %f" % (1. / ((param[3] - param[2]) / limit)))
+
+        # need convert to float32 for excess value
         new_stack_image = np.float32(new_stack_image)
+
+        # if change in RGB value
         if param[4] != 1 or param[5] != 1 or param[6] != 1:
             if mode == "rgb":
                 # invert Red and Blue for cv2
+                # print RGB contrast value
                 log.append("R contrast value : %f" % param[4])
                 log.append("G contrast value : %f" % param[5])
                 log.append("B contrast value : %f" % param[6])
+
+                # multiply by RGB factor
                 new_stack_image[:, :, 0] = new_stack_image[:, :, 0] * param[6]
                 new_stack_image[:, :, 1] = new_stack_image[:, :, 1] * param[5]
                 new_stack_image[:, :, 2] = new_stack_image[:, :, 2] * param[4]
 
+        # if change in limit value
         if param[2] != 0 or param[3] != limit:
+            # filter excess value with new limit
             new_stack_image = np.where(new_stack_image < param[3], new_stack_image, param[3])
             new_stack_image = np.where(new_stack_image > param[2], new_stack_image, param[2])
+            # spread out the remaining values
             new_stack_image = new_stack_image * (1. / ((param[3] - param[2]) / limit))
 
+        # if chage in contrast/brightness value
         if param[0] != 1 or param[1] != 0:
+            # new_image = image * contrast + brightness
             new_stack_image = new_stack_image * param[0] + param[1]
 
+        # filter excess value > limit
         new_stack_image = np.where(new_stack_image < limit, new_stack_image, limit)
         new_stack_image = np.where(new_stack_image > 0, new_stack_image, 0)
+
+        # reconvert in unintX format
         if im_type == "uint16":
             new_stack_image = np.uint16(new_stack_image)
         elif im_type == "uint8":
             new_stack_image = np.uint8(new_stack_image)
 
+    # use cv2 fonction for save print image in tiff format
     cv2.imwrite(work_path + "/" + name_of_tiff_image, new_stack_image)
     print("TIFF image create : %s" % work_path + "/" + name_of_tiff_image)
 
@@ -112,7 +201,8 @@ class WatchOutForFileCreations(QtCore.QThread):
     def __init__(self, path, work_folder, align_on, save_on, stack_methode,
                  log, white_slider, black_slider, contrast_slider, brightness_slider,
                  R_slider, G_slider, B_slider, apply_button,
-                 image_ref_save):
+                 image_ref_save, dark_on, dark_path):
+
         super(WatchOutForFileCreations, self).__init__()
         self.white_slider = white_slider
         self.black_slider = black_slider
@@ -130,6 +220,8 @@ class WatchOutForFileCreations(QtCore.QThread):
         self.first_image = []
         self.image_ref_save = image_ref_save
         self.ref_image = []
+        self.dark_on = dark_on  # need add dark in stack_live function
+        self.dark_path = dark_path  # need add dark in stack_live function
         print(self.work_folder)
         print(self.path)
 
@@ -145,6 +237,7 @@ class WatchOutForFileCreations(QtCore.QThread):
                                                                        align_on, save_on, stack_methode))
 
     def created(self, new_image_path, align_on, save_on, stack_methode):
+
         self.counter = self.counter + 1
         self.log.append("Read New image...")
         if self.first == 0:
@@ -205,10 +298,13 @@ class WatchOutForFileCreations(QtCore.QThread):
                 self.log.append("Stack New Image...")
 
             self.image_ref_save.image, limit, mode = stk.stack_live(self.work_folder, new_image_path,
-                                                                    self.image_ref_save.image, self.first_image,
                                                                     self.counter,
+                                                                    ref=self.image_ref_save.image,
+                                                                    first_ref=self.first_image,
                                                                     save_im=save_on,
-                                                                    align=align_on, stack_methode=stack_methode)
+                                                                    align=align_on,
+                                                                    stack_methode=stack_methode)
+
             save_tiff(self.work_folder, self.image_ref_save.image, self.log,
                       mode=mode, param=[self.contrast_slider.value() / 10.,
                                         self.brightness_slider.value(),
@@ -227,6 +323,7 @@ class WatchOutForFileCreations(QtCore.QThread):
 
 
 class als_main_window(QtWidgets.QMainWindow):
+
     def __init__(self, parent=None):
         super(als_main_window, self).__init__(parent)
         self.ui = Ui_stack_window()
@@ -396,7 +493,9 @@ class als_main_window(QtWidgets.QMainWindow):
                                                             self.ui.G_slider,
                                                             self.ui.B_slider,
                                                             self.ui.pb_apply_value,
-                                                            self.image_ref_save
+                                                            self.image_ref_save,
+                                                            self.dark,
+                                                            os.path.expanduser(self.ui.tDark.text())
                                                             )
 
                 if os.path.exists(os.path.expanduser(self.ui.tWork.text())):

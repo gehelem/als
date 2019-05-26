@@ -22,54 +22,23 @@ from tqdm import tqdm
 import rawpy
 
 
-def SCNR(rgb_image, im_type, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
-    # SCNR Average Neutral Protection
-    if rgb_type == "RGB":
-        red = 0
-        blue = 2
-    elif rgb_type == "BGR":
-        red = 2
-        blue = 0
-
-    rgb_image = np.float32(rgb_image)
-
-    if scnr_type == "ne_m":
-        m = (rgb_image[red] + rgb_image[blue]) * 0.5
-        compare = rgb_image[1] < m
-        rgb_image[1] = compare * rgb_image[1] + np.invert(compare) * m
-
-    elif scnr_type == "ne_max":
-        compare = rgb_image[red] > rgb_image[blue]
-        m = compare * rgb_image[red] + np.invert(compare) * rgb_image[blue]
-        compare = rgb_image[1] < m
-        rgb_image[1] = compare * rgb_image[1] + np.invert(compare) * m
-
-    elif scnr_type == "ma_ad":
-        rgb_image = rgb_image / im_limit
-        unity_m = np.ones((rgb_image[1].shape[0], rgb_image[1].shape[1]))
-        compare = unity_m < (rgb_image[blue] + rgb_image[red])
-        m = compare * unity_m + np.invert(compare) * (rgb_image[blue] + rgb_image[red])
-        rgb_image[1] = rgb_image[1] * (1 - amount) * (1 - m) + m * rgb_image[1]
-        rgb_image = rgb_image * im_limit
-
-    elif scnr_type == "ma_max":
-        rgb_image = rgb_image / im_limit
-        compare = rgb_image[red] > rgb_image[blue]
-        m = compare * rgb_image[red] + np.invert(compare) * rgb_image[blue]
-        rgb_image[1] = rgb_image[1] * (1 - amount) * (1 - m) + m * rgb_image[1]
-        rgb_image = rgb_image * im_limit
-
-    if im_type == "uint16":
-        rgb_image = np.where(rgb_image < im_limit, rgb_image, im_limit)
-        rgb_image = np.uint16(rgb_image)
-    elif im_type == "uint8":
-        rgb_image = np.where(rgb_image < im_limit, rgb_image, im_limit)
-        rgb_image = np.uint8(rgb_image)
-
-    return rgb_image
+# classic order = 3xMxN
+# cv2 order = MxNx3
+# uint = unsignet int ( 0 to ...)
 
 
 def test_and_debayer_to_rgb(header, image):
+    """
+    Function for test fit image type : B&W, RGB or RGB no debayer
+    For RGB no debayer this fonction debayer image
+
+    :param header: header of fit image
+    :param image: fit imae
+    :return: image and process mode ("gray" or "rgb")
+    """
+
+    # test image Type
+    # use fit header for separate B&W to no debayer image
     if len(image.shape) == 2 and not ("BAYERPAT" in header):
         print("B&W mode...")
         new_mode = "gray"
@@ -79,6 +48,8 @@ def test_and_debayer_to_rgb(header, image):
     elif len(image.shape) == 2 and "BAYERPAT" in header:
         print("debayering...")
         debay = header["BAYERPAT"]
+
+        # test bayer type and debayer
         cv_debay = debay[3] + debay[2]
         if cv_debay == "BG":
             rgb_image = cv2.cvtColor(image, cv2.COLOR_BAYER_BG2RGB)
@@ -90,6 +61,8 @@ def test_and_debayer_to_rgb(header, image):
             rgb_image = cv2.cvtColor(image, cv2.COLOR_BAYER_GR2RGB)
         else:
             raise ValueError("this debayer option not support")
+
+        # convert cv2 order to classic order:
         image = np.rollaxis(rgb_image, 2, 0)
         new_mode = "rgb"
     else:
@@ -99,7 +72,13 @@ def test_and_debayer_to_rgb(header, image):
 
 
 def test_utype(image):
-    # search type
+    """
+    Test Image types (uint8 or uint16)
+
+    :param image: image, numpy array
+    :return: limit and type of image
+    """
+    # search type (uint8 or uint16)
     im_type = image.dtype.name
     if im_type == 'uint8':
         limit = 2. ** 8 - 1
@@ -112,6 +91,16 @@ def test_utype(image):
 
 
 def create_first_ref_im(work_path, im_path, save_im=False):
+    """
+    function for process first image (need remove and add option or read counter)
+
+    :param work_path: string, path of work folder
+    :param im_path: string, path of process image
+    :param save_im: bool, option for save image in fit
+    :return: image: np.array 3xMxN or MxN
+             im_limit: int, bit limit (255 or 65535)
+             im_mode: string, mode : "rgb" or "gray"
+    """
 
     # test image format ".fit" or ".fits" or other
     if im_path.rfind(".fit") != -1:
@@ -121,63 +110,88 @@ def create_first_ref_im(work_path, im_path, save_im=False):
             extension = ".fits"
         raw_im = False
     else:
+        # Other format = raw camera format (cr2, ...)
         extension = im_path[im_path.rfind("."):]
         raw_im = True
 
-    # remove extension
+    # remove extension of path
     name = im_path.replace(extension, '')
-    # remove path
+    # remove path, juste save image name
     name = name[name.rfind("/") + 1:]
 
     if not raw_im:
-        # open ref image
-        ref_fit = fits.open(im_path)
-        ref = ref_fit[0].data
-        # save header
-        ref_header = ref_fit[0].header
-        ref_fit.close()
-        limit, im_type = test_utype(ref)
-        # test rgb or gray
-        ref, mode = test_and_debayer_to_rgb(ref_header, ref)
+        # open ref fit image
+        new_fit = fits.open(im_path)
+        new = new_fit[0].data
+        # save fit header
+        new_header = new_fit[0].header
+        new_fit.close()
+        # test image type
+        im_limit, im_type = test_utype(new)
+        # test rgb or gray or no debayer
+        new, im_mode = test_and_debayer_to_rgb(new_header, new)
     else:
         print("convert DSLR image ...")
-        ref = rawpy.imread(im_path).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16)
-        mode = "rgb"
+        # convert camera raw to numpy array
+        new = rawpy.imread(im_path).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16)
+        im_mode = "rgb"
         extension = ".fits"
-        limit = 2. ** 16 - 1
-        ref = np.rollaxis(ref, 2, 0)
+        im_limit = 2. ** 16 - 1
+        # convert cv2 order to classic order
+        new = np.rollaxis(new, 2, 0)
+
+    image = new
+    del new
 
     if save_im:
         # save stack image in fit
-        red = fits.PrimaryHDU(data=ref)
+        red = fits.PrimaryHDU(data=image)
         red.writeto(work_path + "/" + "stack_image_" + name + extension)
-        # red.close()
+        # delete image in memory
         del red
 
-    return ref, limit, mode
+    return image, im_limit, im_mode
 
 
-def stack_live(work_path, new_image_path, ref, first_ref, counter, save_im=False, align=True,
+def stack_live(work_path, im_path, counter, ref=[], first_ref=[], save_im=False, align=True,
                stack_methode="Sum"):
+    """
+    function for process image, align and stack
+
+    :param work_path: string, path of work folder
+    :param im_path: string, path of process image
+    :param ref: np.array, stack image (no for first image)
+    :param first_ref: np.array, first image process, ref for alignement (no for first image)
+    :param counter: int, number of image stacked
+    :param save_im: bool, option for save image in fit
+    :param align: bool, option for align image or not
+    :param stack_methode: string, stack methode ("sum" or "mean")
+    :return: image: np.array 3xMxN or MxN
+             im_limit: int, bit limit (255 or 65535)
+             im_mode: string, mode : "rgb" or "gray"
+
+    TODO: Add dark possibility
+    """
 
     # test image format ".fit" or ".fits" or other
-    if new_image_path.rfind(".fit") != -1:
-        if new_image_path[new_image_path.rfind(".fit"):] == ".fit":
+    if im_path.rfind(".fit") != -1:
+        if im_path[im_path.rfind(".fit"):] == ".fit":
             extension = ".fit"
-        elif new_image_path[new_image_path.rfind(".fit"):] == ".fits":
+        elif im_path[im_path.rfind(".fit"):] == ".fits":
             extension = ".fits"
         raw_im = False
     else:
-        extension = new_image_path[new_image_path.rfind("."):]
+        # Other format = raw camera format (cr2, ...)
+        extension = im_path[im_path.rfind("."):]
         raw_im = True
-    # remove extension
-    name = new_image_path.replace(extension, '')
-    # remove path
+    # remove extension of path
+    name = im_path.replace(extension, '')
+    # remove path, juste save image name
     name = name[name.rfind("/") + 1:]
 
     if not raw_im:
         # open new image
-        new_fit = fits.open(new_image_path)
+        new_fit = fits.open(im_path)
         new = new_fit[0].data
         # save header
         new_header = new_fit[0].header
@@ -188,33 +202,42 @@ def stack_live(work_path, new_image_path, ref, first_ref, counter, save_im=False
         new, im_mode = test_and_debayer_to_rgb(new_header, new)
     else:
         print("convert DSLR image ...")
-        new = rawpy.imread(new_image_path).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16)
+        new = rawpy.imread(im_path).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16)
         im_mode = "rgb"
         extension = ".fits"
         im_limit = 2. ** 16 - 1
         im_type = "uint16"
         new = np.rollaxis(new, 2, 0)
 
+    # ____________________________________
+    # specific part for no first image
     # choix rgb ou gray scale
     print("alignement and stacking...")
+
+    # choix du mode (rgb or B&W)
     if im_mode == "rgb":
         if align:
-            # alignement
+            # alignement with green :
             p, __ = al.find_transform(new[1], first_ref[1])
+
         # stacking
         stack_image = []
         for j in tqdm(range(3)):
             if align:
+                # align all color :
                 align_image = al.apply_transform(p, new[j], ref[j])
 
             else:
                 align_image = new[j]
 
+            # chose stack methode
+            # need convert to float32 for excess value
             if stack_methode == "Sum":
                 stack = np.float32(align_image) + np.float32(ref[j])
             elif stack_methode == "Mean":
                 stack = ((counter - 1) * np.float32(ref[j]) + np.float32(align_image)) / counter
 
+            # filter excess value > limit
             if im_type == 'uint8':
                 stack_image.append(np.uint8(np.where(stack < 2 ** 8 - 1, stack, 2 ** 8 - 1)))
             elif im_type == 'uint16':
@@ -229,12 +252,13 @@ def stack_live(work_path, new_image_path, ref, first_ref, counter, save_im=False
             p, __ = al.find_transform(new, first_ref)
             align_image = al.apply_transform(p, new, ref)
             del p
-            del new
         else:
             align_image = new
-            del new
 
-        # stacking
+        del new
+
+        # chose stack methode
+        # need convert to float32 for excess value
         if stack_methode == "Sum":
             stack = np.float32(align_image) + np.float32(ref)
         elif stack_methode == "Mean":
@@ -242,6 +266,7 @@ def stack_live(work_path, new_image_path, ref, first_ref, counter, save_im=False
         else:
             raise ValueError("Stack method is not support")
 
+        # filter excess value > limit
         if im_type == 'uint8':
             stack_image = np.uint8(np.where(stack < 2 ** 8 - 1, stack, 2 ** 8 - 1))
         elif im_type == 'uint16':
@@ -250,11 +275,14 @@ def stack_live(work_path, new_image_path, ref, first_ref, counter, save_im=False
     else:
         raise ValueError("Mode not support")
 
+    image = np.array(stack_image)
+    # _____________________________
+
     if save_im:
         # save stack image in fit
-        red = fits.PrimaryHDU(data=stack_image)
+        red = fits.PrimaryHDU(data=image)
         red.writeto(work_path + "/" + "stack_image_" + name + extension)
-        # red.close()
+        # delete image in memory
         del red
 
-    return np.array(stack_image), im_limit, im_mode
+    return image, im_limit, im_mode
