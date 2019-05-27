@@ -358,6 +358,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.pbPlay.clicked.connect(self.cb_play)
         self.ui.pbStop.clicked.connect(self.cb_stop)
         self.ui.pbReset.clicked.connect(self.cb_reset)
+        self.ui.pbPause.clicked.connect(self.cb_pause)
         self.ui.pbSave.clicked.connect(self.cb_save)
         self.ui.bBrowseFolder.clicked.connect(self.cb_browse_folder)
         self.ui.bBrowseDark.clicked.connect(self.cb_browse_dark)
@@ -536,6 +537,8 @@ class als_main_window(QtWidgets.QMainWindow):
                 self.ui.pbReset.setEnabled(False)
                 # activate stop button
                 self.ui.pbStop.setEnabled(True)
+                # activate pause button
+                self.ui.pbPause.setEnabled(False)
 
                 self.fileWatcher.print_image.connect(
                     lambda: self.update_image(self.ui.tWork.text(), name_of_tiff_image))
@@ -549,6 +552,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.pbStop.setEnabled(False)
         self.ui.pbPlay.setEnabled(True)
         self.ui.pbReset.setEnabled(True)
+        self.ui.pbPause.setEnabled(False)
         self.ui.log.append("Stop")
 
     def cb_pause(self):
@@ -557,7 +561,8 @@ class als_main_window(QtWidgets.QMainWindow):
         self.pause = True
         self.ui.pbStop.setEnabled(False)
         self.ui.pbPlay.setEnabled(True)
-        self.ui.pbReset.setEnabled(True)
+        self.ui.pbReset.setEnabled(False)
+        self.ui.pbPause.setEnabled(False)
         self.ui.log.append("Stop")
 
     def cb_reset(self):
