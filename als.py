@@ -256,7 +256,7 @@ class WatchOutForFileCreations(QtCore.QThread):
             self.image_ref_save.image = self.first_image
 
             save_tiff(self.work_folder, self.image_ref_save.image, self.log,
-                      mode=mode, scnr_on=self.sncr_on,
+                      mode=mode, scnr_on=self.scnr_on,
                       param=[self.contrast_slider.value() / 10.,
                              self.brightness_slider.value(),
                              self.black_slider.value(),
@@ -319,7 +319,7 @@ class WatchOutForFileCreations(QtCore.QThread):
                                                                     stack_methode=stack_methode)
 
             save_tiff(self.work_folder, self.image_ref_save.image, self.log,
-                      mode=mode, scnr_on=self.sncr_on,
+                      mode=mode, scnr_on=self.scnr_on,
                       param=[self.contrast_slider.value() / 10.,
                              self.brightness_slider.value(),
                              self.black_slider.value(),
