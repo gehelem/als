@@ -1,10 +1,10 @@
-rm -rf ~/als/scan/*.fits
+#rm -rf ./scan/*.fits
 
-for i in `ls -d -1  ~/sirilive/sample/Light_*.fits`
+for i in `ls -d -1  ./sample/Light_*.fits`
   do
  
   echo "$i"
-  cp "$i" ~/als/scan
+  cp "$i" ./scan
   sleep 1
  
 done
