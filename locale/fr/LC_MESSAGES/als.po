@@ -1,0 +1,72 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2019-06-04 16:36+CEST\n"
+"PO-Revision-Date: 2019-06-04 19:24+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+"X-Generator: Poedit 2.0.6\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: als2.py:99
+msgid "Astro Live Stacker"
+msgstr "Empileur d'images astronomiques pour les astrams qui font de la bidouille et que la preuve c'est que tu es en train de lire ce message à rallonge donc vraiment c'est que tu vas au fond des choses, bravo."
+
+#: als2.py:101 als2.py:122
+msgid "Play"
+msgstr "Play"
+
+#: als2.py:102 als2.py:132
+msgid "Pause"
+msgstr "Pause"
+
+#: als2.py:103 als2.py:139
+msgid "Stop"
+msgstr "Stop"
+
+#: als2.py:104 als2.py:123
+msgid "Scan folder"
+msgstr "Dossier scanné"
+
+#: als2.py:105
+msgid "Dark file"
+msgstr "Fichier dark"
+
+#: als2.py:106
+msgid "Work folder"
+msgstr "Dossier de travail"
+
+#: als2.py:107
+msgid "Apply dark"
+msgstr "Appliquer un dark"
+
+#: als2.py:108
+msgid "Keep all frames"
+msgstr "Garder toutes les images"
+
+#: als2.py:109
+msgid "Enable webserver"
+msgstr "Activer le serveur web"
+
+#: als2.py:110
+msgid "Register"
+msgstr "Aligner"
+
+#: als2.py:111
+msgid "Save frame"
+msgstr "Sauvegarder l'image"
+
+#~ msgid "connect"
+#~ msgstr "connexion"
+
+#~ msgid "translate"
+#~ msgstr "Traduire"
