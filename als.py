@@ -19,6 +19,7 @@
 import os
 from datetime import datetime
 import shutil
+import configparser
 import cv2
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -31,6 +32,7 @@ from astropy.io import fits
 import stack as stk
 
 name_of_tiff_image = "stack_image.tiff"
+config = configparser.ConfigParser()
 
 
 class image_ref_save:
@@ -345,6 +347,11 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui = Ui_stack_window()
         self.ui.setupUi(self)
 
+        config.read('./als.ini')
+        self.ui.tFolder.setText(os.path.expanduser(config['Default']['folderscan']))
+        self.ui.tDark.setText(os.path.expanduser(config['Default']['filedark']))
+        self.ui.tWork.setText(os.path.expanduser(config['Default']['folderwork']))
+
         self.connect_actions()
         self.running = False
         self.counter = 0
@@ -352,6 +359,11 @@ class als_main_window(QtWidgets.QMainWindow):
         self.dark = False
         self.pause = False
         self.image_ref_save = image_ref_save()
+
+
+    def closeEvent(self, event):
+        config.write(open('./als.ini', 'w'))
+        super(als_main_window, self).closeEvent(event)
 
     def connect_actions(self):
 
@@ -442,17 +454,20 @@ class als_main_window(QtWidgets.QMainWindow):
         if DirName:
             self.ui.tFolder.setText(DirName)
             self.ui.pbPlay.setEnabled(True)
+            config['Default']['folderscan']=DirName
 
     def cb_browse_dark(self):
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Fichier de Dark", "",
                                                             "Fit Files (*.fit);;All Files (*)")
         if fileName:
             self.ui.tDark.setText(fileName)
+            config['Default']['filedark']=fileName
 
     def cb_browse_work(self):
         DirName = QtWidgets.QFileDialog.getExistingDirectory(self, "Répertoire de travail", self.ui.tWork.text())
         if DirName:
             self.ui.tWork.setText(DirName)
+            config['Default']['folderwork']=DirName
 
     def cb_play(self):
 
