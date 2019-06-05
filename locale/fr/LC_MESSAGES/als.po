@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2019-06-04 16:36+CEST\n"
-"PO-Revision-Date: 2019-06-04 19:24+0200\n"
+"POT-Creation-Date: 2019-06-05 23:34+CEST\n"
+"PO-Revision-Date: 2019-06-05 23:36+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -17,53 +17,55 @@ msgstr ""
 "X-Generator: Poedit 2.0.6\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: als2.py:99
+#: als.py:364
 msgid "Astro Live Stacker"
-msgstr "Empileur d'images astronomiques pour les astrams qui font de la bidouille et que la preuve c'est que tu es en train de lire ce message à rallonge donc vraiment c'est que tu vas au fond des choses, bravo."
+msgstr ""
+"Empileur d'images astronomiques pour les astrams qui font de la bidouille et "
+"que la preuve c'est que tu es en train de lire ce message à rallonge donc "
+"vraiment c'est que tu vas au fond des choses, bravo."
 
-#: als2.py:101 als2.py:122
-msgid "Play"
-msgstr "Play"
+#: als.py:420
+msgid "fit format not supported"
+msgstr "Format fit non supporté"
 
-#: als2.py:102 als2.py:132
-msgid "Pause"
-msgstr "Pause"
+#: als.py:435
+msgid "Adjust GUI image"
+msgstr "Ajustement image"
 
-#: als2.py:103 als2.py:139
-msgid "Stop"
-msgstr "Stop"
+#: als.py:445
+#, fuzzy
+msgid "invalid frame"
+msgstr "Image invalide"
 
-#: als2.py:104 als2.py:123
-msgid "Scan folder"
-msgstr "Dossier scanné"
+#~ msgid "Play"
+#~ msgstr "Play"
 
-#: als2.py:105
-msgid "Dark file"
-msgstr "Fichier dark"
+#~ msgid "Pause"
+#~ msgstr "Pause"
 
-#: als2.py:106
-msgid "Work folder"
-msgstr "Dossier de travail"
+#~ msgid "Stop"
+#~ msgstr "Stop"
 
-#: als2.py:107
-msgid "Apply dark"
-msgstr "Appliquer un dark"
+#~ msgid "Scan folder"
+#~ msgstr "Dossier scanné"
 
-#: als2.py:108
-msgid "Keep all frames"
-msgstr "Garder toutes les images"
+#~ msgid "Dark file"
+#~ msgstr "Fichier dark"
 
-#: als2.py:109
-msgid "Enable webserver"
-msgstr "Activer le serveur web"
+#~ msgid "Work folder"
+#~ msgstr "Dossier de travail"
 
-#: als2.py:110
-msgid "Register"
-msgstr "Aligner"
+#~ msgid "Apply dark"
+#~ msgstr "Appliquer un dark"
 
-#: als2.py:111
-msgid "Save frame"
-msgstr "Sauvegarder l'image"
+#~ msgid "Keep all frames"
+#~ msgstr "Garder toutes les images"
+
+#~ msgid "Enable webserver"
+#~ msgstr "Activer le serveur web"
+
+#~ msgid "Register"
+#~ msgstr "Aligner"
 
 #~ msgid "connect"
 #~ msgstr "connexion"

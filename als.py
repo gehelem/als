@@ -22,6 +22,7 @@ import shutil
 import configparser
 import cv2
 import numpy as np
+import gettext
 from PyQt5 import QtCore, QtGui, QtWidgets
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -33,7 +34,7 @@ import stack as stk
 
 name_of_tiff_image = "stack_image.tiff"
 config = configparser.ConfigParser()
-
+gettext.install('als', 'locale')
 
 class image_ref_save:
     def __init__(self):
@@ -360,6 +361,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.pause = False
         self.image_ref_save = image_ref_save()
 
+        self.setWindowTitle(_("Astro Live Stacker"))
 
     def closeEvent(self, event):
         config.write(open('./als.ini', 'w'))
@@ -415,7 +417,7 @@ class als_main_window(QtWidgets.QMainWindow):
         elif len(self.image_ref_save.image.shape) == 3:
             mode = "rgb"
         else:
-            raise ValueError("fit format not support")
+            raise ValueError(_("fit format not supported"))
 
         save_tiff(self.work_folder, self.image_ref_save.image, self.ui.log,
                   mode=mode, scnr_on=self.ui.cbSCNR.isChecked(),
@@ -430,7 +432,7 @@ class als_main_window(QtWidgets.QMainWindow):
                          self.ui.SCNR_Slider.value()/100.
                          ])
 
-        self.ui.log.append("Adjusted GUI image")
+        self.ui.log.append(_("Adjust GUI image"))
 
     def update_image(self, work_folder, add=True):
         if add:
@@ -440,7 +442,7 @@ class als_main_window(QtWidgets.QMainWindow):
         pixmap_tiff = QtGui.QPixmap(os.path.expanduser(work_folder + "/" + name_of_tiff_image))
 
         if pixmap_tiff.isNull():
-            self.ui.log.append("Image non valide !")
+            self.ui.log.append(_("invalid frame"))
 
         pixmap_tiff_resize = pixmap_tiff.scaled(self.ui.image_stack.frameGeometry().width(),
                                                 self.ui.image_stack.frameGeometry().height(),
