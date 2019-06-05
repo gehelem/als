@@ -19,7 +19,6 @@
 import os
 from datetime import datetime
 import shutil
-import configparser
 import cv2
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -29,10 +28,11 @@ from alsui import Ui_stack_window  # import du fichier alsui.py généré par : 
 from astropy.io import fits
 
 # from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+# Local stuff
+from Config import Config
 import stack as stk
 
 name_of_tiff_image = "stack_image.tiff"
-config = configparser.ConfigParser()
 
 
 class image_ref_save:
@@ -343,14 +343,15 @@ class WatchOutForFileCreations(QtCore.QThread):
 class als_main_window(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None):
-        super(als_main_window, self).__init__(parent)
+        super().__init__(parent)
         self.ui = Ui_stack_window()
         self.ui.setupUi(self)
 
-        config.read('./als.ini')
-        self.ui.tFolder.setText(os.path.expanduser(config['Default']['folderscan']))
-        self.ui.tDark.setText(os.path.expanduser(config['Default']['filedark']))
-        self.ui.tWork.setText(os.path.expanduser(config['Default']['folderwork']))
+        self.config = Config(path='./als.ini')
+        self.config.read()
+        self.ui.tScan.setText(os.path.expanduser(self.config['Default']['folderscan']))
+        self.ui.tDark.setText(os.path.expanduser(self.config['Default']['filedark']))
+        self.ui.tWork.setText(os.path.expanduser(self.config['Default']['folderwork']))
 
         self.connect_actions()
         self.running = False
@@ -362,8 +363,7 @@ class als_main_window(QtWidgets.QMainWindow):
 
 
     def closeEvent(self, event):
-        config.write(open('./als.ini', 'w'))
-        super(als_main_window, self).closeEvent(event)
+        super().closeEvent(event)
 
     def connect_actions(self):
 
@@ -372,7 +372,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.pbReset.clicked.connect(self.cb_reset)
         self.ui.pbPause.clicked.connect(self.cb_pause)
         self.ui.pbSave.clicked.connect(self.cb_save)
-        self.ui.bBrowseFolder.clicked.connect(self.cb_browse_folder)
+        self.ui.bBrowseFolder.clicked.connect(self.cb_browse_scan)
         self.ui.bBrowseDark.clicked.connect(self.cb_browse_dark)
         self.ui.bBrowseWork.clicked.connect(self.cb_browse_work)
         self.ui.pb_apply_value.clicked.connect(lambda: self.apply_value(self.counter, self.ui.tWork.text()))
@@ -417,7 +417,7 @@ class als_main_window(QtWidgets.QMainWindow):
         else:
             raise ValueError("fit format not support")
 
-        save_tiff(self.work_folder, self.image_ref_save.image, self.ui.log,
+        save_tiff(work_folder, self.image_ref_save.image, self.ui.log,
                   mode=mode, scnr_on=self.ui.cbSCNR.isChecked(),
                   param=[self.ui.contrast_slider.value() / 10.,
                          self.ui.brightness_slider.value(),
@@ -449,29 +449,29 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.log.append("Updated GUI image")
         print("Updated GUI image")
 
-    def cb_browse_folder(self):
-        DirName = QtWidgets.QFileDialog.getExistingDirectory(self, "Répertoire à scanner", self.ui.tFolder.text())
-        if DirName:
-            self.ui.tFolder.setText(DirName)
+    def cb_browse_scan(self):
+        dir_name = QtWidgets.QFileDialog.getExistingDirectory(self, "Répertoire à scanner", self.ui.tScan.text())
+        if dir_name:
+            self.ui.tScan.setText(dir_name)
             self.ui.pbPlay.setEnabled(True)
-            config['Default']['folderscan']=DirName
+            self.config['Default']['folderscan']=dir_name
 
     def cb_browse_dark(self):
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Fichier de Dark", "",
                                                             "Fit Files (*.fit);;All Files (*)")
         if fileName:
             self.ui.tDark.setText(fileName)
-            config['Default']['filedark']=fileName
+            self.config['Default']['filedark']=fileName
 
     def cb_browse_work(self):
-        DirName = QtWidgets.QFileDialog.getExistingDirectory(self, "Répertoire de travail", self.ui.tWork.text())
-        if DirName:
-            self.ui.tWork.setText(DirName)
-            config['Default']['folderwork']=DirName
+        dir_name = QtWidgets.QFileDialog.getExistingDirectory(self, "Répertoire de travail", self.ui.tWork.text())
+        if dir_name:
+            self.ui.tWork.setText(dir_name)
+            self.config['Default']['folderwork']=dir_name
 
     def cb_play(self):
 
-        if self.ui.tFolder.text() != "":
+        if self.ui.tScan.text() != "":
 
             self.ui.white_slider.setEnabled(False)
             self.ui.black_slider.setEnabled(False)
@@ -494,7 +494,7 @@ class als_main_window(QtWidgets.QMainWindow):
                 self.ui.pbStop.setEnabled(True)
             else:
                 # Print scan folder
-                self.ui.log.append("Dossier a scanner : " + os.path.expanduser(self.ui.tFolder.text()))
+                self.ui.log.append("Dossier a scanner : " + os.path.expanduser(self.ui.tScan.text()))
                 # Print work folder
                 self.ui.log.append("Dossier de travail : " + os.path.expanduser(self.ui.tWork.text()))
 
@@ -516,7 +516,7 @@ class als_main_window(QtWidgets.QMainWindow):
                     self.ui.log.append("Play with NO alignement")
 
                 # Lancement du watchdog
-                self.fileWatcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()),
+                self.fileWatcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tScan.text()),
                                                             os.path.expanduser(self.ui.tWork.text()),
                                                             self.align,
                                                             self.ui.cbKeep.isChecked(),
