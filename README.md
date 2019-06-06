@@ -14,7 +14,7 @@ __Python 3 library required__
 
 `sudo apt update` (adapte for other unix system)  
 `sudo apt install python3 python3-pip git` (adapte for other unix system)   
-`pip3 install astropy numpy tqdm watchdog pyqt5 astroalign opencv-python rawpy`  
+`pip3 install astropy numpy tqdm watchdog pyqt5 astroalign opencv-python rawpy python-gettext`  
 `cd ~`  
 `git clone https://github.com/gehelem/als.git`  (or just download als on github)  
 `cd ./als`  
@@ -30,9 +30,9 @@ Download python 3.7.x for your system.
 __Warning :__ select : pip (PiPy) and add to windows path  
 
 After, Run __CMD__ in administrator mode :  
-`pip install astropy numpy tqdm watchdog pyqt5 astroalign opencv-python rawpy`  
+`pip install astropy numpy tqdm watchdog pyqt5 astroalign opencv-python rawpy python-gettext`  
 or  
-`pip3 install astropy numpy tqdm watchdog pyqt5 astroalign opencv-python rawpy`
+`pip3 install astropy numpy tqdm watchdog pyqt5 astroalign opencv-python rawpy python-gettext`
 
 Download als on github : https://codeload.github.com/gehelem/als/zip/master  
 Extract ALS
