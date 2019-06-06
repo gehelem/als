@@ -22,14 +22,14 @@ __Python 3 library required__
 `mkdir wrk`  
 
 ## Install process (On Windows):
-__Warning :__ Need uninstall Python 2.x.x before install process
+__(option) Warning :__ Need uninstall Python 2.x.x before install process
 
 
 Go to -> https://www.python.org/downloads/  
 Download python 3.7.x for your system.  
 __Warning :__ select : pip (PiPy) and add to windows path  
 
-After, Run __CMD__ in administrator mode :  
+After, Run __CMD__ in administrator mode (right click on __CMD__):  
 `pip install astropy numpy tqdm watchdog pyqt5 astroalign opencv-python rawpy python-gettext`  
 or  
 `pip3 install astropy numpy tqdm watchdog pyqt5 astroalign opencv-python rawpy python-gettext`
