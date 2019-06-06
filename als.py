@@ -208,6 +208,7 @@ class WatchOutForFileCreations(QtCore.QThread):
     def __init__(self, path, work_folder, align_on, save_on, stack_methode,
                  log, white_slider, black_slider, contrast_slider, brightness_slider,
                  R_slider, G_slider, B_slider, apply_button,
+                 wvlt_level_1, wvlt_level_2, wvlt_level_3, wvlt_level_4, wvlt_level_5,
                  image_ref_save, dark_on, dark_path,
                  scnr_on, scnr_mode, scnr_value):
 
@@ -233,6 +234,11 @@ class WatchOutForFileCreations(QtCore.QThread):
         self.scnr_on = scnr_on
         self.scnr_mode = scnr_mode
         self.scnr_value = scnr_value
+        self.wvlt_level_1 = wvlt_level_1
+        self.wvlt_level_2 = wvlt_level_2
+        self.wvlt_level_3 = wvlt_level_3
+        self.wvlt_level_4 = wvlt_level_4
+        self.wvlt_level_5 = wvlt_level_5
         print(self.work_folder)
         print(self.path)
 
@@ -305,6 +311,12 @@ class WatchOutForFileCreations(QtCore.QThread):
                 self.G_slider.setEnabled(False)
                 self.B_slider.setEnabled(False)
 
+            # Wavelet denoising buttons (5 of them)
+            self.wvlt_level_1.setEnabled(True)
+            self.wvlt_level_2.setEnabled(True)
+            self.wvlt_level_3.setEnabled(True)
+            self.wvlt_level_4.setEnabled(True)
+            self.wvlt_level_5.setEnabled(True)
         else:
             # appelle de la fonction stack live
             if align_on:
@@ -530,6 +542,11 @@ class als_main_window(QtWidgets.QMainWindow):
                                                             self.ui.G_slider,
                                                             self.ui.B_slider,
                                                             self.ui.pb_apply_value,
+                                                            self.ui.wvlt_level_1,
+                                                            self.ui.wvlt_level_2,
+                                                            self.ui.wvlt_level_3,
+                                                            self.ui.wvlt_level_4,
+                                                            self.ui.wvlt_level_5,
                                                             self.image_ref_save,
                                                             self.dark,
                                                             os.path.expanduser(self.ui.tDark.text()),

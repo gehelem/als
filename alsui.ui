@@ -805,7 +805,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QSlider" name="horizontalSlider">
+           <widget class="QSlider" name="wvlt_level_1">
             <property name="enabled">
              <bool>false</bool>
             </property>
@@ -832,7 +832,7 @@
           <item>
            <widget class="QLabel" name="label_17">
             <property name="text">
-             <string>TextLabel</string>
+             <string>0</string>
             </property>
            </widget>
           </item>
@@ -848,7 +848,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QSlider" name="horizontalSlider_2">
+           <widget class="QSlider" name="wvlt_level_2">
             <property name="maximum">
              <number>100</number>
             </property>
@@ -860,7 +860,7 @@
           <item>
            <widget class="QLabel" name="label_18">
             <property name="text">
-             <string>TextLabel</string>
+             <string>0</string>
             </property>
            </widget>
           </item>
@@ -876,7 +876,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QSlider" name="horizontalSlider_3">
+           <widget class="QSlider" name="wvlt_level_3">
             <property name="maximum">
              <number>100</number>
             </property>
@@ -888,7 +888,7 @@
           <item>
            <widget class="QLabel" name="label_19">
             <property name="text">
-             <string>TextLabel</string>
+             <string>0</string>
             </property>
            </widget>
           </item>
@@ -904,7 +904,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QSlider" name="horizontalSlider_4">
+           <widget class="QSlider" name="wvlt_level_4">
             <property name="maximum">
              <number>100</number>
             </property>
@@ -916,7 +916,7 @@
           <item>
            <widget class="QLabel" name="label_20">
             <property name="text">
-             <string>TextLabel</string>
+             <string>0</string>
             </property>
            </widget>
           </item>
@@ -932,7 +932,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QSlider" name="horizontalSlider_5">
+           <widget class="QSlider" name="wvlt_level_5">
             <property name="maximum">
              <number>100</number>
             </property>
@@ -944,7 +944,7 @@
           <item>
            <widget class="QLabel" name="label_21">
             <property name="text">
-             <string>TextLabel</string>
+             <string>0</string>
             </property>
            </widget>
           </item>
@@ -1301,7 +1301,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>horizontalSlider</sender>
+   <sender>wvlt_level_1</sender>
    <signal>valueChanged(int)</signal>
    <receiver>label_17</receiver>
    <slot>setNum(int)</slot>
@@ -1317,7 +1317,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>horizontalSlider_2</sender>
+   <sender>wvlt_level_2</sender>
    <signal>valueChanged(int)</signal>
    <receiver>label_18</receiver>
    <slot>setNum(int)</slot>
@@ -1333,7 +1333,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>horizontalSlider_3</sender>
+   <sender>wvlt_level_3</sender>
    <signal>valueChanged(int)</signal>
    <receiver>label_19</receiver>
    <slot>setNum(int)</slot>
@@ -1349,7 +1349,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>horizontalSlider_4</sender>
+   <sender>wvlt_level_4</sender>
    <signal>valueChanged(int)</signal>
    <receiver>label_20</receiver>
    <slot>setNum(int)</slot>
@@ -1365,7 +1365,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>horizontalSlider_5</sender>
+   <sender>wvlt_level_5</sender>
    <signal>valueChanged(int)</signal>
    <receiver>label_21</receiver>
    <slot>setNum(int)</slot>

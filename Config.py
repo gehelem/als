@@ -18,6 +18,10 @@ from configparser import ConfigParser
 
 
 class Config(ConfigParser):
+    """
+    This class is a helper that allows to automatically update config file on
+    disk everytime something is changed in memory
+    """
     def __init__(self, path='config.ini'):
         super().__init__()
         self._path = path
