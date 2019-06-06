@@ -274,7 +274,7 @@ class als_main_window(QtWidgets.QMainWindow):
         else:
             raise ValueError(_("fit format not supported"))
 
-        prepro.save_tiff(self.work_folder, self.image_ref_save.image, self.ui.log,
+        prepro.save_tiff(work_folder, self.image_ref_save.image, self.ui.log,
                          mode=mode, scnr_on=self.ui.cbSCNR.isChecked(),
                          param=[self.ui.contrast_slider.value() / 10.,
                                 self.ui.brightness_slider.value(),
