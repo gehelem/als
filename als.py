@@ -106,9 +106,9 @@ class WatchOutForFileCreations(QtCore.QThread):
     def created(self, new_image_path, align_on, save_on, stack_methode):
 
         self.counter = self.counter + 1
-        self.log.append("Read New image...")
+        self.log.append(_("Reading new frame..."))
         if self.first == 0:
-            self.log.append("Read First image...")
+            self.log.append(_("Reading first frame..."))
             self.first_image, limit, mode = stk.create_first_ref_im(self.work_folder, new_image_path, save_im=save_on)
 
             self.image_ref_save.image = self.first_image
@@ -139,9 +139,9 @@ class WatchOutForFileCreations(QtCore.QThread):
             if self.brightness_slider.value() > limit / 2.:
                 self.brightness_slider.setSliderPosition(limit / 2.)
             if limit == 2. ** 16 - 1:
-                self.log.append("Readed 16bit image ...")
+                self.log.append(_("Read 16bit frame ..."))
             elif limit == 2. ** 8 - 1:
-                self.log.append("Readed 8bit image ...")
+                self.log.append(_("Read 8bit frame ..."))
             self.white_slider.setEnabled(True)
             self.black_slider.setEnabled(True)
             self.contrast_slider.setEnabled(True)
@@ -150,13 +150,13 @@ class WatchOutForFileCreations(QtCore.QThread):
 
             if mode == "rgb":
                 # activation des barre r, g, b
-                self.log.append("Readed RGB image ...")
+                self.log.append(_("Read RGB image ..."))
                 self.R_slider.setEnabled(True)
                 self.G_slider.setEnabled(True)
                 self.B_slider.setEnabled(True)
             elif mode == "gray":
                 # desactivation des barre r, g, b
-                self.log.append("Readed B&W image ...")
+                self.log.append(_("Read B&W image ..."))
                 self.R_slider.setEnabled(False)
                 self.G_slider.setEnabled(False)
                 self.B_slider.setEnabled(False)
@@ -164,9 +164,9 @@ class WatchOutForFileCreations(QtCore.QThread):
         else:
             # appelle de la fonction stack live
             if align_on:
-                self.log.append("Stack and Align New Image...")
+                self.log.append(_("Stack and Align New frame..."))
             else:
-                self.log.append("Stack New Image...")
+                self.log.append(_("Stack New frame..."))
 
             self.image_ref_save.image, limit, mode = stk.stack_live(self.work_folder, new_image_path,
                                                                     self.counter,
@@ -189,7 +189,7 @@ class WatchOutForFileCreations(QtCore.QThread):
                                     self.scnr_value.value()
                                     ])
 
-            self.log.append("... Stack finish")
+            self.log.append(_("... Stack finished"))
         self.print_image.emit()
 
 
@@ -251,7 +251,7 @@ class als_main_window(QtWidgets.QMainWindow):
     # Callbacks
     def cb_save(self):
         timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now())))
-        self.ui.log.append("Saving : stack_image_" + timestamp + ".fit")
+        self.ui.log.append(_("Saving : ")+ "stack_image_" + timestamp + ".fit")
         # save stack image in fit
         red = fits.PrimaryHDU(data=self.image_ref_save.image)
         red.writeto(self.ui.tWork.text() + "/" + "stack_image_" + timestamp + ".fit")
@@ -262,7 +262,7 @@ class als_main_window(QtWidgets.QMainWindow):
         if counter > 0:
             self.ajuste_value(work_folder)
             self.update_image(work_folder, add=False)
-        self.ui.log.append("Define new display value")
+        self.ui.log.append(_("Define new display value"))
 
     def ajuste_value(self, work_folder):
 
@@ -303,25 +303,25 @@ class als_main_window(QtWidgets.QMainWindow):
                                                 self.ui.image_stack.frameGeometry().height(),
                                                 QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         self.ui.image_stack.setPixmap(pixmap_tiff_resize)
-        self.ui.log.append("Updated GUI image")
-        print("Updated GUI image")
+        self.ui.log.append(_("Updated GUI image"))
+        print(_("Updated GUI image"))
 
     def cb_browse_folder(self):
-        DirName = QtWidgets.QFileDialog.getExistingDirectory(self, "Répertoire à scanner", self.ui.tFolder.text())
+        DirName = QtWidgets.QFileDialog.getExistingDirectory(self, _("Scan folder"), self.ui.tFolder.text())
         if DirName:
             self.ui.tFolder.setText(DirName)
             self.ui.pbPlay.setEnabled(True)
             config['Default']['folderscan'] = DirName
 
     def cb_browse_dark(self):
-        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Fichier de Dark", "",
+        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, _("Dark file"), "",
                                                             "Fit Files (*.fit);;All Files (*)")
         if fileName:
             self.ui.tDark.setText(fileName)
             config['Default']['filedark'] = fileName
 
     def cb_browse_work(self):
-        DirName = QtWidgets.QFileDialog.getExistingDirectory(self, "Répertoire de travail", self.ui.tWork.text())
+        DirName = QtWidgets.QFileDialog.getExistingDirectory(self, _("Work folder"), self.ui.tWork.text())
         if DirName:
             self.ui.tWork.setText(DirName)
             config['Default']['folderwork'] = DirName
@@ -351,9 +351,9 @@ class als_main_window(QtWidgets.QMainWindow):
                 self.ui.pbStop.setEnabled(True)
             else:
                 # Print scan folder
-                self.ui.log.append("Dossier a scanner : " + os.path.expanduser(self.ui.tFolder.text()))
+                self.ui.log.append(_("Scan folder : ") + os.path.expanduser(self.ui.tFolder.text()))
                 # Print work folder
-                self.ui.log.append("Dossier de travail : " + os.path.expanduser(self.ui.tWork.text()))
+                self.ui.log.append(_("Work folder : ") + os.path.expanduser(self.ui.tWork.text()))
 
                 # check align
                 if self.ui.cbAlign.isChecked():
@@ -366,11 +366,11 @@ class als_main_window(QtWidgets.QMainWindow):
 
                 # Print live method
                 if self.align and self.dark:
-                    self.ui.log.append("Play with alignement type: " + self.ui.cmMode.currentText() + " and Dark")
+                    self.ui.log.append(_("Play with alignement type: ") + self.ui.cmMode.currentText() + " and Dark")
                 elif self.align:
-                    self.ui.log.append("Play with alignement type: " + self.ui.cmMode.currentText())
+                    self.ui.log.append(_("Play with alignement type: ") + self.ui.cmMode.currentText())
                 else:
-                    self.ui.log.append("Play with NO alignement")
+                    self.ui.log.append(_("Play with NO alignement"))
 
                 # Lancement du watchdog
                 self.fileWatcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()),
@@ -416,7 +416,7 @@ class als_main_window(QtWidgets.QMainWindow):
                     lambda: self.update_image(self.ui.tWork.text(), name_of_tiff_image))
 
         else:
-            self.ui.log.append("No have path")
+            self.ui.log.append(_("No path"))
 
     def cb_stop(self):
         self.fileWatcher.observer.stop()

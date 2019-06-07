@@ -91,13 +91,13 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False, param=[]):
 
     # change action for mode :
     if mode == "rgb":
-        log.append("Save New TIFF Image in RGB...")
+        log.append(_("Save New TIFF Image in RGB..."))
         # convert clissic classic order to cv2 order
         new_stack_image = np.rollaxis(stack_image, 0, 3)
         # convert RGB color order to BGR
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_RGB2BGR)
     elif mode == "gray":
-        log.append("Save New TIFF Image in B&W...")
+        log.append(_("Save New TIFF Image in B&W..."))
         new_stack_image = stack_image
 
     # read image number type
@@ -108,18 +108,18 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False, param=[]):
             or param[4] != 1 or param[5] != 1 or param[6] != 1:
 
         # print param value for post process
-        log.append("Post-Process New TIFF Image...")
-        log.append("correct display image")
-        log.append("contrast value : %f" % param[0])
-        log.append("brightness value : %f" % param[1])
-        log.append("pente : %f" % (1. / ((param[3] - param[2]) / limit)))
+        log.append(_("Post-Process New TIFF Image..."))
+        log.append(_("correct display image"))
+        log.append(_("contrast value :") +" %f" % param[0])
+        log.append(_("brightness value :") + "%f" % param[1])
+        log.append(_("pente : ")+ "%f" % (1. / ((param[3] - param[2]) / limit)))
 
         # need convert to float32 for excess value
         new_stack_image = np.float32(new_stack_image)
 
         if scnr_on:
-            log.append("apply SCNR")
-            log.append("SCNR type %s" % param[7])
+            log.append(_("apply SCNR"))
+            log.append(_("SCNR type") + "%s" % param[7])
             new_stack_image = SCNR(new_stack_image, limit, rgb_type="BGR", scnr_type=param[7], amount=param[8])
 
         # if change in RGB value
@@ -127,9 +127,9 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False, param=[]):
             if mode == "rgb":
                 # invert Red and Blue for cv2
                 # print RGB contrast value
-                log.append("R contrast value : %f" % param[4])
-                log.append("G contrast value : %f" % param[5])
-                log.append("B contrast value : %f" % param[6])
+                log.append(_("R contrast value : ") +"%f" % param[4])
+                log.append(_("G contrast value : ") +"%f" % param[5])
+                log.append(_("B contrast value : ") +"%f" % param[6])
 
                 # multiply by RGB factor
                 new_stack_image[:, :, 0] = new_stack_image[:, :, 0] * param[6]
@@ -161,6 +161,6 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False, param=[]):
 
     # use cv2 fonction for save print image in tiff format
     cv2.imwrite(work_path + "/" + name_of_tiff_image, new_stack_image)
-    print("TIFF image create : %s" % work_path + "/" + name_of_tiff_image)
+    print(_("TIFF image create :") +"%s" % work_path + "/" + name_of_tiff_image)
 
     return 1

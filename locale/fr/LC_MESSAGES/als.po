@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2019-06-05 23:34+CEST\n"
-"PO-Revision-Date: 2019-06-05 23:36+0200\n"
+"POT-Creation-Date: 2019-06-07 11:58+CEST\n"
+"PO-Revision-Date: 2019-06-07 12:02+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -17,25 +17,156 @@ msgstr ""
 "X-Generator: Poedit 2.0.6\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: als.py:364
+#: als.py:109
+msgid "Reading new frame..."
+msgstr "Lecture nouvelle image ..."
+
+#: als.py:111
+msgid "Reading first frame..."
+msgstr "Lecture première image ..."
+
+#: als.py:142
+msgid "Read 16bit frame ..."
+msgstr "Image 16 bits ..."
+
+#: als.py:144
+msgid "Read 8bit frame ..."
+msgstr "Image 8bits ..."
+
+#: als.py:153
+msgid "Read RGB image ..."
+msgstr "Image RGB ..."
+
+#: als.py:159
+msgid "Read B&W image ..."
+msgstr "Image noir et blanc ..."
+
+#: als.py:167
+msgid "Stack and Align New frame..."
+msgstr "Empilement et alignement nouvelle image..."
+
+#: als.py:169
+msgid "Stack New frame..."
+msgstr "Empilement nouvelle image ..."
+
+#: als.py:192
+msgid "... Stack finished"
+msgstr "Empilement terminé"
+
+#: als.py:219
 msgid "Astro Live Stacker"
 msgstr ""
 "Empileur d'images astronomiques pour les astrams qui font de la bidouille et "
 "que la preuve c'est que tu es en train de lire ce message à rallonge donc "
-"vraiment c'est que tu vas au fond des choses, bravo."
+"vraiment c'est que tu vas au fond des choses, bravo"
 
-#: als.py:420
+#: als.py:254
+msgid "Saving : "
+msgstr "Enregistrement : "
+
+#: als.py:265
+msgid "Define new display value"
+msgstr "Définition du nouvel affichage"
+
+#: als.py:275
 msgid "fit format not supported"
-msgstr "Format fit non supporté"
+msgstr "format fit non supporté"
 
-#: als.py:435
+#: als.py:290
 msgid "Adjust GUI image"
 msgstr "Ajustement image"
 
-#: als.py:445
-#, fuzzy
+#: als.py:300
 msgid "invalid frame"
-msgstr "Image invalide"
+msgstr "image invalide"
+
+#: als.py:306 als.py:307
+msgid "Updated GUI image"
+msgstr "Mise à jour affichage"
+
+#: als.py:310
+msgid "Scan folder"
+msgstr "Dossier scanné"
+
+#: als.py:317
+msgid "Dark file"
+msgstr "Fichier dark"
+
+#: als.py:324
+msgid "Work folder"
+msgstr "Dossier de travail"
+
+#: als.py:354
+msgid "Scan folder : "
+msgstr "Dossier scanné : "
+
+#: als.py:356
+msgid "Work folder : "
+msgstr "Dossier de travail : "
+
+#: als.py:369 als.py:371
+msgid "Play with alignement type: "
+msgstr "Play avec alignement : "
+
+#: als.py:373
+msgid "Play with NO alignement"
+msgstr "Play sans alignement"
+
+#: als.py:419
+msgid "No path"
+msgstr "Pas de chemin fourni"
+
+#: preprocess.py:94
+msgid "Save New TIFF Image in RGB..."
+msgstr "Sauvegarde nouveau TIFF en RGB..."
+
+#: preprocess.py:100
+msgid "Save New TIFF Image in B&W..."
+msgstr "Sauvegarde nouveau TIFF en noir et blanc..."
+
+#: preprocess.py:111
+msgid "Post-Process New TIFF Image..."
+msgstr "Post traitement nouveau TIFF..."
+
+#: preprocess.py:112
+msgid "correct display image"
+msgstr "correction image affichée"
+
+#: preprocess.py:113
+msgid "contrast value :"
+msgstr "contraste :"
+
+#: preprocess.py:114
+msgid "brightness value :"
+msgstr "luminosité :"
+
+#: preprocess.py:115
+msgid "pente : "
+msgstr "pente : "
+
+#: preprocess.py:121
+msgid "apply SCNR"
+msgstr "appliquer SCNR"
+
+#: preprocess.py:122
+msgid "SCNR type"
+msgstr "Type de SCNR"
+
+#: preprocess.py:130
+msgid "R contrast value : "
+msgstr "Valeur de contraste R : "
+
+#: preprocess.py:131
+msgid "G contrast value : "
+msgstr "Valeur de contraste G : "
+
+#: preprocess.py:132
+msgid "B contrast value : "
+msgstr "Valeur de contraste B : "
+
+#: preprocess.py:164
+msgid "TIFF image create :"
+msgstr "Création image TIFF :"
 
 #~ msgid "Play"
 #~ msgstr "Play"
@@ -45,15 +176,6 @@ msgstr "Image invalide"
 
 #~ msgid "Stop"
 #~ msgstr "Stop"
-
-#~ msgid "Scan folder"
-#~ msgstr "Dossier scanné"
-
-#~ msgid "Dark file"
-#~ msgstr "Fichier dark"
-
-#~ msgid "Work folder"
-#~ msgstr "Dossier de travail"
 
 #~ msgid "Apply dark"
 #~ msgstr "Appliquer un dark"
