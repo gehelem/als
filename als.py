@@ -46,7 +46,7 @@ class MyEventHandler(FileSystemEventHandler, QtCore.QThread):
     new_image_path = ""
 
     def __init__(self):
-        super(MyEventHandler, self).__init__()
+        super().__init__()
 
     def on_created(self, event):
         # if not event.is_directory:
@@ -68,7 +68,7 @@ class WatchOutForFileCreations(QtCore.QThread):
                  image_ref_save, dark_on, dark_path,
                  scnr_on, scnr_mode, scnr_value):
 
-        super(WatchOutForFileCreations, self).__init__()
+        super().__init__()
         self.white_slider = white_slider
         self.black_slider = black_slider
         self.contrast_slider = contrast_slider
@@ -200,7 +200,7 @@ class WatchOutForFileCreations(QtCore.QThread):
 class als_main_window(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None):
-        super(als_main_window, self).__init__(parent)
+        super().__init__(parent)
         self.ui = Ui_stack_window()
         self.ui.setupUi(self)
 
@@ -221,7 +221,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.setWindowTitle(_("Astro Live Stacker"))
 
     def closeEvent(self, event):
-        super(als_main_window, self).closeEvent(event)
+        super().closeEvent(event)
 
     def connect_actions(self):
 
