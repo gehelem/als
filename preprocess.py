@@ -28,7 +28,9 @@ name_of_tiff_image = "stack_image.tiff"
 
 def Wavelets(image, parameters):
     """
-
+    Module allowing to play with coefficients of a redudant frame from the
+    wavelet family.
+    A ratio is applied to each level
     :param image:      input image
     :param parameters: ratio to be applied for each level of the wavelet
                         decomposition
