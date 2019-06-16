@@ -15,15 +15,37 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+# Numerical stuff
 import numpy as np
 import cv2
+import dtcwt
+
+# Local stuff
 import stack as stk
 
 name_of_tiff_image = "stack_image.tiff"
 
 
 def Wavelets(image, parameters):
-    print("Parameters are {}".format(parameters))
+
+    def apply_wavelets(img, param):
+        # Compute two levels of dtcwt with the default wavelet family
+        transform = dtcwt.Transform2d(biort='antonini', qshift='qshift_06')
+        t = transform.forward(img, nlevels=len(param))
+
+        for level, ratio in param.items():
+            data = t.highpasses[level-1]
+            for band in range(data.shape[2]):
+                data[:,:,band] *= ratio
+        return transform.inverse(t)
+
+    try:
+        for channel_index in range(image.shape[2]):
+            image[:, :, channel_index] = apply_wavelets(
+                image[:, :, channel_index], parameters)
+    except IndexError as e:
+        image = apply_wavelets(image, parameters)
+
     return image
 
 def SCNR(rgb_image, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
