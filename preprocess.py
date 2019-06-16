@@ -22,6 +22,10 @@ import stack as stk
 name_of_tiff_image = "stack_image.tiff"
 
 
+def Wavelets(image, parameters):
+    print("Parameters are {}".format(parameters))
+    return image
+
 def SCNR(rgb_image, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
     """
     Function for reduce green noise on image
@@ -75,7 +79,8 @@ def SCNR(rgb_image, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
     return rgb_image
 
 
-def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False, param=[]):
+def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
+              wavelets_on=False, param=[]):
     """
     Fonction for create print image and post process this image
 
@@ -83,7 +88,8 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False, param=[]):
     :param stack_image: np.array(uintX), Image, 3xMxN or MxN
     :param log: QT log for print text in QT GUI
     :param mode: image mode ("rgb" or "gray")
-    :param scnr_on: bool, actuve scnr correction
+    :param scnr_on: bool, activate scnr correction
+    :param wavelets_on: bool, activate wavelet filtering
     :param param: post process param
     :return: no return
 
@@ -105,7 +111,8 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False, param=[]):
 
     # if no have change, no process
     if param[0] != 1 or param[1] != 0 or param[2] != 0 or param[3] != limit \
-            or param[4] != 1 or param[5] != 1 or param[6] != 1:
+            or param[4] != 1 or param[5] != 1 or param[6] != 1 or any(
+            [v!=1 for _,v in param[9].items()]):
 
         # print param value for post process
         log.append(_("Post-Process New TIFF Image..."))
@@ -121,6 +128,11 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False, param=[]):
             log.append(_("apply SCNR"))
             log.append(_("SCNR type") + "%s" % param[7])
             new_stack_image = SCNR(new_stack_image, limit, rgb_type="BGR", scnr_type=param[7], amount=param[8])
+
+        if wavelets_on:
+            log.append("apply Wavelets")
+            log.append("Wavelets parameters {}".format(param[9]))
+            new_stack_image = Wavelets(new_stack_image, parameters=param[9])
 
         # if change in RGB value
         if param[4] != 1 or param[5] != 1 or param[6] != 1:

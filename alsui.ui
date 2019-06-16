@@ -1044,6 +1044,13 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_15">
           <item>
+           <widget class="QCheckBox" name="cbWavelets">
+            <property name="text">
+             <string>Wavelets</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <item alignment="Qt::AlignHCenter">
              <widget class="QLabel" name="label_9">
@@ -1174,7 +1181,7 @@
            </layout>
           </item>
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout_10">
+           <layout class="QVBoxLayout" name="verticalLayout_20">
             <item alignment="Qt::AlignHCenter">
              <widget class="QLabel" name="label_15">
               <property name="text">
@@ -1196,7 +1203,7 @@
              </widget>
             </item>
             <item alignment="Qt::AlignHCenter">
-             <widget class="QLabel" name="label_20">
+             <widget class="QLabel" name="wavelet_5_label">
               <property name="text">
                <string>100</string>
               </property>
@@ -1237,22 +1244,6 @@
  <resources/>
  <connections>
   <connection>
-   <sender>cbSCNR</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>SCNR_Slider</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>104</x>
-     <y>572</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>748</x>
-     <y>570</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>cbAlign</sender>
    <signal>clicked(bool)</signal>
    <receiver>cmMode</receiver>
@@ -1265,22 +1256,6 @@
     <hint type="destinationlabel">
      <x>262</x>
      <y>92</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>cbSCNR</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>cmSCNR</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>104</x>
-     <y>572</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>211</x>
-     <y>572</y>
     </hint>
    </hints>
   </connection>
@@ -1399,7 +1374,7 @@
   <connection>
    <sender>verticalSlider_5</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>label_20</receiver>
+   <receiver>wavelet_5_label</receiver>
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -1409,6 +1384,38 @@
     <hint type="destinationlabel">
      <x>677</x>
      <y>734</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbSCNR</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>cmSCNR</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>104</x>
+     <y>572</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>211</x>
+     <y>572</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbSCNR</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>SCNR_Slider</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>104</x>
+     <y>572</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>748</x>
+     <y>570</y>
     </hint>
    </hints>
   </connection>
