@@ -9,6 +9,7 @@ __Python 3 library required__
 - astroalign (frame alignement)
 - cv2 ( TIFF saving and debayering)
 - rawpy ( convert RAW camera file to RGB)
+- dtcwt (for wavelets)
 
 ## Install process (On ubuntu or debian): 
 
@@ -30,9 +31,9 @@ Download python 3.7.x for your system.
 __Warning :__ select : pip (PiPy) and add to windows path  
 
 After, Run __CMD__ in administrator mode (right click on __CMD__):  
-`pip install astropy numpy tqdm watchdog pyqt5 astroalign opencv-python rawpy python-gettext`  
+`pip install astropy numpy tqdm watchdog pyqt5 astroalign opencv-python rawpy python-gettext dtcwt`  
 or  
-`pip3 install astropy numpy tqdm watchdog pyqt5 astroalign opencv-python rawpy python-gettext`
+`pip3 install astropy numpy tqdm watchdog pyqt5 astroalign opencv-python rawpy python-gettext dtcwt`
 
 Download als on github : https://codeload.github.com/gehelem/als/zip/master  
 Extract ALS

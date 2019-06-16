@@ -27,16 +27,29 @@ name_of_tiff_image = "stack_image.tiff"
 
 
 def Wavelets(image, parameters):
+    """
 
+    :param image:      input image
+    :param parameters: ratio to be applied for each level of the wavelet
+                        decomposition
+    :return:           denoised/enhanced image
+    """
     def apply_wavelets(img, param):
-        # Compute two levels of dtcwt with the default wavelet family
+        # Compute 5 levels of dtcwt with the default antonini/qshift settings
         transform = dtcwt.Transform2d(biort='antonini', qshift='qshift_06')
         t = transform.forward(img, nlevels=len(param))
 
         for level, ratio in param.items():
             data = t.highpasses[level-1]
-            for band in range(data.shape[2]):
-                data[:,:,band] *= ratio
+            if ratio < 1:
+                # Proximity operator for L1,2 norm
+                norm = np.absolute(data)
+                thresh = np.percentile(norm, 100*(1-ratio))
+                data[:,:,:] = np.where(norm < thresh, 0,
+                    (norm - thresh) * np.exp(1j * np.angle(data)))
+            else:
+                # Just applying gain for this level
+                data *= ratio
         return transform.inverse(t)
 
     try:
