@@ -18,7 +18,10 @@
 # Numerical stuff
 import numpy as np
 import cv2
+
+# Wavelet stuff
 import dtcwt
+from pywi.processing.transform import starlet
 
 # Local stuff
 import stack as stk
@@ -26,17 +29,19 @@ import stack as stk
 name_of_tiff_image = "stack_image.tiff"
 
 
-def Wavelets(image, parameters):
+def Wavelets(image, wavelets_type, parameters):
     """
     Module allowing to play with coefficients of a redudant frame from the
     wavelet family.
     A ratio is applied to each level
     :param image:      input image
+    :param wavelets_type: either 'deep sky' or 'planetary' gives the family
+                            of wavelets to be used for processing
     :param parameters: ratio to be applied for each level of the wavelet
                         decomposition
     :return:           denoised/enhanced image
     """
-    def apply_wavelets(img, param):
+    def apply_dt_wavelets(img, param):
         # Compute 5 levels of dtcwt with the antonini/qshift settings
         transform = dtcwt.Transform2d(biort='antonini', qshift='qshift_06')
         t = transform.forward(img, nlevels=len(param))
@@ -55,13 +60,35 @@ def Wavelets(image, parameters):
                 data *= ratio
         return transform.inverse(t)
 
+
+    def apply_star_wavelets(img, param):
+        # Compute 5 levels of starlets
+        t = starlet.wavelet_transform(img, number_of_scales=len(param))
+
+        for level, ratio in param.items():
+            data = t[level-1]
+            if ratio < 1:
+                norm = np.absolute(data)
+                # 1 keeps 100% of the coefficients, 0 keeps 0% of the coeff
+                thresh = np.percentile(norm, 100*(1-ratio))
+                # Proximity operator for L1 norm
+                data[:,:] = np.where(norm < thresh, 0,
+                    (norm - thresh) * np.sign(data))
+            else:
+                # Just applying gain for this level
+                data *= ratio
+        return starlet.inverse_wavelet_transform(t)
+
+    # Choose in between members of a catalog
+    wavelet_db = {'deep sky': apply_star_wavelets,
+                  'planetary': apply_dt_wavelets}
     try:
         # apply wvlt to all channels if available
         for channel_index in range(image.shape[2]):
-            image[:, :, channel_index] = apply_wavelets(
+            image[:, :, channel_index] = wavelet_db[wavelets_type](
                 image[:, :, channel_index], parameters)
     except IndexError as e:
-        image = apply_wavelets(image, parameters)
+        image = wavelet_db[wavelets_type](image, parameters)
 
     return image
 
@@ -119,7 +146,7 @@ def SCNR(rgb_image, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
 
 
 def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
-              wavelets_on=False, param=[]):
+              wavelets_on=False, wavelets_type='deep sky', param=[]):
     """
     Fonction for create print image and post process this image
 
@@ -171,7 +198,9 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
         if wavelets_on:
             log.append("apply Wavelets")
             log.append("Wavelets parameters {}".format(param[9]))
-            new_stack_image = Wavelets(new_stack_image, parameters=param[9])
+            new_stack_image = Wavelets(new_stack_image,
+                                       wavelets_type=wavelets_type,
+                                       parameters=param[9])
 
         # if change in RGB value
         if param[4] != 1 or param[5] != 1 or param[6] != 1:

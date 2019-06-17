@@ -1044,11 +1044,38 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_15">
           <item>
-           <widget class="QCheckBox" name="cbWavelets">
-            <property name="text">
-             <string>Wavelets</string>
-            </property>
-           </widget>
+           <layout class="QVBoxLayout" name="verticalLayout_10">
+            <item>
+             <widget class="QCheckBox" name="cbWavelets">
+              <property name="text">
+               <string>Wavelets</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="cBoxWaveType">
+              <property name="editable">
+               <bool>false</bool>
+              </property>
+              <property name="currentText">
+               <string>deep sky</string>
+              </property>
+              <property name="maxVisibleItems">
+               <number>2</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>deep sky</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>planetary</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_2">
