@@ -37,16 +37,17 @@ def Wavelets(image, parameters):
     :return:           denoised/enhanced image
     """
     def apply_wavelets(img, param):
-        # Compute 5 levels of dtcwt with the default antonini/qshift settings
+        # Compute 5 levels of dtcwt with the antonini/qshift settings
         transform = dtcwt.Transform2d(biort='antonini', qshift='qshift_06')
         t = transform.forward(img, nlevels=len(param))
 
         for level, ratio in param.items():
             data = t.highpasses[level-1]
             if ratio < 1:
-                # Proximity operator for L1,2 norm
                 norm = np.absolute(data)
+                # 1 keeps 100% of the coefficients, 0 keeps 0% of the coeff
                 thresh = np.percentile(norm, 100*(1-ratio))
+                # Proximity operator for L1,2 norm
                 data[:,:,:] = np.where(norm < thresh, 0,
                     (norm - thresh) * np.exp(1j * np.angle(data)))
             else:
@@ -55,6 +56,7 @@ def Wavelets(image, parameters):
         return transform.inverse(t)
 
     try:
+        # apply wvlt to all channels if available
         for channel_index in range(image.shape[2]):
             image[:, :, channel_index] = apply_wavelets(
                 image[:, :, channel_index], parameters)
