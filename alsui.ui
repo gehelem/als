@@ -1075,6 +1075,13 @@
               </item>
              </widget>
             </item>
+            <item>
+             <widget class="QCheckBox" name="cbLuminanceWavelet">
+              <property name="text">
+               <string>on luminance</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
           <item>

@@ -18,6 +18,7 @@
 # Numerical stuff
 import numpy as np
 import cv2
+from skimage.color import rgb2hsv
 
 # Wavelet stuff
 import dtcwt
@@ -29,7 +30,7 @@ import stack as stk
 name_of_tiff_image = "stack_image.tiff"
 
 
-def Wavelets(image, wavelets_type, parameters):
+def Wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
     """
     Module allowing to play with coefficients of a redudant frame from the
     wavelet family.
@@ -82,14 +83,23 @@ def Wavelets(image, wavelets_type, parameters):
     # Choose in between members of a catalog
     wavelet_db = {'deep sky': apply_star_wavelets,
                   'planetary': apply_dt_wavelets}
-    try:
-        # apply wvlt to all channels if available
-        for channel_index in range(image.shape[2]):
-            image[:, :, channel_index] = wavelet_db[wavelets_type](
-                image[:, :, channel_index], parameters)
-    except IndexError as e:
-        image = wavelet_db[wavelets_type](image, parameters)
 
+    # in case of rgb image with 3 channels
+    if len(image.shape) > 2:
+        # either process wvlts only on the value channel of hsv space
+        if wavelets_use_luminance:
+            hsv_img = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+            hsv_img[:,:,2] = wavelet_db[wavelets_type](hsv_img[:,:,2], parameters)
+            image = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2RGB)
+        # or compute 3 times the wvlt process. More expensive, but usually this
+        #yields better results
+        else:
+            # apply wvlt to all channels if available
+            for channel_index in range(image.shape[2]):
+                image[:, :, channel_index] = wavelet_db[wavelets_type](
+                    image[:, :, channel_index], parameters)
+    else:
+        image = wavelet_db[wavelets_type](image, parameters)
     return image
 
 def SCNR(rgb_image, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
@@ -146,7 +156,8 @@ def SCNR(rgb_image, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
 
 
 def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
-              wavelets_on=False, wavelets_type='deep sky', param=[]):
+              wavelets_on=False, wavelets_type='deep sky',
+              wavelets_use_luminance=False, param=[]):
     """
     Fonction for create print image and post process this image
 
@@ -200,6 +211,7 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
             log.append("Wavelets parameters {}".format(param[9]))
             new_stack_image = Wavelets(new_stack_image,
                                        wavelets_type=wavelets_type,
+                                       wavelets_use_luminance=wavelets_use_luminance,
                                        parameters=param[9])
 
         # if change in RGB value

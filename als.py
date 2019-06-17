@@ -67,8 +67,9 @@ class WatchOutForFileCreations(QtCore.QThread):
                  R_slider, G_slider, B_slider, apply_button,
                  image_ref_save, dark_on, dark_path,
                  scnr_on, scnr_mode, scnr_value,
-                 wavelets_on, wavelets_type, wavelet_1_value, wavelet_2_value,
-                 wavelet_3_value, wavelet_4_value, wavelet_5_value):
+                 wavelets_on, wavelets_type, wavelets_use_luminance,
+                 wavelet_1_value, wavelet_2_value, wavelet_3_value,
+                 wavelet_4_value, wavelet_5_value):
 
         super().__init__()
         self.white_slider = white_slider
@@ -94,6 +95,7 @@ class WatchOutForFileCreations(QtCore.QThread):
         self.scnr_value = scnr_value
         self.wavelets_on = wavelets_on
         self.wavelets_type = wavelets_type
+        self.wavelets_use_luminance = wavelets_use_luminance,
         self.wavelet_1_value = wavelet_1_value
         self.wavelet_2_value = wavelet_2_value
         self.wavelet_3_value = wavelet_3_value
@@ -127,6 +129,7 @@ class WatchOutForFileCreations(QtCore.QThread):
                              mode=mode, scnr_on=self.scnr_on,
                              wavelets_on=self.wavelets_on,
                              wavelets_type=str(self.wavelets_type.currentText()),
+                             wavelets_use_luminance=self.wavelets_use_luminance,
                              param=[self.contrast_slider.value() / 10.,
                                     self.brightness_slider.value(),
                                     self.black_slider.value(),
@@ -197,6 +200,7 @@ class WatchOutForFileCreations(QtCore.QThread):
                              mode=mode, scnr_on=self.scnr_on,
                              wavelets_on=self.wavelets_on,
                              wavelets_type=str(self.wavelets_type.currentText()),
+                             wavelets_use_luminance=self.wavelets_use_luminance,
                              param=[self.contrast_slider.value() / 10.,
                                     self.brightness_slider.value(),
                                     self.black_slider.value(),
@@ -303,6 +307,7 @@ class als_main_window(QtWidgets.QMainWindow):
                          scnr_on=self.ui.cbSCNR.isChecked(),
                          wavelets_on=self.ui.cbWavelets.isChecked(),
                          wavelets_type=str(self.ui.cBoxWaveType.currentText()),
+                         wavelets_use_luminance=self.ui.cbLuminanceWavelet.isChecked(),
                          param=[self.ui.contrast_slider.value() / 10.,
                                 self.ui.brightness_slider.value(),
                                 self.ui.black_slider.value(),
@@ -427,6 +432,7 @@ class als_main_window(QtWidgets.QMainWindow):
                                                             self.ui.SCNR_Slider,
                                                             self.ui.cbWavelets,
                                                             self.ui.cBoxWaveType,
+                                                            self.ui.cbLuminanceWavelet,
                                                             self.ui.wavelet_1_label,
                                                             self.ui.wavelet_2_label,
                                                             self.ui.wavelet_3_label,
