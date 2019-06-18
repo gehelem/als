@@ -18,7 +18,6 @@
 # Numerical stuff
 import numpy as np
 import cv2
-from skimage.color import rgb2hsv
 
 # Wavelet stuff
 import dtcwt
