@@ -252,7 +252,7 @@ class als_main_window(QtWidgets.QMainWindow):
     # Callbacks
     def cb_save(self):
         timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now())))
-        self.ui.log.append(_("Saving : ")+ "stack_image_" + timestamp + ".fit")
+        self.ui.log.append(_("Saving : ") + "stack_image_" + timestamp + ".fit")
         # save stack image in fit
         red = fits.PrimaryHDU(data=self.image_ref_save.image)
         red.writeto(self.ui.tWork.text() + "/" + "stack_image_" + timestamp + ".fit")
@@ -312,7 +312,7 @@ class als_main_window(QtWidgets.QMainWindow):
         if DirName:
             self.ui.tFolder.setText(DirName)
             self.ui.pbPlay.setEnabled(True)
-            self.config['Default']['folderscan']=DirName
+            self.config['Default']['folderscan'] = DirName
 
     def cb_browse_dark(self):
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, _("Dark file"), "",
@@ -411,7 +411,7 @@ class als_main_window(QtWidgets.QMainWindow):
                 # activate stop button
                 self.ui.pbStop.setEnabled(True)
                 # activate pause button
-                self.ui.pbPause.setEnabled(False)
+                self.ui.pbPause.setEnabled(True)
 
                 self.fileWatcher.print_image.connect(
                     lambda: self.update_image(self.ui.tWork.text(), name_of_tiff_image))
