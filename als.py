@@ -39,14 +39,16 @@ gettext.install('als', 'locale')
 class image_ref_save:
     def __init__(self):
         self.image = []
+        self.status = "stop"
 
 
-class MyEventHandler(FileSystemEventHandler, QtCore.QThread):
+class MyEventHandler(FileSystemEventHandler, QtCore.QThread, image_ref_save):
     created_signal = QtCore.pyqtSignal()
     new_image_path = ""
 
     def __init__(self):
         super(MyEventHandler, self).__init__()
+        self.image_ref_save = image_ref_save
 
     def on_created(self, event):
         # if not event.is_directory:
@@ -105,93 +107,95 @@ class WatchOutForFileCreations(QtCore.QThread):
                                                                        align_on, save_on, stack_methode))
 
     def created(self, new_image_path, align_on, save_on, stack_methode):
+        if image_ref_save.status == "play":
+            self.counter = self.counter + 1
+            self.log.append(_("Reading new frame..."))
+            if self.first == 0:
+                self.log.append(_("Reading first frame..."))
+                self.first_image, limit, mode = stk.create_first_ref_im(self.work_folder, new_image_path, save_im=save_on)
 
-        self.counter = self.counter + 1
-        self.log.append(_("Reading new frame..."))
-        if self.first == 0:
-            self.log.append(_("Reading first frame..."))
-            self.first_image, limit, mode = stk.create_first_ref_im(self.work_folder, new_image_path, save_im=save_on)
+                self.image_ref_save.image = self.first_image
 
-            self.image_ref_save.image = self.first_image
+                prepro.save_tiff(self.work_folder, self.image_ref_save.image, self.log,
+                                 mode=mode, scnr_on=self.scnr_on,
+                                 param=[self.contrast_slider.value() / 10.,
+                                        self.brightness_slider.value(),
+                                        self.black_slider.value(),
+                                        self.white_slider.value(),
+                                        self.R_slider.value() / 100.,
+                                        self.G_slider.value() / 100.,
+                                        self.B_slider.value() / 100.,
+                                        self.scnr_mode.currentText(),
+                                        self.scnr_value.value()
+                                        ])
+                self.first = 1
+                self.white_slider.setMaximum(np.int(limit))
+                self.brightness_slider.setMaximum(np.int(limit) / 2.)
+                self.brightness_slider.setMinimum(np.int(-1 * limit) / 2.)
+                if self.white_slider.value() > limit:
+                    self.white_slider.setSliderPosition(limit)
+                elif self.white_slider.value() < -1 * limit:
+                    self.white_slider.setSliderPosition(-1 * limit)
+                self.black_slider.setMaximum(np.int(limit))
+                if self.black_slider.value() > limit:
+                    self.black_slider.setSliderPosition(limit)
+                if self.brightness_slider.value() > limit / 2.:
+                    self.brightness_slider.setSliderPosition(limit / 2.)
+                if limit == 2. ** 16 - 1:
+                    self.log.append(_("Read 16bit frame ..."))
+                elif limit == 2. ** 8 - 1:
+                    self.log.append(_("Read 8bit frame ..."))
+                self.white_slider.setEnabled(True)
+                self.black_slider.setEnabled(True)
+                self.contrast_slider.setEnabled(True)
+                self.brightness_slider.setEnabled(True)
+                self.apply_button.setEnabled(True)
 
-            prepro.save_tiff(self.work_folder, self.image_ref_save.image, self.log,
-                             mode=mode, scnr_on=self.scnr_on,
-                             param=[self.contrast_slider.value() / 10.,
-                                    self.brightness_slider.value(),
-                                    self.black_slider.value(),
-                                    self.white_slider.value(),
-                                    self.R_slider.value() / 100.,
-                                    self.G_slider.value() / 100.,
-                                    self.B_slider.value() / 100.,
-                                    self.scnr_mode.currentText(),
-                                    self.scnr_value.value()
-                                    ])
-            self.first = 1
-            self.white_slider.setMaximum(np.int(limit))
-            self.brightness_slider.setMaximum(np.int(limit) / 2.)
-            self.brightness_slider.setMinimum(np.int(-1 * limit) / 2.)
-            if self.white_slider.value() > limit:
-                self.white_slider.setSliderPosition(limit)
-            elif self.white_slider.value() < -1 * limit:
-                self.white_slider.setSliderPosition(-1 * limit)
-            self.black_slider.setMaximum(np.int(limit))
-            if self.black_slider.value() > limit:
-                self.black_slider.setSliderPosition(limit)
-            if self.brightness_slider.value() > limit / 2.:
-                self.brightness_slider.setSliderPosition(limit / 2.)
-            if limit == 2. ** 16 - 1:
-                self.log.append(_("Read 16bit frame ..."))
-            elif limit == 2. ** 8 - 1:
-                self.log.append(_("Read 8bit frame ..."))
-            self.white_slider.setEnabled(True)
-            self.black_slider.setEnabled(True)
-            self.contrast_slider.setEnabled(True)
-            self.brightness_slider.setEnabled(True)
-            self.apply_button.setEnabled(True)
+                if mode == "rgb":
+                    # activation des barre r, g, b
+                    self.log.append(_("Read RGB image ..."))
+                    self.R_slider.setEnabled(True)
+                    self.G_slider.setEnabled(True)
+                    self.B_slider.setEnabled(True)
+                elif mode == "gray":
+                    # desactivation des barre r, g, b
+                    self.log.append(_("Read B&W image ..."))
+                    self.R_slider.setEnabled(False)
+                    self.G_slider.setEnabled(False)
+                    self.B_slider.setEnabled(False)
 
-            if mode == "rgb":
-                # activation des barre r, g, b
-                self.log.append(_("Read RGB image ..."))
-                self.R_slider.setEnabled(True)
-                self.G_slider.setEnabled(True)
-                self.B_slider.setEnabled(True)
-            elif mode == "gray":
-                # desactivation des barre r, g, b
-                self.log.append(_("Read B&W image ..."))
-                self.R_slider.setEnabled(False)
-                self.G_slider.setEnabled(False)
-                self.B_slider.setEnabled(False)
-
-        else:
-            # appelle de la fonction stack live
-            if align_on:
-                self.log.append(_("Stack and Align New frame..."))
             else:
-                self.log.append(_("Stack New frame..."))
+                # appelle de la fonction stack live
+                if align_on:
+                    self.log.append(_("Stack and Align New frame..."))
+                else:
+                    self.log.append(_("Stack New frame..."))
 
-            self.image_ref_save.image, limit, mode = stk.stack_live(self.work_folder, new_image_path,
-                                                                    self.counter,
-                                                                    ref=self.image_ref_save.image,
-                                                                    first_ref=self.first_image,
-                                                                    save_im=save_on,
-                                                                    align=align_on,
-                                                                    stack_methode=stack_methode)
+                self.image_ref_save.image, limit, mode = stk.stack_live(self.work_folder, new_image_path,
+                                                                        self.counter,
+                                                                        ref=self.image_ref_save.image,
+                                                                        first_ref=self.first_image,
+                                                                        save_im=save_on,
+                                                                        align=align_on,
+                                                                        stack_methode=stack_methode)
 
-            prepro.save_tiff(self.work_folder, self.image_ref_save.image, self.log,
-                             mode=mode, scnr_on=self.scnr_on,
-                             param=[self.contrast_slider.value() / 10.,
-                                    self.brightness_slider.value(),
-                                    self.black_slider.value(),
-                                    self.white_slider.value(),
-                                    self.R_slider.value() / 100.,
-                                    self.G_slider.value() / 100.,
-                                    self.B_slider.value() / 100.,
-                                    self.scnr_mode.currentText(),
-                                    self.scnr_value.value()
-                                    ])
+                prepro.save_tiff(self.work_folder, self.image_ref_save.image, self.log,
+                                 mode=mode, scnr_on=self.scnr_on,
+                                 param=[self.contrast_slider.value() / 10.,
+                                        self.brightness_slider.value(),
+                                        self.black_slider.value(),
+                                        self.white_slider.value(),
+                                        self.R_slider.value() / 100.,
+                                        self.G_slider.value() / 100.,
+                                        self.B_slider.value() / 100.,
+                                        self.scnr_mode.currentText(),
+                                        self.scnr_value.value()
+                                        ])
 
-            self.log.append(_("... Stack finished"))
-        self.print_image.emit()
+                self.log.append(_("... Stack finished"))
+            self.print_image.emit()
+        else:
+            self.log.append(_("New image detected but not considered"))
 
 
 # ------------------------------------------------------------------------------
@@ -343,14 +347,7 @@ class als_main_window(QtWidgets.QMainWindow):
             self.counter = 0
             self.ui.cnt.setText(str(self.counter))
 
-            if self.pause:
-                self.fileWatcher.observer.start()
-                self.pause = False
-                # desactivate play button
-                self.ui.pbPlay.setEnabled(False)
-                # activate stop button
-                self.ui.pbStop.setEnabled(True)
-            else:
+            if self.image_ref_save.status == "stop":
                 # Print scan folder
                 self.ui.log.append(_("Scan folder : ") + os.path.expanduser(self.ui.tFolder.text()))
                 # Print work folder
@@ -403,25 +400,27 @@ class als_main_window(QtWidgets.QMainWindow):
                     os.mkdir(os.path.expanduser(self.ui.tWork.text()))
 
                 self.fileWatcher.start()
-                self.running = True
+            else:
+                self.ui.log.append("Play")
 
-                # desactivate play button
-                self.ui.pbPlay.setEnabled(False)
-                self.ui.pbReset.setEnabled(False)
-                # activate stop button
-                self.ui.pbStop.setEnabled(True)
-                # activate pause button
-                self.ui.pbPause.setEnabled(True)
+            self.image_ref_save.status = "play"
+            # desactivate play button
+            self.ui.pbPlay.setEnabled(False)
+            self.ui.pbReset.setEnabled(False)
+            # activate stop button
+            self.ui.pbStop.setEnabled(True)
+            # activate pause button
+            self.ui.pbPause.setEnabled(True)
 
-                self.fileWatcher.print_image.connect(
-                    lambda: self.update_image(self.ui.tWork.text(), name_of_tiff_image))
+            self.fileWatcher.print_image.connect(
+                lambda: self.update_image(self.ui.tWork.text(), name_of_tiff_image))
 
         else:
             self.ui.log.append(_("No path"))
 
     def cb_stop(self):
         self.fileWatcher.observer.stop()
-        self.running = False
+        self.image_ref_save.status = "stop"
         self.ui.pbStop.setEnabled(False)
         self.ui.pbPlay.setEnabled(True)
         self.ui.pbReset.setEnabled(True)
@@ -430,13 +429,12 @@ class als_main_window(QtWidgets.QMainWindow):
 
     def cb_pause(self):
         self.fileWatcher.observer.stop()
-        self.running = False
-        self.pause = True
+        self.image_ref_save.status = "pause"
         self.ui.pbStop.setEnabled(False)
         self.ui.pbPlay.setEnabled(True)
         self.ui.pbReset.setEnabled(False)
         self.ui.pbPause.setEnabled(False)
-        self.ui.log.append("Stop")
+        self.ui.log.append("Pause")
 
     def cb_reset(self):
         self.ui.log.append("Reset")
