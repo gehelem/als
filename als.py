@@ -47,8 +47,7 @@ class MyEventHandler(FileSystemEventHandler, QtCore.QThread, image_ref_save):
     new_image_path = ""
 
     def __init__(self):
-        super(MyEventHandler, self).__init__()
-        self.image_ref_save = image_ref_save
+        super().__init__()
 
     def on_created(self, event):
         # if not event.is_directory:
@@ -68,9 +67,12 @@ class WatchOutForFileCreations(QtCore.QThread):
                  log, white_slider, black_slider, contrast_slider, brightness_slider,
                  R_slider, G_slider, B_slider, apply_button,
                  image_ref_save, dark_on, dark_path,
-                 scnr_on, scnr_mode, scnr_value):
+                 scnr_on, scnr_mode, scnr_value,
+                 wavelets_on, wavelets_type, wavelets_use_luminance,
+                 wavelet_1_value, wavelet_2_value, wavelet_3_value,
+                 wavelet_4_value, wavelet_5_value):
 
-        super(WatchOutForFileCreations, self).__init__()
+        super().__init__()
         self.white_slider = white_slider
         self.black_slider = black_slider
         self.contrast_slider = contrast_slider
@@ -92,6 +94,14 @@ class WatchOutForFileCreations(QtCore.QThread):
         self.scnr_on = scnr_on
         self.scnr_mode = scnr_mode
         self.scnr_value = scnr_value
+        self.wavelets_on = wavelets_on
+        self.wavelets_type = wavelets_type
+        self.wavelets_use_luminance = wavelets_use_luminance,
+        self.wavelet_1_value = wavelet_1_value
+        self.wavelet_2_value = wavelet_2_value
+        self.wavelet_3_value = wavelet_3_value
+        self.wavelet_4_value = wavelet_4_value
+        self.wavelet_5_value = wavelet_5_value
         print(self.work_folder)
         print(self.path)
 
@@ -151,18 +161,48 @@ class WatchOutForFileCreations(QtCore.QThread):
                 self.brightness_slider.setEnabled(True)
                 self.apply_button.setEnabled(True)
 
-                if mode == "rgb":
-                    # activation des barre r, g, b
-                    self.log.append(_("Read RGB image ..."))
-                    self.R_slider.setEnabled(True)
-                    self.G_slider.setEnabled(True)
-                    self.B_slider.setEnabled(True)
-                elif mode == "gray":
-                    # desactivation des barre r, g, b
-                    self.log.append(_("Read B&W image ..."))
-                    self.R_slider.setEnabled(False)
-                    self.G_slider.setEnabled(False)
-                    self.B_slider.setEnabled(False)
+            prepro.save_tiff(self.work_folder, self.image_ref_save.image, self.log,
+                             mode=mode, scnr_on=self.scnr_on,
+                             wavelets_on=self.wavelets_on,
+                             wavelets_type=str(self.wavelets_type.currentText()),
+                             wavelets_use_luminance=self.wavelets_use_luminance,
+                             param=[self.contrast_slider.value() / 10.,
+                                    self.brightness_slider.value(),
+                                    self.black_slider.value(),
+                                    self.white_slider.value(),
+                                    self.R_slider.value() / 100.,
+                                    self.G_slider.value() / 100.,
+                                    self.B_slider.value() / 100.,
+                                    self.scnr_mode.currentText(),
+                                    self.scnr_value.value(),
+                                    {1:int(self.wavelet_1_value.text()) / 100.,
+                                     2:int(self.wavelet_2_value.text()) / 100.,
+                                     3:int(self.wavelet_3_value.text()) / 100.,
+                                     4:int(self.wavelet_4_value.text()) / 100.,
+                                     5:int(self.wavelet_5_value.text()) / 100.},
+                                    ])
+            self.first = 1
+            self.white_slider.setMaximum(np.int(limit))
+            self.brightness_slider.setMaximum(np.int(limit) / 2.)
+            self.brightness_slider.setMinimum(np.int(-1 * limit) / 2.)
+            if self.white_slider.value() > limit:
+                self.white_slider.setSliderPosition(limit)
+            elif self.white_slider.value() < -1 * limit:
+                self.white_slider.setSliderPosition(-1 * limit)
+            self.black_slider.setMaximum(np.int(limit))
+            if self.black_slider.value() > limit:
+                self.black_slider.setSliderPosition(limit)
+            if self.brightness_slider.value() > limit / 2.:
+                self.brightness_slider.setSliderPosition(limit / 2.)
+            if limit == 2. ** 16 - 1:
+                self.log.append(_("Read 16bit frame ..."))
+            elif limit == 2. ** 8 - 1:
+                self.log.append(_("Read 8bit frame ..."))
+            self.white_slider.setEnabled(True)
+            self.black_slider.setEnabled(True)
+            self.contrast_slider.setEnabled(True)
+            self.brightness_slider.setEnabled(True)
+            self.apply_button.setEnabled(True)
 
             else:
                 # appelle de la fonction stack live
@@ -179,18 +219,26 @@ class WatchOutForFileCreations(QtCore.QThread):
                                                                         align=align_on,
                                                                         stack_methode=stack_methode)
 
-                prepro.save_tiff(self.work_folder, self.image_ref_save.image, self.log,
-                                 mode=mode, scnr_on=self.scnr_on,
-                                 param=[self.contrast_slider.value() / 10.,
-                                        self.brightness_slider.value(),
-                                        self.black_slider.value(),
-                                        self.white_slider.value(),
-                                        self.R_slider.value() / 100.,
-                                        self.G_slider.value() / 100.,
-                                        self.B_slider.value() / 100.,
-                                        self.scnr_mode.currentText(),
-                                        self.scnr_value.value()
-                                        ])
+            prepro.save_tiff(self.work_folder, self.image_ref_save.image, self.log,
+                             mode=mode, scnr_on=self.scnr_on,
+                             wavelets_on=self.wavelets_on,
+                             wavelets_type=str(self.wavelets_type.currentText()),
+                             wavelets_use_luminance=self.wavelets_use_luminance,
+                             param=[self.contrast_slider.value() / 10.,
+                                    self.brightness_slider.value(),
+                                    self.black_slider.value(),
+                                    self.white_slider.value(),
+                                    self.R_slider.value() / 100.,
+                                    self.G_slider.value() / 100.,
+                                    self.B_slider.value() / 100.,
+                                    self.scnr_mode.currentText(),
+                                    self.scnr_value.value(),
+                                    {1: int(self.wavelet_1_value.text()) / 100.,
+                                     2: int(self.wavelet_2_value.text()) / 100.,
+                                     3: int(self.wavelet_3_value.text()) / 100.,
+                                     4: int(self.wavelet_4_value.text()) / 100.,
+                                     5: int(self.wavelet_5_value.text()) / 100.}
+                                    ])
 
                 self.log.append(_("... Stack finished"))
             self.print_image.emit()
@@ -204,7 +252,7 @@ class WatchOutForFileCreations(QtCore.QThread):
 class als_main_window(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None):
-        super(als_main_window, self).__init__(parent)
+        super().__init__(parent)
         self.ui = Ui_stack_window()
         self.ui.setupUi(self)
 
@@ -225,7 +273,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.setWindowTitle(_("Astro Live Stacker"))
 
     def closeEvent(self, event):
-        super(als_main_window, self).closeEvent(event)
+        super().closeEvent(event)
 
     def connect_actions(self):
 
@@ -280,7 +328,11 @@ class als_main_window(QtWidgets.QMainWindow):
             raise ValueError(_("fit format not supported"))
 
         prepro.save_tiff(work_folder, self.image_ref_save.image, self.ui.log,
-                         mode=mode, scnr_on=self.ui.cbSCNR.isChecked(),
+                         mode=mode,
+                         scnr_on=self.ui.cbSCNR.isChecked(),
+                         wavelets_on=self.ui.cbWavelets.isChecked(),
+                         wavelets_type=str(self.ui.cBoxWaveType.currentText()),
+                         wavelets_use_luminance=self.ui.cbLuminanceWavelet.isChecked(),
                          param=[self.ui.contrast_slider.value() / 10.,
                                 self.ui.brightness_slider.value(),
                                 self.ui.black_slider.value(),
@@ -289,7 +341,12 @@ class als_main_window(QtWidgets.QMainWindow):
                                 self.ui.G_slider.value() / 100.,
                                 self.ui.B_slider.value() / 100.,
                                 self.ui.cmSCNR.currentText(),
-                                self.ui.SCNR_Slider.value() / 100.
+                                self.ui.SCNR_Slider.value() / 100.,
+                                {1:int(self.ui.wavelet_1_label.text()) / 100.,
+                                 2:int(self.ui.wavelet_2_label.text()) / 100.,
+                                 3:int(self.ui.wavelet_3_label.text()) / 100.,
+                                 4:int(self.ui.wavelet_4_label.text()) / 100.,
+                                 5:int(self.ui.wavelet_5_label.text()) / 100.},
                                 ])
 
         self.ui.log.append(_("Adjust GUI image"))
@@ -390,8 +447,15 @@ class als_main_window(QtWidgets.QMainWindow):
                                                             os.path.expanduser(self.ui.tDark.text()),
                                                             self.ui.cbSCNR,
                                                             self.ui.cmSCNR,
-                                                            self.ui.SCNR_Slider
-                                                            )
+                                                            self.ui.SCNR_Slider,
+                                                            self.ui.cbWavelets,
+                                                            self.ui.cBoxWaveType,
+                                                            self.ui.cbLuminanceWavelet,
+                                                            self.ui.wavelet_1_label,
+                                                            self.ui.wavelet_2_label,
+                                                            self.ui.wavelet_3_label,
+                                                            self.ui.wavelet_4_label,
+                                                            self.ui.wavelet_5_label)
 
                 if os.path.exists(os.path.expanduser(self.ui.tWork.text())):
                     shutil.rmtree(os.path.expanduser(self.ui.tWork.text()) + "/")

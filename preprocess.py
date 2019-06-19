@@ -15,12 +15,91 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+# Numerical stuff
 import numpy as np
 import cv2
+
+# Wavelet stuff
+import dtcwt
+from pywi.processing.transform import starlet
+
+# Local stuff
 import stack as stk
 
 name_of_tiff_image = "stack_image.tiff"
 
+
+def Wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
+    """
+    Module allowing to play with coefficients of a redudant frame from the
+    wavelet family.
+    A ratio is applied to each level
+    :param image:      input image
+    :param wavelets_type: either 'deep sky' or 'planetary' gives the family
+                            of wavelets to be used for processing
+    :param parameters: ratio to be applied for each level of the wavelet
+                        decomposition
+    :return:           denoised/enhanced image
+    """
+    def apply_dt_wavelets(img, param):
+        # Compute 5 levels of dtcwt with the antonini/qshift settings
+        transform = dtcwt.Transform2d(biort='antonini', qshift='qshift_06')
+        t = transform.forward(img, nlevels=len(param))
+
+        for level, ratio in param.items():
+            data = t.highpasses[level-1]
+            if ratio < 1:
+                norm = np.absolute(data)
+                # 1 keeps 100% of the coefficients, 0 keeps 0% of the coeff
+                thresh = np.percentile(norm, 100*(1-ratio))
+                # Proximity operator for L1,2 norm
+                data[:,:,:] = np.where(norm < thresh, 0,
+                    (norm - thresh) * np.exp(1j * np.angle(data)))
+            else:
+                # Just applying gain for this level
+                data *= ratio
+        return transform.inverse(t)
+
+
+    def apply_star_wavelets(img, param):
+        # Compute 5 levels of starlets
+        t = starlet.wavelet_transform(img, number_of_scales=len(param))
+
+        for level, ratio in param.items():
+            data = t[level-1]
+            if ratio < 1:
+                norm = np.absolute(data)
+                # 1 keeps 100% of the coefficients, 0 keeps 0% of the coeff
+                thresh = np.percentile(norm, 100*(1-ratio))
+                # Proximity operator for L1 norm
+                data[:,:] = np.where(norm < thresh, 0,
+                    (norm - thresh) * np.sign(data))
+            else:
+                # Just applying gain for this level
+                data *= ratio
+        return starlet.inverse_wavelet_transform(t)
+
+    # Choose in between members of a catalog
+    wavelet_db = {'deep sky': apply_star_wavelets,
+                  'planetary': apply_dt_wavelets}
+
+    # in case of rgb image with 3 channels
+    if len(image.shape) > 2:
+        # either process wvlts only on the value channel of hsv space
+        if wavelets_use_luminance:
+            hsv_img = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+            hsv_img[:,:,2] = wavelet_db[wavelets_type](hsv_img[:,:,2], parameters)
+            image = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2RGB)
+        # or compute 3 times the wvlt process. More expensive, but usually this
+        #yields better results
+        else:
+            # apply wvlt to all channels if available
+            for channel_index in range(image.shape[2]):
+                image[:, :, channel_index] = wavelet_db[wavelets_type](
+                    image[:, :, channel_index], parameters)
+    else:
+        image = wavelet_db[wavelets_type](image, parameters)
+    return image
 
 def SCNR(rgb_image, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
     """
@@ -75,7 +154,9 @@ def SCNR(rgb_image, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
     return rgb_image
 
 
-def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False, param=[]):
+def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
+              wavelets_on=False, wavelets_type='deep sky',
+              wavelets_use_luminance=False, param=[]):
     """
     Fonction for create print image and post process this image
 
@@ -83,7 +164,8 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False, param=[]):
     :param stack_image: np.array(uintX), Image, 3xMxN or MxN
     :param log: QT log for print text in QT GUI
     :param mode: image mode ("rgb" or "gray")
-    :param scnr_on: bool, actuve scnr correction
+    :param scnr_on: bool, activate scnr correction
+    :param wavelets_on: bool, activate wavelet filtering
     :param param: post process param
     :return: no return
 
@@ -105,7 +187,8 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False, param=[]):
 
     # if no have change, no process
     if param[0] != 1 or param[1] != 0 or param[2] != 0 or param[3] != limit \
-            or param[4] != 1 or param[5] != 1 or param[6] != 1:
+            or param[4] != 1 or param[5] != 1 or param[6] != 1 or any(
+            [v!=1 for _,v in param[9].items()]):
 
         # print param value for post process
         log.append(_("Post-Process New TIFF Image..."))
@@ -121,6 +204,14 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False, param=[]):
             log.append(_("apply SCNR"))
             log.append(_("SCNR type") + "%s" % param[7])
             new_stack_image = SCNR(new_stack_image, limit, rgb_type="BGR", scnr_type=param[7], amount=param[8])
+
+        if wavelets_on:
+            log.append("apply Wavelets")
+            log.append("Wavelets parameters {}".format(param[9]))
+            new_stack_image = Wavelets(new_stack_image,
+                                       wavelets_type=wavelets_type,
+                                       wavelets_use_luminance=wavelets_use_luminance,
+                                       parameters=param[9])
 
         # if change in RGB value
         if param[4] != 1 or param[5] != 1 or param[6] != 1:
