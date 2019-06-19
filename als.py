@@ -122,12 +122,16 @@ class WatchOutForFileCreations(QtCore.QThread):
             self.log.append(_("Reading new frame..."))
             if self.first == 0:
                 self.log.append(_("Reading first frame..."))
-                self.first_image, limit, mode = stk.create_first_ref_im(self.work_folder, new_image_path, save_im=save_on)
+                self.first_image, limit, mode = stk.create_first_ref_im(self.work_folder, new_image_path,
+                                                                        save_im=save_on)
 
                 self.image_ref_save.image = self.first_image
 
                 prepro.save_tiff(self.work_folder, self.image_ref_save.image, self.log,
                                  mode=mode, scnr_on=self.scnr_on,
+                                 wavelets_on=self.wavelets_on,
+                                 wavelets_type=str(self.wavelets_type.currentText()),
+                                 wavelets_use_luminance=self.wavelets_use_luminance,
                                  param=[self.contrast_slider.value() / 10.,
                                         self.brightness_slider.value(),
                                         self.black_slider.value(),
@@ -136,7 +140,12 @@ class WatchOutForFileCreations(QtCore.QThread):
                                         self.G_slider.value() / 100.,
                                         self.B_slider.value() / 100.,
                                         self.scnr_mode.currentText(),
-                                        self.scnr_value.value()
+                                        self.scnr_value.value(),
+                                        {1: int(self.wavelet_1_value.text()) / 100.,
+                                         2: int(self.wavelet_2_value.text()) / 100.,
+                                         3: int(self.wavelet_3_value.text()) / 100.,
+                                         4: int(self.wavelet_4_value.text()) / 100.,
+                                         5: int(self.wavelet_5_value.text()) / 100.},
                                         ])
                 self.first = 1
                 self.white_slider.setMaximum(np.int(limit))
@@ -161,49 +170,6 @@ class WatchOutForFileCreations(QtCore.QThread):
                 self.brightness_slider.setEnabled(True)
                 self.apply_button.setEnabled(True)
 
-            prepro.save_tiff(self.work_folder, self.image_ref_save.image, self.log,
-                             mode=mode, scnr_on=self.scnr_on,
-                             wavelets_on=self.wavelets_on,
-                             wavelets_type=str(self.wavelets_type.currentText()),
-                             wavelets_use_luminance=self.wavelets_use_luminance,
-                             param=[self.contrast_slider.value() / 10.,
-                                    self.brightness_slider.value(),
-                                    self.black_slider.value(),
-                                    self.white_slider.value(),
-                                    self.R_slider.value() / 100.,
-                                    self.G_slider.value() / 100.,
-                                    self.B_slider.value() / 100.,
-                                    self.scnr_mode.currentText(),
-                                    self.scnr_value.value(),
-                                    {1:int(self.wavelet_1_value.text()) / 100.,
-                                     2:int(self.wavelet_2_value.text()) / 100.,
-                                     3:int(self.wavelet_3_value.text()) / 100.,
-                                     4:int(self.wavelet_4_value.text()) / 100.,
-                                     5:int(self.wavelet_5_value.text()) / 100.},
-                                    ])
-            self.first = 1
-            self.white_slider.setMaximum(np.int(limit))
-            self.brightness_slider.setMaximum(np.int(limit) / 2.)
-            self.brightness_slider.setMinimum(np.int(-1 * limit) / 2.)
-            if self.white_slider.value() > limit:
-                self.white_slider.setSliderPosition(limit)
-            elif self.white_slider.value() < -1 * limit:
-                self.white_slider.setSliderPosition(-1 * limit)
-            self.black_slider.setMaximum(np.int(limit))
-            if self.black_slider.value() > limit:
-                self.black_slider.setSliderPosition(limit)
-            if self.brightness_slider.value() > limit / 2.:
-                self.brightness_slider.setSliderPosition(limit / 2.)
-            if limit == 2. ** 16 - 1:
-                self.log.append(_("Read 16bit frame ..."))
-            elif limit == 2. ** 8 - 1:
-                self.log.append(_("Read 8bit frame ..."))
-            self.white_slider.setEnabled(True)
-            self.black_slider.setEnabled(True)
-            self.contrast_slider.setEnabled(True)
-            self.brightness_slider.setEnabled(True)
-            self.apply_button.setEnabled(True)
-
             else:
                 # appelle de la fonction stack live
                 if align_on:
@@ -219,26 +185,26 @@ class WatchOutForFileCreations(QtCore.QThread):
                                                                         align=align_on,
                                                                         stack_methode=stack_methode)
 
-            prepro.save_tiff(self.work_folder, self.image_ref_save.image, self.log,
-                             mode=mode, scnr_on=self.scnr_on,
-                             wavelets_on=self.wavelets_on,
-                             wavelets_type=str(self.wavelets_type.currentText()),
-                             wavelets_use_luminance=self.wavelets_use_luminance,
-                             param=[self.contrast_slider.value() / 10.,
-                                    self.brightness_slider.value(),
-                                    self.black_slider.value(),
-                                    self.white_slider.value(),
-                                    self.R_slider.value() / 100.,
-                                    self.G_slider.value() / 100.,
-                                    self.B_slider.value() / 100.,
-                                    self.scnr_mode.currentText(),
-                                    self.scnr_value.value(),
-                                    {1: int(self.wavelet_1_value.text()) / 100.,
-                                     2: int(self.wavelet_2_value.text()) / 100.,
-                                     3: int(self.wavelet_3_value.text()) / 100.,
-                                     4: int(self.wavelet_4_value.text()) / 100.,
-                                     5: int(self.wavelet_5_value.text()) / 100.}
-                                    ])
+                prepro.save_tiff(self.work_folder, self.image_ref_save.image, self.log,
+                                 mode=mode, scnr_on=self.scnr_on,
+                                 wavelets_on=self.wavelets_on,
+                                 wavelets_type=str(self.wavelets_type.currentText()),
+                                 wavelets_use_luminance=self.wavelets_use_luminance,
+                                 param=[self.contrast_slider.value() / 10.,
+                                        self.brightness_slider.value(),
+                                        self.black_slider.value(),
+                                        self.white_slider.value(),
+                                        self.R_slider.value() / 100.,
+                                        self.G_slider.value() / 100.,
+                                        self.B_slider.value() / 100.,
+                                        self.scnr_mode.currentText(),
+                                        self.scnr_value.value(),
+                                        {1: int(self.wavelet_1_value.text()) / 100.,
+                                         2: int(self.wavelet_2_value.text()) / 100.,
+                                         3: int(self.wavelet_3_value.text()) / 100.,
+                                         4: int(self.wavelet_4_value.text()) / 100.,
+                                         5: int(self.wavelet_5_value.text()) / 100.}
+                                        ])
 
                 self.log.append(_("... Stack finished"))
             self.print_image.emit()
@@ -342,11 +308,11 @@ class als_main_window(QtWidgets.QMainWindow):
                                 self.ui.B_slider.value() / 100.,
                                 self.ui.cmSCNR.currentText(),
                                 self.ui.SCNR_Slider.value() / 100.,
-                                {1:int(self.ui.wavelet_1_label.text()) / 100.,
-                                 2:int(self.ui.wavelet_2_label.text()) / 100.,
-                                 3:int(self.ui.wavelet_3_label.text()) / 100.,
-                                 4:int(self.ui.wavelet_4_label.text()) / 100.,
-                                 5:int(self.ui.wavelet_5_label.text()) / 100.},
+                                {1: int(self.ui.wavelet_1_label.text()) / 100.,
+                                 2: int(self.ui.wavelet_2_label.text()) / 100.,
+                                 3: int(self.ui.wavelet_3_label.text()) / 100.,
+                                 4: int(self.ui.wavelet_4_label.text()) / 100.,
+                                 5: int(self.ui.wavelet_5_label.text()) / 100.},
                                 ])
 
         self.ui.log.append(_("Adjust GUI image"))
