@@ -43,6 +43,7 @@ def Wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
     """
     def apply_dt_wavelets(img, param):
         # Compute 5 levels of dtcwt with the antonini/qshift settings
+        input_shape = img.shape
         transform = dtcwt.Transform2d(biort='antonini', qshift='qshift_06')
         t = transform.forward(img, nlevels=len(param))
 
@@ -58,7 +59,9 @@ def Wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
             else:
                 # Just applying gain for this level
                 data *= ratio
-        return transform.inverse(t)
+        ret = transform.inverse(t)
+        # in some cases dtcwt does reshape the image for performance purpose
+        return ret[:input_shape[0],:input_shape[1]]
 
 
     def apply_star_wavelets(img, param):
