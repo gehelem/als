@@ -117,7 +117,7 @@ class WatchOutForFileCreations(QtCore.QThread):
                                                                        align_on, save_on, stack_methode))
 
     def created(self, new_image_path, align_on, save_on, stack_methode):
-        if image_ref_save.status == "play":
+        if self.image_ref_save.status == "play":
             self.counter = self.counter + 1
             self.log.append(_("Reading new frame..."))
             if self.first == 0:
