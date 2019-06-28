@@ -110,6 +110,9 @@
          <layout class="QHBoxLayout" name="horizontalLayout_11">
           <item>
            <widget class="QLabel" name="label_10">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Tempo</string>
             </property>
@@ -117,6 +120,9 @@
           </item>
           <item>
            <widget class="QSpinBox" name="tempo_value">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="minimumSize">
              <size>
               <width>50</width>
@@ -139,6 +145,9 @@
           </item>
           <item>
            <widget class="QLabel" name="label_4">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>ms</string>
             </property>
@@ -226,6 +235,9 @@
         </item>
         <item row="4" column="0">
          <widget class="QCheckBox" name="cbWww">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="maximumSize">
            <size>
             <width>16777215</width>
@@ -255,6 +267,9 @@
         </item>
         <item row="1" column="2">
          <widget class="QCheckBox" name="cbDark">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="maximumSize">
            <size>
             <width>150</width>
@@ -434,7 +449,7 @@
        <enum>QTabWidget::West</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="basic">
        <attribute name="title">
@@ -582,19 +597,18 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
-           <widget class="Line" name="line_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QLabel" name="label">
             <property name="maximumSize">
              <size>
               <width>16777215</width>
               <height>20</height>
              </size>
+            </property>
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
             </property>
             <property name="text">
              <string>RGB :</string>
@@ -809,6 +823,25 @@
         </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_5">
+          <item>
+           <widget class="QLabel" name="label_16">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Niveaux :</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
@@ -1054,6 +1087,9 @@
             </item>
             <item>
              <widget class="QComboBox" name="cBoxWaveType">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="editable">
                <bool>false</bool>
               </property>
@@ -1077,6 +1113,9 @@
             </item>
             <item>
              <widget class="QCheckBox" name="cbLuminanceWavelet">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="text">
                <string>on luminance</string>
               </property>
@@ -1095,6 +1134,9 @@
             </item>
             <item alignment="Qt::AlignHCenter">
              <widget class="QSlider" name="verticalSlider">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="layoutDirection">
                <enum>Qt::LeftToRight</enum>
               </property>
@@ -1132,6 +1174,9 @@
             </item>
             <item alignment="Qt::AlignHCenter">
              <widget class="QSlider" name="verticalSlider_2">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="maximum">
                <number>500</number>
               </property>
@@ -1163,6 +1208,9 @@
             </item>
             <item alignment="Qt::AlignHCenter">
              <widget class="QSlider" name="verticalSlider_3">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="maximum">
                <number>500</number>
               </property>
@@ -1194,6 +1242,9 @@
             </item>
             <item alignment="Qt::AlignHCenter">
              <widget class="QSlider" name="verticalSlider_4">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="maximum">
                <number>500</number>
               </property>
@@ -1225,6 +1276,9 @@
             </item>
             <item alignment="Qt::AlignHCenter">
              <widget class="QSlider" name="verticalSlider_5">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="maximum">
                <number>500</number>
               </property>
@@ -1284,7 +1338,7 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>397</x>
+     <x>383</x>
      <y>35</y>
     </hint>
     <hint type="destinationlabel">
@@ -1316,7 +1370,7 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>397</x>
+     <x>383</x>
      <y>68</y>
     </hint>
     <hint type="destinationlabel">
@@ -1332,7 +1386,7 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>397</x>
+     <x>383</x>
      <y>68</y>
     </hint>
     <hint type="destinationlabel">
@@ -1348,12 +1402,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>50</x>
-     <y>657</y>
+     <x>237</x>
+     <y>719</y>
     </hint>
     <hint type="destinationlabel">
-     <x>93</x>
-     <y>743</y>
+     <x>243</x>
+     <y>742</y>
     </hint>
    </hints>
   </connection>
@@ -1364,12 +1418,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>209</x>
-     <y>660</y>
+     <x>361</x>
+     <y>719</y>
     </hint>
     <hint type="destinationlabel">
-     <x>235</x>
-     <y>739</y>
+     <x>366</x>
+     <y>742</y>
     </hint>
    </hints>
   </connection>
@@ -1380,12 +1434,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>354</x>
-     <y>645</y>
+     <x>484</x>
+     <y>719</y>
     </hint>
     <hint type="destinationlabel">
-     <x>384</x>
-     <y>733</y>
+     <x>490</x>
+     <y>742</y>
     </hint>
    </hints>
   </connection>
@@ -1396,12 +1450,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>501</x>
-     <y>652</y>
+     <x>608</x>
+     <y>719</y>
     </hint>
     <hint type="destinationlabel">
-     <x>526</x>
-     <y>738</y>
+     <x>614</x>
+     <y>742</y>
     </hint>
    </hints>
   </connection>
@@ -1412,12 +1466,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>653</x>
-     <y>647</y>
+     <x>732</x>
+     <y>719</y>
     </hint>
     <hint type="destinationlabel">
-     <x>677</x>
-     <y>734</y>
+     <x>738</x>
+     <y>742</y>
     </hint>
    </hints>
   </connection>
@@ -1449,7 +1503,119 @@
     </hint>
     <hint type="destinationlabel">
      <x>748</x>
-     <y>570</y>
+     <y>569</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbWavelets</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>cBoxWaveType</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>101</x>
+     <y>629</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>111</x>
+     <y>677</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbWavelets</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>cbLuminanceWavelet</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>139</x>
+     <y>622</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>79</x>
+     <y>717</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbWavelets</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>verticalSlider</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>143</x>
+     <y>621</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>230</x>
+     <y>651</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbWavelets</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>verticalSlider_2</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>158</x>
+     <y>611</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>360</x>
+     <y>637</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbWavelets</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>verticalSlider_3</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>133</x>
+     <y>614</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>476</x>
+     <y>662</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbWavelets</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>verticalSlider_4</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>65</x>
+     <y>616</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>595</x>
+     <y>637</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbWavelets</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>verticalSlider_5</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>99</x>
+     <y>615</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>723</x>
+     <y>663</y>
     </hint>
    </hints>
   </connection>

@@ -117,7 +117,9 @@ class WatchOutForFileCreations(QtCore.QThread):
                                                                        align_on, save_on, stack_methode))
 
     def created(self, new_image_path, align_on, save_on, stack_methode):
-        if self.image_ref_save.status == "play":
+        if self.image_ref_save.status == "play" \
+                and new_image_path.split("/")[-1][0] != "." \
+                and new_image_path.split("/")[-1][0] != "~":
             self.counter = self.counter + 1
             self.log.append(_("Reading new frame..."))
             if self.first == 0:
@@ -164,6 +166,10 @@ class WatchOutForFileCreations(QtCore.QThread):
                     self.log.append(_("Read 16bit frame ..."))
                 elif limit == 2. ** 8 - 1:
                     self.log.append(_("Read 8bit frame ..."))
+                if mode == "rgb":
+                    self.R_slider.setEnabled(True)
+                    self.G_slider.setEnabled(True)
+                    self.B_slider.setEnabled(True)
                 self.white_slider.setEnabled(True)
                 self.black_slider.setEnabled(True)
                 self.contrast_slider.setEnabled(True)
@@ -243,6 +249,7 @@ class als_main_window(QtWidgets.QMainWindow):
 
     def connect_actions(self):
 
+        # connection for buttom
         self.ui.pbPlay.clicked.connect(self.cb_play)
         self.ui.pbStop.clicked.connect(self.cb_stop)
         self.ui.pbReset.clicked.connect(self.cb_reset)
@@ -252,7 +259,6 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.bBrowseDark.clicked.connect(self.cb_browse_dark)
         self.ui.bBrowseWork.clicked.connect(self.cb_browse_work)
         self.ui.pb_apply_value.clicked.connect(lambda: self.apply_value(self.counter, self.ui.tWork.text()))
-        # need add event for pause button and add pause button
 
         # update slider
         self.ui.contrast_slider.valueChanged['int'].connect(
@@ -358,19 +364,18 @@ class als_main_window(QtWidgets.QMainWindow):
 
         if self.ui.tFolder.text() != "":
 
-            self.ui.white_slider.setEnabled(False)
-            self.ui.black_slider.setEnabled(False)
-            self.ui.contrast_slider.setEnabled(False)
-            self.ui.brightness_slider.setEnabled(False)
-            self.ui.R_slider.setEnabled(False)
-            self.ui.G_slider.setEnabled(False)
-            self.ui.B_slider.setEnabled(False)
-            self.ui.pb_apply_value.setEnabled(False)
-            self.ui.image_stack.setPixmap(QtGui.QPixmap("dslr-camera.svg"))
-            self.counter = 0
-            self.ui.cnt.setText(str(self.counter))
-
             if self.image_ref_save.status == "stop":
+                self.ui.white_slider.setEnabled(False)
+                self.ui.black_slider.setEnabled(False)
+                self.ui.contrast_slider.setEnabled(False)
+                self.ui.brightness_slider.setEnabled(False)
+                self.ui.R_slider.setEnabled(False)
+                self.ui.G_slider.setEnabled(False)
+                self.ui.B_slider.setEnabled(False)
+                self.ui.pb_apply_value.setEnabled(False)
+                self.ui.image_stack.setPixmap(QtGui.QPixmap("dslr-camera.svg"))
+                self.counter = 0
+                self.ui.cnt.setText(str(self.counter))
                 # Print scan folder
                 self.ui.log.append(_("Scan folder : ") + os.path.expanduser(self.ui.tFolder.text()))
                 # Print work folder
@@ -430,6 +435,8 @@ class als_main_window(QtWidgets.QMainWindow):
                     os.mkdir(os.path.expanduser(self.ui.tWork.text()))
 
                 self.fileWatcher.start()
+                self.fileWatcher.print_image.connect(
+                    lambda: self.update_image(self.ui.tWork.text(), name_of_tiff_image))
             else:
                 self.ui.log.append("Play")
 
@@ -441,9 +448,6 @@ class als_main_window(QtWidgets.QMainWindow):
             self.ui.pbStop.setEnabled(True)
             # activate pause button
             self.ui.pbPause.setEnabled(True)
-
-            self.fileWatcher.print_image.connect(
-                lambda: self.update_image(self.ui.tWork.text(), name_of_tiff_image))
 
         else:
             self.ui.log.append(_("No path"))
@@ -458,7 +462,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.log.append("Stop")
 
     def cb_pause(self):
-        self.fileWatcher.observer.stop()
+        # self.fileWatcher.observer.stop()
         self.image_ref_save.status = "pause"
         self.ui.pbStop.setEnabled(False)
         self.ui.pbPlay.setEnabled(True)

@@ -2,12 +2,11 @@
 
 # Form implementation generated from reading ui file './alsui.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.2
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_stack_window(object):
     def setupUi(self, stack_window):
@@ -50,9 +49,11 @@ class Ui_stack_window(object):
         self.horizontalLayout_11 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_11.setObjectName("horizontalLayout_11")
         self.label_10 = QtWidgets.QLabel(self.centralwidget)
+        self.label_10.setEnabled(False)
         self.label_10.setObjectName("label_10")
         self.horizontalLayout_11.addWidget(self.label_10)
         self.tempo_value = QtWidgets.QSpinBox(self.centralwidget)
+        self.tempo_value.setEnabled(False)
         self.tempo_value.setMinimumSize(QtCore.QSize(50, 0))
         self.tempo_value.setMaximumSize(QtCore.QSize(16777215, 30))
         self.tempo_value.setMaximum(60)
@@ -60,6 +61,7 @@ class Ui_stack_window(object):
         self.tempo_value.setObjectName("tempo_value")
         self.horizontalLayout_11.addWidget(self.tempo_value)
         self.label_4 = QtWidgets.QLabel(self.centralwidget)
+        self.label_4.setEnabled(False)
         self.label_4.setObjectName("label_4")
         self.horizontalLayout_11.addWidget(self.label_4)
         self.gridLayout.addLayout(self.horizontalLayout_11, 5, 2, 1, 1)
@@ -92,6 +94,7 @@ class Ui_stack_window(object):
         self.bBrowseFolder.setObjectName("bBrowseFolder")
         self.gridLayout.addWidget(self.bBrowseFolder, 0, 0, 1, 1)
         self.cbWww = QtWidgets.QCheckBox(self.centralwidget)
+        self.cbWww.setEnabled(False)
         self.cbWww.setMaximumSize(QtCore.QSize(16777215, 20))
         self.cbWww.setObjectName("cbWww")
         self.gridLayout.addWidget(self.cbWww, 4, 0, 1, 1)
@@ -101,6 +104,7 @@ class Ui_stack_window(object):
         self.tWork.setObjectName("tWork")
         self.gridLayout.addWidget(self.tWork, 3, 1, 1, 1)
         self.cbDark = QtWidgets.QCheckBox(self.centralwidget)
+        self.cbDark.setEnabled(False)
         self.cbDark.setMaximumSize(QtCore.QSize(150, 20))
         self.cbDark.setObjectName("cbDark")
         self.gridLayout.addWidget(self.cbDark, 1, 2, 1, 1)
@@ -221,13 +225,12 @@ class Ui_stack_window(object):
         self.horizontalLayout_10.setObjectName("horizontalLayout_10")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout()
         self.verticalLayout_3.setObjectName("verticalLayout_3")
-        self.line_2 = QtWidgets.QFrame(self.Niveaux)
-        self.line_2.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line_2.setObjectName("line_2")
-        self.verticalLayout_3.addWidget(self.line_2)
         self.label = QtWidgets.QLabel(self.Niveaux)
         self.label.setMaximumSize(QtCore.QSize(16777215, 20))
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.label.setFont(font)
         self.label.setObjectName("label")
         self.verticalLayout_3.addWidget(self.label)
         self.horizontalLayout_7 = QtWidgets.QHBoxLayout()
@@ -300,6 +303,14 @@ class Ui_stack_window(object):
         self.horizontalLayout_10.addLayout(self.verticalLayout_3)
         self.verticalLayout_5 = QtWidgets.QVBoxLayout()
         self.verticalLayout_5.setObjectName("verticalLayout_5")
+        self.label_16 = QtWidgets.QLabel(self.Niveaux)
+        self.label_16.setMaximumSize(QtCore.QSize(16777215, 20))
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_16.setFont(font)
+        self.label_16.setObjectName("label_16")
+        self.verticalLayout_5.addWidget(self.label_16)
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
         self.label_5 = QtWidgets.QLabel(self.Niveaux)
@@ -389,6 +400,7 @@ class Ui_stack_window(object):
         self.cbWavelets.setObjectName("cbWavelets")
         self.verticalLayout_10.addWidget(self.cbWavelets)
         self.cBoxWaveType = QtWidgets.QComboBox(self.Advance)
+        self.cBoxWaveType.setEnabled(False)
         self.cBoxWaveType.setEditable(False)
         self.cBoxWaveType.setMaxVisibleItems(2)
         self.cBoxWaveType.setObjectName("cBoxWaveType")
@@ -396,6 +408,7 @@ class Ui_stack_window(object):
         self.cBoxWaveType.addItem("")
         self.verticalLayout_10.addWidget(self.cBoxWaveType)
         self.cbLuminanceWavelet = QtWidgets.QCheckBox(self.Advance)
+        self.cbLuminanceWavelet.setEnabled(False)
         self.cbLuminanceWavelet.setObjectName("cbLuminanceWavelet")
         self.verticalLayout_10.addWidget(self.cbLuminanceWavelet)
         self.horizontalLayout_15.addLayout(self.verticalLayout_10)
@@ -405,6 +418,7 @@ class Ui_stack_window(object):
         self.label_9.setObjectName("label_9")
         self.verticalLayout_2.addWidget(self.label_9, 0, QtCore.Qt.AlignHCenter)
         self.verticalSlider = QtWidgets.QSlider(self.Advance)
+        self.verticalSlider.setEnabled(False)
         self.verticalSlider.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.verticalSlider.setAutoFillBackground(False)
         self.verticalSlider.setMaximum(500)
@@ -422,6 +436,7 @@ class Ui_stack_window(object):
         self.label_12.setObjectName("label_12")
         self.verticalLayout_7.addWidget(self.label_12, 0, QtCore.Qt.AlignHCenter)
         self.verticalSlider_2 = QtWidgets.QSlider(self.Advance)
+        self.verticalSlider_2.setEnabled(False)
         self.verticalSlider_2.setMaximum(500)
         self.verticalSlider_2.setProperty("value", 100)
         self.verticalSlider_2.setOrientation(QtCore.Qt.Vertical)
@@ -437,6 +452,7 @@ class Ui_stack_window(object):
         self.label_13.setObjectName("label_13")
         self.verticalLayout_8.addWidget(self.label_13, 0, QtCore.Qt.AlignHCenter)
         self.verticalSlider_3 = QtWidgets.QSlider(self.Advance)
+        self.verticalSlider_3.setEnabled(False)
         self.verticalSlider_3.setMaximum(500)
         self.verticalSlider_3.setProperty("value", 100)
         self.verticalSlider_3.setOrientation(QtCore.Qt.Vertical)
@@ -452,6 +468,7 @@ class Ui_stack_window(object):
         self.label_14.setObjectName("label_14")
         self.verticalLayout_9.addWidget(self.label_14, 0, QtCore.Qt.AlignHCenter)
         self.verticalSlider_4 = QtWidgets.QSlider(self.Advance)
+        self.verticalSlider_4.setEnabled(False)
         self.verticalSlider_4.setMaximum(500)
         self.verticalSlider_4.setProperty("value", 100)
         self.verticalSlider_4.setOrientation(QtCore.Qt.Vertical)
@@ -467,6 +484,7 @@ class Ui_stack_window(object):
         self.label_15.setObjectName("label_15")
         self.verticalLayout_20.addWidget(self.label_15, 0, QtCore.Qt.AlignHCenter)
         self.verticalSlider_5 = QtWidgets.QSlider(self.Advance)
+        self.verticalSlider_5.setEnabled(False)
         self.verticalSlider_5.setMaximum(500)
         self.verticalSlider_5.setProperty("value", 100)
         self.verticalSlider_5.setOrientation(QtCore.Qt.Vertical)
@@ -489,7 +507,7 @@ class Ui_stack_window(object):
         self.actionQuit.setObjectName("actionQuit")
 
         self.retranslateUi(stack_window)
-        self.postprocess_widget.setCurrentIndex(2)
+        self.postprocess_widget.setCurrentIndex(0)
         self.cbAlign.clicked['bool'].connect(self.cmMode.setEnabled)
         self.actionQuit.triggered.connect(stack_window.close)
         self.cbDark.clicked['bool'].connect(self.tDark.setEnabled)
@@ -501,6 +519,13 @@ class Ui_stack_window(object):
         self.verticalSlider_5.valueChanged['int'].connect(self.wavelet_5_label.setNum)
         self.cbSCNR.clicked['bool'].connect(self.cmSCNR.setEnabled)
         self.cbSCNR.clicked['bool'].connect(self.SCNR_Slider.setEnabled)
+        self.cbWavelets.clicked['bool'].connect(self.cBoxWaveType.setEnabled)
+        self.cbWavelets.clicked['bool'].connect(self.cbLuminanceWavelet.setEnabled)
+        self.cbWavelets.clicked['bool'].connect(self.verticalSlider.setEnabled)
+        self.cbWavelets.clicked['bool'].connect(self.verticalSlider_2.setEnabled)
+        self.cbWavelets.clicked['bool'].connect(self.verticalSlider_3.setEnabled)
+        self.cbWavelets.clicked['bool'].connect(self.verticalSlider_4.setEnabled)
+        self.cbWavelets.clicked['bool'].connect(self.verticalSlider_5.setEnabled)
         QtCore.QMetaObject.connectSlotsByName(stack_window)
 
     def retranslateUi(self, stack_window):
@@ -538,6 +563,7 @@ class Ui_stack_window(object):
         self.G_value.setText(_translate("stack_window", "1"))
         self.label_11.setText(_translate("stack_window", "B :"))
         self.B_value.setText(_translate("stack_window", "1"))
+        self.label_16.setText(_translate("stack_window", "Niveaux :"))
         self.label_5.setText(_translate("stack_window", "Black/Min :"))
         self.black.setText(_translate("stack_window", "0"))
         self.label_6.setText(_translate("stack_window", "White/Max :"))
@@ -568,4 +594,13 @@ class Ui_stack_window(object):
         self.pb_apply_value.setText(_translate("stack_window", "Apply"))
         self.actionQuit.setText(_translate("stack_window", "&Quit"))
 
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    stack_window = QtWidgets.QMainWindow()
+    ui = Ui_stack_window()
+    ui.setupUi(stack_window)
+    stack_window.show()
+    sys.exit(app.exec_())
 
