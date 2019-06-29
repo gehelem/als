@@ -1,3 +1,6 @@
+# !/usr/bin/python3
+# -*- coding: utf-8 -*-
+
 # ALS - Astro Live Stacker
 # Copyright (C) 2019  Sébastien Durand (Dragonlost) - Gilles Le Maréchal (Gehelem)
 #
@@ -14,8 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# !/usr/bin/python3
-# -*- coding: utf-8 -*-
 import os
 from datetime import datetime
 import shutil
