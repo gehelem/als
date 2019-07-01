@@ -27,6 +27,7 @@ from pywi.processing.transform import starlet
 import stack as stk
 
 name_of_tiff_image = "stack_image.tiff"
+name_of_jpeg_image = "stack_image.jpg"
 
 
 def Wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
@@ -41,6 +42,7 @@ def Wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
                         decomposition
     :return:           denoised/enhanced image
     """
+
     def apply_dt_wavelets(img, param):
         # Compute 5 levels of dtcwt with the antonini/qshift settings
         input_shape = img.shape
@@ -48,35 +50,34 @@ def Wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
         t = transform.forward(img, nlevels=len(param))
 
         for level, ratio in param.items():
-            data = t.highpasses[level-1]
+            data = t.highpasses[level - 1]
             if ratio < 1:
                 norm = np.absolute(data)
                 # 1 keeps 100% of the coefficients, 0 keeps 0% of the coeff
-                thresh = np.percentile(norm, 100*(1-ratio))
+                thresh = np.percentile(norm, 100 * (1 - ratio))
                 # Proximity operator for L1,2 norm
-                data[:,:,:] = np.where(norm < thresh, 0,
-                    (norm - thresh) * np.exp(1j * np.angle(data)))
+                data[:, :, :] = np.where(norm < thresh, 0,
+                                         (norm - thresh) * np.exp(1j * np.angle(data)))
             else:
                 # Just applying gain for this level
                 data *= ratio
         ret = transform.inverse(t)
         # in some cases dtcwt does reshape the image for performance purpose
-        return ret[:input_shape[0],:input_shape[1]]
-
+        return ret[:input_shape[0], :input_shape[1]]
 
     def apply_star_wavelets(img, param):
         # Compute 5 levels of starlets
         t = starlet.wavelet_transform(img, number_of_scales=len(param))
 
         for level, ratio in param.items():
-            data = t[level-1]
+            data = t[level - 1]
             if ratio < 1:
                 norm = np.absolute(data)
                 # 1 keeps 100% of the coefficients, 0 keeps 0% of the coeff
-                thresh = np.percentile(norm, 100*(1-ratio))
+                thresh = np.percentile(norm, 100 * (1 - ratio))
                 # Proximity operator for L1 norm
-                data[:,:] = np.where(norm < thresh, 0,
-                    (norm - thresh) * np.sign(data))
+                data[:, :] = np.where(norm < thresh, 0,
+                                      (norm - thresh) * np.sign(data))
             else:
                 # Just applying gain for this level
                 data *= ratio
@@ -91,10 +92,10 @@ def Wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
         # either process wvlts only on the value channel of hsv space
         if wavelets_use_luminance:
             hsv_img = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-            hsv_img[:,:,2] = wavelet_db[wavelets_type](hsv_img[:,:,2], parameters)
+            hsv_img[:, :, 2] = wavelet_db[wavelets_type](hsv_img[:, :, 2], parameters)
             image = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2RGB)
         # or compute 3 times the wvlt process. More expensive, but usually this
-        #yields better results
+        # yields better results
         else:
             # apply wvlt to all channels if available
             for channel_index in range(image.shape[2]):
@@ -103,6 +104,7 @@ def Wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
     else:
         image = wavelet_db[wavelets_type](image, parameters)
     return image
+
 
 def SCNR(rgb_image, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
     """
@@ -159,7 +161,7 @@ def SCNR(rgb_image, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
 
 def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
               wavelets_on=False, wavelets_type='deep sky',
-              wavelets_use_luminance=False, param=[]):
+              wavelets_use_luminance=False, param=[], image_type="tiff"):
     """
     Fonction for create print image and post process this image
 
@@ -176,13 +178,13 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
 
     # change action for mode :
     if mode == "rgb":
-        log.append(_("Save New TIFF Image in RGB..."))
+        log.append(_("Save New Image in RGB..."))
         # convert clissic classic order to cv2 order
         new_stack_image = np.rollaxis(stack_image, 0, 3)
         # convert RGB color order to BGR
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_RGB2BGR)
     elif mode == "gray":
-        log.append(_("Save New TIFF Image in B&W..."))
+        log.append(_("Save New Image in B&W..."))
         new_stack_image = stack_image
 
     # read image number type
@@ -191,14 +193,14 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
     # if no have change, no process
     if param[0] != 1 or param[1] != 0 or param[2] != 0 or param[3] != limit \
             or param[4] != 1 or param[5] != 1 or param[6] != 1 or any(
-            [v!=1 for _,v in param[9].items()]):
+        [v != 1 for _, v in param[9].items()]):
 
         # print param value for post process
-        log.append(_("Post-Process New TIFF Image..."))
+        log.append(_("Post-Process New Image..."))
         log.append(_("correct display image"))
-        log.append(_("contrast value :") +" %f" % param[0])
+        log.append(_("contrast value :") + " %f" % param[0])
         log.append(_("brightness value :") + "%f" % param[1])
-        log.append(_("pente : ")+ "%f" % (1. / ((param[3] - param[2]) / limit)))
+        log.append(_("pente : ") + "%f" % (1. / ((param[3] - param[2]) / limit)))
 
         # need convert to float32 for excess value
         new_stack_image = np.float32(new_stack_image)
@@ -221,9 +223,9 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
             if mode == "rgb":
                 # invert Red and Blue for cv2
                 # print RGB contrast value
-                log.append(_("R contrast value : ") +"%f" % param[4])
-                log.append(_("G contrast value : ") +"%f" % param[5])
-                log.append(_("B contrast value : ") +"%f" % param[6])
+                log.append(_("R contrast value : ") + "%f" % param[4])
+                log.append(_("G contrast value : ") + "%f" % param[5])
+                log.append(_("B contrast value : ") + "%f" % param[6])
 
                 # multiply by RGB factor
                 new_stack_image[:, :, 0] = new_stack_image[:, :, 0] * param[6]
@@ -254,7 +256,13 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
             new_stack_image = np.uint8(new_stack_image)
 
     # use cv2 fonction for save print image in tiff format
-    cv2.imwrite(work_path + "/" + name_of_tiff_image, new_stack_image)
-    print(_("TIFF image create :") +"%s" % work_path + "/" + name_of_tiff_image)
-
-    return 1
+    if image_type == "tiff":
+        cv2.imwrite(work_path + "/" + name_of_tiff_image, new_stack_image)
+        print(_("TIFF image create :") + "%s" % work_path + "/" + name_of_tiff_image)
+    elif image_type == "jpeg":
+        cv2.imwrite(work_path + "/" + name_of_jpeg_image, new_stack_image, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
+        print(_("JPEG image create :") + "%s" % work_path + "/" + name_of_jpeg_image)
+    elif image_type == "no":
+        print(_("No image create, als use RAM"))
+        new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
+    return new_stack_image
