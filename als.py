@@ -32,6 +32,7 @@ from astropy.io import fits
 from Config import Config
 import stack as stk
 import preprocess as prepro
+from resources import dslr_icon_path
 
 name_of_tiff_image = "stack_image.tiff"
 gettext.install('als', 'locale')
@@ -229,8 +230,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui = Ui_stack_window()
         self.ui.setupUi(self)
 
-        self.config = Config(path='./als.ini')
-        self.config.read()
+        self.config = Config()
         self.ui.tFolder.setText(os.path.expanduser(self.config['Default']['folderscan']))
         self.ui.tDark.setText(os.path.expanduser(self.config['Default']['filedark']))
         self.ui.tWork.setText(os.path.expanduser(self.config['Default']['folderwork']))
@@ -374,7 +374,7 @@ class als_main_window(QtWidgets.QMainWindow):
                 self.ui.G_slider.setEnabled(False)
                 self.ui.B_slider.setEnabled(False)
                 self.ui.pb_apply_value.setEnabled(False)
-                self.ui.image_stack.setPixmap(QtGui.QPixmap("dslr-camera.svg"))
+                self.ui.image_stack.setPixmap(QtGui.QPixmap(dslr_icon_path))
                 self.counter = 0
                 self.ui.cnt.setText(str(self.counter))
                 # Print scan folder
