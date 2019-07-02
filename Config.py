@@ -15,6 +15,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from configparser import ConfigParser
+import os
+
+# Local stuff
+from resources import default_init_file_path
+from resources import repo_init_file_path
 
 
 class Config(ConfigParser):
@@ -22,15 +27,32 @@ class Config(ConfigParser):
     This class is a helper that allows to automatically update config file on
     disk everytime something is changed in memory
     """
-    def __init__(self, path='config.ini'):
+    def __init__(self, path=None):
         super().__init__()
+
+        # In case path is None, try read from users home.
+        # If it fails, read from local sources, and later on, save in user home
+        if path is None:
+            try:
+                # als.ini is in user's home
+                self.read(default_init_file_path)
+                self._path = default_init_file_path
+            except Exception as e:
+                # init from local file
+                super().read(repo_init_file_path)
+                # write to als.ini in user's home
+                self._path = default_init_file_path
+                self.write()
         self._path = path
 
     def read(self):
         super().read(self._path)
 
-    def set(self, section, option, value):
-        super().set(section, option, value)
+    def write(self):
         with open(self._path, 'w') as f:
             super().write(f)
         print('Configuration written to {}'.format(self._path))
+
+    def set(self, section, option, value):
+        super().set(section, option, value)
+        self.write()
