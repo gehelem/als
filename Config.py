@@ -18,8 +18,8 @@ from configparser import ConfigParser
 import os
 
 # Local stuff
-from resources import default_init_file_path
-from resources import repo_init_file_path
+from resources_dir import default_init_file_path
+from resources_dir import repo_init_file_path
 
 
 class Config(ConfigParser):
@@ -30,20 +30,25 @@ class Config(ConfigParser):
     def __init__(self, path=None):
         super().__init__()
 
-        # In case path is None, try read from users home.
-        # If it fails, read from local sources, and later on, save in user home
+        # In case path is None, try read from default location
+        # If it fails or not user defined file yet, read from local sources,
+        # and save in user home
         if path is None:
             try:
-                # als.ini is in user's home
-                self.read(default_init_file_path)
-                self._path = default_init_file_path
+                # try als.ini is in default location
+                if os.path.exists(default_init_file_path):
+                    self._path = default_init_file_path
+                    self.read()
+                else:
+                    raise FileNotFoundError('User defined config not here')
             except Exception as e:
                 # init from local file
                 super().read(repo_init_file_path)
                 # write to als.ini in user's home
                 self._path = default_init_file_path
                 self.write()
-        self._path = path
+        else:
+            self._path = path
 
     def read(self):
         super().read(self._path)

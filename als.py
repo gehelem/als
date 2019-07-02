@@ -33,7 +33,8 @@ from qimage2ndarray import array2qimage
 from Config import Config
 import stack as stk
 import preprocess as prepro
-from resources import dslr_icon_path
+import resource_rc
+
 
 name_of_tiff_image = "stack_image.tiff"
 name_of_jpeg_image = "stack_image.jpg"
@@ -388,7 +389,7 @@ class als_main_window(QtWidgets.QMainWindow):
                 self.ui.G_slider.setEnabled(False)
                 self.ui.B_slider.setEnabled(False)
                 self.ui.pb_apply_value.setEnabled(False)
-                self.ui.image_stack.setPixmap(QtGui.QPixmap(dslr_icon_path))
+                self.ui.image_stack.setPixmap(QtGui.QPixmap(":/icons/dslr-camera.svg"))
                 self.counter = 0
                 self.ui.cnt.setText(str(self.counter))
                 # Print scan folder
@@ -500,7 +501,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.R_slider.setValue(100)
         self.ui.G_slider.setValue(100)
         self.ui.B_slider.setValue(100)
-        self.ui.image_stack.setPixmap(QtGui.QPixmap("dslr-camera.svg"))
+        self.ui.image_stack.setPixmap(QtGui.QPixmap(":/icons/dslr-camera.svg"))
         self.image_ref_save.image = []
         self.image_ref_save.stack_image = []
         self.ui.contrast.setText(str(1))
