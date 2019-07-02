@@ -12,12 +12,21 @@ __Python 3 library required__
 - dtcwt (for wavelets)
 - pywi (for wavelets)
 
-## Install process (On ubuntu or debian): 
+## Install process (On ubuntu or debian (min buster)): 
 
 `sudo apt update` (adapte for other unix system)  
-`sudo apt install python3 python3-pip git` (adapte for other unix system)   
-`pip3 install astropy numpy tqdm watchdog pyqt5 astroalign opencv-python rawpy python-gettext`  
-`cd ~`  
+`sudo apt install python3 python3-pip git` (adapte for other unix system) 
+### for amd64 (classique computer) :
+`pip3 install astropy numpy tqdm watchdog pyqt5 astroalign opencv-python rawpy python-gettext pywi dtcwt`  
+### for arm64/armv8/aarch64 :  
+`sudo apt install python3 python3-dev gfortran libopenblas-dev liblapack-dev`  
+`pip3 install wheel`  
+`pip3 install astropy numpy tqdm watchdog astroalign rawpy python-gettext pywi dtcwt`   
+`sudo apt install python3-opencv python3-pyqt5`  
+### for arm32/armv7/armhf :  
+
+____________________  
+cd ~`  
 `git clone https://github.com/gehelem/als.git`  (or just download als on github)  
 `cd ./als`  
 `mkdir scan`  
@@ -61,6 +70,5 @@ and with RAW camera file : https://www.libraw.org/supported-cameras
 
 ### Output :
 
-ALS produce 1 output in work folder: 
-- stack_image.tiff --> Xbits file, RGB, TIFF format --> It's preview of actual stack image with contrast/luminosity correction
+ALS produce 0 or 1 output in work folder: 
 - (option) stack_xxxxxx.fit/fits --> It's the recording of the intermediate raw images of the stack
