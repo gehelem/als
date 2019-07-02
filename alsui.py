@@ -2,11 +2,12 @@
 
 # Form implementation generated from reading ui file './alsui.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_stack_window(object):
     def setupUi(self, stack_window):
@@ -156,7 +157,7 @@ class Ui_stack_window(object):
         self.image_stack = QtWidgets.QLabel(self.centralwidget)
         self.image_stack.setMinimumSize(QtCore.QSize(200, 200))
         self.image_stack.setText("")
-        self.image_stack.setPixmap(QtGui.QPixmap("dslr-camera.svg"))
+        self.image_stack.setPixmap(QtGui.QPixmap(":/icons/dslr-camera.svg"))
         self.image_stack.setScaledContents(False)
         self.image_stack.setAlignment(QtCore.Qt.AlignCenter)
         self.image_stack.setObjectName("image_stack")
@@ -595,12 +596,4 @@ class Ui_stack_window(object):
         self.actionQuit.setText(_translate("stack_window", "&Quit"))
 
 
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    stack_window = QtWidgets.QMainWindow()
-    ui = Ui_stack_window()
-    ui.setupUi(stack_window)
-    stack_window.show()
-    sys.exit(app.exec_())
-
+import resource_rc
