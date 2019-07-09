@@ -42,7 +42,7 @@ import resource_rc
 name_of_tiff_image = "stack_image.tiff"
 name_of_jpeg_image = "stack_image.jpg"
 gettext.install('als', 'locale')
-save_type = "no"
+save_type = "jpeg"
 
 class HTTPHandler(SimpleHTTPRequestHandler):
     """This handler uses server.base_path instead of always using os.getcwd()"""
