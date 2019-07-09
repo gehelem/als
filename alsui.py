@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file './alsui.ui'
+# Form implementation generated from reading ui file 'alsui.ui'
 #
 # Created by: PyQt5 UI code generator 5.12.2
 #
@@ -95,7 +95,7 @@ class Ui_stack_window(object):
         self.bBrowseFolder.setObjectName("bBrowseFolder")
         self.gridLayout.addWidget(self.bBrowseFolder, 0, 0, 1, 1)
         self.cbWww = QtWidgets.QCheckBox(self.centralwidget)
-        self.cbWww.setEnabled(False)
+        self.cbWww.setEnabled(True)
         self.cbWww.setMaximumSize(QtCore.QSize(16777215, 20))
         self.cbWww.setObjectName("cbWww")
         self.gridLayout.addWidget(self.cbWww, 4, 0, 1, 1)
@@ -597,3 +597,13 @@ class Ui_stack_window(object):
 
 
 import resource_rc
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    stack_window = QtWidgets.QMainWindow()
+    ui = Ui_stack_window()
+    ui.setupUi(stack_window)
+    stack_window.show()
+    sys.exit(app.exec_())
