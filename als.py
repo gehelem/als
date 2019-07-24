@@ -23,6 +23,7 @@ import shutil
 import numpy as np
 import gettext
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QFileInfo
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from alsui import Ui_stack_window  # import du fichier alsui.py généré par : pyuic5 alsui.ui -x -o alsui.py
@@ -43,6 +44,7 @@ name_of_tiff_image = "stack_image.tiff"
 name_of_jpeg_image = "stack_image.jpg"
 gettext.install('als', 'locale')
 save_type = "jpeg"
+DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS = 100
 
 class HTTPHandler(SimpleHTTPRequestHandler):
     """This handler uses server.base_path instead of always using os.getcwd()"""
@@ -92,8 +94,22 @@ class MyEventHandler(FileSystemEventHandler, QtCore.QThread, image_ref_save):
     def on_created(self, event):
         # if not event.is_directory:
         if event.event_type == 'created':
-            print("New image arrive: %s" % event.src_path)
-            self.new_image_path = event.src_path
+            file_is_incomplete = True
+            last_file_size = -1
+            file_path = event.src_path
+
+            while file_is_incomplete:
+                info = QFileInfo(file_path)
+                size = info.size()
+                # TODO : remove debug print
+                print(f'Current file "${file_path}" size : ${size}')
+                if size == last_file_size:
+                    file_is_incomplete = False
+                last_file_size = size
+                self.msleep(DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS)
+
+            print("New image arrive: %s" % file_path)
+            self.new_image_path = file_path
             self.created_signal.emit()
 
 
