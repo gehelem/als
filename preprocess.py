@@ -35,7 +35,7 @@ _logger = logging.getLogger(__name__)
 
 
 @log
-def Wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
+def wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
     """
     Module allowing to play with coefficients of a redudant frame from the
     wavelet family.
@@ -114,7 +114,7 @@ def Wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
 
 
 @log
-def SCNR(rgb_image, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
+def scnr(rgb_image, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
     """
     Function for reduce green noise on image
     SCNR Average Neutral Protection
@@ -168,7 +168,7 @@ def SCNR(rgb_image, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
 
 
 @log
-def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
+def save_tiff(work_path, stack_image, log_ui, mode="rgb", scnr_on=False,
               wavelets_on=False, wavelets_type='deep sky',
               wavelets_use_luminance=False, param=[], image_type="tiff"):
     """
@@ -176,7 +176,7 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
 
     :param work_path: string, path for work folder
     :param stack_image: np.array(uintX), Image, 3xMxN or MxN
-    :param log: QT log for print text in QT GUI
+    :param log_ui: QT log for print text in QT GUI
     :param mode: image mode ("rgb" or "gray")
     :param scnr_on: bool, activate scnr correction
     :param wavelets_on: bool, activate wavelet filtering
@@ -188,13 +188,13 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
 
     # change action for mode :
     if mode == "rgb":
-        log.append(_("Save New Image in RGB..."))
+        log_ui.append(_("Save New Image in RGB..."))
         # convert clissic classic order to cv2 order
         new_stack_image = np.rollaxis(stack_image, 0, 3)
         # convert RGB color order to BGR
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_RGB2BGR)
     elif mode == "gray":
-        log.append(_("Save New Image in B&W..."))
+        log_ui.append(_("Save New Image in B&W..."))
         new_stack_image = stack_image
 
     # read image number type
@@ -202,28 +202,27 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
 
     # if no have change, no process
     if param[0] != 1 or param[1] != 0 or param[2] != 0 or param[3] != limit \
-            or param[4] != 1 or param[5] != 1 or param[6] != 1 or any(
-        [v != 1 for _, v in param[9].items()]):
+            or param[4] != 1 or param[5] != 1 or param[6] != 1 or any([v != 1 for _, v in param[9].items()]):
 
         # print param value for post process
-        log.append(_("Post-Process New Image..."))
-        log.append(_("correct display image"))
-        log.append(_("contrast value :") + " %f" % param[0])
-        log.append(_("brightness value :") + "%f" % param[1])
-        log.append(_("pente : ") + "%f" % (1. / ((param[3] - param[2]) / limit)))
+        log_ui.append(_("Post-Process New Image..."))
+        log_ui.append(_("correct display image"))
+        log_ui.append(_("contrast value :") + " %f" % param[0])
+        log_ui.append(_("brightness value :") + "%f" % param[1])
+        log_ui.append(_("pente : ") + "%f" % (1. / ((param[3] - param[2]) / limit)))
 
         # need convert to float32 for excess value
         new_stack_image = np.float32(new_stack_image)
 
         if scnr_on:
-            log.append(_("apply SCNR"))
-            log.append(_("SCNR type") + "%s" % param[7])
-            new_stack_image = SCNR(new_stack_image, limit, rgb_type="BGR", scnr_type=param[7], amount=param[8])
+            log_ui.append(_("apply SCNR"))
+            log_ui.append(_("SCNR type") + "%s" % param[7])
+            new_stack_image = scnr(new_stack_image, limit, rgb_type="BGR", scnr_type=param[7], amount=param[8])
 
         if wavelets_on:
-            log.append("apply Wavelets")
-            log.append("Wavelets parameters {}".format(param[9]))
-            new_stack_image = Wavelets(new_stack_image,
+            log_ui.append("apply Wavelets")
+            log_ui.append("Wavelets parameters {}".format(param[9]))
+            new_stack_image = wavelets(new_stack_image,
                                        wavelets_type=wavelets_type,
                                        wavelets_use_luminance=wavelets_use_luminance,
                                        parameters=param[9])
@@ -233,9 +232,9 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
             if mode == "rgb":
                 # invert Red and Blue for cv2
                 # print RGB contrast value
-                log.append(_("R contrast value : ") + "%f" % param[4])
-                log.append(_("G contrast value : ") + "%f" % param[5])
-                log.append(_("B contrast value : ") + "%f" % param[6])
+                log_ui.append(_("R contrast value : ") + "%f" % param[4])
+                log_ui.append(_("G contrast value : ") + "%f" % param[5])
+                log_ui.append(_("B contrast value : ") + "%f" % param[6])
 
                 # multiply by RGB factor
                 new_stack_image[:, :, 0] = new_stack_image[:, :, 0] * param[6]
