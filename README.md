@@ -75,5 +75,5 @@ ALS produce 0 or 1 output in work folder:
 
 ### Developments
 In order to compile ui and qrc resource file to be used in the project, please use the following commands:
-pyuic5 ./alsui.ui -o ./alsui.py 
-pyrcc5 ./resources_dir/resource.qrc -o ./resource_rc.py
+- `pyuic5 ./alsui.ui -o ./alsui.py` 
+- `pyrcc5 ./resources_dir/resource.qrc -o ./resource_rc.py`
