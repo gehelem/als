@@ -172,6 +172,7 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
     :param scnr_on: bool, activate scnr correction
     :param wavelets_on: bool, activate wavelet filtering
     :param param: post process param
+    :param image_type: "tiff", "no" and "jpeg"
     :return: no return
 
     """
@@ -259,9 +260,11 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
     if image_type == "tiff":
         cv2.imwrite(work_path + "/" + name_of_tiff_image, new_stack_image)
         print(_("TIFF image create :") + "%s" % work_path + "/" + name_of_tiff_image)
+        new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
     elif image_type == "jpeg":
         cv2.imwrite(work_path + "/" + name_of_jpeg_image, new_stack_image, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
         print(_("JPEG image create :") + "%s" % work_path + "/" + name_of_jpeg_image)
+        new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
     elif image_type == "no":
         print(_("No image create, als use RAM"))
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)

@@ -1,0 +1,11 @@
+astropy
+numpy
+tqdm
+watchdog
+pyqt5
+astroalign
+opencv-python
+qimage2ndarray
+rawpy
+dtcwt
+pywi

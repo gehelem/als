@@ -28,6 +28,9 @@ from watchdog.events import FileSystemEventHandler
 from alsui import Ui_stack_window  # import du fichier alsui.py généré par : pyuic5 alsui.ui -x -o alsui.py
 from astropy.io import fits
 from qimage2ndarray import array2qimage
+from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
+import threading
+
 
 # Local stuff
 from Config import Config
@@ -39,7 +42,36 @@ import resource_rc
 name_of_tiff_image = "stack_image.tiff"
 name_of_jpeg_image = "stack_image.jpg"
 gettext.install('als', 'locale')
-save_type = "no"
+save_type = "jpeg"
+
+class HTTPHandler(SimpleHTTPRequestHandler):
+    """This handler uses server.base_path instead of always using os.getcwd()"""
+    def translate_path(self, path):
+        path = SimpleHTTPRequestHandler.translate_path(self, path)
+        relpath = os.path.relpath(path, os.getcwd())
+        fullpath = os.path.join(self.server.base_path, relpath)
+        return fullpath
+
+
+class HTTPServer(BaseHTTPServer):
+    """The main server, you pass in base_path which is the path you want to serve requests from"""
+    def __init__(self, base_path, server_address, RequestHandlerClass=HTTPHandler):
+        self.base_path = base_path
+        BaseHTTPServer.__init__(self, server_address, RequestHandlerClass)
+
+class StoppableThread(threading.Thread):
+    """Thread class with a stop() method. The thread itself has to check
+    regularly for the stopped() condition."""
+
+    def __init__(self):
+        super(StoppableThread, self).__init__()
+        self._stop_event = threading.Event()
+
+    def stop(self):
+        self._stop_event.set()
+
+    def stopped(self):
+        return self._stop_event.is_set()
 
 
 class image_ref_save:
@@ -47,6 +79,7 @@ class image_ref_save:
         self.image = []
         self.status = "stop"
         self.stack_image = []
+
 
 
 class MyEventHandler(FileSystemEventHandler, QtCore.QThread, image_ref_save):
@@ -255,6 +288,8 @@ class als_main_window(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         super().closeEvent(event)
 
+
+
     def connect_actions(self):
 
         # connection for buttom
@@ -267,6 +302,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.bBrowseDark.clicked.connect(self.cb_browse_dark)
         self.ui.bBrowseWork.clicked.connect(self.cb_browse_work)
         self.ui.pb_apply_value.clicked.connect(lambda: self.apply_value(self.counter, self.ui.tWork.text()))
+        self.ui.cbWww.stateChanged.connect(self.wwwcheck)
 
         # update slider
         self.ui.contrast_slider.valueChanged['int'].connect(
@@ -282,6 +318,20 @@ class als_main_window(QtWidgets.QMainWindow):
 
     # ------------------------------------------------------------------------------
     # Callbacks
+
+    def wwwcheck(self):
+        if (self.ui.cbWww.isChecked()):
+            self.web_dir = os.path.join(os.path.dirname(__file__),
+                                        os.path.expanduser(self.config['Default']['folderwork']))
+            self.httpd = HTTPServer(self.web_dir, ("", 8000))
+            self.thread = StoppableThread(target=self.httpd.serve_forever)
+            self.thread.deamon = False
+            self.thread.start()
+
+        else:
+            self.thread.stop(self)
+            self.httpd.shutdown()
+
     def cb_save(self):
         timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now())))
         self.ui.log.append(_("Saving : ") + "stack_image_" + timestamp + ".fit")
@@ -377,7 +427,7 @@ class als_main_window(QtWidgets.QMainWindow):
             self.config['Default']['folderwork'] = DirName
 
     def cb_play(self):
-
+        self.startwww()
         if self.ui.tFolder.text() != "":
 
             if self.image_ref_save.status == "stop":
@@ -471,6 +521,8 @@ class als_main_window(QtWidgets.QMainWindow):
             self.ui.log.append(_("No path"))
 
     def cb_stop(self):
+
+
         self.fileWatcher.observer.stop()
         self.image_ref_save.status = "stop"
         self.image_ref_save.image = []
