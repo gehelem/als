@@ -427,7 +427,7 @@ class als_main_window(QtWidgets.QMainWindow):
             self.config['Default']['folderwork'] = DirName
 
     def cb_play(self):
-        self.startwww()
+        # self.startwww() need create function first
         if self.ui.tFolder.text() != "":
 
             if self.image_ref_save.status == "stop":
