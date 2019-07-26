@@ -13,51 +13,83 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Provides application defaults and high level access to user settings
+"""
 
-from configparser import ConfigParser
 import os
+from configparser import ConfigParser
 
-# Local stuff
-from resources_dir import default_init_file_path
-from resources_dir import repo_init_file_path
+# config file path. We use the pseudo-standard hidden file in user's home
+_CONFIG_FILE_PATH = os.path.expanduser("~/.als.cfg")
+
+# keys used to retrieve config values
+_SCAN_FOLDER_PATH = "scan_folder_path"
+_WORK_FOLDER_PATH = "work_folder_path"
+_DARK_PATH = "dark_path"
+
+# application default values
+_DEFAULTS = {
+    _SCAN_FOLDER_PATH:    os.path.expanduser("~/als/scan"),
+    _WORK_FOLDER_PATH:    os.path.expanduser("~/als/work"),
+    _DARK_PATH:           os.path.expanduser("~/als/sample/dark.fits"),
+}
+
+_MAIN_SECTION_NAME = "main"
+
+_config_parser = ConfigParser()
+
+# ConfigParser.read won't raise an exception if read fails
+# so if app starts and no user settings file exists, we simply
+# get an "empty" config
+_config_parser.read(_CONFIG_FILE_PATH)
+
+# add our main section if not already present (i.e. previous read failed)
+if not _config_parser.has_section(_MAIN_SECTION_NAME):
+    _config_parser.add_section(_MAIN_SECTION_NAME)
+
+# cleanup unused options
+for option in _config_parser.options(_MAIN_SECTION_NAME):
+    if option not in _DEFAULTS.keys():
+        _config_parser.remove_option(_MAIN_SECTION_NAME, option)
 
 
-class Config(ConfigParser):
-    """
-    This class is a helper that allows to automatically update config file on
-    disk everytime something is changed in memory
-    """
-    def __init__(self, path=None):
-        super().__init__()
+def get_work_folder_path():
+    return _get(_WORK_FOLDER_PATH)
 
-        # In case path is None, try read from default location
-        # If it fails or not user defined file yet, read from local sources,
-        # and save in user home
-        if path is None:
-            try:
-                # try als.ini is in default location
-                if os.path.exists(default_init_file_path):
-                    self._path = default_init_file_path
-                    self.read()
-                else:
-                    raise FileNotFoundError('User defined config not here')
-            except Exception as e:
-                # init from local file
-                super().read(repo_init_file_path)
-                # write to als.ini in user's home
-                self._path = default_init_file_path
-                self.write()
-        else:
-            self._path = path
 
-    def read(self):
-        super().read(self._path)
+def set_work_folder_path( path):
+    _set(_WORK_FOLDER_PATH, path)
 
-    def write(self):
-        with open(self._path, 'w') as f:
-            super().write(f)
-        print('Configuration written to {}'.format(self._path))
 
-    def set(self, section, option, value):
-        super().set(section, option, value)
-        self.write()
+def get_scan_folder_path():
+    return _get(_SCAN_FOLDER_PATH)
+
+
+def set_scan_folder_path(path):
+    _set(_SCAN_FOLDER_PATH, path)
+
+
+def get_dark_path():
+    return _get(_DARK_PATH)
+
+
+def set_dark_path(path):
+    _set(_DARK_PATH, path)
+
+
+def save():
+    with open(_CONFIG_FILE_PATH, "w") as config_file:
+        _config_parser.write(config_file)
+
+
+def _get(key):
+    # we rely on the fallback machanism to get our predefined defaults
+    # if no user config is found
+    return _config_parser.get(_MAIN_SECTION_NAME, key, fallback=_DEFAULTS[key])
+
+
+def _set(key, value):
+    # we only store the value if it differs from default or already stored one
+    if value != _get(key):
+        _config_parser.set(_MAIN_SECTION_NAME, key, value)
