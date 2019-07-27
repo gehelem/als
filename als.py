@@ -65,18 +65,33 @@ class HTTPServer(BaseHTTPServer):
         self.base_path = base_path
         BaseHTTPServer.__init__(self, server_address, RequestHandlerClass)
 
-class StoppableThread(threading.Thread):
+class StoppableServerThread(threading.Thread):
     """Thread class with a stop() method. The thread itself has to check
     regularly for the stopped() condition."""
 
     @log
-    def __init__(self):
-        super(StoppableThread, self).__init__()
+    def __init__(self, web_dir):
+        # web stuff
+        self.web_dir = web_dir
+        self.httpd = HTTPServer(self.web_dir, ("", 8000))
+        self.httpd.timeout = 1
+
+        # thread stuff
         self._stop_event = threading.Event()
+
+        # Init parent thread
+        super().__init__(target=self.serve)
+    @log
+    def serve(self):
+        while not self.stopped():
+            self.httpd.handle_request()
+            print("Just handled request")
+        print("Finished handling requests")
 
     @log
     def stop(self):
         self._stop_event.set()
+        print("Stop taken into account")
 
     @log
     def stopped(self):
@@ -311,6 +326,10 @@ class als_main_window(QtWidgets.QMainWindow):
 
         self.setWindowTitle(_("Astro Live Stacker"))
 
+        # web stuff
+        self.thread = None
+        self.web_dir = None
+
     @log
     def closeEvent(self, event):
         super().closeEvent(event)
@@ -346,18 +365,15 @@ class als_main_window(QtWidgets.QMainWindow):
     @pyqtSlot(int, name="on_cbWww_stateChanged")
     @log
     def cb_wwwcheck(self, state):
-        # FIXME : Error in server thread init. Will be fixed with upcoming PR from thibault
         if state == Qt.Checked:
             self.web_dir = os.path.join(os.path.dirname(__file__),
                                         os.path.expanduser(Config.get_work_folder_path()))
-            self.httpd = HTTPServer(self.web_dir, ("", 8000))
-            self.thread = StoppableThread(target=self.httpd.serve_forever)
-            self.thread.deamon = False
+            self.thread = StoppableServerThread(self.web_dir)
             self.thread.start()
-
-        else:
-            self.thread.stop(self)
-            self.httpd.shutdown()
+        elif self.thread:
+            self.thread.stop()
+            self.thread.join()
+            self.thread = None
 
     @pyqtSlot(name="on_pbSave_clicked")
     @log
@@ -617,6 +633,10 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.G_slider.setEnabled(False)
         self.ui.B_slider.setEnabled(False)
         self.ui.pb_apply_value.setEnabled(False)
+
+    @log
+    def startwww(self):
+        self.wwwcheck()
 
     @log
     def main(self):
