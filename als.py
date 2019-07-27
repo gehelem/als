@@ -77,12 +77,9 @@ class StoppableServerThread(threading.Thread):
     def serve(self):
         while not self.stopped():
             self.httpd.handle_request()
-            print("Just handled request")
-        print("Finished handling requests")
 
     def stop(self):
         self._stop_event.set()
-        print("Stop taken into account")
 
     def stopped(self):
         return self._stop_event.is_set()
@@ -339,7 +336,7 @@ class als_main_window(QtWidgets.QMainWindow):
     def wwwcheck(self):
         if (self.ui.cbWww.isChecked()):
             self.web_dir = os.path.join(os.path.dirname(__file__),
-                                        os.path.expanduser(self.config['Default']['folderwork']))
+                                        os.path.expanduser(Config.get_work_folder_path()))
             self.thread = StoppableServerThread(self.web_dir)
             self.thread.start()
         elif self.thread:
