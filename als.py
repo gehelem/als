@@ -25,15 +25,14 @@ import gettext
 from PyQt5 import QtCore, QtGui, QtWidgets
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+
+import Config
 from alsui import Ui_stack_window  # import du fichier alsui.py généré par : pyuic5 alsui.ui -x -o alsui.py
 from astropy.io import fits
 from qimage2ndarray import array2qimage
 from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 import threading
 
-
-# Local stuff
-from Config import Config
 import stack as stk
 import preprocess as prepro
 import resource_rc
@@ -285,10 +284,9 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui = Ui_stack_window()
         self.ui.setupUi(self)
 
-        self.config = Config()
-        self.ui.tFolder.setText(os.path.expanduser(self.config['Default']['folderscan']))
-        self.ui.tDark.setText(os.path.expanduser(self.config['Default']['filedark']))
-        self.ui.tWork.setText(os.path.expanduser(self.config['Default']['folderwork']))
+        self.ui.tFolder.setText(os.path.expanduser(Config.get_scan_folder_path()))
+        self.ui.tDark.setText(os.path.expanduser(Config.get_dark_path()))
+        self.ui.tWork.setText(os.path.expanduser(Config.get_work_folder_path()))
 
         self.connect_actions()
         self.running = False
@@ -428,23 +426,23 @@ class als_main_window(QtWidgets.QMainWindow):
         if DirName:
             self.ui.tFolder.setText(DirName)
             self.ui.pbPlay.setEnabled(True)
-            self.config['Default']['folderscan'] = DirName
+            Config.set_scan_folder_path(DirName)
 
     def cb_browse_dark(self):
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, _("Dark file"), "",
                                                             "Fit Files (*.fit);;All Files (*)")
         if fileName:
             self.ui.tDark.setText(fileName)
-            self.config['Default']['filedark'] = fileName
+            Config.set_dark_path(fileName)
 
     def cb_browse_work(self):
         DirName = QtWidgets.QFileDialog.getExistingDirectory(self, _("Work folder"), self.ui.tWork.text())
         if DirName:
             self.ui.tWork.setText(DirName)
-            self.config['Default']['folderwork'] = DirName
+            Config.set_work_folder_path(DirName)
 
     def cb_play(self):
-        self.startwww()
+        # self.startwww() need create function first
         if self.ui.tFolder.text() != "":
 
             if self.image_ref_save.status == "stop":
@@ -601,4 +599,6 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     window = als_main_window()
     window.main()
-    sys.exit(app.exec_())
+    app_return_code = app.exec()
+    Config.save()
+    sys.exit(app_return_code)
