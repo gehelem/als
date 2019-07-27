@@ -101,8 +101,6 @@ class MyEventHandler(FileSystemEventHandler, QtCore.QThread, image_ref_save):
             while file_is_incomplete:
                 info = QFileInfo(file_path)
                 size = info.size()
-                # TODO : remove debug print
-                print(f'Current file "${file_path}" size : ${size}')
                 if size == last_file_size:
                     file_is_incomplete = False
                 last_file_size = size
