@@ -81,17 +81,15 @@ class StoppableServerThread(threading.Thread):
 
         # Init parent thread
         super().__init__(target=self.serve)
+
     @log
     def serve(self):
         while not self.stopped():
             self.httpd.handle_request()
-            print("Just handled request")
-        print("Finished handling requests")
 
     @log
     def stop(self):
         self._stop_event.set()
-        print("Stop taken into account")
 
     @log
     def stopped(self):
