@@ -307,7 +307,6 @@ class als_main_window(QtWidgets.QMainWindow):
 
         # connection for buttom
         self.ui.pb_apply_value.clicked.connect(lambda: self.apply_value(self.counter, self.ui.tWork.text()))
-        self.ui.cbWww.stateChanged.connect(self.wwwcheck)
 
         # update slider
         self.ui.contrast_slider.valueChanged['int'].connect(
@@ -324,9 +323,11 @@ class als_main_window(QtWidgets.QMainWindow):
     # ------------------------------------------------------------------------------
     # Callbacks
 
+    @pyqtSlot(int, name="on_cbWww_stateChanged")
     @log
-    def wwwcheck(self):
-        if (self.ui.cbWww.isChecked()):
+    def cb_wwwcheck(self, state):
+        # FIXME : Error in server thread init. Will be fixed with upcoming PR from thibault
+        if self.ui.cbWww.isChecked():
             self.web_dir = os.path.join(os.path.dirname(__file__),
                                         os.path.expanduser(Config.get_work_folder_path()))
             self.httpd = HTTPServer(self.web_dir, ("", 8000))
