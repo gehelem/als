@@ -110,6 +110,13 @@ logging.basicConfig(level=_LOG_LEVELS[_get(_LOG_LEVEL)],
                     stream=sys.stdout)
 _logger = logging.getLogger(__name__)
 
+# in here, we maintain a list of third party loggers for which we don't want to see anything but WARNING & up
+third_party_log_polluters = [
+    'watchdog.observers.inotify_buffer',
+]
+for third_party_log_polluter in third_party_log_polluters:
+    logging.getLogger(third_party_log_polluter).setLevel(logging.WARNING)
+
 # add our main section if not already present (i.e. previous read failed)
 if not _config_parser.has_section(_MAIN_SECTION_NAME):
     _logger.debug('adding main section to config')
