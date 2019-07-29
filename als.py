@@ -16,7 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+import logging
 import os
 from datetime import datetime
 import shutil
@@ -42,6 +42,8 @@ name_of_tiff_image = "stack_image.tiff"
 name_of_jpeg_image = "stack_image.jpg"
 gettext.install('als', 'locale')
 save_type = "jpeg"
+
+_logger = logging.getLogger(__name__)
 
 class HTTPHandler(SimpleHTTPRequestHandler):
     """This handler uses server.base_path instead of always using os.getcwd()"""
@@ -578,9 +580,13 @@ class als_main_window(QtWidgets.QMainWindow):
 if __name__ == "__main__":
     import sys
 
+    _logger.info("Starting Astro Live Stacker")
     app = QtWidgets.QApplication(sys.argv)
     window = als_main_window()
+    _logger.debug("Building and showing main window")
     window.main()
     app_return_code = app.exec()
     Config.save()
+    _logger.info("User configuration saved")
+    _logger.info(f"Astro Live Stacker terminated with return code = {app_return_code}")
     sys.exit(app_return_code)

@@ -16,7 +16,7 @@
 """
 Provides application defaults and high level access to user settings
 """
-
+import logging
 import os
 from configparser import ConfigParser
 
@@ -27,38 +27,41 @@ _CONFIG_FILE_PATH = os.path.expanduser("~/.als.cfg")
 _SCAN_FOLDER_PATH = "scan_folder_path"
 _WORK_FOLDER_PATH = "work_folder_path"
 _DARK_PATH = "dark_path"
+_LOG_LEVEL = "log_level"
+
+# keys used to describe logging level
+_LOG_LEVEL_DEBUG = "DEBUG"
+_LOG_LEVEL_INFO = "INFO"
+_LOG_LEVEL_WARNING = "WARNING"
+_LOG_LEVEL_ERROR = "ERROR"
+_LOG_LEVEL_CRITICAL = "CRITICAL"
+
+# store of matches between human readable log levels and logging module constants
+_LOG_LEVELS = {
+    _LOG_LEVEL_DEBUG:       logging.DEBUG,
+    _LOG_LEVEL_INFO:        logging.INFO,
+    _LOG_LEVEL_WARNING:     logging.WARNING,
+    _LOG_LEVEL_ERROR:       logging.ERROR,
+    _LOG_LEVEL_CRITICAL:    logging.CRITICAL,
+}
 
 # application default values
 _DEFAULTS = {
     _SCAN_FOLDER_PATH:    os.path.expanduser("~/als/scan"),
     _WORK_FOLDER_PATH:    os.path.expanduser("~/als/work"),
     _DARK_PATH:           os.path.expanduser("~/als/sample/dark.fits"),
+    _LOG_LEVEL:           "INFO",
 }
-
 _MAIN_SECTION_NAME = "main"
 
 _config_parser = ConfigParser()
-
-# ConfigParser.read won't raise an exception if read fails
-# so if app starts and no user settings file exists, we simply
-# get an "empty" config
-_config_parser.read(_CONFIG_FILE_PATH)
-
-# add our main section if not already present (i.e. previous read failed)
-if not _config_parser.has_section(_MAIN_SECTION_NAME):
-    _config_parser.add_section(_MAIN_SECTION_NAME)
-
-# cleanup unused options
-for option in _config_parser.options(_MAIN_SECTION_NAME):
-    if option not in _DEFAULTS.keys():
-        _config_parser.remove_option(_MAIN_SECTION_NAME, option)
 
 
 def get_work_folder_path():
     return _get(_WORK_FOLDER_PATH)
 
 
-def set_work_folder_path( path):
+def set_work_folder_path(path):
     _set(_WORK_FOLDER_PATH, path)
 
 
@@ -93,3 +96,24 @@ def _set(key, value):
     # we only store the value if it differs from default or already stored one
     if value != _get(key):
         _config_parser.set(_MAIN_SECTION_NAME, key, value)
+
+
+# ConfigParser.read won't raise an exception if read fails
+# so if app starts and no user settings file exists, we simply
+# get an "empty" config
+_config_parser.read(_CONFIG_FILE_PATH)
+
+# init logging system
+logging.basicConfig(level=_LOG_LEVELS[_get(_LOG_LEVEL)])
+_logger = logging.getLogger(__name__)
+
+# add our main section if not already present (i.e. previous read failed)
+if not _config_parser.has_section(_MAIN_SECTION_NAME):
+    _logger.debug('adding main section to config')
+    _config_parser.add_section(_MAIN_SECTION_NAME)
+
+# cleanup unused options
+for option in _config_parser.options(_MAIN_SECTION_NAME):
+    if option not in _DEFAULTS.keys():
+        _logger.debug(f"Removed obsolete config option : '{option}'")
+        _config_parser.remove_option(_MAIN_SECTION_NAME, option)
