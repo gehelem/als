@@ -15,21 +15,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 
-import cv2
 import astroalign as al
+import cv2
 import numpy as np
+import rawpy
 from astropy.io import fits
 from tqdm import tqdm
-import rawpy
-
 
 # classic order = 3xMxN
 # cv2 order = MxNx3
 # uint = unsignet int ( 0 to ...)
+from code_utilities import log
 
 _logger = logging.getLogger(__name__)
 
 
+@log
 def test_and_debayer_to_rgb(header, image):
     """
     Function for test fit image type : B&W, RGB or RGB no debayer
@@ -74,6 +75,7 @@ def test_and_debayer_to_rgb(header, image):
     return image, new_mode
 
 
+@log
 def test_utype(image):
     """
     Test Image types (uint8 or uint16)
@@ -93,6 +95,7 @@ def test_utype(image):
     return limit, im_type
 
 
+@log
 def create_first_ref_im(work_path, im_path, save_im=False):
     """
     function for process first image (need remove and add option or read counter)
@@ -156,6 +159,7 @@ def create_first_ref_im(work_path, im_path, save_im=False):
     return image, im_limit, im_mode
 
 
+@log
 def stack_live(work_path, im_path, counter, ref=[], first_ref=[], save_im=False, align=True,
                stack_methode="Sum"):
     """
