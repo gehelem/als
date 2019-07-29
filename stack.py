@@ -13,6 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import logging
 
 import cv2
 import astroalign as al
@@ -25,6 +26,8 @@ import rawpy
 # classic order = 3xMxN
 # cv2 order = MxNx3
 # uint = unsignet int ( 0 to ...)
+
+_logger = logging.getLogger(__name__)
 
 
 def test_and_debayer_to_rgb(header, image):
@@ -40,13 +43,13 @@ def test_and_debayer_to_rgb(header, image):
     # test image Type
     # use fit header for separate B&W to no debayer image
     if len(image.shape) == 2 and not ("BAYERPAT" in header):
-        print("B&W mode...")
+        _logger.info("B&W mode...")
         new_mode = "gray"
     elif len(image.shape) == 3:
-        print("RGB mode...")
+        _logger.info("RGB mode...")
         new_mode = "rgb"
     elif len(image.shape) == 2 and "BAYERPAT" in header:
-        print("debayering...")
+        _logger.info("debayering...")
         debay = header["BAYERPAT"]
 
         # test bayer type and debayer
@@ -131,7 +134,7 @@ def create_first_ref_im(work_path, im_path, save_im=False):
         # test rgb or gray or no debayer
         new, im_mode = test_and_debayer_to_rgb(new_header, new)
     else:
-        print("convert DSLR image ...")
+        _logger.info("convert DSLR image ...")
         # convert camera raw to numpy array
         new = rawpy.imread(im_path).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16)
         im_mode = "rgb"
@@ -201,7 +204,7 @@ def stack_live(work_path, im_path, counter, ref=[], first_ref=[], save_im=False,
         # test rgb or gray
         new, im_mode = test_and_debayer_to_rgb(new_header, new)
     else:
-        print("convert DSLR image ...")
+        _logger.info("convert DSLR image ...")
         new = rawpy.imread(im_path).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16)
         im_mode = "rgb"
         extension = ".fits"
@@ -212,7 +215,7 @@ def stack_live(work_path, im_path, counter, ref=[], first_ref=[], save_im=False,
     # ____________________________________
     # specific part for no first image
     # choix rgb ou gray scale
-    print("alignement and stacking...")
+    _logger.info("alignement and stacking...")
 
     # choix du mode (rgb or B&W)
     if im_mode == "rgb":

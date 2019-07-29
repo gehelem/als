@@ -93,7 +93,7 @@ class MyEventHandler(FileSystemEventHandler, QtCore.QThread, image_ref_save):
     def on_created(self, event):
         # if not event.is_directory:
         if event.event_type == 'created':
-            print("New image arrive: %s" % event.src_path)
+            _logger.info(f"New image arrived : {event.src_path}")
             self.new_image_path = event.src_path
             self.created_signal.emit()
 
@@ -143,8 +143,8 @@ class WatchOutForFileCreations(QtCore.QThread):
         self.wavelet_3_value = wavelet_3_value
         self.wavelet_4_value = wavelet_4_value
         self.wavelet_5_value = wavelet_5_value
-        print(self.work_folder)
-        print(self.path)
+        _logger.info(f" Work folder = '{self.work_folder}'")
+        _logger.info(f" Scan folder = '{self.path}'")
 
         # __ call watchdog __
         # call observer :
@@ -403,8 +403,9 @@ class als_main_window(QtWidgets.QMainWindow):
                                                 self.ui.image_stack.frameGeometry().height(),
                                                 QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         self.ui.image_stack.setPixmap(pixmap_tiff_resize)
-        self.ui.log.append(_("Updated GUI image"))
-        print(_("Updated GUI image"))
+        message = _("Updated GUI image")
+        self.ui.log.append(_(message))
+        _logger.info(message)
 
     def cb_browse_folder(self):
         DirName = QtWidgets.QFileDialog.getExistingDirectory(self, _("Scan folder"), self.ui.tFolder.text())
