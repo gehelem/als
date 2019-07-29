@@ -101,21 +101,23 @@ class MyEventHandler(FileSystemEventHandler, QtCore.QThread, image_ref_save):
 
     @log
     def on_created(self, event):
-        # if not event.is_directory:
         if event.event_type == 'created':
             file_is_incomplete = True
             last_file_size = -1
             file_path = event.src_path
+            _logger.debug(f"New image file detected : {file_path}. Waiting untill file is fully written to disk...")
 
             while file_is_incomplete:
                 info = QFileInfo(file_path)
                 size = info.size()
+                _logger.debug(f"File {file_path}'s size = {size}")
                 if size == last_file_size:
                     file_is_incomplete = False
+                    _logger.debug(f"File {file_path} has been fully written to disk")
                 last_file_size = size
                 self.msleep(DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS)
 
-            print("New image arrive: %s" % file_path)
+            _logger.info(f"New image ready to be processed : {file_path}")
             self.new_image_path = file_path
             self.created_signal.emit()
 
