@@ -16,6 +16,8 @@
 
 
 # Numerical stuff
+import logging
+
 import numpy as np
 import cv2
 
@@ -29,6 +31,7 @@ import stack as stk
 name_of_tiff_image = "stack_image.tiff"
 name_of_jpeg_image = "stack_image.jpg"
 
+_logger = logging.getLogger(__name__)
 
 def Wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
     """
@@ -259,13 +262,13 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
     # use cv2 fonction for save print image in tiff format
     if image_type == "tiff":
         cv2.imwrite(work_path + "/" + name_of_tiff_image, new_stack_image)
-        print(_("TIFF image create :") + "%s" % work_path + "/" + name_of_tiff_image)
+        _logger.info(_("TIFF image create :") + "%s" % work_path + "/" + name_of_tiff_image)
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
     elif image_type == "jpeg":
         cv2.imwrite(work_path + "/" + name_of_jpeg_image, new_stack_image, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
-        print(_("JPEG image create :") + "%s" % work_path + "/" + name_of_jpeg_image)
+        _logger.info(_("JPEG image create :") + "%s" % work_path + "/" + name_of_jpeg_image)
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
     elif image_type == "no":
-        print(_("No image create, als use RAM"))
+        _logger.info(_("No image create, als use RAM"))
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
     return new_stack_image
