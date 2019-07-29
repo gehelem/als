@@ -16,27 +16,28 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import gettext
 import logging
 import os
-from datetime import datetime
 import shutil
-import numpy as np
-import gettext
-from PyQt5 import QtCore, QtGui, QtWidgets
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
+import threading
+from datetime import datetime
+from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 
-import Config
-from alsui import Ui_stack_window  # import du fichier alsui.py généré par : pyuic5 alsui.ui -x -o alsui.py
+import numpy as np
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import pyqtSlot
 from astropy.io import fits
 from qimage2ndarray import array2qimage
-from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
-import threading
+from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
 
-import stack as stk
+import Config
 import preprocess as prepro
-import resource_rc
-
+import stack as stk
+from alsui import Ui_stack_window  # import du fichier alsui.py généré par : pyuic5 alsui.ui -x -o alsui.py
+from code_utilities import log
 
 name_of_tiff_image = "stack_image.tiff"
 name_of_jpeg_image = "stack_image.jpg"
@@ -45,8 +46,10 @@ save_type = "jpeg"
 
 _logger = logging.getLogger(__name__)
 
+
 class HTTPHandler(SimpleHTTPRequestHandler):
     """This handler uses server.base_path instead of always using os.getcwd()"""
+    @log
     def translate_path(self, path):
         path = SimpleHTTPRequestHandler.translate_path(self, path)
         relpath = os.path.relpath(path, os.getcwd())
@@ -56,6 +59,7 @@ class HTTPHandler(SimpleHTTPRequestHandler):
 
 class HTTPServer(BaseHTTPServer):
     """The main server, you pass in base_path which is the path you want to serve requests from"""
+    @log
     def __init__(self, base_path, server_address, RequestHandlerClass=HTTPHandler):
         self.base_path = base_path
         BaseHTTPServer.__init__(self, server_address, RequestHandlerClass)
@@ -64,32 +68,37 @@ class StoppableThread(threading.Thread):
     """Thread class with a stop() method. The thread itself has to check
     regularly for the stopped() condition."""
 
+    @log
     def __init__(self):
         super(StoppableThread, self).__init__()
         self._stop_event = threading.Event()
 
+    @log
     def stop(self):
         self._stop_event.set()
 
+    @log
     def stopped(self):
         return self._stop_event.is_set()
 
 
 class image_ref_save:
+    @log
     def __init__(self):
         self.image = []
         self.status = "stop"
         self.stack_image = []
 
 
-
 class MyEventHandler(FileSystemEventHandler, QtCore.QThread, image_ref_save):
     created_signal = QtCore.pyqtSignal()
     new_image_path = ""
 
+    @log
     def __init__(self):
         super().__init__()
 
+    @log
     def on_created(self, event):
         # if not event.is_directory:
         if event.event_type == 'created':
@@ -104,6 +113,7 @@ class MyEventHandler(FileSystemEventHandler, QtCore.QThread, image_ref_save):
 class WatchOutForFileCreations(QtCore.QThread):
     print_image = QtCore.pyqtSignal()
 
+    @log
     def __init__(self, path, work_folder, align_on, save_on, stack_methode,
                  log, white_slider, black_slider, contrast_slider, brightness_slider,
                  R_slider, G_slider, B_slider, apply_button,
@@ -157,6 +167,7 @@ class WatchOutForFileCreations(QtCore.QThread):
         self.event_handler.created_signal.connect(lambda: self.created(self.event_handler.new_image_path,
                                                                        align_on, save_on, stack_methode))
 
+    @log
     def created(self, new_image_path, align_on, save_on, stack_methode):
         if self.image_ref_save.status == "play" \
                 and new_image_path.split("/")[-1][0] != "." \
@@ -266,6 +277,7 @@ class WatchOutForFileCreations(QtCore.QThread):
 
 class als_main_window(QtWidgets.QMainWindow):
 
+    @log
     def __init__(self, parent=None):
         super().__init__(parent)
         self.ui = Ui_stack_window()
@@ -285,22 +297,15 @@ class als_main_window(QtWidgets.QMainWindow):
 
         self.setWindowTitle(_("Astro Live Stacker"))
 
+    @log
     def closeEvent(self, event):
         super().closeEvent(event)
 
 
-
+    @log
     def connect_actions(self):
 
         # connection for buttom
-        self.ui.pbPlay.clicked.connect(self.cb_play)
-        self.ui.pbStop.clicked.connect(self.cb_stop)
-        self.ui.pbReset.clicked.connect(self.cb_reset)
-        self.ui.pbPause.clicked.connect(self.cb_pause)
-        self.ui.pbSave.clicked.connect(self.cb_save)
-        self.ui.bBrowseFolder.clicked.connect(self.cb_browse_folder)
-        self.ui.bBrowseDark.clicked.connect(self.cb_browse_dark)
-        self.ui.bBrowseWork.clicked.connect(self.cb_browse_work)
         self.ui.pb_apply_value.clicked.connect(lambda: self.apply_value(self.counter, self.ui.tWork.text()))
         self.ui.cbWww.stateChanged.connect(self.wwwcheck)
 
@@ -319,6 +324,7 @@ class als_main_window(QtWidgets.QMainWindow):
     # ------------------------------------------------------------------------------
     # Callbacks
 
+    @log
     def wwwcheck(self):
         if (self.ui.cbWww.isChecked()):
             self.web_dir = os.path.join(os.path.dirname(__file__),
@@ -332,6 +338,8 @@ class als_main_window(QtWidgets.QMainWindow):
             self.thread.stop(self)
             self.httpd.shutdown()
 
+    @pyqtSlot(name="on_pbSave_clicked")
+    @log
     def cb_save(self):
         timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now())))
         self.ui.log.append(_("Saving : ") + "stack_image_" + timestamp + ".fit")
@@ -341,12 +349,14 @@ class als_main_window(QtWidgets.QMainWindow):
         # red.close()
         del red
 
+    @log
     def apply_value(self, counter, work_folder):
         if counter > 0:
             self.ajuste_value(work_folder)
             self.update_image(work_folder, add=False)
         self.ui.log.append(_("Define new display value"))
 
+    @log
     def ajuste_value(self, work_folder):
 
         # test rgb or gray
@@ -381,6 +391,7 @@ class als_main_window(QtWidgets.QMainWindow):
 
         self.ui.log.append(_("Adjust GUI image"))
 
+    @log
     def update_image(self, work_folder, add=True):
         if add:
             self.counter = self.counter + 1
@@ -407,13 +418,17 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.log.append(_(message))
         _logger.info(message)
 
-    def cb_browse_folder(self):
+    @pyqtSlot(name="on_bBrowseFolder_clicked")
+    @log
+    def cb_browse_scan(self):
         DirName = QtWidgets.QFileDialog.getExistingDirectory(self, _("Scan folder"), self.ui.tFolder.text())
         if DirName:
             self.ui.tFolder.setText(DirName)
             self.ui.pbPlay.setEnabled(True)
             Config.set_scan_folder_path(DirName)
 
+    @pyqtSlot(name="on_bBrowseDark_clicked")
+    @log
     def cb_browse_dark(self):
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, _("Dark file"), "",
                                                             "Fit Files (*.fit);;All Files (*)")
@@ -421,12 +436,16 @@ class als_main_window(QtWidgets.QMainWindow):
             self.ui.tDark.setText(fileName)
             Config.set_dark_path(fileName)
 
+    @pyqtSlot(name="on_bBrowseWork_clicked")
+    @log
     def cb_browse_work(self):
         DirName = QtWidgets.QFileDialog.getExistingDirectory(self, _("Work folder"), self.ui.tWork.text())
         if DirName:
             self.ui.tWork.setText(DirName)
             Config.set_work_folder_path(DirName)
 
+    @pyqtSlot(name="on_pbPlay_clicked")
+    @log
     def cb_play(self):
         # self.startwww() need create function first
         if self.ui.tFolder.text() != "":
@@ -521,9 +540,9 @@ class als_main_window(QtWidgets.QMainWindow):
         else:
             self.ui.log.append(_("No path"))
 
+    @pyqtSlot(name="on_pbStop_clicked")
+    @log
     def cb_stop(self):
-
-
         self.fileWatcher.observer.stop()
         self.image_ref_save.status = "stop"
         self.image_ref_save.image = []
@@ -534,6 +553,8 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.pbPause.setEnabled(False)
         self.ui.log.append("Stop")
 
+    @pyqtSlot(name="on_pbPause_clicked")
+    @log
     def cb_pause(self):
         # self.fileWatcher.observer.stop()
         self.image_ref_save.status = "pause"
@@ -543,6 +564,8 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.pbPause.setEnabled(False)
         self.ui.log.append("Pause")
 
+    @pyqtSlot(name="on_pbReset_clicked")
+    @log
     def cb_reset(self):
         self.ui.log.append("Reset")
         # reset slider, label, image, global value
@@ -572,6 +595,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.B_slider.setEnabled(False)
         self.ui.pb_apply_value.setEnabled(False)
 
+    @log
     def main(self):
         self.show()
 

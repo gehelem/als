@@ -18,6 +18,7 @@ Provides application defaults and high level access to user settings
 """
 import logging
 import os
+import sys
 from configparser import ConfigParser
 
 # config file path. We use the pseudo-standard hidden file in user's home
@@ -104,7 +105,9 @@ def _set(key, value):
 _config_parser.read(_CONFIG_FILE_PATH)
 
 # init logging system
-logging.basicConfig(level=_LOG_LEVELS[_get(_LOG_LEVEL)], format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
+logging.basicConfig(level=_LOG_LEVELS[_get(_LOG_LEVEL)],
+                    format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
+                    stream=sys.stdout)
 _logger = logging.getLogger(__name__)
 
 # add our main section if not already present (i.e. previous read failed)

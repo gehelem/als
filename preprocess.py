@@ -18,21 +18,23 @@
 # Numerical stuff
 import logging
 
-import numpy as np
 import cv2
-
 # Wavelet stuff
 import dtcwt
+import numpy as np
 from pywi.processing.transform import starlet
 
 # Local stuff
 import stack as stk
+from code_utilities import log
 
 name_of_tiff_image = "stack_image.tiff"
 name_of_jpeg_image = "stack_image.jpg"
 
 _logger = logging.getLogger(__name__)
 
+
+@log
 def Wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
     """
     Module allowing to play with coefficients of a redudant frame from the
@@ -46,6 +48,7 @@ def Wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
     :return:           denoised/enhanced image
     """
 
+    @log
     def apply_dt_wavelets(img, param):
         # Compute 5 levels of dtcwt with the antonini/qshift settings
         input_shape = img.shape
@@ -68,6 +71,7 @@ def Wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
         # in some cases dtcwt does reshape the image for performance purpose
         return ret[:input_shape[0], :input_shape[1]]
 
+    @log
     def apply_star_wavelets(img, param):
         # Compute 5 levels of starlets
         t = starlet.wavelet_transform(img, number_of_scales=len(param))
@@ -109,6 +113,7 @@ def Wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
     return image
 
 
+@log
 def SCNR(rgb_image, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
     """
     Function for reduce green noise on image
@@ -162,6 +167,7 @@ def SCNR(rgb_image, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
     return rgb_image
 
 
+@log
 def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
               wavelets_on=False, wavelets_type='deep sky',
               wavelets_use_luminance=False, param=[], image_type="tiff"):
