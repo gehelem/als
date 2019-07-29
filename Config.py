@@ -104,7 +104,7 @@ def _set(key, value):
 _config_parser.read(_CONFIG_FILE_PATH)
 
 # init logging system
-logging.basicConfig(level=_LOG_LEVELS[_get(_LOG_LEVEL)])
+logging.basicConfig(level=_LOG_LEVELS[_get(_LOG_LEVEL)], format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
 _logger = logging.getLogger(__name__)
 
 # add our main section if not already present (i.e. previous read failed)
