@@ -319,10 +319,6 @@ class als_main_window(QtWidgets.QMainWindow):
 
     @log
     def connect_actions(self):
-
-        # connection for buttom
-        self.ui.pb_apply_value.clicked.connect(lambda: self.apply_value(self.counter, self.ui.tWork.text()))
-
         # update slider
         self.ui.contrast_slider.valueChanged['int'].connect(
             lambda: self.ui.contrast.setNum(self.ui.contrast_slider.value() / 10))
@@ -365,9 +361,11 @@ class als_main_window(QtWidgets.QMainWindow):
         # red.close()
         del red
 
+    @pyqtSlot(name="on_pb_apply_value_clicked")
     @log
-    def apply_value(self, counter, work_folder):
-        if counter > 0:
+    def cb_apply_value(self):
+        work_folder = self.ui.tWork.text()
+        if self.counter > 0:
             self.ajuste_value(work_folder)
             self.update_image(work_folder, add=False)
         self.ui.log.append(_("Define new display value"))
