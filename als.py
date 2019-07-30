@@ -27,7 +27,7 @@ from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import pyqtSlot, Qt
+from PyQt5.QtCore import pyqtSlot, QFileInfo, Qt
 from astropy.io import fits
 from qimage2ndarray import array2qimage
 from watchdog.events import FileSystemEventHandler
@@ -43,6 +43,7 @@ name_of_tiff_image = "stack_image.tiff"
 name_of_jpeg_image = "stack_image.jpg"
 gettext.install('als', 'locale')
 save_type = "jpeg"
+DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS = 100
 
 _logger = logging.getLogger(__name__)
 
@@ -100,10 +101,24 @@ class MyEventHandler(FileSystemEventHandler, QtCore.QThread, image_ref_save):
 
     @log
     def on_created(self, event):
-        # if not event.is_directory:
         if event.event_type == 'created':
-            _logger.info(f"New image arrived : {event.src_path}")
-            self.new_image_path = event.src_path
+            file_is_incomplete = True
+            last_file_size = -1
+            file_path = event.src_path
+            _logger.debug(f"New image file detected : {file_path}. Waiting untill file is fully written to disk...")
+
+            while file_is_incomplete:
+                info = QFileInfo(file_path)
+                size = info.size()
+                _logger.debug(f"File {file_path}'s size = {size}")
+                if size == last_file_size:
+                    file_is_incomplete = False
+                    _logger.debug(f"File {file_path} has been fully written to disk")
+                last_file_size = size
+                self.msleep(DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS)
+
+            _logger.info(f"New image ready to be processed : {file_path}")
+            self.new_image_path = file_path
             self.created_signal.emit()
 
 
