@@ -2,9 +2,10 @@
 
 # Form implementation generated from reading ui file 'alsui.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.2
+# Created by: PyQt5 UI code generator 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
+
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -527,6 +528,7 @@ class Ui_stack_window(object):
         self.cbWavelets.clicked['bool'].connect(self.verticalSlider_3.setEnabled)
         self.cbWavelets.clicked['bool'].connect(self.verticalSlider_4.setEnabled)
         self.cbWavelets.clicked['bool'].connect(self.verticalSlider_5.setEnabled)
+        self.brightness_slider.valueChanged['int'].connect(self.brightness.setNum)
         QtCore.QMetaObject.connectSlotsByName(stack_window)
 
     def retranslateUi(self, stack_window):
@@ -594,16 +596,4 @@ class Ui_stack_window(object):
         self.postprocess_widget.setTabText(self.postprocess_widget.indexOf(self.Advance), _translate("stack_window", "Advance"))
         self.pb_apply_value.setText(_translate("stack_window", "Apply"))
         self.actionQuit.setText(_translate("stack_window", "&Quit"))
-
-
 import resource_rc
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    stack_window = QtWidgets.QMainWindow()
-    ui = Ui_stack_window()
-    ui.setupUi(stack_window)
-    stack_window.show()
-    sys.exit(app.exec_())
