@@ -27,7 +27,7 @@ from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, Qt
 from astropy.io import fits
 from qimage2ndarray import array2qimage
 from watchdog.events import FileSystemEventHandler
@@ -327,7 +327,7 @@ class als_main_window(QtWidgets.QMainWindow):
     @log
     def cb_wwwcheck(self, state):
         # FIXME : Error in server thread init. Will be fixed with upcoming PR from thibault
-        if self.ui.cbWww.isChecked():
+        if state == Qt.Checked:
             self.web_dir = os.path.join(os.path.dirname(__file__),
                                         os.path.expanduser(Config.get_work_folder_path()))
             self.httpd = HTTPServer(self.web_dir, ("", 8000))
