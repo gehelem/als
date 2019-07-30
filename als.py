@@ -322,7 +322,7 @@ class als_main_window(QtWidgets.QMainWindow):
         # update slider
         self.ui.contrast_slider.valueChanged['int'].connect(
             lambda: self.ui.contrast.setNum(self.ui.contrast_slider.value() / 10))
-        self.ui.brightness_slider.valueChanged['int'].connect(self.ui.brightness.setNum)
+        # self.ui.brightness_slider.valueChanged['int'].connect(self.ui.brightness.setNum)
         self.ui.black_slider.valueChanged['int'].connect(self.ui.black.setNum)
         self.ui.white_slider.valueChanged['int'].connect(self.ui.white.setNum)
         self.ui.R_slider.valueChanged['int'].connect(lambda: self.ui.R_value.setNum(self.ui.R_slider.value() / 100.))
