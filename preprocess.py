@@ -259,7 +259,7 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
         new_stack_image = np.where(new_stack_image < limit, new_stack_image, limit)
         new_stack_image = np.where(new_stack_image > 0, new_stack_image, 0)
 
-        # reconvert in unintX format
+        # reconvert in uintX format
         if im_type == "uint16":
             new_stack_image = np.uint16(new_stack_image)
         elif im_type == "uint8":
@@ -270,8 +270,20 @@ def save_tiff(work_path, stack_image, log, mode="rgb", scnr_on=False,
         cv2.imwrite(work_path + "/" + name_of_tiff_image, new_stack_image)
         _logger.info(_("TIFF image create :") + "%s" % work_path + "/" + name_of_tiff_image)
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
+
     elif image_type == "jpeg":
-        cv2.imwrite(work_path + "/" + name_of_jpeg_image, new_stack_image, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
+        image_to_save = new_stack_image
+        if "uint16" == image_to_save.dtype:
+            bit_depth = 16
+        elif "unit32" == image_to_save.dtype:
+            bit_depth = 32
+        else:
+            bit_depth = 8
+
+        if bit_depth > 8:
+            image_to_save = np.copy(new_stack_image) / 2**bit_depth * 2**8
+
+        cv2.imwrite(work_path + "/" + name_of_jpeg_image, image_to_save, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
         _logger.info(_("JPEG image create :") + "%s" % work_path + "/" + name_of_jpeg_image)
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
     elif image_type == "no":
