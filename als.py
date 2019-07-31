@@ -28,6 +28,7 @@ from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSlot, QFileInfo, Qt
+from PyQt5.QtWidgets import QErrorMessage, QMessageBox
 from astropy.io import fits
 from qimage2ndarray import array2qimage
 from watchdog.events import FileSystemEventHandler
@@ -74,7 +75,7 @@ class StoppableServerThread(threading.Thread):
     def __init__(self, web_dir):
         # web stuff
         self.web_dir = web_dir
-        self.httpd = HTTPServer(self.web_dir, ("", 8000))
+        self.httpd = HTTPServer(self.web_dir, ("", Config.get_www_server_port_number()))
         self.httpd.timeout = 1
 
         # thread stuff
@@ -92,7 +93,6 @@ class StoppableServerThread(threading.Thread):
     def stop(self):
         self._stop_event.set()
 
-    @log
     def stopped(self):
         return self._stop_event.is_set()
 
@@ -331,6 +331,7 @@ class als_main_window(QtWidgets.QMainWindow):
 
     @log
     def closeEvent(self, event):
+        self._stop_www()
         super().closeEvent(event)
 
     # ------------------------------------------------------------------------------
@@ -365,14 +366,9 @@ class als_main_window(QtWidgets.QMainWindow):
     @log
     def cb_wwwcheck(self, state):
         if state == Qt.Checked:
-            self.web_dir = os.path.join(os.path.dirname(__file__),
-                                        os.path.expanduser(Config.get_work_folder_path()))
-            self.thread = StoppableServerThread(self.web_dir)
-            self.thread.start()
+            self._start_www()
         elif self.thread:
-            self.thread.stop()
-            self.thread.join()
-            self.thread = None
+            self._stop_www()
 
     @pyqtSlot(name="on_pbSave_clicked")
     @log
@@ -485,7 +481,6 @@ class als_main_window(QtWidgets.QMainWindow):
     @pyqtSlot(name="on_pbPlay_clicked")
     @log
     def cb_play(self):
-        # self.startwww() need create function first
         if self.ui.tFolder.text() != "":
 
             if self.image_ref_save.status == "stop":
@@ -634,8 +629,37 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.pb_apply_value.setEnabled(False)
 
     @log
-    def startwww(self):
-        self.wwwcheck()
+    def _start_www(self):
+        self.web_dir = os.path.join(os.path.dirname(__file__),
+                                    os.path.expanduser(Config.get_work_folder_path()))
+        try:
+            self.thread = StoppableServerThread(self.web_dir)
+            self.thread.start()
+        except PermissionError:
+            title = "Could not start webserver"
+            message = f"The port ({Config.get_www_server_port_number()}) used by web server is already in in use.\n\n"
+            message += "Add or modify the 'www_server_port' entry in your config file (located at ~/.als.cfg) to " \
+                       "specify another port number and RESTART the application"
+            self._error_box(title, message)
+            self._stop_www()
+            # FIXME this must be improved in the furure
+            self.ui.cbWww.setChecked(False)
+
+
+    @log
+    def _stop_www(self):
+        if self.thread:
+            self.thread.stop()
+            self.thread.join()
+            self.thread = None
+
+    @log
+    def _error_box(self, title, message):
+        box = QMessageBox()
+        box.setIcon(QMessageBox.Critical)
+        box.setWindowTitle(title)
+        box.setText(message)
+        box.exec()
 
     @log
     def main(self):
