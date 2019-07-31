@@ -1637,5 +1637,37 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>black_slider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>black</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>603</x>
+     <y>615</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>760</x>
+     <y>615</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>white_slider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>white</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>607</x>
+     <y>702</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>760</x>
+     <y>702</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
 </ui>
