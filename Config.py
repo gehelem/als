@@ -29,6 +29,7 @@ _SCAN_FOLDER_PATH = "scan_folder_path"
 _WORK_FOLDER_PATH = "work_folder_path"
 _DARK_PATH = "dark_path"
 _LOG_LEVEL = "log_level"
+_WWW_SERVER_PORT = "www_server_port"
 
 # keys used to describe logging level
 _LOG_LEVEL_DEBUG = "DEBUG"
@@ -52,10 +53,19 @@ _DEFAULTS = {
     _WORK_FOLDER_PATH:    os.path.expanduser("~/als/work"),
     _DARK_PATH:           os.path.expanduser("~/als/sample/dark.fits"),
     _LOG_LEVEL:           "INFO",
+    _WWW_SERVER_PORT:     "8000",
 }
 _MAIN_SECTION_NAME = "main"
 
 _config_parser = ConfigParser()
+
+
+def get_www_server_port_number():
+    return int(_get(_WWW_SERVER_PORT))
+
+
+def set_www_server_port_number(port_number):
+    _set(_WWW_SERVER_PORT, port_number)
 
 
 def get_work_folder_path():
