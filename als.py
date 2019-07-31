@@ -28,7 +28,7 @@ from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSlot, QFileInfo, Qt
-from PyQt5.QtWidgets import QErrorMessage, QMessageBox
+from PyQt5.QtWidgets import QMessageBox
 from astropy.io import fits
 from qimage2ndarray import array2qimage
 from watchdog.events import FileSystemEventHandler
