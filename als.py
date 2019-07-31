@@ -332,6 +332,21 @@ class als_main_window(QtWidgets.QMainWindow):
     @log
     def closeEvent(self, event):
         self._stop_www()
+
+        try:
+            Config.save()
+            _logger.info("User configuration saved")
+        except Exception as e:
+            # FIXME
+            # writing to user home directory should very rarely raise an exception
+            # let's try and find all probable causes and except less broad exceptions
+            #
+            # for now, we can think of :
+            # - no more disk space
+            # - lost permissions
+            _logger.error(f"Could not save settings. Error : {e}")
+            self._error_box(f"Settings not saved", "Your settings could not be saved\n\n"
+                                                   f"Details : {e}")
         super().closeEvent(event)
 
     # ------------------------------------------------------------------------------
@@ -675,7 +690,5 @@ if __name__ == "__main__":
     _logger.debug("Building and showing main window")
     window.main()
     app_return_code = app.exec()
-    Config.save()
-    _logger.info("User configuration saved")
     _logger.info(f"Astro Live Stacker terminated with return code = {app_return_code}")
     sys.exit(app_return_code)
