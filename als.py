@@ -69,7 +69,8 @@ class StoppableServerThread(threading.Thread):
     """Thread class with a stop() method. The thread itself has to check
     regularly for the stopped() condition."""
 
-    @log
+    # FIXME logging this init causes issue with server thread init. To be investigated
+    #  @log
     def __init__(self, web_dir):
         # web stuff
         self.web_dir = web_dir
