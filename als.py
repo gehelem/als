@@ -362,12 +362,12 @@ class als_main_window(QtWidgets.QMainWindow):
     def cb_contrast_changed(self, value):
         self.ui.contrast.setNum(value / 10)
 
-    @pyqtSlot(int, name="on_cbWww_stateChanged")
+    @pyqtSlot(bool, name="on_cbWww_clicked")
     @log
-    def cb_wwwcheck(self, state):
-        if state == Qt.Checked:
+    def cb_wwwcheck(self, checked):
+        if checked:
             self._start_www()
-        elif self.thread:
+        else:
             self._stop_www()
 
     @pyqtSlot(name="on_pbSave_clicked")
@@ -642,9 +642,7 @@ class als_main_window(QtWidgets.QMainWindow):
                        "specify another port number and RESTART the application"
             self._error_box(title, message)
             self._stop_www()
-            # FIXME this must be improved in the furure
             self.ui.cbWww.setChecked(False)
-
 
     @log
     def _stop_www(self):
