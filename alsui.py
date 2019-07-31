@@ -529,6 +529,8 @@ class Ui_stack_window(object):
         self.cbWavelets.clicked['bool'].connect(self.verticalSlider_4.setEnabled)
         self.cbWavelets.clicked['bool'].connect(self.verticalSlider_5.setEnabled)
         self.brightness_slider.valueChanged['int'].connect(self.brightness.setNum)
+        self.black_slider.valueChanged['int'].connect(self.black.setNum)
+        self.white_slider.valueChanged['int'].connect(self.white.setNum)
         QtCore.QMetaObject.connectSlotsByName(stack_window)
 
     def retranslateUi(self, stack_window):
