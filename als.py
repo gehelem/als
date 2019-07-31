@@ -302,7 +302,6 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.tDark.setText(os.path.expanduser(Config.get_dark_path()))
         self.ui.tWork.setText(os.path.expanduser(Config.get_work_folder_path()))
 
-        self.connect_actions()
         self.running = False
         self.counter = 0
         self.align = False
@@ -316,20 +315,33 @@ class als_main_window(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         super().closeEvent(event)
 
-
-    @log
-    def connect_actions(self):
-        # update slider
-        self.ui.contrast_slider.valueChanged['int'].connect(
-            lambda: self.ui.contrast.setNum(self.ui.contrast_slider.value() / 10))
-        self.ui.R_slider.valueChanged['int'].connect(lambda: self.ui.R_value.setNum(self.ui.R_slider.value() / 100.))
-        self.ui.G_slider.valueChanged['int'].connect(lambda: self.ui.G_value.setNum(self.ui.G_slider.value() / 100.))
-        self.ui.B_slider.valueChanged['int'].connect(lambda: self.ui.B_value.setNum(self.ui.B_slider.value() / 100.))
-        self.ui.SCNR_Slider.valueChanged['int'].connect(
-            lambda: self.ui.SCNR_value.setNum(self.ui.SCNR_Slider.value() / 100.))
-
     # ------------------------------------------------------------------------------
     # Callbacks
+
+    @pyqtSlot(int, name="on_SCNR_Slider_valueChanged")
+    @log
+    def cb_scnr_slider_changed(self, value):
+        self.ui.SCNR_value.setNum(value / 100.)
+
+    @pyqtSlot(int, name="on_R_slider_valueChanged")
+    @log
+    def cb_r_slider_changed(self, value):
+        self.ui.R_value.setNum(value / 100.)
+
+    @pyqtSlot(int, name="on_G_slider_valueChanged")
+    @log
+    def cb_g_slider_changed(self, value):
+        self.ui.G_value.setNum(value / 100.)
+
+    @pyqtSlot(int, name="on_B_slider_valueChanged")
+    @log
+    def cb_b_slider_changed(self, value):
+        self.ui.B_value.setNum(value / 100.)
+
+    @pyqtSlot(int, name="on_contrast_slider_valueChanged")
+    @log
+    def cb_contrast_changed(self, value):
+        self.ui.contrast.setNum(value / 10)
 
     @pyqtSlot(int, name="on_cbWww_stateChanged")
     @log
