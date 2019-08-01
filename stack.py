@@ -139,7 +139,7 @@ def create_first_ref_im(work_path, im_path, save_im=False):
     else:
         _logger.info("convert DSLR image ...")
         # convert camera raw to numpy array
-        new = rawpy.imread(im_path).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16)
+        new = rawpy.imread(im_path).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16, user_flip=0)
         im_mode = "rgb"
         extension = ".fits"
         im_limit = 2. ** 16 - 1
