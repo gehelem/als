@@ -562,11 +562,12 @@ class als_main_window(QtWidgets.QMainWindow):
                                                             self.ui.wavelet_4_label,
                                                             self.ui.wavelet_5_label)
 
-                if os.path.exists(os.path.expanduser(self.ui.tWork.text())):
-                    shutil.rmtree(os.path.expanduser(self.ui.tWork.text()) + "/")
-                    os.mkdir(os.path.expanduser(self.ui.tWork.text()))
-                else:
-                    os.mkdir(os.path.expanduser(self.ui.tWork.text()))
+                # setup work dir : recreate if exists and copy web page
+                work_dir_path = os.path.expanduser(self.ui.tWork.text())
+                if os.path.exists(work_dir_path):
+                    shutil.rmtree(work_dir_path + "/")
+                os.mkdir(work_dir_path)
+                shutil.copy(os.path.dirname(os.path.realpath(__file__)) + "/resources_dir/index.html", work_dir_path)
 
                 self.fileWatcher.start()
                 self.fileWatcher.print_image.connect(
@@ -687,7 +688,7 @@ class als_main_window(QtWidgets.QMainWindow):
 if __name__ == "__main__":
     import sys
 
-    _logger.info("Starting Astro Live Stacker")
+    _logger.info(f"Starting Astro Live Stacker in {os.path.dirname(os.path.realpath(__file__))}")
     app = QtWidgets.QApplication(sys.argv)
     window = als_main_window()
     _logger.debug("Building and showing main window")
