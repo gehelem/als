@@ -652,15 +652,31 @@ class als_main_window(QtWidgets.QMainWindow):
     def _start_www(self):
         self.web_dir = os.path.join(os.path.dirname(__file__),
                                     os.path.expanduser(Config.get_work_folder_path()))
+        ip_address = als_main_window.get_ip()
+        port_number = Config.get_www_server_port_number()
+
         try:
             self.thread = StoppableServerThread(self.web_dir)
             self.thread.start()
-            _logger.info(f"Web server started. http://{als_main_window.get_ip()}:{Config.get_www_server_port_number()}")
+
+            # Server is now started and listens on specified port on *all* available interfaces.
+            # We get the machine ip address and warn user if detected ip is loopback (127.0.0.1)
+            # since in this case, the image server won't be reachable by any other machine
+            if "127.0.0.1" == ip_address:
+                log_function = _logger.warning
+                title = "Image server access is limited"
+                message = "Image server IP address is 127.0.0.1.\n\nImage server won't be reachable by other " \
+                          "machines. Please check your network connection"
+                self._warning_box(title, message)
+            else:
+                log_function = _logger.info
+
+            log_function(f"Image  server started. http://{ip_address}:{port_number}")
         except PermissionError:
-            title = "Could not start webserver"
-            message = f"The port ({Config.get_www_server_port_number()}) used by web server is already in in use.\n\n"
-            message += "Add or modify the 'www_server_port' entry in your config file (located at ~/.als.cfg) to " \
-                       "specify another port number and RESTART the application"
+            title = "Could not start image server"
+            message = f"The image server needs to listen on port n°{port_number} but this port is already in use.\n\n"
+            message += "Quit ALS then add or modify the 'www_server_port' entry in your config file " \
+                       "(located at ~/.als.cfg) to specify another port number"
             _logger.error(title)
             self._error_box(title, message)
             self._stop_www()
@@ -675,9 +691,17 @@ class als_main_window(QtWidgets.QMainWindow):
             _logger.info("Web server stopped")
 
     @log
+    def _warning_box(self, title, message):
+        als_main_window._message_box('Warning : ' + title, message, QMessageBox.Warning)
+
+    @log
     def _error_box(self, title, message):
+        als_main_window._message_box('Error : ' + title, message, QMessageBox.Critical)
+
+    @staticmethod
+    def _message_box(title, message, icon=QMessageBox.Information):
         box = QMessageBox()
-        box.setIcon(QMessageBox.Critical)
+        box.setIcon(icon)
         box.setWindowTitle(title)
         box.setText(message)
         box.exec()
