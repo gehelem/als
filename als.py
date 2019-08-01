@@ -337,17 +337,9 @@ class als_main_window(QtWidgets.QMainWindow):
         try:
             Config.save()
             _logger.info("User configuration saved")
-        except Exception as e:
-            # FIXME
-            # writing to user home directory should very rarely raise an exception
-            # let's try and find all probable causes and except less broad exceptions
-            #
-            # for now, we can think of :
-            # - no more disk space
-            # - lost permissions
+        except OSError as e:
             _logger.error(f"Could not save settings. Error : {e}")
-            self._error_box(f"Settings not saved", "Your settings could not be saved\n\n"
-                                                   f"Details : {e}")
+            self._error_box("Settings not saved", f"Your settings could not be saved\n\nDetails : {e}")
         super().closeEvent(event)
 
     # ------------------------------------------------------------------------------
