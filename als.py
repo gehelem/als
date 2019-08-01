@@ -525,7 +525,6 @@ class als_main_window(QtWidgets.QMainWindow):
                 else:
                     self.ui.log.append(_("Play with NO alignement"))
 
-                # Lancement du watchdog
                 self.fileWatcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()),
                                                             os.path.expanduser(self.ui.tWork.text()),
                                                             self.align,
@@ -555,7 +554,15 @@ class als_main_window(QtWidgets.QMainWindow):
                                                             self.ui.wavelet_4_label,
                                                             self.ui.wavelet_5_label)
 
-                self._setup_work_folder()
+                try:
+                    self._setup_work_folder()
+                except OSError as e:
+                    title = "Work folder could not be prepared"
+                    message = f"Details : {e}"
+                    self._error_box(title, message)
+                    _logger.error(f"{title} : {e}")
+                    self.cb_stop()
+                    return
 
                 self.fileWatcher.start()
                 self.fileWatcher.print_image.connect(
