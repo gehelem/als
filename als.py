@@ -27,7 +27,7 @@ from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import pyqtSlot, QFileInfo, Qt
+from PyQt5.QtCore import pyqtSlot, QFileInfo
 from PyQt5.QtWidgets import QMessageBox
 from astropy.io import fits
 from qimage2ndarray import array2qimage
@@ -650,11 +650,13 @@ class als_main_window(QtWidgets.QMainWindow):
         try:
             self.thread = StoppableServerThread(self.web_dir)
             self.thread.start()
+            _logger.info("Web server started")
         except PermissionError:
             title = "Could not start webserver"
             message = f"The port ({Config.get_www_server_port_number()}) used by web server is already in in use.\n\n"
             message += "Add or modify the 'www_server_port' entry in your config file (located at ~/.als.cfg) to " \
                        "specify another port number and RESTART the application"
+            _logger.error(title)
             self._error_box(title, message)
             self._stop_www()
             self.ui.cbWww.setChecked(False)
@@ -665,6 +667,7 @@ class als_main_window(QtWidgets.QMainWindow):
             self.thread.stop()
             self.thread.join()
             self.thread = None
+            _logger.info("Web server stopped")
 
     @log
     def _error_box(self, title, message):
