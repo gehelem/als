@@ -39,6 +39,7 @@ import preprocess as prepro
 import stack as stk
 from alsui import Ui_stack_window  # import du fichier alsui.py généré par : pyuic5 alsui.ui -x -o alsui.py
 from code_utilities import log
+from datastore import VERSION
 
 name_of_tiff_image = "stack_image.tiff"
 name_of_jpeg_image = "stack_image.jpg"
@@ -323,7 +324,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.pause = False
         self.image_ref_save = image_ref_save()
 
-        self.setWindowTitle(_("Astro Live Stacker"))
+        self.setWindowTitle(_("Astro Live Stacker") + f" - v{VERSION}")
 
         # web stuff
         self.thread = None
@@ -706,7 +707,7 @@ class als_main_window(QtWidgets.QMainWindow):
 if __name__ == "__main__":
     import sys
 
-    _logger.info(f"Starting Astro Live Stacker in {os.path.dirname(os.path.realpath(__file__))}")
+    _logger.info(f"Starting Astro Live Stacker v{VERSION} in {os.path.dirname(os.path.realpath(__file__))}")
     app = QtWidgets.QApplication(sys.argv)
     window = als_main_window()
     _logger.debug("Building and showing main window")
