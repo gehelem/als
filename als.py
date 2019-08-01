@@ -591,7 +591,9 @@ class als_main_window(QtWidgets.QMainWindow):
         if os.path.exists(work_dir_path):
             shutil.rmtree(work_dir_path + "/")
         os.mkdir(work_dir_path)
-        shutil.copy(os.path.dirname(os.path.realpath(__file__)) + "/resources_dir/index.html", work_dir_path)
+        resources_dir_path = os.path.dirname(os.path.realpath(__file__)) + "/resources_dir"
+        shutil.copy(resources_dir_path + "/index.html", work_dir_path)
+        shutil.copy(resources_dir_path + "/waiting.jpg", work_dir_path + "/" + name_of_jpeg_image)
 
     @pyqtSlot(name="on_pbStop_clicked")
     @log
