@@ -562,12 +562,7 @@ class als_main_window(QtWidgets.QMainWindow):
                                                             self.ui.wavelet_4_label,
                                                             self.ui.wavelet_5_label)
 
-                # setup work dir : recreate if exists and copy web page
-                work_dir_path = os.path.expanduser(self.ui.tWork.text())
-                if os.path.exists(work_dir_path):
-                    shutil.rmtree(work_dir_path + "/")
-                os.mkdir(work_dir_path)
-                shutil.copy(os.path.dirname(os.path.realpath(__file__)) + "/resources_dir/index.html", work_dir_path)
+                self._setup_work_folder()
 
                 self.fileWatcher.start()
                 self.fileWatcher.print_image.connect(
@@ -588,6 +583,14 @@ class als_main_window(QtWidgets.QMainWindow):
 
         else:
             self.ui.log.append(_("No path"))
+
+    @log
+    def _setup_work_folder(self):
+        work_dir_path = os.path.expanduser(self.ui.tWork.text())
+        if os.path.exists(work_dir_path):
+            shutil.rmtree(work_dir_path + "/")
+        os.mkdir(work_dir_path)
+        shutil.copy(os.path.dirname(os.path.realpath(__file__)) + "/resources_dir/index.html", work_dir_path)
 
     @pyqtSlot(name="on_pbStop_clicked")
     @log
