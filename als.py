@@ -654,7 +654,7 @@ class als_main_window(QtWidgets.QMainWindow):
         try:
             self.thread = StoppableServerThread(self.web_dir)
             self.thread.start()
-            _logger.info("Web server started")
+            _logger.info(f"Web server started. http://{als_main_window.get_ip()}:{Config.get_www_server_port_number()}")
         except PermissionError:
             title = "Could not start webserver"
             message = f"The port ({Config.get_www_server_port_number()}) used by web server is already in in use.\n\n"
@@ -680,6 +680,21 @@ class als_main_window(QtWidgets.QMainWindow):
         box.setWindowTitle(title)
         box.setText(message)
         box.exec()
+
+    @staticmethod
+    @log
+    def get_ip():
+        import socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # doesn't even have to be reachable
+            s.connect(('10.255.255.255', 1))
+            ip = s.getsockname()[0]
+        except:
+            ip = '127.0.0.1'
+        finally:
+            s.close()
+        return ip
 
     @log
     def main(self):
