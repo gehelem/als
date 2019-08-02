@@ -28,13 +28,12 @@ from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSlot, QFileInfo
-from PyQt5.QtWidgets import QMessageBox
 from astropy.io import fits
 from qimage2ndarray import array2qimage
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-import Config
+import messaging
 import preprocess as prepro
 import stack as stk
 from alsui import Ui_stack_window  # import du fichier alsui.py généré par : pyuic5 alsui.ui -x -o alsui.py
@@ -339,7 +338,7 @@ class als_main_window(QtWidgets.QMainWindow):
             _logger.info("User configuration saved")
         except OSError as e:
             _logger.error(f"Could not save settings. Error : {e}")
-            self._error_box("Settings not saved", f"Your settings could not be saved\n\nDetails : {e}")
+            messaging.error_box("Settings not saved", f"Your settings could not be saved\n\nDetails : {e}")
         super().closeEvent(event)
 
     # ------------------------------------------------------------------------------
@@ -559,7 +558,7 @@ class als_main_window(QtWidgets.QMainWindow):
                 except OSError as e:
                     title = "Work folder could not be prepared"
                     message = f"Details : {e}"
-                    self._error_box(title, message)
+                    messaging.error_box(title, message)
                     _logger.error(f"{title} : {e}")
                     self.cb_stop()
                     return
@@ -668,7 +667,7 @@ class als_main_window(QtWidgets.QMainWindow):
                 title = "Image server access is limited"
                 message = "Image server IP address is 127.0.0.1.\n\nImage server won't be reachable by other " \
                           "machines. Please check your network connection"
-                self._warning_box(title, message)
+                messaging.warning_box(title, message)
             else:
                 log_function = _logger.info
 
@@ -679,7 +678,7 @@ class als_main_window(QtWidgets.QMainWindow):
             message += "Quit ALS then add or modify the 'www_server_port' entry in your config file " \
                        "(located at ~/.als.cfg) to specify another port number"
             _logger.error(title)
-            self._error_box(title, message)
+            messaging.error_box(title, message)
             self._stop_www()
             self.ui.cbWww.setChecked(False)
 
@@ -690,22 +689,6 @@ class als_main_window(QtWidgets.QMainWindow):
             self.thread.join()
             self.thread = None
             _logger.info("Web server stopped")
-
-    @log
-    def _warning_box(self, title, message):
-        als_main_window._message_box('Warning : ' + title, message, QMessageBox.Warning)
-
-    @log
-    def _error_box(self, title, message):
-        als_main_window._message_box('Error : ' + title, message, QMessageBox.Critical)
-
-    @staticmethod
-    def _message_box(title, message, icon=QMessageBox.Information):
-        box = QMessageBox()
-        box.setIcon(icon)
-        box.setWindowTitle(title)
-        box.setText(message)
-        box.exec()
 
     @staticmethod
     @log
@@ -731,9 +714,16 @@ class als_main_window(QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
     import sys
+    app = QtWidgets.QApplication(sys.argv)
+
+    try:
+        import Config
+    except ValueError as e:
+        messaging.error_box("Config file is invalid", str(e))
+        print(f"***** ERROR : user config file is invalid : {e}")
+        sys.exit(1)
 
     _logger.info(f"Starting Astro Live Stacker v{VERSION} in {os.path.dirname(os.path.realpath(__file__))}")
-    app = QtWidgets.QApplication(sys.argv)
     window = als_main_window()
     _logger.debug("Building and showing main window")
     window.main()
