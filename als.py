@@ -490,6 +490,15 @@ class als_main_window(QtWidgets.QMainWindow):
     def cb_play(self):
         if self.ui.tFolder.text() != "":
 
+            # check existence of work and scan folders
+            work_folder_path = Config.get_work_folder_path()
+            if not os.path.exists(os.path.expanduser(work_folder_path)) or not os.path.isdir(os.path.expanduser(work_folder_path)):
+                self.cb_browse_work()
+
+            scan_folder_path = Config.get_scan_folder_path()
+            if not os.path.exists(os.path.expanduser(scan_folder_path)) or not os.path.isdir(os.path.expanduser(scan_folder_path)):
+                self.cb_browse_scan()
+
             if self.image_ref_save.status == "stop":
                 self.ui.white_slider.setEnabled(False)
                 self.ui.black_slider.setEnabled(False)
