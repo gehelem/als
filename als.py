@@ -177,7 +177,7 @@ class WatchOutForFileCreations(QtCore.QThread):
         self.scnr_value = scnr_value
         self.wavelets_on = wavelets_on
         self.wavelets_type = wavelets_type
-        self.wavelets_use_luminance = wavelets_use_luminance,
+        self.wavelets_use_luminance = wavelets_use_luminance
         self.wavelet_1_value = wavelet_1_value
         self.wavelet_2_value = wavelet_2_value
         self.wavelet_3_value = wavelet_3_value
@@ -213,10 +213,10 @@ class WatchOutForFileCreations(QtCore.QThread):
 
                 self.image_ref_save.stack_image = prepro.save_tiff(self.work_folder, self.image_ref_save.image,
                                                                    self.log,
-                                                                   mode=mode, scnr_on=self.scnr_on,
-                                                                   wavelets_on=self.wavelets_on,
+                                                                   mode=mode, scnr_on=self.scnr_on.isChecked(),
+                                                                   wavelets_on=self.wavelets_on.isChecked(),
                                                                    wavelets_type=str(self.wavelets_type.currentText()),
-                                                                   wavelets_use_luminance=self.wavelets_use_luminance,
+                                                                   wavelets_use_luminance=self.wavelets_use_luminance.isChecked(),
                                                                    param=[self.contrast_slider.value() / 10.,
                                                                           self.brightness_slider.value(),
                                                                           self.black_slider.value(),
@@ -276,10 +276,10 @@ class WatchOutForFileCreations(QtCore.QThread):
 
                 self.image_ref_save.stack_image = prepro.save_tiff(self.work_folder, self.image_ref_save.image,
                                                                    self.log,
-                                                                   mode=mode, scnr_on=self.scnr_on,
-                                                                   wavelets_on=self.wavelets_on,
+                                                                   mode=mode, scnr_on=self.scnr_on.isChecked(),
+                                                                   wavelets_on=self.wavelets_on.isChecked(),
                                                                    wavelets_type=str(self.wavelets_type.currentText()),
-                                                                   wavelets_use_luminance=self.wavelets_use_luminance,
+                                                                   wavelets_use_luminance=self.wavelets_use_luminance.isChecked(),
                                                                    param=[self.contrast_slider.value() / 10.,
                                                                           self.brightness_slider.value(),
                                                                           self.black_slider.value(),
