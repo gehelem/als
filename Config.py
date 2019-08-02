@@ -19,9 +19,10 @@ Provides application defaults and high level access to user settings
 import logging
 import os
 import sys
-from configparser import ConfigParser
+from configparser import ConfigParser, DuplicateOptionError, ParsingError
 
 # config file path. We use the pseudo-standard hidden file in user's home
+
 _CONFIG_FILE_PATH = os.path.expanduser("~/.als.cfg")
 
 # keys used to retrieve config values
@@ -109,10 +110,16 @@ def _set(key, value):
         _config_parser.set(_MAIN_SECTION_NAME, key, value)
 
 
-# ConfigParser.read won't raise an exception if read fails
+# ConfigParser.read won't raise an exception if read fails because of missing file
 # so if app starts and no user settings file exists, we simply
 # get an "empty" config
-_config_parser.read(_CONFIG_FILE_PATH)
+# if config file is invalid, we raise a ValueError with details
+try:
+    _config_parser.read(_CONFIG_FILE_PATH)
+except DuplicateOptionError as e:
+    raise ValueError(e)
+except ParsingError as e:
+    raise ValueError(e)
 
 # init logging system
 logging.basicConfig(level=_LOG_LEVELS[_get(_LOG_LEVEL)],
@@ -137,3 +144,9 @@ for option in _config_parser.options(_MAIN_SECTION_NAME):
     if option not in _DEFAULTS.keys():
         _logger.debug(f"Removed obsolete config option : '{option}'")
         _config_parser.remove_option(_MAIN_SECTION_NAME, option)
+
+
+_logger.debug("User config file dump - START")
+for option in _config_parser.options(_MAIN_SECTION_NAME):
+    _logger.debug(f"{option} = {_get(option)}")
+_logger.debug("User config file dump - END")
