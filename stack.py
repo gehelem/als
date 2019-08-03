@@ -209,7 +209,7 @@ def stack_live(work_path, im_path, counter, ref=[], first_ref=[], save_im=False,
         new, im_mode = test_and_debayer_to_rgb(new_header, new)
     else:
         _logger.info("convert DSLR image ...")
-        new = rawpy.imread(im_path).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16)
+        new = rawpy.imread(im_path).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16, user_flip=0)
         im_mode = "rgb"
         extension = ".fits"
         im_limit = 2. ** 16 - 1
