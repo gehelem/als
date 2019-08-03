@@ -656,7 +656,9 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.G_slider.setEnabled(False)
         self.ui.B_slider.setEnabled(False)
         self.ui.pb_apply_value.setEnabled(False)
-
+        self.ui.cbSCNR.setChecked(False)
+        self.ui.cbWavelets.setChecked(False)
+        self.ui.cbLuminanceWavelet.setChecked(False)
     @log
     def _start_www(self):
         self.web_dir = os.path.join(os.path.dirname(__file__),
