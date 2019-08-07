@@ -28,7 +28,6 @@ _CONFIG_FILE_PATH = os.path.expanduser("~/.als.cfg")
 # keys used to retrieve config values
 _SCAN_FOLDER_PATH = "scan_folder_path"
 _WORK_FOLDER_PATH = "work_folder_path"
-_DARK_PATH = "dark_path"
 _LOG_LEVEL = "log_level"
 _WWW_SERVER_PORT = "www_server_port"
 
@@ -52,7 +51,6 @@ _LOG_LEVELS = {
 _DEFAULTS = {
     _SCAN_FOLDER_PATH:    os.path.expanduser("~/als/scan"),
     _WORK_FOLDER_PATH:    os.path.expanduser("~/als/work"),
-    _DARK_PATH:           os.path.expanduser("~/als/sample/dark.fits"),
     _LOG_LEVEL:           "INFO",
     _WWW_SERVER_PORT:     "8000",
 }
@@ -61,8 +59,23 @@ _MAIN_SECTION_NAME = "main"
 _config_parser = ConfigParser()
 
 
+def is_debug_log_on():
+    return "DEBUG" == _get(_LOG_LEVEL)
+
+
+def set_debug_log(debug_active):
+    if debug_active:
+        _set(_LOG_LEVEL, _LOG_LEVEL_DEBUG)
+    else:
+        _set(_LOG_LEVEL, _LOG_LEVEL_INFO)
+
+
 def get_www_server_port_number():
-    return int(_get(_WWW_SERVER_PORT))
+    # if config value is not an int, we switch to default value
+    try:
+        return int(_get(_WWW_SERVER_PORT))
+    except ValueError:
+        return _DEFAULTS[_WWW_SERVER_PORT]
 
 
 def set_www_server_port_number(port_number):
@@ -85,21 +98,13 @@ def set_scan_folder_path(path):
     _set(_SCAN_FOLDER_PATH, path)
 
 
-def get_dark_path():
-    return _get(_DARK_PATH)
-
-
-def set_dark_path(path):
-    _set(_DARK_PATH, path)
-
-
 def save():
     with open(_CONFIG_FILE_PATH, "w") as config_file:
         _config_parser.write(config_file)
 
 
 def _get(key):
-    # we rely on the fallback machanism to get our predefined defaults
+    # we rely on the fallback mechanism to get our predefined defaults
     # if no user config is found
     return _config_parser.get(_MAIN_SECTION_NAME, key, fallback=_DEFAULTS[key])
 
