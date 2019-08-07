@@ -27,18 +27,18 @@ from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 import numpy as np
 from PyQt5.QtCore import pyqtSignal, QFileInfo, QThread, Qt, pyqtSlot
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QMainWindow, QFileDialog, QApplication, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QApplication
 from astropy.io import fits
 from qimage2ndarray import array2qimage
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-import messaging
 import preprocess as prepro
 import stack as stk
 from alsui import Ui_stack_window  # import du fichier alsui.py généré par : pyuic5 alsui.ui -x -o alsui.py
 from code_utilities import log
 from datastore import VERSION
+from dialogs import PreferencesDialog, question, error_box, warning_box
 
 NAME_OF_TIFF_IMAGE = "stack_image.tiff"
 NAME_OF_JPEG_IMAGE = "stack_image.jpg"
@@ -148,7 +148,7 @@ class WatchOutForFileCreations(QThread):
     def __init__(self, path, work_folder, align_on, save_on, stack_methode,
                  log_ui, white_slider, black_slider, contrast_slider, brightness_slider,
                  r_slider, g_slider, b_slider, apply_button,
-                 image_ref_save, dark_on, dark_path,
+                 image_ref_save,
                  scnr_on, scnr_mode, scnr_value,
                  wavelets_on, wavelets_type, wavelets_use_luminance,
                  wavelet_1_value, wavelet_2_value, wavelet_3_value,
@@ -171,8 +171,6 @@ class WatchOutForFileCreations(QThread):
         self.first_image = []
         self.image_ref_save = image_ref_save
         self.ref_image = []
-        self.dark_on = dark_on  # need add dark in stack_live function
-        self.dark_path = dark_path  # need add dark in stack_live function
         self.scnr_on = scnr_on
         self.scnr_mode = scnr_mode
         self.scnr_value = scnr_value
@@ -314,14 +312,9 @@ class MainWindow(QMainWindow):
         self.ui = Ui_stack_window()
         self.ui.setupUi(self)
 
-        self.ui.tFolder.setText(os.path.expanduser(config.get_scan_folder_path()))
-        self.ui.tDark.setText(os.path.expanduser(config.get_dark_path()))
-        self.ui.tWork.setText(os.path.expanduser(config.get_work_folder_path()))
-
         self.running = False
         self.counter = 0
         self.align = False
-        self.dark = False
         self.pause = False
         self.image_ref_save = ImageRefSave()
 
@@ -334,13 +327,6 @@ class MainWindow(QMainWindow):
     @log
     def closeEvent(self, event):
         self._stop_www()
-
-        try:
-            config.save()
-            _logger.info("User configuration saved")
-        except OSError as e:
-            _logger.error(f"Could not save settings. Error : {e}")
-            messaging.error_box("Settings not saved", f"Your settings could not be saved\n\nDetails : {e}")
         super().closeEvent(event)
 
     # ------------------------------------------------------------------------------
@@ -386,18 +372,29 @@ class MainWindow(QMainWindow):
         self.ui.log.append(_("Saving : ") + "stack_image_" + timestamp + ".fit")
         # save stack image in fit
         red = fits.PrimaryHDU(data=self.image_ref_save.image)
-        red.writeto(self.ui.tWork.text() + "/" + "stack_image_" + timestamp + ".fit")
+        red.writeto(config.get_work_folder_path() + "/" + "stack_image_" + timestamp + ".fit")
         # red.close()
         del red
 
     @pyqtSlot(name="on_pb_apply_value_clicked")
     @log
     def cb_apply_value(self):
-        work_folder = self.ui.tWork.text()
+        work_folder = config.get_work_folder_path()
         if self.counter > 0:
             self.adjust_value(work_folder)
             self.update_image(work_folder, add=False)
         self.ui.log.append(_("Define new display value"))
+
+    @pyqtSlot(name="on_action_quit_triggered")
+    @log
+    def cb_quit(self):
+        super().close()
+
+    @pyqtSlot(name="on_action_prefs_triggered")
+    @log
+    def cb_prefs(self):
+        dialog = PreferencesDialog(self)
+        dialog.exec()
 
     @log
     def adjust_value(self, work_folder):
@@ -461,145 +458,113 @@ class MainWindow(QMainWindow):
         self.ui.log.append(_(message))
         _logger.info(message)
 
-    @pyqtSlot(name="on_bBrowseFolder_clicked")
-    @log
-    def cb_browse_scan(self):
-        dir_name = QFileDialog.getExistingDirectory(self, _("Scan folder"), self.ui.tFolder.text())
-        if dir_name:
-            self.ui.tFolder.setText(dir_name)
-            self.ui.pbPlay.setEnabled(True)
-            config.set_scan_folder_path(dir_name)
-
-    @pyqtSlot(name="on_bBrowseDark_clicked")
-    @log
-    def cb_browse_dark(self):
-        file_name, _ = QFileDialog.getOpenFileName(self, _("Dark file"), "",
-                                                   "Fit Files (*.fit);;All Files (*)")
-        if file_name:
-            self.ui.tDark.setText(file_name)
-            config.set_dark_path(file_name)
-
-    @pyqtSlot(name="on_bBrowseWork_clicked")
-    @log
-    def cb_browse_work(self):
-        dir_name = QFileDialog.getExistingDirectory(self, _("Work folder"), self.ui.tWork.text())
-        if dir_name:
-            self.ui.tWork.setText(dir_name)
-            config.set_work_folder_path(dir_name)
-
     @pyqtSlot(name="on_pbPlay_clicked")
     @log
     def cb_play(self):
-        if self.ui.tFolder.text() != "":
 
-            # check existence of work and scan folders
-            work_folder_path = config.get_work_folder_path()
-            if not os.path.exists(os.path.expanduser(work_folder_path)) or not os.path.isdir(os.path.expanduser(work_folder_path)):
-                self.cb_browse_work()
-
-            scan_folder_path = config.get_scan_folder_path()
-            if not os.path.exists(os.path.expanduser(scan_folder_path)) or not os.path.isdir(os.path.expanduser(scan_folder_path)):
-                self.cb_browse_scan()
-
-            if self.image_ref_save.status == "stop":
-                self.ui.white_slider.setEnabled(False)
-                self.ui.black_slider.setEnabled(False)
-                self.ui.contrast_slider.setEnabled(False)
-                self.ui.brightness_slider.setEnabled(False)
-                self.ui.R_slider.setEnabled(False)
-                self.ui.G_slider.setEnabled(False)
-                self.ui.B_slider.setEnabled(False)
-                self.ui.pb_apply_value.setEnabled(False)
-                self.ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
-                self.counter = 0
-                self.ui.cnt.setText(str(self.counter))
-                # Print scan folder
-                self.ui.log.append(_("Scan folder : ") + os.path.expanduser(self.ui.tFolder.text()))
-                # Print work folder
-                self.ui.log.append(_("Work folder : ") + os.path.expanduser(self.ui.tWork.text()))
-
-                # check align
-                if self.ui.cbAlign.isChecked():
-                    self.align = True
-
-                # check dark
-                if (self.ui.cbDark.isChecked()) & (self.ui.tDark.text() != ""):
-                    self.ui.log.append("Dark : " + os.path.expanduser(self.ui.tDark.text()))
-                    self.dark = True
-
-                # Print live method
-                if self.align and self.dark:
-                    self.ui.log.append(_("Play with alignement type: ") + self.ui.cmMode.currentText() + " and Dark")
-                elif self.align:
-                    self.ui.log.append(_("Play with alignement type: ") + self.ui.cmMode.currentText())
-                else:
-                    self.ui.log.append(_("Play with NO alignement"))
-
-                self.file_watcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()),
-                                                             os.path.expanduser(self.ui.tWork.text()),
-                                                             self.align,
-                                                             self.ui.cbKeep.isChecked(),
-                                                             self.ui.cmMode.currentText(),
-                                                             self.ui.log,
-                                                             self.ui.white_slider,
-                                                             self.ui.black_slider,
-                                                             self.ui.contrast_slider,
-                                                             self.ui.brightness_slider,
-                                                             self.ui.R_slider,
-                                                             self.ui.G_slider,
-                                                             self.ui.B_slider,
-                                                             self.ui.pb_apply_value,
-                                                             self.image_ref_save,
-                                                             self.dark,
-                                                             os.path.expanduser(self.ui.tDark.text()),
-                                                             self.ui.cbSCNR,
-                                                             self.ui.cmSCNR,
-                                                             self.ui.SCNR_Slider,
-                                                             self.ui.cbWavelets,
-                                                             self.ui.cBoxWaveType,
-                                                             self.ui.cbLuminanceWavelet,
-                                                             self.ui.wavelet_1_label,
-                                                             self.ui.wavelet_2_label,
-                                                             self.ui.wavelet_3_label,
-                                                             self.ui.wavelet_4_label,
-                                                             self.ui.wavelet_5_label)
-
-                try:
-                    self._setup_work_folder()
-                except OSError as e:
-                    title = "Work folder could not be prepared"
-                    message = f"Details : {e}"
-                    messaging.error_box(title, message)
-                    _logger.error(f"{title} : {e}")
-                    self.cb_stop()
-                    return
-
-                self.file_watcher.start()
-                self.file_watcher.print_image.connect(
-                    lambda: self.update_image(self.ui.tWork.text(), NAME_OF_TIFF_IMAGE))
+        # check existence of work and scan folders
+        scan_folder_path = config.get_scan_folder_path()
+        if not os.path.exists(scan_folder_path) or not os.path.isdir(scan_folder_path):
+            if question("Scan folder issue",
+                        f"Your configured scan folder '{scan_folder_path}' is missing.\n"
+                        f"Do you want to open preferences screen ?"):
+                self.cb_prefs()
             else:
-                self.ui.log.append("Play")
+                return
 
-            self.image_ref_save.status = "play"
-            self.image_ref_save.image = []
-            self.image_ref_save.stack_image = []
-            # desactivate play button
-            self.ui.pbPlay.setEnabled(False)
-            self.ui.pbReset.setEnabled(False)
-            # activate stop button
-            self.ui.pbStop.setEnabled(True)
-            # activate pause button
-            self.ui.pbPause.setEnabled(True)
+        work_folder_path = config.get_work_folder_path()
+        if not os.path.exists(work_folder_path) or not os.path.isdir(work_folder_path):
+            if question("Work folder issue",
+                        f"Your configured work folder '{work_folder_path}' is missing.\n"
+                        f"Do you want to open preferences screen ?"):
+                self.cb_prefs()
+            else:
+                return
 
+        if self.image_ref_save.status == "stop":
+            self.ui.white_slider.setEnabled(False)
+            self.ui.black_slider.setEnabled(False)
+            self.ui.contrast_slider.setEnabled(False)
+            self.ui.brightness_slider.setEnabled(False)
+            self.ui.R_slider.setEnabled(False)
+            self.ui.G_slider.setEnabled(False)
+            self.ui.B_slider.setEnabled(False)
+            self.ui.pb_apply_value.setEnabled(False)
+            self.ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
+            self.counter = 0
+            self.ui.cnt.setText(str(self.counter))
+            # Print scan folder
+            self.ui.log.append(_("Scan folder : ") + config.get_scan_folder_path())
+            # Print work folder
+            self.ui.log.append(_("Work folder : ") + config.get_work_folder_path())
+
+        # check align
+        if self.ui.cbAlign.isChecked():
+            self.align = True
+
+        # Print live method
+        if self.align:
+            self.ui.log.append(_("Play with alignement type: ") + self.ui.cmMode.currentText())
         else:
-            self.ui.log.append(_("No path"))
+            self.ui.log.append(_("Play with NO alignement"))
+
+        self.file_watcher = WatchOutForFileCreations(config.get_scan_folder_path(),
+                                                     config.get_work_folder_path(),
+                                                     self.align,
+                                                     self.ui.cbKeep.isChecked(),
+                                                     self.ui.cmMode.currentText(),
+                                                     self.ui.log,
+                                                     self.ui.white_slider,
+                                                     self.ui.black_slider,
+                                                     self.ui.contrast_slider,
+                                                     self.ui.brightness_slider,
+                                                     self.ui.R_slider,
+                                                     self.ui.G_slider,
+                                                     self.ui.B_slider,
+                                                     self.ui.pb_apply_value,
+                                                     self.image_ref_save,
+                                                     self.ui.cbSCNR,
+                                                     self.ui.cmSCNR,
+                                                     self.ui.SCNR_Slider,
+                                                     self.ui.cbWavelets,
+                                                     self.ui.cBoxWaveType,
+                                                     self.ui.cbLuminanceWavelet,
+                                                     self.ui.wavelet_1_label,
+                                                     self.ui.wavelet_2_label,
+                                                     self.ui.wavelet_3_label,
+                                                     self.ui.wavelet_4_label,
+                                                     self.ui.wavelet_5_label)
+
+        try:
+            self._setup_work_folder()
+        except OSError as e:
+            title = "Work folder could not be prepared"
+            message = f"Details : {e}"
+            error_box(title, message)
+            _logger.error(f"{title} : {e}")
+            self.cb_stop()
+            return
+
+        self.file_watcher.start()
+        self.file_watcher.print_image.connect(
+            lambda: self.update_image(config.get_work_folder_path()))
+
+        self.image_ref_save.status = "play"
+        self.image_ref_save.image = []
+        self.image_ref_save.stack_image = []
+        # desactivate play button
+        self.ui.pbPlay.setEnabled(False)
+        self.ui.pbReset.setEnabled(False)
+        # activate stop button
+        self.ui.pbStop.setEnabled(True)
+        # activate pause button
+        self.ui.pbPause.setEnabled(True)
+
+        self.ui.action_prefs.setEnabled(False)
 
     @log
     def _setup_work_folder(self):
-        work_dir_path = os.path.expanduser(self.ui.tWork.text())
-        if os.path.exists(work_dir_path):
-            shutil.rmtree(work_dir_path + "/")
-        os.mkdir(work_dir_path)
+        work_dir_path = config.get_work_folder_path()
         resources_dir_path = os.path.dirname(os.path.realpath(__file__)) + "/resources_dir"
         shutil.copy(resources_dir_path + "/index.html", work_dir_path)
         shutil.copy(resources_dir_path + "/waiting.jpg", work_dir_path + "/" + NAME_OF_JPEG_IMAGE)
@@ -615,6 +580,7 @@ class MainWindow(QMainWindow):
         self.ui.pbPlay.setEnabled(True)
         self.ui.pbReset.setEnabled(True)
         self.ui.pbPause.setEnabled(False)
+        self.ui.action_prefs.setEnabled(not self.ui.cbWww.isChecked())
         self.ui.log.append("Stop")
 
     @pyqtSlot(name="on_pbPause_clicked")
@@ -663,8 +629,7 @@ class MainWindow(QMainWindow):
         self.ui.cbLuminanceWavelet.setChecked(False)
     @log
     def _start_www(self):
-        self.web_dir = os.path.join(os.path.dirname(__file__),
-                                    os.path.expanduser(config.get_work_folder_path()))
+        self.web_dir = config.get_work_folder_path()
         ip_address = MainWindow.get_ip()
         port_number = config.get_www_server_port_number()
         try:
@@ -673,24 +638,24 @@ class MainWindow(QMainWindow):
 
             # Server is now started and listens on specified port on *all* available interfaces.
             # We get the machine ip address and warn user if detected ip is loopback (127.0.0.1)
-            # since in this case, the image server won't be reachable by any other machine
+            # since in this case, the web server won't be reachable by any other machine
             if "127.0.0.1" == ip_address:
                 log_function = _logger.warning
-                title = "Image server access is limited"
-                message = "Image server IP address is 127.0.0.1.\n\nImage server won't be reachable by other " \
+                title = "Web server access is limited"
+                message = "Web server IP address is 127.0.0.1.\n\nServer won't be reachable by other " \
                           "machines. Please check your network connection"
-                messaging.warning_box(title, message)
+                warning_box(title, message)
             else:
                 log_function = _logger.info
 
-            log_function(f"Image  server started. http://{ip_address}:{port_number}")
-        except PermissionError:
-            title = "Could not start image server"
-            message = f"The image server needs to listen on port n°{port_number} but this port is already in use.\n\n"
-            message += "Quit ALS then add or modify the 'www_server_port' entry in your config file " \
-                       "(located at ~/.als.cfg) to specify another port number"
+            log_function(f"Web server started. http://{ip_address}:{port_number}")
+            self.ui.action_prefs.setEnabled(False)
+        except OSError:
+            title = "Could not start web server"
+            message = f"The web server needs to listen on port n°{port_number} but this port is already in use.\n\n"
+            message += "Please change web server port number in your preferences "
             _logger.error(title)
-            messaging.error_box(title, message)
+            error_box(title, message)
             self._stop_www()
             self.ui.cbWww.setChecked(False)
 
@@ -701,6 +666,7 @@ class MainWindow(QMainWindow):
             self.thread.join()
             self.thread = None
             _logger.info("Web server stopped")
+            self.ui.action_prefs.setEnabled(self.ui.pbPlay.isEnabled())
 
     @staticmethod
     @log
@@ -732,7 +698,7 @@ if __name__ == "__main__":
     try:
         import config
     except ValueError as e:
-        messaging.error_box("Config file is invalid", str(e))
+        error_box("Config file is invalid", str(e))
         print(f"***** ERROR : user config file is invalid : {e}")
         sys.exit(1)
 
