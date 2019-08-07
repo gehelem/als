@@ -1,6 +1,19 @@
 # Astro Live Stacker
+Astro Live Stacker is an application that allows stacking of astronomy images
+in real time, as they come from a camera sensors. 
 
-__Python 3 library required__
+It monitors a certain directory for new FITS images, aligns the stars in them,
+and does a Sum or Mean stacking.
+
+The application is writting in Python3, QT5, and other dependecies detailed below.
+
+## Requirements
+The following Python3 libraries are required.
+
+If you follow the installation procedures detailed below, then you do not need to
+worry about these dependencies, since the installation procedure will take care of
+them. 
+
 - pyqt5 (GUI)
 - watchdog (new file checking)
 - numpy 
@@ -12,27 +25,50 @@ __Python 3 library required__
 - dtcwt (for wavelets)
 - pywi (for wavelets)
 
-## Install process (On ubuntu or debian (min buster)): 
+## Installation
+The easiest, and more fool proof way to install ALS, is via Python Virtual Environment (venv).
 
-`sudo apt update` (adapte for other unix system)  
-`sudo apt install python3 python3-pip git` (adapte for other unix system) 
-### for amd64 (classique computer) :
-`pip3 install astropy numpy tqdm watchdog pyqt5 astroalign opencv-python rawpy python-gettext pywi dtcwt`  
-### for arm64/armv8/aarch64 :  
-`sudo apt install python3 python3-dev gfortran libopenblas-dev liblapack-dev`  
-`pip3 install wheel`  
-`pip3 install astropy numpy tqdm watchdog astroalign rawpy python-gettext pywi dtcwt`   
-`sudo apt install python3-opencv python3-pyqt5`  
-### for arm32/armv7/armhf :  
+### Linux (All variants):
+You first need to install ALS itself.
 
-____________________  
-cd ~`  
-`git clone https://github.com/gehelem/als.git`  (or just download als on github)  
-`cd ./als`  
-`mkdir scan`  
-`mkdir wrk`  
+Download the .zip archive of the alpha branch, and extract it
+Rename the `als-alpha` folder to `als`
 
-## Install process (On Windows):
+Alternately, if you are a developer, you can use git to clone the alpha branch of the repository
+to your home directory using the following commands:
+```
+git clone https://github.com/gehelem/als.git
+cd ~/als 
+git checkout alpha
+```
+Whichever way you installed ALS, you need to perform the following additional steps:
+```
+cd ~/als 
+mkdir scan  
+mkdir wrk
+```
+## Installing Dependencies via Python venv
+```
+sudo apt install python3
+./venv_setup.sh
+```
+
+## Linux Manual Installation
+### Desktop/Laptop (amd64):
+```
+sudo apt update
+sudo apt install python3 python3-pip git
+pip3 install astropy numpy tqdm watchdog pyqt5 astroalign opencv-python rawpy python-gettext pywi dtcwt
+```  
+### ARM (arm64/armv8/aarch64):
+```
+sudo apt install python3 python3-dev gfortran libopenblas-dev liblapack-dev
+pip3 install wheel
+pip3 install astropy numpy tqdm watchdog astroalign rawpy python-gettext pywi dtcwt
+sudo apt install python3-opencv python3-pyqt5
+```  
+
+## Windows Installation
 __(option) Warning :__ Need uninstall Python 2.x.x before install process
 
 
@@ -49,19 +85,39 @@ Download als on github : https://codeload.github.com/gehelem/als/zip/master
 Extract ALS
 
 
-## For Run (On ubuntu or unix system):
-`python3 ~/als/als.py`
+## Running ALS
 
-## For Run (On Windows):
+### On Ubuntu or Debian:
+If you installed ALS using venv, then you should run ALS as:
+```
+cd ~/als
+source venv/bin/activate
+python als.py
+```
+
+If you installed manually, then you should run ALS as:
+```
+python3 ~/als/als.py
+```
+
+### On Windows:
 Run __CMD__ :  
 Go in ALS folder with __cd__ command  
 and run ALS with :  
 `python ~/als/als.py` or `python3 ~/als/als.py`
       
-________________________________
 ### Warning 
 
 For windows, need change default __wrk__ and __save__ folder path in GUI __before__ Play.
+
+## Testing Your Installation
+Before running ALS with your own files, you need to verify that everything is 
+installed correctly. To do this, start ALS, click on Play, then run the following script:
+
+```
+cd ~/als
+./testfits.sh
+```
 
 ### Input :
 
