@@ -34,7 +34,7 @@ You first need to install ALS itself.
 Download the .zip archive of the alpha branch, and extract it
 Rename the `als-alpha` folder to `als`
 
-Alternately, if you are a developer, you can use git to clone the alpha branch of the repository
+Alternately, if you know how to use git, you can use git to clone the alpha branch of the repository
 to your home directory using the following commands:
 ```
 git clone https://github.com/gehelem/als.git
@@ -48,6 +48,8 @@ sudo apt install python3
 ```
 
 ## Linux Manual Installation
+The following instructions is for Debian Buster, and Ubuntu 18.04 LTS.
+
 ### Desktop/Laptop (amd64):
 ```
 sudo apt update
