@@ -41,12 +41,6 @@ git clone https://github.com/gehelem/als.git
 cd ~/als 
 git checkout alpha
 ```
-Whichever way you installed ALS, you need to perform the following additional steps:
-```
-cd ~/als 
-mkdir scan  
-mkdir wrk
-```
 ## Installing Dependencies via Python venv
 ```
 sudo apt install python3
@@ -68,6 +62,12 @@ pip3 install astropy numpy tqdm watchdog astroalign rawpy python-gettext pywi dt
 sudo apt install python3-opencv python3-pyqt5
 ```  
 
+If you installed ALS manually, you need to create the following directories:
+```
+cd ~/als 
+mkdir scan  
+mkdir wrk
+```
 ## Windows Installation
 __(option) Warning :__ Need uninstall Python 2.x.x before install process
 
