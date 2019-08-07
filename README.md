@@ -84,20 +84,15 @@ or
 Download als on github : https://codeload.github.com/gehelem/als/zip/master  
 Extract ALS
 
-
 ## Running ALS
 
 ### On Ubuntu or Debian:
-If you installed ALS using venv, then you should run ALS as:
-```
-cd ~/als
-source venv/bin/activate
-python als.py
-```
+You can run ALS by calling this script from the command line. This script should work the same way,
+regardless of the installation method.
 
-If you installed manually, then you should run ALS as:
+You can also add this script to your KDE, Gnome or XFCE launcher.
 ```
-python3 ~/als/als.py
+~/als/als.sh
 ```
 
 ### On Windows:
