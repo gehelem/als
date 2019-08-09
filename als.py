@@ -16,7 +16,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 import gettext
 import logging
 import os
@@ -26,8 +25,9 @@ from datetime import datetime
 from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 
 import numpy as np
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import pyqtSlot, QFileInfo
+from PyQt5.QtCore import pyqtSignal, QFileInfo, QThread, Qt, pyqtSlot
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QMainWindow, QFileDialog, QApplication, QMessageBox
 from astropy.io import fits
 from qimage2ndarray import array2qimage
 from watchdog.events import FileSystemEventHandler
@@ -40,11 +40,12 @@ from alsui import Ui_stack_window  # import du fichier alsui.py généré par : 
 from code_utilities import log
 from datastore import VERSION
 
-name_of_tiff_image = "stack_image.tiff"
-name_of_jpeg_image = "stack_image.jpg"
-gettext.install('als', 'locale')
-save_type = "jpeg"
+NAME_OF_TIFF_IMAGE = "stack_image.tiff"
+NAME_OF_JPEG_IMAGE = "stack_image.jpg"
+SAVE_TYPE = "jpeg"
 DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS = 100
+
+gettext.install('als', 'locale')
 
 _logger = logging.getLogger(__name__)
 
@@ -62,9 +63,10 @@ class HTTPHandler(SimpleHTTPRequestHandler):
 class HTTPServer(BaseHTTPServer):
     """The main server, you pass in base_path which is the path you want to serve requests from"""
     @log
-    def __init__(self, base_path, server_address, RequestHandlerClass=HTTPHandler):
+    def __init__(self, base_path, server_address, request_handler_class=HTTPHandler):
         self.base_path = base_path
-        BaseHTTPServer.__init__(self, server_address, RequestHandlerClass)
+        BaseHTTPServer.__init__(self, server_address, request_handler_class)
+
 
 class StoppableServerThread(threading.Thread):
     """Thread class with a stop() method. The thread itself has to check
@@ -75,7 +77,7 @@ class StoppableServerThread(threading.Thread):
     def __init__(self, web_dir):
         # web stuff
         self.web_dir = web_dir
-        self.httpd = HTTPServer(self.web_dir, ("", Config.get_www_server_port_number()))
+        self.httpd = HTTPServer(self.web_dir, ("", config.get_www_server_port_number()))
         self.httpd.timeout = 1
 
         # thread stuff
@@ -97,7 +99,7 @@ class StoppableServerThread(threading.Thread):
         return self._stop_event.is_set()
 
 
-class image_ref_save:
+class ImageRefSave:
     @log
     def __init__(self):
         self.image = []
@@ -105,8 +107,8 @@ class image_ref_save:
         self.stack_image = []
 
 
-class MyEventHandler(FileSystemEventHandler, QtCore.QThread, image_ref_save):
-    created_signal = QtCore.pyqtSignal()
+class MyEventHandler(FileSystemEventHandler, QThread, ImageRefSave):
+    created_signal = pyqtSignal()
     new_image_path = ""
 
     @log
@@ -139,13 +141,13 @@ class MyEventHandler(FileSystemEventHandler, QtCore.QThread, image_ref_save):
 # ------------------------------------------------------------------------------
 
 
-class WatchOutForFileCreations(QtCore.QThread):
-    print_image = QtCore.pyqtSignal()
+class WatchOutForFileCreations(QThread):
+    print_image = pyqtSignal()
 
     @log
     def __init__(self, path, work_folder, align_on, save_on, stack_methode,
-                 log, white_slider, black_slider, contrast_slider, brightness_slider,
-                 R_slider, G_slider, B_slider, apply_button,
+                 log_ui, white_slider, black_slider, contrast_slider, brightness_slider,
+                 r_slider, g_slider, b_slider, apply_button,
                  image_ref_save, dark_on, dark_path,
                  scnr_on, scnr_mode, scnr_value,
                  wavelets_on, wavelets_type, wavelets_use_luminance,
@@ -157,11 +159,11 @@ class WatchOutForFileCreations(QtCore.QThread):
         self.black_slider = black_slider
         self.contrast_slider = contrast_slider
         self.brightness_slider = brightness_slider
-        self.R_slider = R_slider
-        self.G_slider = G_slider
-        self.B_slider = B_slider
+        self.r_slider = r_slider
+        self.g_slider = g_slider
+        self.b_slider = b_slider
         self.apply_button = apply_button
-        self.log = log
+        self.log = log_ui
         self.path = path
         self.work_folder = work_folder
         self.first = 0
@@ -220,9 +222,9 @@ class WatchOutForFileCreations(QtCore.QThread):
                                                                           self.brightness_slider.value(),
                                                                           self.black_slider.value(),
                                                                           self.white_slider.value(),
-                                                                          self.R_slider.value() / 100.,
-                                                                          self.G_slider.value() / 100.,
-                                                                          self.B_slider.value() / 100.,
+                                                                          self.r_slider.value() / 100.,
+                                                                          self.g_slider.value() / 100.,
+                                                                          self.b_slider.value() / 100.,
                                                                           self.scnr_mode.currentText(),
                                                                           self.scnr_value.value(),
                                                                           {1: int(self.wavelet_1_value.text()) / 100.,
@@ -230,7 +232,7 @@ class WatchOutForFileCreations(QtCore.QThread):
                                                                            3: int(self.wavelet_3_value.text()) / 100.,
                                                                            4: int(self.wavelet_4_value.text()) / 100.,
                                                                            5: int(self.wavelet_5_value.text()) / 100.}],
-                                                                   image_type=save_type)
+                                                                   image_type=SAVE_TYPE)
                 self.first = 1
                 self.white_slider.setMaximum(np.int(limit))
                 self.brightness_slider.setMaximum(np.int(limit) / 2.)
@@ -249,9 +251,9 @@ class WatchOutForFileCreations(QtCore.QThread):
                 elif limit == 2. ** 8 - 1:
                     self.log.append(_("Read 8bit frame ..."))
                 if mode == "rgb":
-                    self.R_slider.setEnabled(True)
-                    self.G_slider.setEnabled(True)
-                    self.B_slider.setEnabled(True)
+                    self.r_slider.setEnabled(True)
+                    self.g_slider.setEnabled(True)
+                    self.b_slider.setEnabled(True)
                 self.white_slider.setEnabled(True)
                 self.black_slider.setEnabled(True)
                 self.contrast_slider.setEnabled(True)
@@ -283,9 +285,9 @@ class WatchOutForFileCreations(QtCore.QThread):
                                                                           self.brightness_slider.value(),
                                                                           self.black_slider.value(),
                                                                           self.white_slider.value(),
-                                                                          self.R_slider.value() / 100.,
-                                                                          self.G_slider.value() / 100.,
-                                                                          self.B_slider.value() / 100.,
+                                                                          self.r_slider.value() / 100.,
+                                                                          self.g_slider.value() / 100.,
+                                                                          self.b_slider.value() / 100.,
                                                                           self.scnr_mode.currentText(),
                                                                           self.scnr_value.value(),
                                                                           {1: int(self.wavelet_1_value.text()) / 100.,
@@ -293,7 +295,7 @@ class WatchOutForFileCreations(QtCore.QThread):
                                                                            3: int(self.wavelet_3_value.text()) / 100.,
                                                                            4: int(self.wavelet_4_value.text()) / 100.,
                                                                            5: int(self.wavelet_5_value.text()) / 100.}],
-                                                                   image_type=save_type)
+                                                                   image_type=SAVE_TYPE)
 
                 self.log.append(_("... Stack finished"))
             self.print_image.emit()
@@ -304,7 +306,7 @@ class WatchOutForFileCreations(QtCore.QThread):
 # ------------------------------------------------------------------------------
 
 
-class als_main_window(QtWidgets.QMainWindow):
+class MainWindow(QMainWindow):
 
     @log
     def __init__(self, parent=None):
@@ -312,16 +314,16 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui = Ui_stack_window()
         self.ui.setupUi(self)
 
-        self.ui.tFolder.setText(os.path.expanduser(Config.get_scan_folder_path()))
-        self.ui.tDark.setText(os.path.expanduser(Config.get_dark_path()))
-        self.ui.tWork.setText(os.path.expanduser(Config.get_work_folder_path()))
+        self.ui.tFolder.setText(os.path.expanduser(config.get_scan_folder_path()))
+        self.ui.tDark.setText(os.path.expanduser(config.get_dark_path()))
+        self.ui.tWork.setText(os.path.expanduser(config.get_work_folder_path()))
 
         self.running = False
         self.counter = 0
         self.align = False
         self.dark = False
         self.pause = False
-        self.image_ref_save = image_ref_save()
+        self.image_ref_save = ImageRefSave()
 
         self.setWindowTitle(_("Astro Live Stacker") + f" - v{VERSION}")
 
@@ -334,7 +336,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self._stop_www()
 
         try:
-            Config.save()
+            config.save()
             _logger.info("User configuration saved")
         except OSError as e:
             _logger.error(f"Could not save settings. Error : {e}")
@@ -371,7 +373,7 @@ class als_main_window(QtWidgets.QMainWindow):
 
     @pyqtSlot(bool, name="on_cbWww_clicked")
     @log
-    def cb_wwwcheck(self, checked):
+    def cb_www_check(self, checked):
         if checked:
             self._start_www()
         else:
@@ -393,12 +395,12 @@ class als_main_window(QtWidgets.QMainWindow):
     def cb_apply_value(self):
         work_folder = self.ui.tWork.text()
         if self.counter > 0:
-            self.ajuste_value(work_folder)
+            self.adjust_value(work_folder)
             self.update_image(work_folder, add=False)
         self.ui.log.append(_("Define new display value"))
 
     @log
-    def ajuste_value(self, work_folder):
+    def adjust_value(self, work_folder):
 
         # test rgb or gray
         if len(self.image_ref_save.image.shape) == 2:
@@ -428,7 +430,7 @@ class als_main_window(QtWidgets.QMainWindow):
                                                                    3: int(self.ui.wavelet_3_label.text()) / 100.,
                                                                    4: int(self.ui.wavelet_4_label.text()) / 100.,
                                                                    5: int(self.ui.wavelet_5_label.text()) / 100.}],
-                                                           image_type=save_type)
+                                                           image_type=SAVE_TYPE)
 
         self.ui.log.append(_("Adjust GUI image"))
 
@@ -446,14 +448,14 @@ class als_main_window(QtWidgets.QMainWindow):
 
         # read image in RAM ( need save_type = "no"):
         qimage_tiff = array2qimage(self.image_ref_save.stack_image, normalize=(2**16-1))
-        pixmap_tiff = QtGui.QPixmap.fromImage(qimage_tiff)
+        pixmap_tiff = QPixmap.fromImage(qimage_tiff)
 
         if pixmap_tiff.isNull():
             self.ui.log.append(_("invalid frame"))
 
         pixmap_tiff_resize = pixmap_tiff.scaled(self.ui.image_stack.frameGeometry().width(),
                                                 self.ui.image_stack.frameGeometry().height(),
-                                                QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+                                                Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.ui.image_stack.setPixmap(pixmap_tiff_resize)
         message = _("Updated GUI image")
         self.ui.log.append(_(message))
@@ -462,28 +464,28 @@ class als_main_window(QtWidgets.QMainWindow):
     @pyqtSlot(name="on_bBrowseFolder_clicked")
     @log
     def cb_browse_scan(self):
-        DirName = QtWidgets.QFileDialog.getExistingDirectory(self, _("Scan folder"), self.ui.tFolder.text())
-        if DirName:
-            self.ui.tFolder.setText(DirName)
+        dir_name = QFileDialog.getExistingDirectory(self, _("Scan folder"), self.ui.tFolder.text())
+        if dir_name:
+            self.ui.tFolder.setText(dir_name)
             self.ui.pbPlay.setEnabled(True)
-            Config.set_scan_folder_path(DirName)
+            config.set_scan_folder_path(dir_name)
 
     @pyqtSlot(name="on_bBrowseDark_clicked")
     @log
     def cb_browse_dark(self):
-        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, _("Dark file"), "",
-                                                            "Fit Files (*.fit);;All Files (*)")
-        if fileName:
-            self.ui.tDark.setText(fileName)
-            Config.set_dark_path(fileName)
+        file_name, _ = QFileDialog.getOpenFileName(self, _("Dark file"), "",
+                                                   "Fit Files (*.fit);;All Files (*)")
+        if file_name:
+            self.ui.tDark.setText(file_name)
+            config.set_dark_path(file_name)
 
     @pyqtSlot(name="on_bBrowseWork_clicked")
     @log
     def cb_browse_work(self):
-        DirName = QtWidgets.QFileDialog.getExistingDirectory(self, _("Work folder"), self.ui.tWork.text())
-        if DirName:
-            self.ui.tWork.setText(DirName)
-            Config.set_work_folder_path(DirName)
+        dir_name = QFileDialog.getExistingDirectory(self, _("Work folder"), self.ui.tWork.text())
+        if dir_name:
+            self.ui.tWork.setText(dir_name)
+            config.set_work_folder_path(dir_name)
 
     @pyqtSlot(name="on_pbPlay_clicked")
     @log
@@ -491,11 +493,11 @@ class als_main_window(QtWidgets.QMainWindow):
         if self.ui.tFolder.text() != "":
 
             # check existence of work and scan folders
-            work_folder_path = Config.get_work_folder_path()
+            work_folder_path = config.get_work_folder_path()
             if not os.path.exists(os.path.expanduser(work_folder_path)) or not os.path.isdir(os.path.expanduser(work_folder_path)):
                 self.cb_browse_work()
 
-            scan_folder_path = Config.get_scan_folder_path()
+            scan_folder_path = config.get_scan_folder_path()
             if not os.path.exists(os.path.expanduser(scan_folder_path)) or not os.path.isdir(os.path.expanduser(scan_folder_path)):
                 self.cb_browse_scan()
 
@@ -508,7 +510,7 @@ class als_main_window(QtWidgets.QMainWindow):
                 self.ui.G_slider.setEnabled(False)
                 self.ui.B_slider.setEnabled(False)
                 self.ui.pb_apply_value.setEnabled(False)
-                self.ui.image_stack.setPixmap(QtGui.QPixmap(":/icons/dslr-camera.svg"))
+                self.ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
                 self.counter = 0
                 self.ui.cnt.setText(str(self.counter))
                 # Print scan folder
@@ -533,34 +535,34 @@ class als_main_window(QtWidgets.QMainWindow):
                 else:
                     self.ui.log.append(_("Play with NO alignement"))
 
-                self.fileWatcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()),
-                                                            os.path.expanduser(self.ui.tWork.text()),
-                                                            self.align,
-                                                            self.ui.cbKeep.isChecked(),
-                                                            self.ui.cmMode.currentText(),
-                                                            self.ui.log,
-                                                            self.ui.white_slider,
-                                                            self.ui.black_slider,
-                                                            self.ui.contrast_slider,
-                                                            self.ui.brightness_slider,
-                                                            self.ui.R_slider,
-                                                            self.ui.G_slider,
-                                                            self.ui.B_slider,
-                                                            self.ui.pb_apply_value,
-                                                            self.image_ref_save,
-                                                            self.dark,
-                                                            os.path.expanduser(self.ui.tDark.text()),
-                                                            self.ui.cbSCNR,
-                                                            self.ui.cmSCNR,
-                                                            self.ui.SCNR_Slider,
-                                                            self.ui.cbWavelets,
-                                                            self.ui.cBoxWaveType,
-                                                            self.ui.cbLuminanceWavelet,
-                                                            self.ui.wavelet_1_label,
-                                                            self.ui.wavelet_2_label,
-                                                            self.ui.wavelet_3_label,
-                                                            self.ui.wavelet_4_label,
-                                                            self.ui.wavelet_5_label)
+                self.file_watcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()),
+                                                             os.path.expanduser(self.ui.tWork.text()),
+                                                             self.align,
+                                                             self.ui.cbKeep.isChecked(),
+                                                             self.ui.cmMode.currentText(),
+                                                             self.ui.log,
+                                                             self.ui.white_slider,
+                                                             self.ui.black_slider,
+                                                             self.ui.contrast_slider,
+                                                             self.ui.brightness_slider,
+                                                             self.ui.R_slider,
+                                                             self.ui.G_slider,
+                                                             self.ui.B_slider,
+                                                             self.ui.pb_apply_value,
+                                                             self.image_ref_save,
+                                                             self.dark,
+                                                             os.path.expanduser(self.ui.tDark.text()),
+                                                             self.ui.cbSCNR,
+                                                             self.ui.cmSCNR,
+                                                             self.ui.SCNR_Slider,
+                                                             self.ui.cbWavelets,
+                                                             self.ui.cBoxWaveType,
+                                                             self.ui.cbLuminanceWavelet,
+                                                             self.ui.wavelet_1_label,
+                                                             self.ui.wavelet_2_label,
+                                                             self.ui.wavelet_3_label,
+                                                             self.ui.wavelet_4_label,
+                                                             self.ui.wavelet_5_label)
 
                 try:
                     self._setup_work_folder()
@@ -572,9 +574,9 @@ class als_main_window(QtWidgets.QMainWindow):
                     self.cb_stop()
                     return
 
-                self.fileWatcher.start()
-                self.fileWatcher.print_image.connect(
-                    lambda: self.update_image(self.ui.tWork.text(), name_of_tiff_image))
+                self.file_watcher.start()
+                self.file_watcher.print_image.connect(
+                    lambda: self.update_image(self.ui.tWork.text(), NAME_OF_TIFF_IMAGE))
             else:
                 self.ui.log.append("Play")
 
@@ -600,12 +602,12 @@ class als_main_window(QtWidgets.QMainWindow):
         os.mkdir(work_dir_path)
         resources_dir_path = os.path.dirname(os.path.realpath(__file__)) + "/resources_dir"
         shutil.copy(resources_dir_path + "/index.html", work_dir_path)
-        shutil.copy(resources_dir_path + "/waiting.jpg", work_dir_path + "/" + name_of_jpeg_image)
+        shutil.copy(resources_dir_path + "/waiting.jpg", work_dir_path + "/" + NAME_OF_JPEG_IMAGE)
 
     @pyqtSlot(name="on_pbStop_clicked")
     @log
     def cb_stop(self):
-        self.fileWatcher.observer.stop()
+        self.file_watcher.observer.stop()
         self.image_ref_save.status = "stop"
         self.image_ref_save.image = []
         self.image_ref_save.stack_image = []
@@ -639,7 +641,7 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.R_slider.setValue(100)
         self.ui.G_slider.setValue(100)
         self.ui.B_slider.setValue(100)
-        self.ui.image_stack.setPixmap(QtGui.QPixmap(":/icons/dslr-camera.svg"))
+        self.ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
         self.image_ref_save.image = []
         self.image_ref_save.stack_image = []
         self.ui.contrast.setText(str(1))
@@ -662,10 +664,9 @@ class als_main_window(QtWidgets.QMainWindow):
     @log
     def _start_www(self):
         self.web_dir = os.path.join(os.path.dirname(__file__),
-                                    os.path.expanduser(Config.get_work_folder_path()))
-        ip_address = als_main_window.get_ip()
-        port_number = Config.get_www_server_port_number()
-
+                                    os.path.expanduser(config.get_work_folder_path()))
+        ip_address = MainWindow.get_ip()
+        port_number = config.get_www_server_port_number()
         try:
             self.thread = StoppableServerThread(self.web_dir)
             self.thread.start()
@@ -723,21 +724,22 @@ class als_main_window(QtWidgets.QMainWindow):
 
 # ------------------------------------------------------------------------------
 
+
 if __name__ == "__main__":
     import sys
-    app = QtWidgets.QApplication(sys.argv)
+    app = QApplication(sys.argv)
 
     try:
-        import Config
+        import config
     except ValueError as e:
         messaging.error_box("Config file is invalid", str(e))
         print(f"***** ERROR : user config file is invalid : {e}")
         sys.exit(1)
 
     _logger.info(f"Starting Astro Live Stacker v{VERSION} in {os.path.dirname(os.path.realpath(__file__))}")
-    window = als_main_window()
+    window = MainWindow()
     _logger.debug("Building and showing main window")
-    window.main()
+    window.show()
     app_return_code = app.exec()
     _logger.info(f"Astro Live Stacker terminated with return code = {app_return_code}")
     sys.exit(app_return_code)
