@@ -25,7 +25,7 @@ from datetime import datetime
 from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 
 import numpy as np
-from PyQt5.QtCore import pyqtSignal, QFileInfo, QThread, Qt, pyqtSlot
+from PyQt5.QtCore import pyqtSignal, QFileInfo, QThread, Qt, pyqtSlot, QTimer
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMainWindow, QApplication
 from astropy.io import fits
@@ -45,6 +45,7 @@ NAME_OF_JPEG_IMAGE = "stack_image.jpg"
 NAME_OF_PNG_IMAGE = "stack_image.png"
 SAVE_TYPE = "png"
 DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS = 100
+LOG_DOCK_INITIAL_HEIGHT = 60
 
 gettext.install('als', 'locale')
 
@@ -318,6 +319,7 @@ class MainWindow(QMainWindow):
         self.align = False
         self.pause = False
         self.image_ref_save = ImageRefSave()
+        self.ui.postprocess_widget.setCurrentIndex(0)
 
         self.setWindowTitle(_("Astro Live Stacker") + f" - v{VERSION}")
 
@@ -325,10 +327,18 @@ class MainWindow(QMainWindow):
         self.thread = None
         self.web_dir = None
 
+        # prevent log dock to be too tall
+        self.resizeDocks([self.ui.log_dock], [LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
+
     @log
     def closeEvent(self, event):
         self._stop_www()
         super().closeEvent(event)
+
+    @log
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.update_image(False)
 
     # ------------------------------------------------------------------------------
     # Callbacks
@@ -383,7 +393,7 @@ class MainWindow(QMainWindow):
         work_folder = config.get_work_folder_path()
         if self.counter > 0:
             self.adjust_value(work_folder)
-            self.update_image(work_folder, add=False)
+            self.update_image(False)
         self.ui.log.append(_("Define new display value"))
 
     @pyqtSlot(name="on_action_quit_triggered")
@@ -433,31 +443,33 @@ class MainWindow(QMainWindow):
         self.ui.log.append(_("Adjust GUI image"))
 
     @log
-    def update_image(self, work_folder, add=True):
+    def update_image(self, add=True):
         if add:
-            self.counter = self.counter + 1
+            self.counter += 1
             self.ui.cnt.setText(str(self.counter))
+            message = _("update GUI image")
+            self.ui.log.append(_(message))
+            _logger.info(message)
 
-        # read tiff ( need save_type = "tiff") :
-        # pixmap_tiff = QtGui.QPixmap(os.path.expanduser(work_folder + "/" + name_of_tiff_image))
+        if 0 < self.counter:
 
-        # read tiff ( need save_type = "jpeg") :
-        # pixmap_tiff = QtGui.QPixmap(os.path.expanduser(work_folder + "/" +
+            # read image in RAM ( need save_type = "no"):
+            qimage = array2qimage(self.image_ref_save.stack_image, normalize=(2 ** 16 - 1))
+            pixmap = QPixmap.fromImage(qimage)
 
-        # read image in RAM ( need save_type = "no"):
-        qimage_tiff = array2qimage(self.image_ref_save.stack_image, normalize=(2**16-1))
-        pixmap_tiff = QPixmap.fromImage(qimage_tiff)
+            if pixmap.isNull():
+                self.ui.log.append(_("invalid frame"))
+                _logger.error("Got a null pixmap from stack")
+                return
 
-        if pixmap_tiff.isNull():
-            self.ui.log.append(_("invalid frame"))
+            pixmap_resize = pixmap.scaled(self.ui.image_stack.frameGeometry().width(),
+                                          self.ui.image_stack.frameGeometry().height(),
+                                          Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
-        pixmap_tiff_resize = pixmap_tiff.scaled(self.ui.image_stack.frameGeometry().width(),
-                                                self.ui.image_stack.frameGeometry().height(),
-                                                Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        self.ui.image_stack.setPixmap(pixmap_tiff_resize)
-        message = _("Updated GUI image")
-        self.ui.log.append(_(message))
-        _logger.info(message)
+            self.ui.image_stack.setPixmap(pixmap_resize)
+
+        else:
+            self.ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
 
     @pyqtSlot(name="on_pbPlay_clicked")
     @log
@@ -632,6 +644,18 @@ class MainWindow(QMainWindow):
         self.ui.cbSCNR.setChecked(False)
         self.ui.cbWavelets.setChecked(False)
         self.ui.cbLuminanceWavelet.setChecked(False)
+
+    @pyqtSlot(bool, name="on_log_dock_visibilityChanged")
+    @pyqtSlot(bool, name="on_session_dock_visibilityChanged")
+    @log
+    def cb_docks_changed_visibility(self, visible):
+
+        QTimer.singleShot(1, self.update_image_after_dock_change)
+
+    @log
+    def update_image_after_dock_change(self):
+        self.update_image(False)
+
     @log
     def _start_www(self):
         self.web_dir = config.get_work_folder_path()
