@@ -272,10 +272,8 @@ def save_tiff(work_path, stack_image, log_ui, mode="rgb", scnr_on=False,
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
 
     elif image_type == "png":
-        # limitate to 8bit
-        image_to_save = new_stack_image
-
-        cv2.imwrite(work_path + "/" + NAME_OF_PNG_IMAGE, image_to_save, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+        print(new_stack_image.dtype)
+        cv2.imwrite(work_path + "/" + NAME_OF_PNG_IMAGE, new_stack_image, [cv2.IMWRITE_PNG_COMPRESSION, 9])
         _logger.info(_("PNG image create :") + "%s" % work_path + "/" + NAME_OF_PNG_IMAGE)
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
 
