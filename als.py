@@ -27,7 +27,7 @@ from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 import numpy as np
 from PyQt5.QtCore import pyqtSignal, QFileInfo, QThread, Qt, pyqtSlot
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QMainWindow, QFileDialog, QApplication, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QFileDialog, QApplication
 from astropy.io import fits
 from qimage2ndarray import array2qimage
 from watchdog.events import FileSystemEventHandler
@@ -200,9 +200,16 @@ class WatchOutForFileCreations(QThread):
 
     @log
     def created(self, new_image_path, align_on, save_on, stack_methode):
-        if self.image_ref_save.status == "play" \
-                and new_image_path.split("/")[-1][0] != "." \
-                and new_image_path.split("/")[-1][0] != "~":
+
+        new_image_file_name = new_image_path.split("/")[-1]
+        ignored_start_patterns = ['.', '~', 'tmp']
+        to_be_processed = []
+
+        for pattern in ignored_start_patterns:
+            to_be_processed.append(not new_image_file_name.startswith(pattern))
+
+        if self.image_ref_save.status == "play" and all(to_be_processed):
+
             self.counter = self.counter + 1
             self.log.append(_("Reading new frame..."))
             if self.first == 0:
