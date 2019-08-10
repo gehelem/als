@@ -288,7 +288,7 @@ def save_tiff(work_path, stack_image, log_ui, mode="rgb", scnr_on=False,
             bit_depth = 8
 
         if bit_depth > 8:
-            image_to_save = image_to_save.convertTo(image_to_save, cv2.CV_8U, ((2**bit_depth)-1) / ((2**8)-1))
+            image_to_save = (image_to_save / (((2**bit_depth)-1) / ((2**8)-1))).astype('uint8')
 
         cv2.imwrite(work_path + "/" + NAME_OF_JPEG_IMAGE, image_to_save, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
         _logger.info(_("JPEG image create :") + "%s" % work_path + "/" + NAME_OF_JPEG_IMAGE)
