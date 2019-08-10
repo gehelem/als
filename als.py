@@ -200,9 +200,18 @@ class WatchOutForFileCreations(QThread):
 
     @log
     def created(self, new_image_path, align_on, save_on, stack_methode):
-        if self.image_ref_save.status == "play" \
-                and new_image_path.split("/")[-1][0] != "." \
-                and new_image_path.split("/")[-1][0] != "~":
+
+        new_image_file_name = new_image_path.split("/")[-1]
+        ignored_start_patterns = ['.', '~', 'tmp']
+        to_be_ignored = False
+
+        for pattern in ignored_start_patterns:
+            if new_image_file_name.startswith(pattern):
+                to_be_ignored = True
+                break
+
+        if self.image_ref_save.status == "play" and not to_be_ignored:
+
             self.counter = self.counter + 1
             self.log.append(_("Reading new frame..."))
             if self.first == 0:
