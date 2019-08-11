@@ -110,34 +110,41 @@ class ImageRefSave:
 
 
 class MyEventHandler(FileSystemEventHandler, QThread, ImageRefSave):
-    created_signal = pyqtSignal()
-    new_image_path = ""
+    created_signal = pyqtSignal(str)
 
     @log
     def __init__(self):
         super().__init__()
 
     @log
+    def on_moved(self, event):
+        if event.event_type == 'moved':
+            image_path = event.dest_path
+            _logger.info(f"New image ready to be processed : {image_path}")
+            _logger.debug(f"created signal emitted from on_moved : {image_path}")
+            self.created_signal.emit(image_path)
+
+    @log
     def on_created(self, event):
         if event.event_type == 'created':
             file_is_incomplete = True
             last_file_size = -1
-            file_path = event.src_path
-            _logger.debug(f"New image file detected : {file_path}. Waiting untill file is fully written to disk...")
+            image_path = event.src_path
+            _logger.debug(f"New image file detected : {image_path}. Waiting untill file is fully written to disk...")
 
             while file_is_incomplete:
-                info = QFileInfo(file_path)
+                info = QFileInfo(image_path)
                 size = info.size()
-                _logger.debug(f"File {file_path}'s size = {size}")
+                _logger.debug(f"File {image_path}'s size = {size}")
                 if size == last_file_size:
                     file_is_incomplete = False
-                    _logger.debug(f"File {file_path} has been fully written to disk")
+                    _logger.debug(f"File {image_path} has been fully written to disk")
                 last_file_size = size
                 self.msleep(DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS)
 
-            _logger.info(f"New image ready to be processed : {file_path}")
-            self.new_image_path = file_path
-            self.created_signal.emit()
+            _logger.info(f"New image ready to be processed : {image_path}")
+            _logger.debug(f"created signal emitted from on_created : {image_path}")
+            self.created_signal.emit(image_path)
 
 
 # ------------------------------------------------------------------------------
@@ -147,7 +154,7 @@ class WatchOutForFileCreations(QThread):
     print_image = pyqtSignal()
 
     @log
-    def __init__(self, path, work_folder, align_on, save_on, stack_methode,
+    def __init__(self, path, work_folder, align_on, save_on, stack_method,
                  log_ui, white_slider, black_slider, contrast_slider, brightness_slider,
                  r_slider, g_slider, b_slider, apply_button,
                  image_ref_save,
@@ -157,6 +164,9 @@ class WatchOutForFileCreations(QThread):
                  wavelet_4_value, wavelet_5_value):
 
         super().__init__()
+        self.align_on = align_on
+        self.save_on = save_on
+        self.stack_method = stack_method
         self.white_slider = white_slider
         self.black_slider = black_slider
         self.contrast_slider = contrast_slider
@@ -195,11 +205,10 @@ class WatchOutForFileCreations(QThread):
         self.observer.schedule(self.event_handler, self.path, recursive=False)
         self.observer.start()
 
-        self.event_handler.created_signal.connect(lambda: self.created(self.event_handler.new_image_path,
-                                                                       align_on, save_on, stack_methode))
+        self.event_handler.created_signal[str].connect(self.created)
 
     @log
-    def created(self, new_image_path, align_on, save_on, stack_methode):
+    def created(self, new_image_path):
 
         new_image_file_name = new_image_path.split("/")[-1]
         ignored_start_patterns = ['.', '~', 'tmp']
@@ -217,7 +226,7 @@ class WatchOutForFileCreations(QThread):
             if self.first == 0:
                 self.log.append(_("Reading first frame..."))
                 self.first_image, limit, mode = stk.create_first_ref_im(self.work_folder, new_image_path,
-                                                                        save_im=save_on)
+                                                                        save_im=self.save_on)
 
                 self.image_ref_save.image = self.first_image
 
@@ -271,7 +280,7 @@ class WatchOutForFileCreations(QThread):
 
             else:
                 # appelle de la fonction stack live
-                if align_on:
+                if self.align_on:
                     self.log.append(_("Stack and Align New frame..."))
                 else:
                     self.log.append(_("Stack New frame..."))
@@ -280,9 +289,9 @@ class WatchOutForFileCreations(QThread):
                                                                         self.counter,
                                                                         ref=self.image_ref_save.image,
                                                                         first_ref=self.first_image,
-                                                                        save_im=save_on,
-                                                                        align=align_on,
-                                                                        stack_methode=stack_methode)
+                                                                        save_im=self.save_on,
+                                                                        align=self.align_on,
+                                                                        stack_methode=self.stack_method)
 
                 self.image_ref_save.stack_image = prepro.save_tiff(self.work_folder, self.image_ref_save.image,
                                                                    self.log,
@@ -309,7 +318,9 @@ class WatchOutForFileCreations(QThread):
                 self.log.append(_("... Stack finished"))
             self.print_image.emit()
         else:
-            self.log.append(_("New image detected but not considered"))
+            message = _("New image detected but not considered")
+            self.log.append(message)
+            _logger.info(message)
 
 
 # ------------------------------------------------------------------------------
