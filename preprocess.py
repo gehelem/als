@@ -28,8 +28,9 @@ from pywi.processing.transform import starlet
 import stack as stk
 from code_utilities import log
 
-name_of_tiff_image = "stack_image.tiff"
-name_of_jpeg_image = "stack_image.jpg"
+NAME_OF_TIFF_IMAGE = "stack_image.tiff"
+NAME_OF_JPEG_IMAGE = "stack_image.jpg"
+NAME_OF_PNG_IMAGE = "stack_image.png"
 
 _logger = logging.getLogger(__name__)
 
@@ -249,7 +250,7 @@ def save_tiff(work_path, stack_image, log_ui, mode="rgb", scnr_on=False,
             # spread out the remaining values
             new_stack_image = new_stack_image * (1. / ((param[3] - param[2]) / limit))
 
-        # if chage in contrast/brightness value
+        # if change in contrast/brightness value
         if param[0] != 1 or param[1] != 0:
             # new_image = image * contrast + brightness
             new_stack_image = new_stack_image * param[0] + param[1]
@@ -266,24 +267,29 @@ def save_tiff(work_path, stack_image, log_ui, mode="rgb", scnr_on=False,
 
     # use cv2 fonction for save print image in tiff format
     if image_type == "tiff":
-        cv2.imwrite(work_path + "/" + name_of_tiff_image, new_stack_image)
-        _logger.info(_("TIFF image create :") + "%s" % work_path + "/" + name_of_tiff_image)
+        cv2.imwrite(work_path + "/" + NAME_OF_TIFF_IMAGE, new_stack_image)
+        _logger.info(_("TIFF image create :") + "%s" % work_path + "/" + NAME_OF_TIFF_IMAGE)
+        new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
+
+    elif image_type == "png":
+        print(new_stack_image.dtype)
+        cv2.imwrite(work_path + "/" + NAME_OF_PNG_IMAGE, new_stack_image, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+        _logger.info(_("PNG image create :") + "%s" % work_path + "/" + NAME_OF_PNG_IMAGE)
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
 
     elif image_type == "jpeg":
+        # limitate to 8bit
         image_to_save = new_stack_image
         if "uint16" == image_to_save.dtype:
             bit_depth = 16
-        elif "unit32" == image_to_save.dtype:
-            bit_depth = 32
         else:
             bit_depth = 8
 
         if bit_depth > 8:
-            image_to_save = np.copy(new_stack_image) / 2**bit_depth * 2**8
+            image_to_save = (image_to_save / (((2**bit_depth)-1) / ((2**8)-1))).astype('uint8')
 
-        cv2.imwrite(work_path + "/" + name_of_jpeg_image, image_to_save, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
-        _logger.info(_("JPEG image create :") + "%s" % work_path + "/" + name_of_jpeg_image)
+        cv2.imwrite(work_path + "/" + NAME_OF_JPEG_IMAGE, image_to_save, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
+        _logger.info(_("JPEG image create :") + "%s" % work_path + "/" + NAME_OF_JPEG_IMAGE)
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
     elif image_type == "no":
         _logger.info(_("No image create, als use RAM"))

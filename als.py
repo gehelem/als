@@ -42,7 +42,8 @@ from datastore import VERSION
 
 NAME_OF_TIFF_IMAGE = "stack_image.tiff"
 NAME_OF_JPEG_IMAGE = "stack_image.jpg"
-SAVE_TYPE = "jpeg"
+NAME_OF_PNG_IMAGE = "stack_image.png"
+SAVE_TYPE = "png"
 DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS = 100
 
 gettext.install('als', 'locale')
@@ -510,6 +511,12 @@ class MainWindow(QMainWindow):
                 self.ui.G_slider.setEnabled(False)
                 self.ui.B_slider.setEnabled(False)
                 self.ui.pb_apply_value.setEnabled(False)
+                self.ui.bBrowseFolder.setEnabled(False)
+                self.ui.bBrowseWork.setEnabled(False)
+                self.ui.bBrowseDark.setEnabled(False)
+                self.ui.cbAlign.setEnabled(False)
+                self.ui.cbDark.setEnabled(False)
+                self.ui.cmMode.setEnabled(False)
                 self.ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
                 self.counter = 0
                 self.ui.cnt.setText(str(self.counter))
@@ -611,6 +618,12 @@ class MainWindow(QMainWindow):
         self.image_ref_save.status = "stop"
         self.image_ref_save.image = []
         self.image_ref_save.stack_image = []
+        self.ui.bBrowseFolder.setEnabled(True)
+        self.ui.bBrowseWork.setEnabled(True)
+        # self.ui.bBrowseDark.setEnabled(True)
+        self.ui.cbAlign.setEnabled(True)
+        # self.ui.cbDark.setEnabled(True)
+        self.ui.cmMode.setEnabled(True)
         self.ui.pbStop.setEnabled(False)
         self.ui.pbPlay.setEnabled(True)
         self.ui.pbReset.setEnabled(True)
