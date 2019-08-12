@@ -513,6 +513,10 @@ class MainWindow(QMainWindow):
                 self.ui.pb_apply_value.setEnabled(False)
                 self.ui.bBrowseFolder.setEnabled(False)
                 self.ui.bBrowseWork.setEnabled(False)
+                self.ui.bBrowseDark.setEnabled(False)
+                self.ui.cbAlign.setEnabled(False)
+                self.ui.cbDark.setEnabled(False)
+                self.ui.cmMode.setEnabled(False)
                 self.ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
                 self.counter = 0
                 self.ui.cnt.setText(str(self.counter))
@@ -616,6 +620,10 @@ class MainWindow(QMainWindow):
         self.image_ref_save.stack_image = []
         self.ui.bBrowseFolder.setEnabled(True)
         self.ui.bBrowseWork.setEnabled(True)
+        # self.ui.bBrowseDark.setEnabled(True)
+        self.ui.cbAlign.setEnabled(True)
+        # self.ui.cbDark.setEnabled(True)
+        self.ui.cmMode.setEnabled(True)
         self.ui.pbStop.setEnabled(False)
         self.ui.pbPlay.setEnabled(True)
         self.ui.pbReset.setEnabled(True)
