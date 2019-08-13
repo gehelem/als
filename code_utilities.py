@@ -2,6 +2,7 @@
 Provides a set of utilities aimed at app developpers
 """
 import logging
+from time import time
 
 
 def log(func):
@@ -21,8 +22,9 @@ def log(func):
         function_name = func.__qualname__
         logger = logging.getLogger(func.__module__)
         logger.debug(function_name + "() called with : " + str(args) + str(kwargs))
+        start_time = time()
         result = func(*args, **kwargs)
-        if result is not None:
-            logger.debug(function_name + "() returned : " + str(result))
+        end_time = time()
+        logger.debug(f"{function_name}() returned {str(result)} in {(end_time - start_time) * 1000:.3f} ms")
         return result
     return wrapped
