@@ -608,6 +608,8 @@ class MainWindow(QMainWindow):
     @log
     def cb_stop(self):
         self.file_watcher.observer.stop()
+        # FIXME : this bad but better than app crash
+        self.file_watcher.terminate()
         self.image_ref_save.status = "stop"
         self.image_ref_save.image = []
         self.image_ref_save.stack_image = []
