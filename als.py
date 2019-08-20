@@ -38,7 +38,7 @@ import stack as stk
 from alsui import Ui_stack_window  # import du fichier alsui.py généré par : pyuic5 alsui.ui -x -o alsui.py
 from code_utilities import log
 from datastore import VERSION
-from dialogs import PreferencesDialog, question, error_box, warning_box
+from dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
 
 NAME_OF_TIFF_IMAGE = "stack_image.tiff"
 NAME_OF_JPEG_IMAGE = "stack_image.jpg"
@@ -425,6 +425,12 @@ class MainWindow(QMainWindow):
     @log
     def cb_prefs(self):
         dialog = PreferencesDialog(self)
+        dialog.exec()
+
+    @pyqtSlot(name="on_action_about_als_triggered")
+    @log
+    def cb_about(self):
+        dialog = AboutDialog(self)
         dialog.exec()
 
     @log
