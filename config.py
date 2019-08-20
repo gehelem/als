@@ -22,6 +22,7 @@ import sys
 from configparser import ConfigParser, DuplicateOptionError, ParsingError
 
 # config file path. We use the pseudo-standard hidden file in user's home
+import dialogs
 
 _CONFIG_FILE_PATH = os.path.expanduser("~/.als.cfg")
 
@@ -30,6 +31,7 @@ _SCAN_FOLDER_PATH = "scan_folder_path"
 _WORK_FOLDER_PATH = "work_folder_path"
 _LOG_LEVEL = "log_level"
 _WWW_SERVER_PORT = "www_server_port"
+_WINDOW_GEOMETRY = "window_geometry"
 
 # keys used to describe logging level
 _LOG_LEVEL_DEBUG = "DEBUG"
@@ -53,6 +55,7 @@ _DEFAULTS = {
     _WORK_FOLDER_PATH:    os.path.expanduser("~/als/work"),
     _LOG_LEVEL:           "INFO",
     _WWW_SERVER_PORT:     "8000",
+    _WINDOW_GEOMETRY: "50,100,1024,800"
 }
 _MAIN_SECTION_NAME = "main"
 
@@ -98,9 +101,22 @@ def set_scan_folder_path(path):
     _set(_SCAN_FOLDER_PATH, path)
 
 
+def get_window_geometry():
+    return tuple([int(value) for value in _get(_WINDOW_GEOMETRY).split(",")])
+
+
+def set_window_geometry(geometry_tuple):
+    _set(_WINDOW_GEOMETRY, ",".join([str(value) for value in geometry_tuple]))
+
+
 def save():
-    with open(_CONFIG_FILE_PATH, "w") as config_file:
-        _config_parser.write(config_file)
+    try:
+        with open(_CONFIG_FILE_PATH, "w") as config_file:
+            _config_parser.write(config_file)
+        _logger.info("User configuration saved")
+    except OSError as e:
+        _logger.error(f"Could not save settings. Error : {e}")
+        dialogs.error_box("Settings not saved", f"Your settings could not be saved\n\nDetails : {e}")
 
 
 def _get(key):
