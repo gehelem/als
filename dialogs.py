@@ -7,6 +7,8 @@ from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox
 
 import config
+import datastore
+from about_ui import Ui_AboutDialog
 from code_utilities import log
 from prefs_ui import Ui_PrefsDialog
 
@@ -76,6 +78,19 @@ class PreferencesDialog(QDialog):
                                                             self.ui.ln_work_folder_path.text())
         if work_folder_path:
             self.ui.ln_work_folder_path.setText(work_folder_path)
+
+
+class AboutDialog(QDialog):
+    """
+    Our about dialog box
+    """
+
+    @log
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.ui = Ui_AboutDialog()
+        self.ui.setupUi(self)
+        self.ui.lblVersionValue.setText(datastore.VERSION)
 
 
 def question(title, message):

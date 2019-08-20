@@ -967,9 +967,16 @@
     <addaction name="action_show_session_controls"/>
     <addaction name="action_show_session_log"/>
    </widget>
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="action_about_als"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
    <addaction name="menuView"/>
+   <addaction name="menu_Help"/>
   </widget>
   <widget class="QDockWidget" name="session_dock">
    <property name="windowTitle">
@@ -1329,6 +1336,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="action_about_als">
+   <property name="text">
+    <string>&amp;About ALS...</string>
    </property>
   </action>
  </widget>
