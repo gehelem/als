@@ -51,13 +51,7 @@ class PreferencesDialog(QDialog):
             return
 
         config.set_debug_log(self.ui.chk_debug_logs.isChecked())
-
-        try:
-            config.save()
-            _logger.info("User configuration saved")
-        except OSError as e:
-            _logger.error(f"Could not save settings. Error : {e}")
-            error_box("Settings not saved", f"Your settings could not be saved\n\nDetails : {e}")
+        config.save()
 
         super().accept()
 

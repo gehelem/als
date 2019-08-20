@@ -353,6 +353,14 @@ class MainWindow(QMainWindow):
     @log
     def closeEvent(self, event):
         self._stop_www()
+
+        _logger.debug(f"Window size : {self.size()}")
+        _logger.debug(f"Window position : {self.pos()}")
+
+        window_rect = window.geometry()
+        config.set_window_geometry((window_rect.x(), window_rect.y(), window_rect.width(), window_rect.height()))
+        config.save()
+
         super().closeEvent(event)
 
     @log
@@ -760,8 +768,10 @@ if __name__ == "__main__":
         sys.exit(1)
 
     _logger.info(f"Starting Astro Live Stacker v{VERSION} in {os.path.dirname(os.path.realpath(__file__))}")
-    window = MainWindow()
     _logger.debug("Building and showing main window")
+    window = MainWindow()
+    (x, y, width, height) = config.get_window_geometry()
+    window.setGeometry(x, y, width, height)
     window.show()
     app_return_code = app.exec()
     _logger.info(f"Astro Live Stacker terminated with return code = {app_return_code}")
