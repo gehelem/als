@@ -27,7 +27,10 @@
           <item>
            <widget class="QLabel" name="lbl_scan_folder">
             <property name="text">
-             <string>Scan folder :</string>
+             <string>&amp;Scan folder :</string>
+            </property>
+            <property name="buddy">
+             <cstring>btn_browse_scan</cstring>
             </property>
            </widget>
           </item>
@@ -58,7 +61,10 @@
           <item>
            <widget class="QLabel" name="lbl_work_folder">
             <property name="text">
-             <string>Work folder :</string>
+             <string>&amp;Work folder :</string>
+            </property>
+            <property name="buddy">
+             <cstring>btn_browse_work</cstring>
             </property>
            </widget>
           </item>
@@ -98,7 +104,13 @@
           <item>
            <widget class="QLabel" name="lbl_server_port">
             <property name="text">
-             <string>Server port number (between 1024 &amp; 65535) :</string>
+             <string>Server &amp;port number (between 1024 and 65535) :</string>
+            </property>
+            <property name="textFormat">
+             <enum>Qt::AutoText</enum>
+            </property>
+            <property name="buddy">
+             <cstring>ln_web_server_port</cstring>
             </property>
            </widget>
           </item>
@@ -142,7 +154,7 @@
         <item>
          <widget class="QCheckBox" name="chk_debug_logs">
           <property name="text">
-           <string>Debug logs (requires application restart)</string>
+           <string>&amp;Debug logs (requires application restart)</string>
           </property>
          </widget>
         </item>
