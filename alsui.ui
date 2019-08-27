@@ -979,6 +979,9 @@
    <addaction name="menu_Help"/>
   </widget>
   <widget class="QDockWidget" name="session_dock">
+   <property name="allowedAreas">
+    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+   </property>
    <property name="windowTitle">
     <string>Session controls</string>
    </property>
@@ -1247,6 +1250,9 @@
      <width>0</width>
      <height>0</height>
     </size>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
    </property>
    <property name="windowTitle">
     <string>Session log</string>
