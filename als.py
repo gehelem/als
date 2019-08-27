@@ -25,7 +25,7 @@ from datetime import datetime
 from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 
 import numpy as np
-from PyQt5.QtCore import pyqtSignal, QFileInfo, QThread, Qt, pyqtSlot, QTimer
+from PyQt5.QtCore import pyqtSignal, QFileInfo, QThread, Qt, pyqtSlot, QTimer, QEvent
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMainWindow, QApplication
 from astropy.io import fits
@@ -334,6 +334,10 @@ class MainWindow(QMainWindow):
         self.ui = Ui_stack_window()
         self.ui.setupUi(self)
 
+        # store if docks must be shown or not
+        self.shown_log_dock = True
+        self.show_session_dock = True
+
         self.running = False
         self.counter = 0
         self.align = False
@@ -362,6 +366,20 @@ class MainWindow(QMainWindow):
         config.save()
 
         super().closeEvent(event)
+
+    @log
+    def changeEvent(self, event):
+
+        event.accept()
+
+        # if window is going out of minimized state, we restore docks if needed
+        if event.type() == QEvent.WindowStateChange:
+            if not self.windowState() & Qt.WindowMinimized:
+                _logger.debug("Restoring docks visibility")
+                if self.shown_log_dock:
+                    self.ui.log_dock.show()
+                if self.show_session_dock:
+                    self.ui.session_dock.show()
 
     @log
     def resizeEvent(self, event):
@@ -681,11 +699,20 @@ class MainWindow(QMainWindow):
         self.ui.cbLuminanceWavelet.setChecked(False)
 
     @pyqtSlot(bool, name="on_log_dock_visibilityChanged")
+    @log
+    def cb_log_dock_changed_visibility(self, visible):
+
+        if not self.windowState() & Qt.WindowMinimized:
+            self.shown_log_dock = visible
+            QTimer.singleShot(1, self.update_image_after_dock_change)
+
     @pyqtSlot(bool, name="on_session_dock_visibilityChanged")
     @log
-    def cb_docks_changed_visibility(self, visible):
+    def cb_session_dock_changed_visibility(self, visible):
 
-        QTimer.singleShot(1, self.update_image_after_dock_change)
+        if not self.windowState() & Qt.WindowMinimized:
+            self.show_session_dock = visible
+            QTimer.singleShot(1, self.update_image_after_dock_change)
 
     @log
     def update_image_after_dock_change(self):
