@@ -121,7 +121,7 @@ class MyEventHandler(FileSystemEventHandler, QThread, ImageRefSave):
         if event.event_type == 'moved':
             image_path = event.dest_path
             _logger.info(f"New image ready to be processed : {image_path}")
-            _logger.debug(f"created signal emitted from on_moved : {image_path}")
+            _logger.debug(f"'created' signal emitted from MyEventHandler.on_moved. Image path = {image_path}")
             self.created_signal.emit(image_path)
 
     @log
@@ -143,7 +143,7 @@ class MyEventHandler(FileSystemEventHandler, QThread, ImageRefSave):
                 self.msleep(DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS)
 
             _logger.info(f"New image ready to be processed : {image_path}")
-            _logger.debug(f"created signal emitted from on_created : {image_path}")
+            _logger.debug(f"'created' signal emitted from MyEventHandler.on_created. Image path = {image_path}")
             self.created_signal.emit(image_path)
 
 
