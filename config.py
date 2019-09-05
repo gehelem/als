@@ -114,9 +114,9 @@ def save():
         with open(_CONFIG_FILE_PATH, "w") as config_file:
             _config_parser.write(config_file)
         _logger.info("User configuration saved")
-    except OSError as e:
-        _logger.error(f"Could not save settings. Error : {e}")
-        dialogs.error_box("Settings not saved", f"Your settings could not be saved\n\nDetails : {e}")
+    except OSError as os_error:
+        _logger.error("Could not save settings. Error : %s", os_error)
+        dialogs.error_box("Settings not saved", f"Your settings could not be saved\n\nDetails : {os_error}")
 
 
 def _get(key):
@@ -163,11 +163,11 @@ if not _config_parser.has_section(_MAIN_SECTION_NAME):
 # cleanup unused options
 for option in _config_parser.options(_MAIN_SECTION_NAME):
     if option not in _DEFAULTS.keys():
-        _logger.debug(f"Removed obsolete config option : '{option}'")
+        _logger.debug("Removed obsolete config option : '%s'", option)
         _config_parser.remove_option(_MAIN_SECTION_NAME, option)
 
 
 _logger.debug("User config file dump - START")
 for option in _config_parser.options(_MAIN_SECTION_NAME):
-    _logger.debug(f"{option} = {_get(option)}")
+    _logger.debug("%s = %s", option, _get(option))
 _logger.debug("User config file dump - END")

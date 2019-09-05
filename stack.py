@@ -245,7 +245,7 @@ def stack_live(work_path, im_path, counter, ref=[], first_ref=[], save_im=False,
                 stack = ((counter - 1) * np.float32(ref[j]) + np.float32(align_image)) / counter
             else:
                 raise ValueError("Stack method is not support")
-                
+
             # filter excess value > limit
             if im_type == 'uint8':
                 stack_image.append(np.uint8(np.where(stack < 2 ** 8 - 1, stack, 2 ** 8 - 1)))
@@ -280,7 +280,7 @@ def stack_live(work_path, im_path, counter, ref=[], first_ref=[], save_im=False,
         elif im_type == 'uint16':
             stack_image = np.uint16(np.where(stack < 2 ** 16 - 1, stack, 2 ** 16 - 1))
         del stack
-        
+
     else:
         raise ValueError("Mode not support")
 

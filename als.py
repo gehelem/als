@@ -768,7 +768,7 @@ class MainWindow(QMainWindow):
             # doesn't even have to be reachable
             s.connect(('10.255.255.255', 1))
             ip = s.getsockname()[0]
-        except:
+        except OSError:
             ip = '127.0.0.1'
         finally:
             s.close()
