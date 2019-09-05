@@ -31,7 +31,7 @@ limit-inference-results=100
 load-plugins=
 
 # Pickle collected data for later comparisons.
-persistent=yes
+persistent=no
 
 # Specify a configuration file.
 #rcfile=
@@ -139,9 +139,9 @@ disable=print-statement,
         deprecated-sys-function,
         exception-escape,
         comprehension-escape,
-	C,
-	R,
-	W1203
+
+        # custom disables
+        W1203
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
