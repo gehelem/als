@@ -169,7 +169,7 @@ evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / stateme
 output-format=text
 
 # Tells whether to display a full report or only the messages.
-reports=no
+reports=yes
 
 # Activate the evaluation score.
 score=yes
