@@ -12,7 +12,7 @@ do
     pyuic5 ${ui} -o ${py} --import-from=generated
 done
 
-for ui in src/als/resources/*.qrc
+for ui in src/resources/*.qrc
 do
     py=${GENERATED}/$(basename ${ui})
     py=${py/.qrc/_rc.py}

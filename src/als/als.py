@@ -639,7 +639,7 @@ class MainWindow(QMainWindow):
     @log
     def _setup_work_folder(self):
         work_dir_path = config.get_work_folder_path()
-        resources_dir_path = os.path.dirname(os.path.realpath(__file__)) + "/resources"
+        resources_dir_path = os.path.dirname(os.path.realpath(__file__)) + "/../resources"
         shutil.copy(resources_dir_path + "/index.html", work_dir_path)
         shutil.copy(resources_dir_path + "/waiting.jpg", work_dir_path + "/" + NAME_OF_JPEG_IMAGE)
 

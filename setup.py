@@ -32,7 +32,8 @@ class AlsInstall(install):
     @staticmethod
     def compile_qt_resources():
         """Executes Qt resources compilation script"""
-        os.system('utils/compile_ui_and_rc.sh')
+        if os.system('utils/compile_ui_and_rc.sh') != 0:
+            raise RuntimeError("Qt resource compilation failed")
 
 
 if __name__ == "__main__":
