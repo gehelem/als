@@ -1,4 +1,5 @@
 language: python
 python: "3.6"
 script:
+  - python setup.py install
   - ci/full_checks.sh
