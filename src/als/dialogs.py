@@ -7,9 +7,9 @@ from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox
 
 from als import config, datastore
-from als.generated.about_ui import Ui_AboutDialog
 from als.code_utilities import log
-from als.generated.prefs_ui import Ui_PrefsDialog
+from generated.about_ui import Ui_AboutDialog
+from generated.prefs_ui import Ui_PrefsDialog
 
 _logger = logging.getLogger(__name__)
 

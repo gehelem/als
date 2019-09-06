@@ -2,14 +2,14 @@
 set -e
 echo "******* compiling Qt resources : Start"
 
-GENERATED=src/als/generated
+GENERATED=src/generated
 
 for ui in src/als/*.ui
 do
     py=${GENERATED}/$(basename ${ui})
     py=${py/.ui/.py}
-    echo "Executing : pyuic5 ${ui} -o ${py} --import-from=als.generated"
-    pyuic5 ${ui} -o ${py} --import-from=als.generated
+    echo "Executing : pyuic5 ${ui} -o ${py} --import-from=generated"
+    pyuic5 ${ui} -o ${py} --import-from=generated
 done
 
 for ui in src/als/resources/*.qrc

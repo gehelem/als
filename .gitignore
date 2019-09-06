@@ -2,5 +2,5 @@
 /build
 /docs/api
 /dist
-/src/als/generated/*_ui.py
-/src/als/generated/*_rc.py
+/src/generated/*_ui.py
+/src/generated/*_rc.py
