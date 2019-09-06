@@ -35,7 +35,7 @@ from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 from als import preprocess as prepro, stack as stk, config
-from als.generated.alsui import Ui_stack_window
+from als.generated.als_ui import Ui_stack_window
 from als.code_utilities import log
 from als.datastore import VERSION
 from als.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
