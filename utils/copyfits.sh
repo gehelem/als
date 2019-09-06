@@ -1,12 +1,30 @@
-rm -rf ~/als/scan/*.fits
+#!/usr/bin/env bash
 
-#for i in `ls -d -1  /home/gilles/ekos/siril/m51/Light/lum/Light_*.fits`
-for i in `ls -d -1  /home/gilles/als/sample/Light_*.fits`
-  do
- 
-  echo "$i"
-  cp "$i" ~/als/scan
-  sleep 3
- 
+set -e
+
+if [[ -z $1 ]]
+then
+    echo "Missing argument : target scan folder"
+    echo "Aborting..."
+    exit 1
+else
+    SCAN=$1
+fi
+
+SAMPLES=image_samples
+
+if [[ ! -d ${SCAN} ]]
+then
+    echo "Scan folder \"${SCAN}\" does not exist"
+    echo "Aborting..."
+    exit 2
+fi
+
+rm -rf ${SCAN}/*
+
+for i in ${SAMPLES}/Light*
+do
+    cp -v ${i} ${SCAN}
+    sleep 5
 done
 
