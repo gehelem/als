@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-    Setup file for als.
-    Use setup.cfg to configure your project.
+Installs ALS.
 
-    This file was generated with PyScaffold 3.2.1.
-    PyScaffold helps you to put up the scaffold of your new Python project.
-    Learn more under: https://pyscaffold.org/
+We added a custom command to override develop and install
+in order to have Qt resources (UI and images) compiled and
+put in place
 """
+
 import os
 import sys
 
@@ -22,6 +22,7 @@ except VersionConflict:
 
 
 class AlsInstall(install):
+    """Custom install command that adds Qt resources compilation"""
     def run(self):
         print("************* ALS Pre-Build steps : START")
         AlsInstall.compile_qt_resources()
@@ -30,8 +31,12 @@ class AlsInstall(install):
 
     @staticmethod
     def compile_qt_resources():
+        """Executes Qt resources compilation script"""
         os.system('utils/compile_ui_and_rc.sh')
 
 
 if __name__ == "__main__":
-    setup(use_pyscaffold=True, cmdclass={'install': AlsInstall, 'develop': AlsInstall})
+    setup(use_pyscaffold=True,
+          cmdclass={
+              'install': AlsInstall,
+              'develop': AlsInstall})
