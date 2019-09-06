@@ -7,10 +7,12 @@
     PyScaffold helps you to put up the scaffold of your new Python project.
     Learn more under: https://pyscaffold.org/
 """
+import os
 import sys
 
 from pkg_resources import VersionConflict, require
 from setuptools import setup
+from setuptools.command.install import install
 
 try:
     require('setuptools>=38.3')
@@ -19,5 +21,17 @@ except VersionConflict:
     sys.exit(1)
 
 
+class AlsInstall(install):
+    def run(self):
+        print("************* ALS Pre-Build steps : START")
+        AlsInstall.compile_qt_resources()
+        print("************* ALS Pre-Build steps : END")
+        install.run(self)
+
+    @staticmethod
+    def compile_qt_resources():
+        os.system('utils/compile_ui_and_rc.sh')
+
+
 if __name__ == "__main__":
-    setup(use_pyscaffold=True)
+    setup(use_pyscaffold=True, cmdclass={'install': AlsInstall, 'develop': AlsInstall})
