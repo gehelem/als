@@ -22,7 +22,7 @@ import sys
 from configparser import ConfigParser, DuplicateOptionError, ParsingError
 
 # config file path. We use the pseudo-standard hidden file in user's home
-import dialogs
+from als import dialogs
 
 _CONFIG_FILE_PATH = os.path.expanduser("~/.als.cfg")
 

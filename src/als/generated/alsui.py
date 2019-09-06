@@ -636,4 +636,3 @@ class Ui_stack_window(object):
         self.action_show_session_log.setText(_translate("stack_window", "Show session &log"))
         self.action_show_session_log.setShortcut(_translate("stack_window", "Ctrl+L"))
         self.action_about_als.setText(_translate("stack_window", "&About ALS..."))
-import resource_rc

@@ -25,7 +25,7 @@ from tqdm import tqdm
 # classic order = 3xMxN
 # cv2 order = MxNx3
 # uint = unsignet int ( 0 to ...)
-from code_utilities import log
+from als.code_utilities import log
 
 _logger = logging.getLogger(__name__)
 

@@ -25,8 +25,8 @@ import numpy as np
 from pywi.processing.transform import starlet
 
 # Local stuff
-import stack as stk
-from code_utilities import log
+from als import stack as stk
+from als.code_utilities import log
 
 NAME_OF_TIFF_IMAGE = "stack_image.tiff"
 NAME_OF_JPEG_IMAGE = "stack_image.jpg"

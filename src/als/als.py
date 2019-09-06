@@ -34,12 +34,11 @@ from qimage2ndarray import array2qimage
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-import preprocess as prepro
-import stack as stk
-from alsui import Ui_stack_window  # import du fichier alsui.py généré par : pyuic5 alsui.ui -x -o alsui.py
-from code_utilities import log
-from datastore import VERSION
-from dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
+from als import preprocess as prepro, stack as stk, config
+from als.generated.alsui import Ui_stack_window
+from als.code_utilities import log
+from als.datastore import VERSION
+from als.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
 
 NAME_OF_TIFF_IMAGE = "stack_image.tiff"
 NAME_OF_JPEG_IMAGE = "stack_image.jpg"
@@ -369,7 +368,7 @@ class MainWindow(QMainWindow):
         _logger.debug(f"Window size : {self.size()}")
         _logger.debug(f"Window position : {self.pos()}")
 
-        window_rect = window.geometry()
+        window_rect = self.geometry()
         config.set_window_geometry((window_rect.x(), window_rect.y(), window_rect.width(), window_rect.height()))
         config.save()
 
@@ -640,7 +639,7 @@ class MainWindow(QMainWindow):
     @log
     def _setup_work_folder(self):
         work_dir_path = config.get_work_folder_path()
-        resources_dir_path = os.path.dirname(os.path.realpath(__file__)) + "/resources_dir"
+        resources_dir_path = os.path.dirname(os.path.realpath(__file__)) + "/resources"
         shutil.copy(resources_dir_path + "/index.html", work_dir_path)
         shutil.copy(resources_dir_path + "/waiting.jpg", work_dir_path + "/" + NAME_OF_JPEG_IMAGE)
 
@@ -789,13 +788,12 @@ class MainWindow(QMainWindow):
 
 # ------------------------------------------------------------------------------
 
-
-if __name__ == "__main__":
+def main():
     import sys
     app = QApplication(sys.argv)
 
     try:
-        import config
+        pass
     except ValueError as e:
         error_box("Config file is invalid", str(e))
         print(f"***** ERROR : user config file is invalid : {e}")
@@ -810,3 +808,7 @@ if __name__ == "__main__":
     app_return_code = app.exec()
     _logger.info(f"Astro Live Stacker terminated with return code = {app_return_code}")
     sys.exit(app_return_code)
+
+
+if __name__ == "__main__":
+    main()
