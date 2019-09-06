@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'alsui.ui'
+# Form implementation generated from reading ui file 'src/als/alsui.ui'
 #
 # Created by: PyQt5 UI code generator 5.13.0
 #
@@ -636,3 +636,4 @@ class Ui_stack_window(object):
         self.action_show_session_log.setText(_translate("stack_window", "Show session &log"))
         self.action_show_session_log.setShortcut(_translate("stack_window", "Ctrl+L"))
         self.action_about_als.setText(_translate("stack_window", "&About ALS..."))
+from als.generated import resource_rc
