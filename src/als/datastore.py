@@ -1,5 +1,6 @@
 """
 Stores all data needed and shared by app modules
 """
+import als
 
-VERSION = "0.4-maybe-dev"
+VERSION = als.__version__
