@@ -104,9 +104,9 @@ class StoppableServerThread(threading.Thread):
 class ImageRefSave:
     @log
     def __init__(self):
-        self.image = []
+        self.image = None
         self.status = "stop"
-        self.stack_image = []
+        self.stack_image = None
 
 
 class MyEventHandler(FileSystemEventHandler, QThread, ImageRefSave):
@@ -180,9 +180,9 @@ class WatchOutForFileCreations(QThread):
         self.work_folder = work_folder
         self.first = 0
         self.counter = 0
-        self.first_image = []
+        self.first_image = None
         self.image_ref_save = image_ref_save
-        self.ref_image = []
+        self.ref_image = None
         self.scnr_on = scnr_on
         self.scnr_mode = scnr_mode
         self.scnr_value = scnr_value
@@ -624,9 +624,9 @@ class MainWindow(QMainWindow):
             lambda: self.update_image(config.get_work_folder_path()))
 
         self.image_ref_save.status = "play"
-        self.image_ref_save.image = []
-        self.image_ref_save.stack_image = []
-        # desactivate play button
+        self.image_ref_save.image = None
+        self.image_ref_save.stack_image = None
+        # deactivate play button
         self.ui.pbPlay.setEnabled(False)
         self.ui.pbReset.setEnabled(False)
         # activate stop button
@@ -650,7 +650,7 @@ class MainWindow(QMainWindow):
         # FIXME : this bad but better than app crash
         self.file_watcher.terminate()
         self.image_ref_save.status = "stop"
-        self.image_ref_save.stack_image = []
+        self.image_ref_save.stack_image = None
         self.ui.cbAlign.setEnabled(True)
         self.ui.cmMode.setEnabled(True)
         self.ui.pbStop.setEnabled(False)
@@ -663,7 +663,6 @@ class MainWindow(QMainWindow):
     @pyqtSlot(name="on_pbPause_clicked")
     @log
     def cb_pause(self):
-        # self.fileWatcher.observer.stop()
         self.image_ref_save.status = "pause"
         self.ui.pbStop.setEnabled(False)
         self.ui.pbPlay.setEnabled(True)
@@ -685,8 +684,8 @@ class MainWindow(QMainWindow):
         self.ui.G_slider.setValue(100)
         self.ui.B_slider.setValue(100)
         self.ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
-        self.image_ref_save.image = []
-        self.image_ref_save.stack_image = []
+        self.image_ref_save.image = None
+        self.image_ref_save.stack_image = None
         self.ui.contrast.setText(str(1))
         self.ui.brightness.setText(str(0))
         self.ui.black.setText(str(0))

@@ -10,4 +10,4 @@ before_install:
   - pip install pylint
 
 script:
-  - pylint --exit-zero *.py
+  - ci/full_checks.sh

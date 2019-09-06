@@ -51,6 +51,7 @@ def wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
 
     @log
     def apply_dt_wavelets(img, param):
+        # pylint: disable=E1101
         # Compute 5 levels of dtcwt with the antonini/qshift settings
         input_shape = img.shape
         transform = dtcwt.Transform2d(biort='antonini', qshift='qshift_06')
