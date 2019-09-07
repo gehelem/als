@@ -21,23 +21,12 @@ except VersionConflict:
     sys.exit(1)
 
 
-class AlsInstall(install):
-    """Custom install command that adds Qt resources compilation"""
-    def run(self):
-        print("************* ALS Pre-Build steps : START")
-        AlsInstall.compile_qt_resources()
-        print("************* ALS Pre-Build steps : END")
-        install.run(self)
-
-    @staticmethod
-    def compile_qt_resources():
-        """Executes Qt resources compilation script"""
-        if os.system('utils/compile_ui_and_rc.sh') != 0:
-            raise RuntimeError("Qt resource compilation failed")
+def compile_qt_resources():
+    """Executes Qt resources compilation script"""
+    if os.system('utils/compile_ui_and_rc.sh') != 0:
+        raise RuntimeError("Qt resource compilation failed")
 
 
 if __name__ == "__main__":
-    setup(use_pyscaffold=True,
-          cmdclass={
-              'install': AlsInstall,
-              'develop': AlsInstall})
+    compile_qt_resources()
+    setup(use_pyscaffold=True)
