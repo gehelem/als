@@ -1,5 +1,5 @@
 """
-provides all dialogs used in ALS GUI
+Provides all dialogs used in ALS GUI
 """
 import logging
 
@@ -88,7 +88,8 @@ class AboutDialog(QDialog):
 
 def question(title, message):
     """
-    Ask a question to user in a Qt MessageBox and return True/False as Yes/No
+    Asks a question to user in a Qt MessageBox and return True/False as Yes/No
+
     :param title: Title of the box
     :param message: Message displayed in the box
     :return: True if user replies "Yes", False otherwise
@@ -98,7 +99,8 @@ def question(title, message):
 
 def warning_box(title, message):
     """
-    Display a waring Qt MessageBox
+    Displays a waring Qt MessageBox
+
     :param title: Title of the box
     :param message: Message displayed in the box
     :return: None
@@ -108,7 +110,8 @@ def warning_box(title, message):
 
 def error_box(title, message):
     """
-    Display an error Qt MessageBox
+    Displays an error Qt MessageBox
+
     :param title: Title of the box
     :param message: Message displayed in the box
     :return: None
@@ -118,10 +121,11 @@ def error_box(title, message):
 
 def message_box(title, message, icon=QMessageBox.Information):
     """
-    Display an Qt MessageBox with custom icon : Info by default
+    Displays a Qt MessageBox with custom icon : Info by default
+
     :param title: Title of the box
     :param message: Message displayed in the box
-    ;:param icon: The icon to show
+    :param icon: The icon to show
     :return: None
     """
     box = QMessageBox()
