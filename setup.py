@@ -12,7 +12,6 @@ import sys
 
 from pkg_resources import VersionConflict, require
 from setuptools import setup
-from setuptools.command.install import install
 
 try:
     require('setuptools>=38.3')
@@ -28,5 +27,7 @@ def compile_qt_resources():
 
 
 if __name__ == "__main__":
-    compile_qt_resources()
+    commands = sys.argv[1::]
+    if 'develop' in commands or 'install' in commands:
+        compile_qt_resources()
     setup(use_pyscaffold=True)
