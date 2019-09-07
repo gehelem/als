@@ -16,6 +16,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""The main module for ALS.
+
+Needs refactoring : too many unrelated classes"""
 import gettext
 import logging
 import os
@@ -49,7 +52,7 @@ LOG_DOCK_INITIAL_HEIGHT = 60
 
 gettext.install('als', 'locale')
 
-_logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class HTTPHandler(SimpleHTTPRequestHandler):
@@ -71,8 +74,11 @@ class HTTPServer(BaseHTTPServer):
 
 
 class StoppableServerThread(threading.Thread):
-    """Thread class with a stop() method. The thread itself has to check
-    regularly for the stopped() condition."""
+    """
+    Thread class with a stop() method.
+
+    The thread itself has to check regularly for the stopped() condition.
+    """
 
     # FIXME logging this init causes issue with server thread init. To be investigated
     #  @log
@@ -90,18 +96,32 @@ class StoppableServerThread(threading.Thread):
 
     @log
     def serve(self):
+        """
+        Continuously handles incomming HTTP requests.
+        """
         while not self.stopped():
             self.httpd.handle_request()
 
     @log
     def stop(self):
+        """
+        Stops the web server.
+        """
         self._stop_event.set()
 
     def stopped(self):
+        """
+        Checks if server is stopped.
+
+        :return: True if server is stopped, False otherwise
+        """
         return self._stop_event.is_set()
 
 
 class ImageRefSave:
+    """TODO"""
+
+    # pylint: disable=R0903
     @log
     def __init__(self):
         self.image = None
@@ -110,6 +130,7 @@ class ImageRefSave:
 
 
 class MyEventHandler(FileSystemEventHandler, QThread, ImageRefSave):
+    """Filesystem event handler used to detect new images in a folder."""
     created_signal = pyqtSignal(str)
 
     @log
@@ -120,8 +141,8 @@ class MyEventHandler(FileSystemEventHandler, QThread, ImageRefSave):
     def on_moved(self, event):
         if event.event_type == 'moved':
             image_path = event.dest_path
-            _logger.info(f"New image ready to be processed : {image_path}")
-            _logger.debug(f"'created' signal emitted from MyEventHandler.on_moved. Image path = {image_path}")
+            LOGGER.info(f"New image ready to be processed : {image_path}")
+            LOGGER.debug(f"'created' signal emitted from MyEventHandler.on_moved. Image path = {image_path}")
             self.created_signal.emit(image_path)
 
     @log
@@ -130,20 +151,20 @@ class MyEventHandler(FileSystemEventHandler, QThread, ImageRefSave):
             file_is_incomplete = True
             last_file_size = -1
             image_path = event.src_path
-            _logger.debug(f"New image file detected : {image_path}. Waiting untill file is fully written to disk...")
+            LOGGER.debug(f"New image file detected : {image_path}. Waiting untill file is fully written to disk...")
 
             while file_is_incomplete:
                 info = QFileInfo(image_path)
                 size = info.size()
-                _logger.debug(f"File {image_path}'s size = {size}")
+                LOGGER.debug(f"File {image_path}'s size = {size}")
                 if size == last_file_size:
                     file_is_incomplete = False
-                    _logger.debug(f"File {image_path} has been fully written to disk")
+                    LOGGER.debug(f"File {image_path} has been fully written to disk")
                 last_file_size = size
                 self.msleep(DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS)
 
-            _logger.info(f"New image ready to be processed : {image_path}")
-            _logger.debug(f"'created' signal emitted from MyEventHandler.on_created. Image path = {image_path}")
+            LOGGER.info(f"New image ready to be processed : {image_path}")
+            LOGGER.debug(f"'created' signal emitted from MyEventHandler.on_created. Image path = {image_path}")
             self.created_signal.emit(image_path)
 
 
@@ -151,6 +172,9 @@ class MyEventHandler(FileSystemEventHandler, QThread, ImageRefSave):
 
 
 class WatchOutForFileCreations(QThread):
+    """This object listens to filesystem events and triggers image read and processing.
+
+    Needs refactoring : It does too much things and should not be given GUI state"""
     print_image = pyqtSignal()
 
     @log
@@ -194,8 +218,8 @@ class WatchOutForFileCreations(QThread):
         self.wavelet_3_value = wavelet_3_value
         self.wavelet_4_value = wavelet_4_value
         self.wavelet_5_value = wavelet_5_value
-        _logger.info(f" Work folder = '{self.work_folder}'")
-        _logger.info(f" Scan folder = '{self.path}'")
+        LOGGER.info(f" Work folder = '{self.work_folder}'")
+        LOGGER.info(f" Scan folder = '{self.path}'")
 
         # __ call watchdog __
         # call observer :
@@ -209,6 +233,13 @@ class WatchOutForFileCreations(QThread):
 
     @log
     def created(self, new_image_path):
+        """
+        trigger image stacking.
+
+        :param new_image_path: path to image file to stack
+        :type new_image_path: str
+        :return: None
+        """
 
         new_image_file_name = new_image_path.split("/")[-1]
         ignored_start_patterns = ['.', '~', 'tmp']
@@ -297,7 +328,7 @@ class WatchOutForFileCreations(QThread):
                     message = _(f"WARNING : {new_image_path} could not be aligned : Max iteration reached. "
                                 f"Image is ignored")
                     self.log.append(message)
-                    _logger.warning(message)
+                    LOGGER.warning(message)
                     return
 
                 self.image_ref_save.stack_image = prepro.save_tiff(self.work_folder, self.image_ref_save.image,
@@ -327,19 +358,20 @@ class WatchOutForFileCreations(QThread):
         else:
             message = _("New image detected but not considered")
             self.log.append(message)
-            _logger.info(message)
+            LOGGER.info(message)
 
 
 # ------------------------------------------------------------------------------
 
 
 class MainWindow(QMainWindow):
+    """ALS main window."""
 
     @log
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.ui = Ui_stack_window()
-        self.ui.setupUi(self)
+        self._ui = Ui_stack_window()
+        self._ui.setupUi(self)
 
         # store if docks must be shown or not
         self.shown_log_dock = True
@@ -350,7 +382,7 @@ class MainWindow(QMainWindow):
         self.align = False
         self.pause = False
         self.image_ref_save = ImageRefSave()
-        self.ui.postprocess_widget.setCurrentIndex(0)
+        self._ui.postprocess_widget.setCurrentIndex(0)
 
         self.setWindowTitle(_("Astro Live Stacker") + f" - v{VERSION}")
 
@@ -359,14 +391,17 @@ class MainWindow(QMainWindow):
         self.web_dir = None
 
         # prevent log dock to be too tall
-        self.resizeDocks([self.ui.log_dock], [LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
+        self.resizeDocks([self._ui.log_dock], [LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
 
     @log
     def closeEvent(self, event):
+        """Handles window close events."""
+        # pylint: disable=C0103
+
         self._stop_www()
 
-        _logger.debug(f"Window size : {self.size()}")
-        _logger.debug(f"Window position : {self.pos()}")
+        LOGGER.debug(f"Window size : {self.size()}")
+        LOGGER.debug(f"Window position : {self.pos()}")
 
         window_rect = self.geometry()
         config.set_window_geometry((window_rect.x(), window_rect.y(), window_rect.width(), window_rect.height()))
@@ -376,20 +411,25 @@ class MainWindow(QMainWindow):
 
     @log
     def changeEvent(self, event):
+        """Handles window change events."""
+        # pylint: disable=C0103
 
         event.accept()
 
         # if window is going out of minimized state, we restore docks if needed
         if event.type() == QEvent.WindowStateChange:
             if not self.windowState() & Qt.WindowMinimized:
-                _logger.debug("Restoring docks visibility")
+                LOGGER.debug("Restoring docks visibility")
                 if self.shown_log_dock:
-                    self.ui.log_dock.show()
+                    self._ui.log_dock.show()
                 if self.show_session_dock:
-                    self.ui.session_dock.show()
+                    self._ui.session_dock.show()
 
     @log
     def resizeEvent(self, event):
+        """Handles window resize events."""
+        # pylint: disable=C0103
+
         super().resizeEvent(event)
         self.update_image(False)
 
@@ -399,31 +439,67 @@ class MainWindow(QMainWindow):
     @pyqtSlot(int, name="on_SCNR_Slider_valueChanged")
     @log
     def cb_scnr_slider_changed(self, value):
-        self.ui.SCNR_value.setNum(value / 100.)
+        """
+        Qt slot for SCNR slider changes.
+
+        :param value: SCNR slider new value
+        :type value: int
+        """
+        self._ui.SCNR_value.setNum(value / 100.)
 
     @pyqtSlot(int, name="on_R_slider_valueChanged")
     @log
     def cb_r_slider_changed(self, value):
-        self.ui.R_value.setNum(value / 100.)
+        """
+        Qt slot for R slider changes.
+
+        :param value: R slider new value
+        :type value: int
+        """
+        self._ui.R_value.setNum(value / 100.)
 
     @pyqtSlot(int, name="on_G_slider_valueChanged")
     @log
     def cb_g_slider_changed(self, value):
-        self.ui.G_value.setNum(value / 100.)
+        """
+        Qt slot for G slider changes.
+
+        :param value: G slider new value
+        :type value: int
+        """
+        self._ui.G_value.setNum(value / 100.)
 
     @pyqtSlot(int, name="on_B_slider_valueChanged")
     @log
     def cb_b_slider_changed(self, value):
-        self.ui.B_value.setNum(value / 100.)
+        """
+        Qt slot for B slider changes.
+
+        :param value: B slider new value
+        :type value: int
+        """
+        self._ui.B_value.setNum(value / 100.)
 
     @pyqtSlot(int, name="on_contrast_slider_valueChanged")
     @log
     def cb_contrast_changed(self, value):
-        self.ui.contrast.setNum(value / 10)
+        """
+        Qt slot for contrast slider changes.
+
+        :param value: contrast slider new value
+        :type value: int
+        """
+        self._ui.contrast.setNum(value / 10)
 
     @pyqtSlot(bool, name="on_cbWww_clicked")
     @log
     def cb_www_check(self, checked):
+        """
+        Qt slot for mouse clicks on 'www' checkbox.
+
+        :param checked: True if the checkbox is checked, False otherwise
+        :type checked: bool
+        """
         if checked:
             self._start_www()
         else:
@@ -432,8 +508,9 @@ class MainWindow(QMainWindow):
     @pyqtSlot(name="on_pbSave_clicked")
     @log
     def cb_save(self):
+        """Qt slot for louse clicks on the 'save' button."""
         timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now())))
-        self.ui.log.append(_("Saving : ") + "stack_image_" + timestamp + ".fit")
+        self._ui.log.append(_("Saving : ") + "stack_image_" + timestamp + ".fit")
         # save stack image in fit
         red = fits.PrimaryHDU(data=self.image_ref_save.image)
         red.writeto(config.get_work_folder_path() + "/" + "stack_image_" + timestamp + ".fit")
@@ -443,31 +520,41 @@ class MainWindow(QMainWindow):
     @pyqtSlot(name="on_pb_apply_value_clicked")
     @log
     def cb_apply_value(self):
+        """Qt slot for clicks on the 'apply' button"""
         work_folder = config.get_work_folder_path()
         if self.counter > 0:
             self.adjust_value(work_folder)
             self.update_image(False)
-        self.ui.log.append(_("Define new display value"))
+        self._ui.log.append(_("Define new display value"))
 
     @pyqtSlot(name="on_action_quit_triggered")
     @log
     def cb_quit(self):
+        """ Qt slot for activation of the 'quit' action"""
         super().close()
 
     @pyqtSlot(name="on_action_prefs_triggered")
     @log
     def cb_prefs(self):
+        """ Qt slot for activation of the 'preferences' action"""
         dialog = PreferencesDialog(self)
         dialog.exec()
 
     @pyqtSlot(name="on_action_about_als_triggered")
     @log
     def cb_about(self):
+        """ Qt slot for activation of the 'about' action"""
         dialog = AboutDialog(self)
         dialog.exec()
 
     @log
     def adjust_value(self, work_folder):
+        """
+        Adjusts stacked image according to GUU controls
+
+        :param work_folder: Path of the work folder
+        :type work_folder: str
+        """
 
         # test rgb or gray
         if len(self.image_ref_save.image.shape) == 2:
@@ -477,62 +564,68 @@ class MainWindow(QMainWindow):
         else:
             raise ValueError(_("fit format not supported"))
 
-        self.image_ref_save.stack_image = prepro.save_tiff(work_folder, self.image_ref_save.image, self.ui.log,
+        self.image_ref_save.stack_image = prepro.save_tiff(work_folder, self.image_ref_save.image, self._ui.log,
                                                            mode=mode,
-                                                           scnr_on=self.ui.cbSCNR.isChecked(),
-                                                           wavelets_on=self.ui.cbWavelets.isChecked(),
-                                                           wavelets_type=str(self.ui.cBoxWaveType.currentText()),
-                                                           wavelets_use_luminance=self.ui.cbLuminanceWavelet.isChecked(),
-                                                           param=[self.ui.contrast_slider.value() / 10.,
-                                                                  self.ui.brightness_slider.value(),
-                                                                  self.ui.black_slider.value(),
-                                                                  self.ui.white_slider.value(),
-                                                                  self.ui.R_slider.value() / 100.,
-                                                                  self.ui.G_slider.value() / 100.,
-                                                                  self.ui.B_slider.value() / 100.,
-                                                                  self.ui.cmSCNR.currentText(),
-                                                                  self.ui.SCNR_Slider.value() / 100.,
-                                                                  {1: int(self.ui.wavelet_1_label.text()) / 100.,
-                                                                   2: int(self.ui.wavelet_2_label.text()) / 100.,
-                                                                   3: int(self.ui.wavelet_3_label.text()) / 100.,
-                                                                   4: int(self.ui.wavelet_4_label.text()) / 100.,
-                                                                   5: int(self.ui.wavelet_5_label.text()) / 100.}],
+                                                           scnr_on=self._ui.cbSCNR.isChecked(),
+                                                           wavelets_on=self._ui.cbWavelets.isChecked(),
+                                                           wavelets_type=str(self._ui.cBoxWaveType.currentText()),
+                                                           wavelets_use_luminance=self._ui.cbLuminanceWavelet.isChecked(),
+                                                           param=[self._ui.contrast_slider.value() / 10.,
+                                                                  self._ui.brightness_slider.value(),
+                                                                  self._ui.black_slider.value(),
+                                                                  self._ui.white_slider.value(),
+                                                                  self._ui.R_slider.value() / 100.,
+                                                                  self._ui.G_slider.value() / 100.,
+                                                                  self._ui.B_slider.value() / 100.,
+                                                                  self._ui.cmSCNR.currentText(),
+                                                                  self._ui.SCNR_Slider.value() / 100.,
+                                                                  {1: int(self._ui.wavelet_1_label.text()) / 100.,
+                                                                   2: int(self._ui.wavelet_2_label.text()) / 100.,
+                                                                   3: int(self._ui.wavelet_3_label.text()) / 100.,
+                                                                   4: int(self._ui.wavelet_4_label.text()) / 100.,
+                                                                   5: int(self._ui.wavelet_5_label.text()) / 100.}],
                                                            image_type=SAVE_TYPE)
 
-        self.ui.log.append(_("Adjust GUI image"))
+        self._ui.log.append(_("Adjust GUI image"))
 
     @log
     def update_image(self, add=True):
+        """
+        Update central image display.
+
+        :param add: True if a new image has been added to the stack, False otherwise
+        """
         if add:
             self.counter += 1
-            self.ui.cnt.setText(str(self.counter))
+            self._ui.cnt.setText(str(self.counter))
             message = _("update GUI image")
-            self.ui.log.append(_(message))
-            _logger.info(message)
+            self._ui.log.append(_(message))
+            LOGGER.info(message)
 
-        if 0 < self.counter:
+        if self.counter > 0:
 
             # read image in RAM ( need save_type = "no"):
             qimage = array2qimage(self.image_ref_save.stack_image, normalize=(2 ** 16 - 1))
             pixmap = QPixmap.fromImage(qimage)
 
             if pixmap.isNull():
-                self.ui.log.append(_("invalid frame"))
-                _logger.error("Got a null pixmap from stack")
+                self._ui.log.append(_("invalid frame"))
+                LOGGER.error("Got a null pixmap from stack")
                 return
 
-            pixmap_resize = pixmap.scaled(self.ui.image_stack.frameGeometry().width(),
-                                          self.ui.image_stack.frameGeometry().height(),
+            pixmap_resize = pixmap.scaled(self._ui.image_stack.frameGeometry().width(),
+                                          self._ui.image_stack.frameGeometry().height(),
                                           Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
-            self.ui.image_stack.setPixmap(pixmap_resize)
+            self._ui.image_stack.setPixmap(pixmap_resize)
 
         else:
-            self.ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
+            self._ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
 
     @pyqtSlot(name="on_pbPlay_clicked")
     @log
     def cb_play(self):
+        """Qt slot for mouse clicks on the 'play' button"""
 
         # check existence of work and scan folders
         scan_folder_path = config.get_scan_folder_path()
@@ -554,68 +647,68 @@ class MainWindow(QMainWindow):
                 return
 
         if self.image_ref_save.status == "stop":
-            self.ui.white_slider.setEnabled(False)
-            self.ui.black_slider.setEnabled(False)
-            self.ui.contrast_slider.setEnabled(False)
-            self.ui.brightness_slider.setEnabled(False)
-            self.ui.R_slider.setEnabled(False)
-            self.ui.G_slider.setEnabled(False)
-            self.ui.B_slider.setEnabled(False)
-            self.ui.pb_apply_value.setEnabled(False)
-            self.ui.cbAlign.setEnabled(False)
-            self.ui.cmMode.setEnabled(False)
-            self.ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
+            self._ui.white_slider.setEnabled(False)
+            self._ui.black_slider.setEnabled(False)
+            self._ui.contrast_slider.setEnabled(False)
+            self._ui.brightness_slider.setEnabled(False)
+            self._ui.R_slider.setEnabled(False)
+            self._ui.G_slider.setEnabled(False)
+            self._ui.B_slider.setEnabled(False)
+            self._ui.pb_apply_value.setEnabled(False)
+            self._ui.cbAlign.setEnabled(False)
+            self._ui.cmMode.setEnabled(False)
+            self._ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
             self.counter = 0
-            self.ui.cnt.setText(str(self.counter))
+            self._ui.cnt.setText(str(self.counter))
             # Print scan folder
-            self.ui.log.append(_("Scan folder : ") + config.get_scan_folder_path())
+            self._ui.log.append(_("Scan folder : ") + config.get_scan_folder_path())
             # Print work folder
-            self.ui.log.append(_("Work folder : ") + config.get_work_folder_path())
+            self._ui.log.append(_("Work folder : ") + config.get_work_folder_path())
 
         # check align
-        if self.ui.cbAlign.isChecked():
+        if self._ui.cbAlign.isChecked():
             self.align = True
 
         # Print live method
         if self.align:
-            self.ui.log.append(_("Play with alignement type: ") + self.ui.cmMode.currentText())
+            self._ui.log.append(_("Play with alignement type: ") + self._ui.cmMode.currentText())
         else:
-            self.ui.log.append(_("Play with NO alignement"))
+            self._ui.log.append(_("Play with NO alignement"))
 
         self.file_watcher = WatchOutForFileCreations(config.get_scan_folder_path(),
                                                      config.get_work_folder_path(),
                                                      self.align,
-                                                     self.ui.cbKeep.isChecked(),
-                                                     self.ui.cmMode.currentText(),
-                                                     self.ui.log,
-                                                     self.ui.white_slider,
-                                                     self.ui.black_slider,
-                                                     self.ui.contrast_slider,
-                                                     self.ui.brightness_slider,
-                                                     self.ui.R_slider,
-                                                     self.ui.G_slider,
-                                                     self.ui.B_slider,
-                                                     self.ui.pb_apply_value,
+                                                     self._ui.cbKeep.isChecked(),
+                                                     self._ui.cmMode.currentText(),
+                                                     self._ui.log,
+                                                     self._ui.white_slider,
+                                                     self._ui.black_slider,
+                                                     self._ui.contrast_slider,
+                                                     self._ui.brightness_slider,
+                                                     self._ui.R_slider,
+                                                     self._ui.G_slider,
+                                                     self._ui.B_slider,
+                                                     self._ui.pb_apply_value,
                                                      self.image_ref_save,
-                                                     self.ui.cbSCNR,
-                                                     self.ui.cmSCNR,
-                                                     self.ui.SCNR_Slider,
-                                                     self.ui.cbWavelets,
-                                                     self.ui.cBoxWaveType,
-                                                     self.ui.cbLuminanceWavelet,
-                                                     self.ui.wavelet_1_label,
-                                                     self.ui.wavelet_2_label,
-                                                     self.ui.wavelet_3_label,
-                                                     self.ui.wavelet_4_label,
-                                                     self.ui.wavelet_5_label)
+                                                     self._ui.cbSCNR,
+                                                     self._ui.cmSCNR,
+                                                     self._ui.SCNR_Slider,
+                                                     self._ui.cbWavelets,
+                                                     self._ui.cBoxWaveType,
+                                                     self._ui.cbLuminanceWavelet,
+                                                     self._ui.wavelet_1_label,
+                                                     self._ui.wavelet_2_label,
+                                                     self._ui.wavelet_3_label,
+                                                     self._ui.wavelet_4_label,
+                                                     self._ui.wavelet_5_label)
 
         try:
             self._setup_work_folder()
-        except OSError as e:
+        except OSError as os_error:
             title = "Work folder could not be prepared"
-            message = f"Details : {e}"
+            message = f"Details : {os_error}"
             error_box(title, message)
-            _logger.error(f"{title} : {e}")
+            LOGGER.error(f"{title} : {os_error}")
             self.cb_stop()
             return
 
@@ -627,17 +720,18 @@ class MainWindow(QMainWindow):
         self.image_ref_save.image = None
         self.image_ref_save.stack_image = None
         # deactivate play button
-        self.ui.pbPlay.setEnabled(False)
-        self.ui.pbReset.setEnabled(False)
+        self._ui.pbPlay.setEnabled(False)
+        self._ui.pbReset.setEnabled(False)
         # activate stop button
-        self.ui.pbStop.setEnabled(True)
+        self._ui.pbStop.setEnabled(True)
         # activate pause button
-        self.ui.pbPause.setEnabled(True)
+        self._ui.pbPause.setEnabled(True)
 
-        self.ui.action_prefs.setEnabled(False)
+        self._ui.action_prefs.setEnabled(False)
 
     @log
     def _setup_work_folder(self):
+        """Prepares the work folder."""
         work_dir_path = config.get_work_folder_path()
         resources_dir_path = os.path.dirname(os.path.realpath(__file__)) + "/../resources"
         shutil.copy(resources_dir_path + "/index.html", work_dir_path)
@@ -646,67 +740,75 @@ class MainWindow(QMainWindow):
     @pyqtSlot(name="on_pbStop_clicked")
     @log
     def cb_stop(self):
+        """Qt slot for mouse clicks on the 'Stop' button"""
         self.file_watcher.observer.stop()
-        # FIXME : this bad but better than app crash
         self.file_watcher.terminate()
         self.image_ref_save.status = "stop"
         self.image_ref_save.stack_image = None
-        self.ui.cbAlign.setEnabled(True)
-        self.ui.cmMode.setEnabled(True)
-        self.ui.pbStop.setEnabled(False)
-        self.ui.pbPlay.setEnabled(True)
-        self.ui.pbReset.setEnabled(True)
-        self.ui.pbPause.setEnabled(False)
-        self.ui.action_prefs.setEnabled(not self.ui.cbWww.isChecked())
-        self.ui.log.append("Stop")
+        self._ui.cbAlign.setEnabled(True)
+        self._ui.cmMode.setEnabled(True)
+        self._ui.pbStop.setEnabled(False)
+        self._ui.pbPlay.setEnabled(True)
+        self._ui.pbReset.setEnabled(True)
+        self._ui.pbPause.setEnabled(False)
+        self._ui.action_prefs.setEnabled(not self._ui.cbWww.isChecked())
+        self._ui.log.append("Stop")
 
     @pyqtSlot(name="on_pbPause_clicked")
     @log
     def cb_pause(self):
+        """Qt slot for mouse clicks on the 'Pause' button"""
         self.image_ref_save.status = "pause"
-        self.ui.pbStop.setEnabled(False)
-        self.ui.pbPlay.setEnabled(True)
-        self.ui.pbReset.setEnabled(False)
-        self.ui.pbPause.setEnabled(False)
-        self.ui.log.append("Pause")
+        self._ui.pbStop.setEnabled(False)
+        self._ui.pbPlay.setEnabled(True)
+        self._ui.pbReset.setEnabled(False)
+        self._ui.pbPause.setEnabled(False)
+        self._ui.log.append("Pause")
 
     @pyqtSlot(name="on_pbReset_clicked")
     @log
     def cb_reset(self):
-        self.ui.log.append("Reset")
+        """Qt slot for mouse clicks on the 'Reset' button"""
+        self._ui.log.append("Reset")
         # reset slider, label, image, global value
 
-        self.ui.contrast_slider.setValue(10)
-        self.ui.brightness_slider.setValue(0)
-        self.ui.black_slider.setValue(0)
-        self.ui.white_slider.setValue(65535)
-        self.ui.R_slider.setValue(100)
-        self.ui.G_slider.setValue(100)
-        self.ui.B_slider.setValue(100)
-        self.ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
+        self._ui.contrast_slider.setValue(10)
+        self._ui.brightness_slider.setValue(0)
+        self._ui.black_slider.setValue(0)
+        self._ui.white_slider.setValue(65535)
+        self._ui.R_slider.setValue(100)
+        self._ui.G_slider.setValue(100)
+        self._ui.B_slider.setValue(100)
+        self._ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
         self.image_ref_save.image = None
         self.image_ref_save.stack_image = None
-        self.ui.contrast.setText(str(1))
-        self.ui.brightness.setText(str(0))
-        self.ui.black.setText(str(0))
-        self.ui.white.setText(str(65535))
+        self._ui.contrast.setText(str(1))
+        self._ui.brightness.setText(str(0))
+        self._ui.black.setText(str(0))
+        self._ui.white.setText(str(65535))
         self.counter = 0
-        self.ui.cnt.setText(str(self.counter))
-        self.ui.white_slider.setEnabled(False)
-        self.ui.black_slider.setEnabled(False)
-        self.ui.contrast_slider.setEnabled(False)
-        self.ui.brightness_slider.setEnabled(False)
-        self.ui.R_slider.setEnabled(False)
-        self.ui.G_slider.setEnabled(False)
-        self.ui.B_slider.setEnabled(False)
-        self.ui.pb_apply_value.setEnabled(False)
-        self.ui.cbSCNR.setChecked(False)
-        self.ui.cbWavelets.setChecked(False)
-        self.ui.cbLuminanceWavelet.setChecked(False)
+        self._ui.cnt.setText(str(self.counter))
+        self._ui.white_slider.setEnabled(False)
+        self._ui.black_slider.setEnabled(False)
+        self._ui.contrast_slider.setEnabled(False)
+        self._ui.brightness_slider.setEnabled(False)
+        self._ui.R_slider.setEnabled(False)
+        self._ui.G_slider.setEnabled(False)
+        self._ui.B_slider.setEnabled(False)
+        self._ui.pb_apply_value.setEnabled(False)
+        self._ui.cbSCNR.setChecked(False)
+        self._ui.cbWavelets.setChecked(False)
+        self._ui.cbLuminanceWavelet.setChecked(False)
 
     @pyqtSlot(bool, name="on_log_dock_visibilityChanged")
     @log
     def cb_log_dock_changed_visibility(self, visible):
+        """
+        Qt slot for changes of log dock visibility.
+
+        :param visible: True if log dock is visible
+        :type visible: bool
+        """
 
         if not self.windowState() & Qt.WindowMinimized:
             self.shown_log_dock = visible
@@ -715,6 +817,12 @@ class MainWindow(QMainWindow):
     @pyqtSlot(bool, name="on_session_dock_visibilityChanged")
     @log
     def cb_session_dock_changed_visibility(self, visible):
+        """
+        Qt slot for changes of session dock visibility.
+
+        :param visible: True if session dock is visible
+        :type visible: bool
+        """
 
         if not self.windowState() & Qt.WindowMinimized:
             self.show_session_dock = visible
@@ -722,10 +830,14 @@ class MainWindow(QMainWindow):
 
     @log
     def update_image_after_dock_change(self):
+        """
+        Updates central image display
+        """
         self.update_image(False)
 
     @log
     def _start_www(self):
+        """Starts web server"""
         self.web_dir = config.get_work_folder_path()
         ip_address = MainWindow.get_ip()
         port_number = config.get_www_server_port_number()
@@ -736,76 +848,79 @@ class MainWindow(QMainWindow):
             # Server is now started and listens on specified port on *all* available interfaces.
             # We get the machine ip address and warn user if detected ip is loopback (127.0.0.1)
             # since in this case, the web server won't be reachable by any other machine
-            if "127.0.0.1" == ip_address:
-                log_function = _logger.warning
+            if ip_address == "127.0.0.1":
+                log_function = LOGGER.warning
                 title = "Web server access is limited"
                 message = "Web server IP address is 127.0.0.1.\n\nServer won't be reachable by other " \
                           "machines. Please check your network connection"
                 warning_box(title, message)
             else:
-                log_function = _logger.info
+                log_function = LOGGER.info
 
             log_function(f"Web server started. http://{ip_address}:{port_number}")
-            self.ui.action_prefs.setEnabled(False)
+            self._ui.action_prefs.setEnabled(False)
         except OSError:
             title = "Could not start web server"
             message = f"The web server needs to listen on port n°{port_number} but this port is already in use.\n\n"
             message += "Please change web server port number in your preferences "
-            _logger.error(title)
+            LOGGER.error(title)
             error_box(title, message)
             self._stop_www()
-            self.ui.cbWww.setChecked(False)
+            self._ui.cbWww.setChecked(False)
 
     @log
     def _stop_www(self):
+        """Stops web server"""
         if self.thread:
             self.thread.stop()
             self.thread.join()
             self.thread = None
-            _logger.info("Web server stopped")
-            self.ui.action_prefs.setEnabled(self.ui.pbPlay.isEnabled())
+            LOGGER.info("Web server stopped")
+            self._ui.action_prefs.setEnabled(self._ui.pbPlay.isEnabled())
 
     @staticmethod
     @log
     def get_ip():
-        import socket
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        try:
-            # doesn't even have to be reachable
-            s.connect(('10.255.255.255', 1))
-            ip = s.getsockname()[0]
-        except OSError:
-            ip = '127.0.0.1'
-        finally:
-            s.close()
-        return ip
+        """
+        Retrieves machine's IP address.
 
-    @log
-    def main(self):
-        self.show()
+        :return: IP address
+        :rtype: str
+        """
+        import socket
+        test_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            test_socket.connect(('10.255.255.255', 1))
+            ip_address = test_socket.getsockname()[0]
+        except OSError:
+            ip_address = '127.0.0.1'
+        finally:
+            test_socket.close()
+        return ip_address
 
 
 # ------------------------------------------------------------------------------
 
 def main():
+    """app launcher"""
     import sys
     app = QApplication(sys.argv)
 
     try:
         pass
-    except ValueError as e:
-        error_box("Config file is invalid", str(e))
-        print(f"***** ERROR : user config file is invalid : {e}")
+    except ValueError as value_error:
+        error_box("Config file is invalid", str(value_error))
+        print(f"***** ERROR : user config file is invalid : {value_error}")
         sys.exit(1)
 
-    _logger.info(f"Starting Astro Live Stacker v{VERSION} in {os.path.dirname(os.path.realpath(__file__))}")
-    _logger.debug("Building and showing main window")
+    LOGGER.info(f"Starting Astro Live Stacker v{VERSION} in {os.path.dirname(os.path.realpath(__file__))}")
+    LOGGER.debug("Building and showing main window")
     window = MainWindow()
     (x, y, width, height) = config.get_window_geometry()
     window.setGeometry(x, y, width, height)
     window.show()
     app_return_code = app.exec()
-    _logger.info(f"Astro Live Stacker terminated with return code = {app_return_code}")
+    LOGGER.info(f"Astro Live Stacker terminated with return code = {app_return_code}")
     sys.exit(app_return_code)
 
 

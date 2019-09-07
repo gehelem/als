@@ -2,6 +2,7 @@
 Provides a set of utilities aimed at app developpers
 """
 import logging
+from functools import wraps
 from time import time
 
 
@@ -18,6 +19,8 @@ def log(func):
     :param func: The function to decorate
     :return: The decorated function
     """
+
+    @wraps(func)
     def wrapped(*args, **kwargs):
         function_name = func.__qualname__
         logger = logging.getLogger(func.__module__)
