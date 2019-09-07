@@ -10,3 +10,4 @@ rawpy==0.13.1
 tqdm==4.32.2
 watchdog==0.9.0
 pylint==2.3.1
+Sphinx==2.2.0
