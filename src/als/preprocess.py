@@ -41,12 +41,10 @@ def wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
     Module allowing to play with coefficients of a redudant frame from the
     wavelet family.
     A ratio is applied to each level
-    :param image:      input image
-    :param wavelets_type: either 'deep sky' or 'planetary' gives the family
-                            of wavelets to be used for processing
-    :param parameters: ratio to be applied for each level of the wavelet
-                        decomposition
-    :return:           denoised/enhanced image
+    :param image:         input image
+    :param wavelets_type: either 'deep sky' or 'planetary' gives the family of wavelets to be used for processing
+    :param parameters:    ratio to be applied for each level of the wavelet decomposition
+    :return:              denoised/enhanced image
     """
 
     @log
