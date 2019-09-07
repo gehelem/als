@@ -11,7 +11,7 @@ from als.code_utilities import log
 from generated.about_ui import Ui_AboutDialog
 from generated.prefs_ui import Ui_PrefsDialog
 
-_logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class PreferencesDialog(QDialog):
@@ -22,34 +22,34 @@ class PreferencesDialog(QDialog):
     @log
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.ui = Ui_PrefsDialog()
-        self.ui.setupUi(self)
+        self._ui = Ui_PrefsDialog()
+        self._ui.setupUi(self)
 
-        self.ui.ln_scan_folder_path.setText(config.get_scan_folder_path())
-        self.ui.ln_work_folder_path.setText(config.get_work_folder_path())
-        self.ui.ln_web_server_port.setText(str(config.get_www_server_port_number()))
-        self.ui.chk_debug_logs.setChecked(config.is_debug_log_on())
+        self._ui.ln_scan_folder_path.setText(config.get_scan_folder_path())
+        self._ui.ln_work_folder_path.setText(config.get_work_folder_path())
+        self._ui.ln_web_server_port.setText(str(config.get_www_server_port_number()))
+        self._ui.chk_debug_logs.setChecked(config.is_debug_log_on())
 
     # FIXME : using @log on this causes
     # TypeError: accept() takes 1 positional argument but 2 were given
     def accept(self):
+        """checks and stores user settings"""
+        config.set_scan_folder_path(self._ui.ln_scan_folder_path.text())
+        config.set_work_folder_path(self._ui.ln_work_folder_path.text())
 
-        config.set_scan_folder_path(self.ui.ln_scan_folder_path.text())
-        config.set_work_folder_path(self.ui.ln_work_folder_path.text())
-
-        web_server_port_number_str = self.ui.ln_web_server_port.text()
+        web_server_port_number_str = self._ui.ln_web_server_port.text()
 
         if web_server_port_number_str.isdigit() and 1024 <= int(web_server_port_number_str) <= 65535:
             config.set_www_server_port_number(web_server_port_number_str)
         else:
             message = "Web server port number must be a number between 1024 and 65535"
             error_box("Wrong value", message)
-            _logger.error(f"Port number validation failed : {message}")
-            self.ui.ln_web_server_port.setFocus()
-            self.ui.ln_web_server_port.selectAll()
+            LOGGER.error(f"Port number validation failed : {message}")
+            self._ui.ln_web_server_port.setFocus()
+            self._ui.ln_web_server_port.selectAll()
             return
 
-        config.set_debug_log(self.ui.chk_debug_logs.isChecked())
+        config.set_debug_log(self._ui.chk_debug_logs.isChecked())
         config.save()
 
         super().accept()
@@ -57,20 +57,22 @@ class PreferencesDialog(QDialog):
     @pyqtSlot(name="on_btn_browse_scan_clicked")
     @log
     def browse_scan(self):
+        """Opens a folder dialog to choose scan folder"""
         scan_folder_path = QFileDialog.getExistingDirectory(self,
                                                             _("Select scan folder"),
-                                                            self.ui.ln_scan_folder_path.text())
+                                                            self._ui.ln_scan_folder_path.text())
         if scan_folder_path:
-            self.ui.ln_scan_folder_path.setText(scan_folder_path)
+            self._ui.ln_scan_folder_path.setText(scan_folder_path)
 
     @pyqtSlot(name="on_btn_browse_work_clicked")
     @log
     def browse_work(self):
+        """Opens a folder dialog to choose work folder"""
         work_folder_path = QFileDialog.getExistingDirectory(self,
                                                             _("Select work folder"),
-                                                            self.ui.ln_work_folder_path.text())
+                                                            self._ui.ln_work_folder_path.text())
         if work_folder_path:
-            self.ui.ln_work_folder_path.setText(work_folder_path)
+            self._ui.ln_work_folder_path.setText(work_folder_path)
 
 
 class AboutDialog(QDialog):
@@ -81,9 +83,9 @@ class AboutDialog(QDialog):
     @log
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.ui = Ui_AboutDialog()
-        self.ui.setupUi(self)
-        self.ui.lblVersionValue.setText(datastore.VERSION)
+        self._ui = Ui_AboutDialog()
+        self._ui.setupUi(self)
+        self._ui.lblVersionValue.setText(datastore.VERSION)
 
 
 def question(title, message):
