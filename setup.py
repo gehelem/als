@@ -27,7 +27,7 @@ def compile_qt_resources():
 
 
 if __name__ == "__main__":
-    commands = sys.argv[1::]
-    if 'develop' in commands or 'install' in commands:
+    COMMANDS = sys.argv[1::]
+    if 'develop' in COMMANDS or 'install' in COMMANDS:
         compile_qt_resources()
     setup(use_pyscaffold=True)
