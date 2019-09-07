@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# launch all needed checks agains whole ALS codebase
+# launch all needed checks against whole ALS codebase
 #
 ###########################################################################
 
@@ -26,7 +26,7 @@ if [[ $((${rc} & ${FATAL_ERROR})) -ne 0 || $((${rc} & ${ERRORS_FOUND}))  -ne 0 |
 then
     echo "******** Failing the build because of pylint errors"
     exit 1
-else
-    echo "******** Build passes : no errors found by pylint"
-    exit 0
 fi
+
+# build docs
+python setup.py docs
