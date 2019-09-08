@@ -295,9 +295,10 @@ class WatchOutForFileCreations(QThread):
                                                                             align=self.align_on,
                                                                             stack_methode=self.stack_method)
                 except MaxIterError:
-                    message = _(f"{new_image_path} could not be aligned : Max iteration reached. Image is ignored")
+                    message = _(f"WARNING : {new_image_path} could not be aligned : Max iteration reached. "
+                                f"Image is ignored")
                     self.log.append(message)
-                    _logger.info(message)
+                    _logger.warning(message)
                     return
 
                 self.image_ref_save.stack_image = prepro.save_tiff(self.work_folder, self.image_ref_save.image,
