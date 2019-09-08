@@ -1,3 +1,6 @@
+"""
+Provides image stacking features
+"""
 # ALS - Astro Live Stacker
 # Copyright (C) 2019  Sébastien Durand (Dragonlost) - Gilles Le Maréchal (Gehelem)
 #
@@ -27,7 +30,7 @@ from tqdm import tqdm
 # uint = unsignet int ( 0 to ...)
 from als.code_utilities import log
 
-_logger = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 
 @log
@@ -43,14 +46,14 @@ def test_and_debayer_to_rgb(header, image):
 
     # test image Type
     # use fit header for separate B&W to no debayer image
-    if len(image.shape) == 2 and not ("BAYERPAT" in header):
-        _logger.info("B&W mode...")
+    if len(image.shape) == 2 and not "BAYERPAT" in header:
+        _LOGGER.info("B&W mode...")
         new_mode = "gray"
     elif len(image.shape) == 3:
-        _logger.info("RGB mode...")
+        _LOGGER.info("RGB mode...")
         new_mode = "rgb"
     elif len(image.shape) == 2 and "BAYERPAT" in header:
-        _logger.info("debayering...")
+        _LOGGER.info("debayering...")
         debay = header["BAYERPAT"]
 
         # test bayer type and debayer
@@ -133,11 +136,11 @@ def create_first_ref_im(work_path, im_path, save_im=False):
         new_header = new_fit[0].header
         new_fit.close()
         # test image type
-        im_limit, im_type = test_utype(new)
+        im_limit, _ = test_utype(new)
         # test rgb or gray or no debayer
         new, im_mode = test_and_debayer_to_rgb(new_header, new)
     else:
-        _logger.info("convert DSLR image ...")
+        _LOGGER.info("convert DSLR image ...")
         # convert camera raw to numpy array
         new = rawpy.imread(im_path).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16, user_flip=0)
         im_mode = "rgb"
@@ -208,7 +211,7 @@ def stack_live(work_path, im_path, counter, ref=[], first_ref=[], save_im=False,
         # test rgb or gray
         new, im_mode = test_and_debayer_to_rgb(new_header, new)
     else:
-        _logger.info("convert DSLR image ...")
+        _LOGGER.info("convert DSLR image ...")
         new = rawpy.imread(im_path).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16, user_flip=0)
         im_mode = "rgb"
         extension = ".fits"
@@ -219,20 +222,20 @@ def stack_live(work_path, im_path, counter, ref=[], first_ref=[], save_im=False,
     # ____________________________________
     # specific part for no first image
     # choix rgb ou gray scale
-    _logger.info("alignement and stacking...")
+    _LOGGER.info("alignement and stacking...")
 
     # choix du mode (rgb or B&W)
     if im_mode == "rgb":
         if align:
             # alignement with green :
-            p, __ = al.find_transform(new[1], first_ref[1])
+            transformation, __ = al.find_transform(new[1], first_ref[1])
 
         # stacking
         stack_image = []
         for j in tqdm(range(3)):
             if align:
                 # align all color :
-                align_image = al.apply_transform(p, new[j], ref[j])
+                align_image = al.apply_transform(transformation, new[j], ref[j])
 
             else:
                 align_image = new[j]
@@ -257,9 +260,8 @@ def stack_live(work_path, im_path, counter, ref=[], first_ref=[], save_im=False,
     elif im_mode == "gray":
         if align:
             # alignement
-            p, __ = al.find_transform(new, first_ref)
-            align_image = al.apply_transform(p, new, ref)
-            del p
+            transformation, __ = al.find_transform(new, first_ref)
+            align_image = al.apply_transform(transformation, new, ref)
         else:
             align_image = new
 
