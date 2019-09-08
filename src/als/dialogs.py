@@ -11,7 +11,7 @@ from als.code_utilities import log
 from generated.about_ui import Ui_AboutDialog
 from generated.prefs_ui import Ui_PrefsDialog
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 
 class PreferencesDialog(QDialog):
@@ -44,7 +44,7 @@ class PreferencesDialog(QDialog):
         else:
             message = "Web server port number must be a number between 1024 and 65535"
             error_box("Wrong value", message)
-            LOGGER.error(f"Port number validation failed : {message}")
+            _LOGGER.error(f"Port number validation failed : {message}")
             self._ui.ln_web_server_port.setFocus()
             self._ui.ln_web_server_port.selectAll()
             return

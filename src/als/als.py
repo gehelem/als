@@ -52,7 +52,7 @@ LOG_DOCK_INITIAL_HEIGHT = 60
 
 gettext.install('als', 'locale')
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 
 class HTTPHandler(SimpleHTTPRequestHandler):
@@ -141,8 +141,8 @@ class MyEventHandler(FileSystemEventHandler, QThread, ImageRefSave):
     def on_moved(self, event):
         if event.event_type == 'moved':
             image_path = event.dest_path
-            LOGGER.info(f"New image ready to be processed : {image_path}")
-            LOGGER.debug(f"'created' signal emitted from MyEventHandler.on_moved. Image path = {image_path}")
+            _LOGGER.info(f"New image ready to be processed : {image_path}")
+            _LOGGER.debug(f"'created' signal emitted from MyEventHandler.on_moved. Image path = {image_path}")
             self.created_signal.emit(image_path)
 
     @log
@@ -151,20 +151,20 @@ class MyEventHandler(FileSystemEventHandler, QThread, ImageRefSave):
             file_is_incomplete = True
             last_file_size = -1
             image_path = event.src_path
-            LOGGER.debug(f"New image file detected : {image_path}. Waiting untill file is fully written to disk...")
+            _LOGGER.debug(f"New image file detected : {image_path}. Waiting untill file is fully written to disk...")
 
             while file_is_incomplete:
                 info = QFileInfo(image_path)
                 size = info.size()
-                LOGGER.debug(f"File {image_path}'s size = {size}")
+                _LOGGER.debug(f"File {image_path}'s size = {size}")
                 if size == last_file_size:
                     file_is_incomplete = False
-                    LOGGER.debug(f"File {image_path} has been fully written to disk")
+                    _LOGGER.debug(f"File {image_path} has been fully written to disk")
                 last_file_size = size
                 self.msleep(DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS)
 
-            LOGGER.info(f"New image ready to be processed : {image_path}")
-            LOGGER.debug(f"'created' signal emitted from MyEventHandler.on_created. Image path = {image_path}")
+            _LOGGER.info(f"New image ready to be processed : {image_path}")
+            _LOGGER.debug(f"'created' signal emitted from MyEventHandler.on_created. Image path = {image_path}")
             self.created_signal.emit(image_path)
 
 
@@ -218,8 +218,8 @@ class WatchOutForFileCreations(QThread):
         self.wavelet_3_value = wavelet_3_value
         self.wavelet_4_value = wavelet_4_value
         self.wavelet_5_value = wavelet_5_value
-        LOGGER.info(f" Work folder = '{self.work_folder}'")
-        LOGGER.info(f" Scan folder = '{self.path}'")
+        _LOGGER.info(f" Work folder = '{self.work_folder}'")
+        _LOGGER.info(f" Scan folder = '{self.path}'")
 
         # __ call watchdog __
         # call observer :
@@ -328,7 +328,7 @@ class WatchOutForFileCreations(QThread):
                     message = _(f"WARNING : {new_image_path} could not be aligned : Max iteration reached. "
                                 f"Image is ignored")
                     self.log.append(message)
-                    LOGGER.warning(message)
+                    _LOGGER.warning(message)
                     return
 
                 self.image_ref_save.stack_image = prepro.save_tiff(self.work_folder, self.image_ref_save.image,
@@ -358,7 +358,7 @@ class WatchOutForFileCreations(QThread):
         else:
             message = _("New image detected but not considered")
             self.log.append(message)
-            LOGGER.info(message)
+            _LOGGER.info(message)
 
 
 # ------------------------------------------------------------------------------
@@ -400,8 +400,8 @@ class MainWindow(QMainWindow):
 
         self._stop_www()
 
-        LOGGER.debug(f"Window size : {self.size()}")
-        LOGGER.debug(f"Window position : {self.pos()}")
+        _LOGGER.debug(f"Window size : {self.size()}")
+        _LOGGER.debug(f"Window position : {self.pos()}")
 
         window_rect = self.geometry()
         config.set_window_geometry((window_rect.x(), window_rect.y(), window_rect.width(), window_rect.height()))
@@ -419,7 +419,7 @@ class MainWindow(QMainWindow):
         # if window is going out of minimized state, we restore docks if needed
         if event.type() == QEvent.WindowStateChange:
             if not self.windowState() & Qt.WindowMinimized:
-                LOGGER.debug("Restoring docks visibility")
+                _LOGGER.debug("Restoring docks visibility")
                 if self.shown_log_dock:
                     self._ui.log_dock.show()
                 if self.show_session_dock:
@@ -600,7 +600,7 @@ class MainWindow(QMainWindow):
             self._ui.cnt.setText(str(self.counter))
             message = _("update GUI image")
             self._ui.log.append(_(message))
-            LOGGER.info(message)
+            _LOGGER.info(message)
 
         if self.counter > 0:
 
@@ -610,7 +610,7 @@ class MainWindow(QMainWindow):
 
             if pixmap.isNull():
                 self._ui.log.append(_("invalid frame"))
-                LOGGER.error("Got a null pixmap from stack")
+                _LOGGER.error("Got a null pixmap from stack")
                 return
 
             pixmap_resize = pixmap.scaled(self._ui.image_stack.frameGeometry().width(),
@@ -708,7 +708,7 @@ class MainWindow(QMainWindow):
             title = "Work folder could not be prepared"
             message = f"Details : {os_error}"
             error_box(title, message)
-            LOGGER.error(f"{title} : {os_error}")
+            _LOGGER.error(f"{title} : {os_error}")
             self.cb_stop()
             return
 
@@ -849,13 +849,13 @@ class MainWindow(QMainWindow):
             # We get the machine ip address and warn user if detected ip is loopback (127.0.0.1)
             # since in this case, the web server won't be reachable by any other machine
             if ip_address == "127.0.0.1":
-                log_function = LOGGER.warning
+                log_function = _LOGGER.warning
                 title = "Web server access is limited"
                 message = "Web server IP address is 127.0.0.1.\n\nServer won't be reachable by other " \
                           "machines. Please check your network connection"
                 warning_box(title, message)
             else:
-                log_function = LOGGER.info
+                log_function = _LOGGER.info
 
             log_function(f"Web server started. http://{ip_address}:{port_number}")
             self._ui.action_prefs.setEnabled(False)
@@ -863,7 +863,7 @@ class MainWindow(QMainWindow):
             title = "Could not start web server"
             message = f"The web server needs to listen on port n°{port_number} but this port is already in use.\n\n"
             message += "Please change web server port number in your preferences "
-            LOGGER.error(title)
+            _LOGGER.error(title)
             error_box(title, message)
             self._stop_www()
             self._ui.cbWww.setChecked(False)
@@ -875,7 +875,7 @@ class MainWindow(QMainWindow):
             self.thread.stop()
             self.thread.join()
             self.thread = None
-            LOGGER.info("Web server stopped")
+            _LOGGER.info("Web server stopped")
             self._ui.action_prefs.setEnabled(self._ui.pbPlay.isEnabled())
 
     @staticmethod
@@ -913,14 +913,14 @@ def main():
         print(f"***** ERROR : user config file is invalid : {value_error}")
         sys.exit(1)
 
-    LOGGER.info(f"Starting Astro Live Stacker v{VERSION} in {os.path.dirname(os.path.realpath(__file__))}")
-    LOGGER.debug("Building and showing main window")
+    _LOGGER.info(f"Starting Astro Live Stacker v{VERSION} in {os.path.dirname(os.path.realpath(__file__))}")
+    _LOGGER.debug("Building and showing main window")
     window = MainWindow()
     (x, y, width, height) = config.get_window_geometry()
     window.setGeometry(x, y, width, height)
     window.show()
     app_return_code = app.exec()
-    LOGGER.info(f"Astro Live Stacker terminated with return code = {app_return_code}")
+    _LOGGER.info(f"Astro Live Stacker terminated with return code = {app_return_code}")
     sys.exit(app_return_code)
 
 
