@@ -8,13 +8,14 @@ from time import time
 
 def log(func):
     """
-    Decorates a function to add logging
+    Decorates a function to add logging.
 
-    A log entry (DEBUG level) is printed with decorated function's qualified name and all its params
+    A log entry (DEBUG level) is printed with decorated function's qualified name and all its params.
+
     If the decorated function returns anything, a log entry (DEBUG level) is printed with decorated
-    function qualified name and return value(s)
+    function's qualified name and return value(s).
 
-    Logs are issued using is the logger named after the decorated function's enclosing module
+    Logs are issued using is the logger named after the decorated function's enclosing module.
 
     :param func: The function to decorate
     :return: The decorated function
