@@ -28,6 +28,7 @@ import numpy as np
 from PyQt5.QtCore import pyqtSignal, QFileInfo, QThread, Qt, pyqtSlot, QTimer, QEvent
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMainWindow, QApplication
+from astroalign import MaxIterError
 from astropy.io import fits
 from qimage2ndarray import array2qimage
 from watchdog.events import FileSystemEventHandler
@@ -279,19 +280,25 @@ class WatchOutForFileCreations(QThread):
                 self.apply_button.setEnabled(True)
 
             else:
-                # appelle de la fonction stack live
+                # appel de la fonction stack live
                 if self.align_on:
                     self.log.append(_("Stack and Align New frame..."))
                 else:
                     self.log.append(_("Stack New frame..."))
 
-                self.image_ref_save.image, limit, mode = stk.stack_live(self.work_folder, new_image_path,
-                                                                        self.counter,
-                                                                        ref=self.image_ref_save.image,
-                                                                        first_ref=self.first_image,
-                                                                        save_im=self.save_on,
-                                                                        align=self.align_on,
-                                                                        stack_methode=self.stack_method)
+                try:
+                    self.image_ref_save.image, limit, mode = stk.stack_live(self.work_folder, new_image_path,
+                                                                            self.counter,
+                                                                            ref=self.image_ref_save.image,
+                                                                            first_ref=self.first_image,
+                                                                            save_im=self.save_on,
+                                                                            align=self.align_on,
+                                                                            stack_methode=self.stack_method)
+                except MaxIterError:
+                    message = _(f"{new_image_path} could not be aligned : Max iteration reached. Image is ignored")
+                    self.log.append(message)
+                    _logger.info(message)
+                    return
 
                 self.image_ref_save.stack_image = prepro.save_tiff(self.work_folder, self.image_ref_save.image,
                                                                    self.log,
