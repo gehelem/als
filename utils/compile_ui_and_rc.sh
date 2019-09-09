@@ -1,23 +1,27 @@
 #!/usr/bin/env bash
 set -e
+
 echo "******* compiling Qt resources : Start"
 
-GENERATED=src/generated
+SRC=$(readlink -f $(dirname $(readlink -f ${0}))/../src)
+GENERATED=${SRC}/generated
 
-for ui in src/als/*.ui
+echo "UI files ..."
+
+for ui in ${SRC}/als/*.ui
 do
-    py=${GENERATED}/$(basename ${ui})
-    py=${py/.ui/.py}
-    echo "Executing : pyuic5 ${ui} -o ${py} --import-from=generated"
-    pyuic5 ${ui} -o ${py} --import-from=generated
+    py=${GENERATED}/$(basename ${ui/.ui/.py})
+    echo "Executing : pyuic5 ${ui} -o ${py} --import-from=${GENERATED/*src\//}"
+    pyuic5 ${ui} -o ${py} --import-from=${GENERATED/*src\//}
 done
 
-for ui in src/resources/*.qrc
+echo "RC files ..."
+
+for rc in ${SRC}/resources/*.qrc
 do
-    py=${GENERATED}/$(basename ${ui})
-    py=${py/.qrc/_rc.py}
-    echo "Executing : pyrcc5 ${ui} -o ${py}"
-    pyrcc5 ${ui} -o ${py}
+    py=${GENERATED}/$(basename ${rc/.qrc/_rc.py})
+    echo "Executing : pyrcc5 ${rc} -o ${py}"
+    pyrcc5 ${rc} -o ${py}
 done
 
 echo "******* compiling Qt resources : Done"
