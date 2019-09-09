@@ -15,14 +15,16 @@
 
 set -e
 
-if ! [[ -r requirements.txt ]]
-then
-    echo "Error : Please make sure you run this script from within the als directory"
-    exit 1
-fi
+PRJ=$(readlink -f $(dirname $(readlink -f ${0}))/../)
+
+cd ${PRJ}
 
 sudo apt-get update
 sudo apt-get install python3-venv
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+python3 -m venv ${PRJ}/venv
+source ${PRJ}/venv/bin/activate
+pip install --upgrade pip
+pip install -r ${PRJ}/requirements.txt
+
+echo "Virtualenv setup is complete"
+
