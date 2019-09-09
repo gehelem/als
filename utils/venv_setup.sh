@@ -21,8 +21,10 @@ cd ${PRJ}
 
 sudo apt-get update
 sudo apt-get install python3-venv
-python3 -m venv ${PRJ}/venv
-source ${PRJ}/venv/bin/activate
+VENV=${1:-${PRJ}/venv}
+echo "Creating virtual env in : ${VENV} ..."
+python3 -m venv ${VENV}
+source ${VENV}/bin/activate
 pip install --upgrade pip
 pip install -r ${PRJ}/requirements.txt
 
