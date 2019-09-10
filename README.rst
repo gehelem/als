@@ -46,13 +46,14 @@ is to use Python's virtual envs.
 - `gcc` and `python3-dev` to compile some dependencies (don't be scared)
 - `python3-venv` to handle virtualenvs
 
-.. code-block:: shell
+.. code-block::
 
   $ sudo apt update && sudo apt install -y git gcc python3-dev python3-venv
 
-2. Fetch ALS sources with the `develop` branch checked out. This will create an folder named `als` wherever you currently are
+2. Fetch ALS sources with the `develop` branch checked out. This will create a folder named `als` wherever you
+currently are.
 
-.. code-block:: shell
+.. code-block::
 
   $ git clone https://github.com/gehelem/als -b develop
 
@@ -61,19 +62,19 @@ is to use Python's virtual envs.
 
    This will create a folder named `venv` inside the `als` folder.
 
-.. code-block:: shell
+.. code-block::
 
   $ ./als/utils/venv_setup.sh
 
 4. Dive into the `als` folder
 
-.. code-block:: shell
+.. code-block::
 
   $ cd als
 
 5. Activate the newly created virtualenv.
 
-.. code-block:: shell
+.. code-block::
 
   $ source venv/bin/activate
 
@@ -81,18 +82,18 @@ is to use Python's virtual envs.
    This allows you to run ALS easily, as it adds your current virtualenv's `bin` folder (where the ALS launcher is)
    to your PATH
 
-.. code-block:: shell
+.. code-block::
 
   $ python setup.py develop
 
-ALS launch
-==========
+Launching ALS
+=============
 
 1. Make sure your virtualenv is active :
 
    If your virtualenv is active, your command prompt is prepended with (venv). See example below :
 
-.. code-block:: shell
+.. code-block::
 
   (venv) user@host:~/als$
 
@@ -101,9 +102,30 @@ Activate it using steps 4 & 5 of the `Installation`_ procedure.
 
 2. just launch ALS from anywhere :)
 
-.. code-block:: shell
+.. code-block::
 
   $ als
 
+Using ALS
+=========
 
+TODO
 
+Developing ALS
+==============
+
+You don't need anything else than the steps described in `Installation`_ and `Launching ALS`_ to have a working
+development environment.
+
+Just edit the code and launch `als` each time you want to check your changes.
+
+If you want to perform basic checks on the code before committing and pushing your changes, execute the
+following command from within the `als` folder. If the script's exit code is 0 (zero), your code is safe
+to be pushed. It may not yet do exactly what it is meant for, but at least it won't cause runtime errors
+due to syntax errors.
+
+.. code-block::
+
+  $ ./ci/full_build.sh
+
+Happy hacking !!!
