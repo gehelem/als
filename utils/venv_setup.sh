@@ -3,7 +3,7 @@
 # venv_setup.sh
 ###############
 #
-# This will install a python3 virtual environment in the specified folder.
+# This will install a custom python3 virtual environment in the specified folder.
 # If no folder is specified, the virtualenv is created in a folder named 'venv', located inside the als folder.
 #
 # This script will work on any reasonably recent Debian-based GNU/Linux Distribution. Yes, Ubuntu is one of them
@@ -19,7 +19,7 @@
 #
 # This script takes 1 optional parameter :
 #
-# - The path to the virtualenv folder (defaults to <als_sources_dir>/'venv')
+# - The path of the new virtualenv folder (defaults to <als_sources_dir>/venv)
 #################################################################################
 
 set -e
