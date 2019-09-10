@@ -2,8 +2,8 @@
 ALS - Astro Live Stacker
 ========================
 
-.. image:: https://img.shields.io/github/license/gehelem/als   :alt: GitHub
-.. image:: https://img.shields.io/travis/com/gehelem/als   :alt: Travis (.com)
+.. image:: https://img.shields.io/travis/com/gehelem/als
+.. image:: https://img.shields.io/github/license/gehelem/als
 
 Description
 ===========
@@ -29,14 +29,16 @@ User can then enhance the resulting image with various processes :
 Resulting image can also be served by a built-in web server, so your mates at the astro club can see
 your wonderful images.
 
-Installing
-==========
+Installation
+============
 
 Until ALS is properly released to the usual software outlets, the best way to run ALS on your machine
 is to use Python's virtual envs.
 
 .. note::  The following install procedure has been tested on a freshly installed Ubuntu 18 LTS (a.k.a. Bionic).
-           Your mileage may vary. All below commands have to be used in your terminal of choice.
+           Your mileage may vary.
+
+           All below commands have to be used in your terminal of choice.
 
 1. Install a few system packages :
 
@@ -73,7 +75,7 @@ is to use Python's virtual envs.
 
 .. code-block:: shell
 
-  $ source ./venv/bin/activate
+  $ source venv/bin/activate
 
 6. Setup ALS into your virtualenv in development mode. This is for now the only supported setup mode.
    This allows you to run ALS easily, as it adds your current virtualenv's `bin` folder (where the ALS launcher is)
@@ -83,8 +85,8 @@ is to use Python's virtual envs.
 
   $ python setup.py develop
 
-Launching ALS
-=============
+ALS launch
+==========
 
 1. Make sure your virtualenv is active :
 
@@ -95,7 +97,7 @@ Launching ALS
   (venv) user@host:~/als$
 
 If you don't see the `(venv)` part before your command prompt, this means your virtualenv is not active.
-Activate it using step 5 of the installation procedure.
+Activate it using steps 4 & 5 of the `Installation`_ procedure.
 
 2. just launch ALS from anywhere :)
 
