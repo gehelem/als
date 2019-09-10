@@ -8,7 +8,7 @@ GENERATED=${SRC}/generated
 
 echo "UI files ..."
 
-for ui in ${SRC}/als/*.ui
+for ui in ${SRC}/als/ui/*.ui
 do
     py=${GENERATED}/$(basename ${ui/.ui/.py})
     echo "Executing : pyuic5 ${ui} -o ${py} --import-from=${GENERATED/*src\//}"

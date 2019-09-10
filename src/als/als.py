@@ -40,7 +40,7 @@ from watchdog.observers import Observer
 from als import preprocess as prepro, stack as stk, config
 from als.code_utilities import log
 from als.datastore import VERSION
-from als.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
+from als.ui.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
 from generated.als_ui import Ui_stack_window
 
 NAME_OF_TIFF_IMAGE = "stack_image.tiff"
