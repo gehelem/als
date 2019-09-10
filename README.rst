@@ -35,12 +35,12 @@ Installation
 Until ALS is properly released to the usual software outlets, the best way to run ALS on your machine
 is to use Python's virtual envs.
 
-.. note::  The following install procedure has been tested on a freshly installed Ubuntu 18 LTS (a.k.a. Bionic).
-           Your mileage may vary.
+**The following install procedure has been tested on a freshly installed Ubuntu 18 LTS (a.k.a. Bionic). Your mileage
+may vary.**
 
-           All below commands have to be used in your terminal of choice.
+*All below commands have to be used in your terminal of choice.*
 
-1. Install a few system packages :
+1. **Install a few system packages** :
 
 - `git` to retrieve ALS sources
 - `gcc` and `python3-dev` to compile some dependencies (don't be scared)
@@ -50,15 +50,16 @@ is to use Python's virtual envs.
 
   $ sudo apt update && sudo apt install -y git gcc python3-dev python3-venv
 
-2. Fetch ALS sources with the `develop` branch checked out. This will create a folder named `als` wherever you
-currently are.
+
+2. **Fetch ALS sources with the `develop` branch checked out**.
+   This will create a folder named `als` wherever you currently are.
 
 .. code-block::
 
   $ git clone https://github.com/gehelem/als -b develop
 
 
-3. Create your virtualenv with provided script.
+3. **Create your virtualenv with provided script**
 
    This will create a folder named `venv` inside the `als` folder.
 
@@ -66,21 +67,20 @@ currently are.
 
   $ ./als/utils/venv_setup.sh
 
-4. Dive into the `als` folder
+4. **Dive into the `als` folder**
 
 .. code-block::
 
   $ cd als
 
-5. Activate the newly created virtualenv.
+5. **Activate the newly created virtualenv**
 
 .. code-block::
 
   $ source venv/bin/activate
 
-6. Setup ALS into your virtualenv in development mode. This is for now the only supported setup mode.
-   This allows you to run ALS easily, as it adds your current virtualenv's `bin` folder (where the ALS launcher is)
-   to your PATH
+6. **Setup ALS into your virtualenv in development mode**. This is for now the only supported setup mode.
+   This allows you to run ALS easily, as it adds a launcher script inside your active virtual env.
 
 .. code-block::
 
@@ -89,7 +89,7 @@ currently are.
 Launching ALS
 =============
 
-1. Make sure your virtualenv is active :
+1. **Make sure your virtualenv is active**
 
    If your virtualenv is active, your command prompt is prepended with (venv). See example below :
 
@@ -100,7 +100,7 @@ Launching ALS
 If you don't see the `(venv)` part before your command prompt, this means your virtualenv is not active.
 Activate it using steps 4 & 5 of the `Installation`_ procedure.
 
-2. just launch ALS from anywhere :)
+2. **just launch ALS from anywhere** :)
 
 .. code-block::
 
