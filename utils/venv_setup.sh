@@ -1,17 +1,26 @@
 #!/usr/bin/env bash
-
-# This will install a python3 virtual environment in the als directory.
 #
-# This script will work on any reasonably recent Debian - based GNU/Linux Distribution. Yes, Ubuntu is one of them
+# venv_setup.sh
+###############
 #
-# Simply run this script & give your password to the sudo commands (required to install 1 new package into your system)
+# This will install a python3 virtual environment in the specified folder.
+# If no folder is specified, the virtualenv is created in a folder named 'venv', located inside the als folder.
 #
-# The result is a 'venv' directory that contains a full python3 working environment with all external libraries
+# This script will work on any reasonably recent Debian-based GNU/Linux Distribution. Yes, Ubuntu is one of them
+#
+# Simply run this script & give your password to the sudo commands (required to install 1 new package into
+# your system)
+# The result is a directory that contains a full python3 working environment with all external libraries
 # needed by als.
 #
-# WARNING : the resulting 'venv' directory is quite heavy : around 720MB
+# WARNING : the resulting directory is quite heavy : around 700MB
 #
 # enjoy :)
+#
+# This script takes 1 optional parameter :
+#
+# - The path to the virtualenv folder (defaults to <als_sources_dir>/'venv')
+#################################################################################
 
 set -e
 
