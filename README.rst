@@ -16,8 +16,10 @@ A standalone Python GUI application for live astrophotography stacking.
 Features
 ========
 
-ALS polls a folder on your machine and aligns + stacks any new image written in that folder.
-User can then enhance the resulting image with various processes :
+ALS polls a folder on your machine and aligns + stacks any new picture saved into that folder.
+ALS supports Fits files as well as all common DSLR Raw formats.
+
+As pictures are added to the stack, user can enhance the resulting image with various processes :
 
 - contrast
 - brightness
@@ -26,8 +28,8 @@ User can then enhance the resulting image with various processes :
 - SCNR
 - Wavelets
 
-Resulting image can also be served by a built-in web server, so your mates at the astro club can see
-your wonderful images.
+The resulting image can be saved to disk and served by a built-in web server, so your mates at the astro
+club can see your wonderful images.
 
 Installation
 ============
@@ -51,17 +53,17 @@ may vary.**
   $ sudo apt update && sudo apt install -y git gcc python3-dev python3-venv
 
 
-2. **Fetch ALS sources with the `develop` branch checked out**.
+2. **Fetch ALS sources with the `refactor/structure` branch checked out**.
    This will create a folder named `als` wherever you currently are.
 
 .. code-block::
 
-  $ git clone https://github.com/gehelem/als -b develop
+  $ git clone https://github.com/gehelem/als -b refactor/structure
 
 
 3. **Create your virtualenv with provided script**
 
-   This will create a folder named `venv` inside the `als` folder.
+   This will create a folder named `venv` inside the `als` folder, download and install all dependencies.
 
 .. code-block::
 
