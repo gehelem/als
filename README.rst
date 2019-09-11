@@ -116,10 +116,15 @@ TODO
 Developing ALS
 ==============
 
-You don't need anything else than the steps described in `Installation`_ and `Launching ALS`_ to have a working
-development environment.
+On top of the steps described in `Installation`_ and `Launching ALS`_, you don't need much to start developing on ALS.
 
-Just edit the code and launch `als` each time you want to check your changes.
+All you have to remember when you work on GUI: ALS uses the Qt framework. If you modify/create .ui files, you'll have to
+recompile the corresponding Python modules. This is done by calling the following script : `utils/compile_ui_and_rc.sh`.
+All .ui files MUST be located inside the `als.ui` package. Compiled modules are located in the
+`als.generated` package.
+
+
+For any other non GUI code, just edit the code and relaunch `als` each time you want to check your changes.
 
 If you want to perform basic checks on the code before committing and pushing your changes, execute the
 following command from within the `als` folder. If the script's exit code is 0 (zero), your code is safe
