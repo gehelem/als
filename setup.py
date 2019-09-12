@@ -6,7 +6,6 @@ We added a custom command to override develop and install
 in order to have Qt resources (UI and images) compiled and
 put in place
 """
-
 import os
 import sys
 
@@ -22,7 +21,8 @@ except VersionConflict:
 
 def compile_qt_resources():
     """Executes Qt resources compilation script"""
-    if os.system('utils/compile_ui_and_rc.sh') != 0:
+
+    if os.system(f'{os.path.dirname(os.path.abspath(__file__))}/utils/compile_ui_and_rc.sh') != 0:
         raise RuntimeError("Qt resource compilation failed")
 
 
