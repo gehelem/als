@@ -1,9 +1,14 @@
 language: python
 python: "3.6"
 
-install:
-  - pip install -r requirements.txt
-  - pip install sphinx
-  - python setup.py install
-script:
-  - ci/full_build.sh
+jobs:
+  include:
+    - stage: "Checks"
+      name: "PyLint"
+      script: python setup.py develop && ./ci/pylint.sh
+    - # Same stage
+      name: "Tests"
+      script: python setup.py develop test
+    - # Same stage
+      name: "Docs build"
+      script: python setup.py develop docs
