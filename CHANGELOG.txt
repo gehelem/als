@@ -1,0 +1,9 @@
+=========
+Changelog
+=========
+
+Version 0.1
+===========
+
+- First release : Align and Stacking of Fits files
+
