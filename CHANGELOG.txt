@@ -2,23 +2,26 @@
 Changelog
 =========
 
-Version 0.1
-===========
-
-- First release : Align and Stacking of Fits files
-
-Version 0.2
-===========
-
-- New feature : Stacked image postprocessing
-
-Version 0.3
-===========
-
-- New feature : ALS now supports common DSLR Raw files
-
 Version 0.4
 ===========
 
 - New feature : New stacked image processor : Wavelets
+
+
+VVersion 0.3
+============
+
+- New feature : ALS now supports common DSLR Raw files
+
+
+ersion 0.2
+===========
+
+- New feature : Stacked image postprocessing
+
+
+Version 0.1
+===========
+
+- First release : Align and Stacking of Fits files
 
