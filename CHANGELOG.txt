@@ -2,8 +2,8 @@
 Changelog
 =========
 
-Version 0.1
-===========
+Version 0.1 (2019-05-18)
+========================
 
 - First release : Align and Stacking of Fits files
 
