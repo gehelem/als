@@ -201,7 +201,7 @@ def save_tiff(work_path, stack_image, log_ui, mode="rgb", scnr_on=False,
         new_stack_image = stack_image
 
     # read image number type
-    limit, im_type = stk.test_utype(new_stack_image)
+    limit, im_type = stk.get_limit_and_utype(new_stack_image)
 
     # if no have change, no process
     if param[0] != 1 or param[1] != 0 or param[2] != 0 or param[3] != limit \

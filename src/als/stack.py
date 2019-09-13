@@ -79,7 +79,7 @@ def test_and_debayer_to_rgb(header, image):
 
 
 @log
-def test_utype(image):
+def get_limit_and_utype(image):
     """
     Test Image types (uint8 or uint16)
 
@@ -136,7 +136,7 @@ def create_first_ref_im(work_path, im_path, save_im=False):
         new_header = new_fit[0].header
         new_fit.close()
         # test image type
-        im_limit, _ = test_utype(new)
+        im_limit, _ = get_limit_and_utype(new)
         # test rgb or gray or no debayer
         new, im_mode = test_and_debayer_to_rgb(new_header, new)
     else:
@@ -207,7 +207,7 @@ def stack_live(work_path, im_path, counter, ref=[], first_ref=[], save_im=False,
         new_header = new_fit[0].header
         new_fit.close()
         # test data type
-        im_limit, im_type = test_utype(new)
+        im_limit, im_type = get_limit_and_utype(new)
         # test rgb or gray
         new, im_mode = test_and_debayer_to_rgb(new_header, new)
     else:
