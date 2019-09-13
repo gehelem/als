@@ -11,6 +11,7 @@ source =
 
 [report]
 # Regexes for lines to exclude from consideration
+sort = Cover
 exclude_lines =
     # Have to re-enable the standard pragma
     pragma: no cover
