@@ -2,6 +2,28 @@
 Changelog
 =========
 
+Version 0.6 (TODO)
+==================
+
+- New features
+
+  - User settings dialog box
+
+- Improvements
+
+  - Image server port is configurable
+  - Image server page is auto-refreshed
+  - Remember window size and position
+  - Log window and session controls can be hidden
+
+- Bug Fixes
+
+  - Crash if new pictures written on slow storage device
+  - Image served by webserver is too bright
+  - Crash if new picture cannot be aligned with current stack
+  - Crash if starting a new session and scan folder is missing
+
+
 Version 0.5 (2019-07-10)
 ========================
 
