@@ -2,26 +2,28 @@
 Changelog
 =========
 
-Version 0.4
-===========
+Version 0.4 (2019-06-22)
+========================
 
 - New feature : New stacked image processor : Wavelets
 
+Version 0.3 (2019-05-23)
+========================
 
-VVersion 0.3
-============
+- New features :
 
-- New feature : ALS now supports common DSLR Raw files
+  - Support for common DSLR Raw files
+  - Folder scanner can be paused
+  - Reset button for image processing controls
+  - New stacked image processor : SCNR
 
+Version 0.2 (2019-05-21)
+========================
 
-ersion 0.2
-===========
+- New feature : Stacked image's contrast and brightness can be adjusted
 
-- New feature : Stacked image postprocessing
-
-
-Version 0.1
-===========
+Version 0.1 (2019-05-18)
+========================
 
 - First release : Align and Stacking of Fits files
 
