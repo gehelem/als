@@ -17,7 +17,10 @@ Features
 ========
 
 ALS polls a folder on your machine and aligns + stacks any new picture saved into that folder.
-ALS supports Fits files as well as all common DSLR Raw formats.
+
+
+ALS is compatible with `.fit` and `.fits` in 8bits and 16bits unsigned (B&W, RGB, and No Debayering)
+and with RAW camera files : https://www.libraw.org/supported-cameras
 
 As pictures are added to the stack, user can enhance the resulting image with various processes :
 
