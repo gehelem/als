@@ -2,14 +2,13 @@
 Changelog
 =========
 
-Version 0.2
-===========
+Version 0.2 (2019-05-21)
+========================
 
-- New feature : Stacked image postprocessing
+- New feature : Stacked image's contrast and brightness can be adjusted
 
-
-Version 0.1
-===========
+Version 0.1 (2019-05-18)
+========================
 
 - First release : Align and Stacking of Fits files
 
