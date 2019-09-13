@@ -114,7 +114,14 @@ Activate it using steps 4 & 5 of the `Installation`_ procedure.
 Using ALS
 =========
 
-TODO
+1. Launch ALS
+2. Click the 'START' button
+
+   If the configured scan folder does not exist, follow ALS advice and review your preferences
+
+3. Setup you image acquisition system to save new pictures into the folder scanned by ALS
+4. Start picture acquisition
+5. Watch the magic do its work
 
 Developing ALS
 ==============
