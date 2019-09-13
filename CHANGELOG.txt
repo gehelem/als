@@ -2,18 +2,20 @@
 Changelog
 =========
 
-Version 0.1
+Version 0.3
 ===========
 
-- First release : Align and Stacking of Fits files
+- New feature : ALS now supports common DSLR Raw files
+
 
 Version 0.2
 ===========
 
 - New feature : Stacked image postprocessing
 
-Version 0.3
+
+Version 0.1
 ===========
 
-- New feature : ALS now supports common DSLR Raw files
+- First release : Align and Stacking of Fits files
 
