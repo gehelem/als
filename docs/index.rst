@@ -1,22 +1,14 @@
-========
-als
-========
-
-This is the documentation of **als**.
-
-
-
-Contents
-========
-
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
+   :hidden:
 
    Readme <readme>
    License <license>
    Authors <authors>
    Changelog <changelog>
    Module Reference <api/modules>
+
+.. include:: ../README.rst
 
 Indices and tables
 ==================
