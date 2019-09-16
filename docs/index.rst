@@ -2,7 +2,7 @@
    :maxdepth: 1
    :hidden:
 
-   Readme <readme>
+   Documentation <readme>
    License <license>
    Authors <authors>
    Changelog <changelog>
