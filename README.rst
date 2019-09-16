@@ -10,7 +10,7 @@ Description
 
 A standalone Python GUI application for live astrophotography stacking.
 
-.. image:: docs/_static/als-screenshot.png
+.. image:: als-screenshot.png
    :align: center
 
 Features
