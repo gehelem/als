@@ -5,3 +5,4 @@
 /src/generated/*_ui.py
 /src/generated/*_rc.py
 .coverage
+/htmlcov
