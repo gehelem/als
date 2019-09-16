@@ -2,8 +2,8 @@
 Changelog
 =========
 
-Version 0.6 (TODO)
-==================
+Version 0.6 (Work in progress)
+==============================
 
 - New features
 
