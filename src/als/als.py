@@ -37,9 +37,9 @@ from qimage2ndarray import array2qimage
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-from als import preprocess as prepro, stack as stk, config
+from als import preprocess as prepro, stack as stk, config, model
 from als.code_utilities import log
-from als.datastore import VERSION
+from als.model import VERSION
 from als.ui.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
 from generated.als_ui import Ui_stack_window
 
@@ -393,6 +393,9 @@ class MainWindow(QMainWindow):
         # prevent log dock to be too tall
         self.resizeDocks([self._ui.log_dock], [LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
 
+        model.STORE.add_observer(self)
+        model.STORE.scan_in_progress = False
+
     @log
     def closeEvent(self, event):
         """Handles window close events."""
@@ -729,6 +732,16 @@ class MainWindow(QMainWindow):
 
         self._ui.action_prefs.setEnabled(False)
 
+        model.STORE.scan_in_progress = True
+
+    @log
+    def update_store_display(self):
+        """
+        Updates all displays and controls depending on DataStore held data
+        """
+        message = f"Scanning '{config.get_scan_folder_path()}'" if model.STORE.scan_in_progress else "Scanner is idle"
+        self._ui.statusBar.showMessage(message)
+
     @log
     def _setup_work_folder(self):
         """Prepares the work folder."""
@@ -753,6 +766,7 @@ class MainWindow(QMainWindow):
         self._ui.pbPause.setEnabled(False)
         self._ui.action_prefs.setEnabled(not self._ui.cbWww.isChecked())
         self._ui.log.append("Stop")
+        model.STORE.scan_in_progress = False
 
     @pyqtSlot(name="on_pbPause_clicked")
     @log
@@ -764,6 +778,7 @@ class MainWindow(QMainWindow):
         self._ui.pbReset.setEnabled(False)
         self._ui.pbPause.setEnabled(False)
         self._ui.log.append("Pause")
+        model.STORE.scan_in_progress = False
 
     @pyqtSlot(name="on_pbReset_clicked")
     @log

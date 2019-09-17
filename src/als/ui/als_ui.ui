@@ -35,7 +35,7 @@
          <string/>
         </property>
         <property name="pixmap">
-         <pixmap resource="../resources/resource.qrc">:/icons/dslr-camera.svg</pixmap>
+         <pixmap>:/icons/dslr-camera.svg</pixmap>
         </property>
         <property name="scaledContents">
          <bool>false</bool>
@@ -945,7 +945,7 @@
      <x>0</x>
      <y>0</y>
      <width>1094</width>
-     <height>23</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -1281,6 +1281,7 @@
     </layout>
    </widget>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionQuit">
    <property name="text">
     <string>&amp;Quit</string>
@@ -1351,7 +1352,7 @@
   </action>
  </widget>
  <resources>
-  <include location="../resources/resource.qrc"/>
+  <include location="../../resources/resource.qrc"/>
  </resources>
  <connections>
   <connection>

@@ -6,7 +6,7 @@ import logging
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox
 
-from als import config, datastore
+from als import config, model
 from als.code_utilities import log
 from generated.about_ui import Ui_AboutDialog
 from generated.prefs_ui import Ui_PrefsDialog
@@ -85,7 +85,7 @@ class AboutDialog(QDialog):
         super().__init__(parent)
         self._ui = Ui_AboutDialog()
         self._ui.setupUi(self)
-        self._ui.lblVersionValue.setText(datastore.VERSION)
+        self._ui.lblVersionValue.setText(model.VERSION)
 
 
 def question(title, message):
