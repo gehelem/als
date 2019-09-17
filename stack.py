@@ -20,9 +20,57 @@ import astroalign as al
 import numpy as np
 from astropy.io import fits
 from tqdm import tqdm
+import rawpy
 
 name_of_tiff_image = "stack_image.tiff"
 name_of_fit_image = "stack_ref_image.fit"
+
+
+def SCNR(rgb_image, im_type, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
+    # SCNR Average Neutral Protection
+    if rgb_type == "RGB":
+        red = 0
+        blue = 2
+    elif rgb_type == "BGR":
+        red = 2
+        blue = 0
+
+    rgb_image = np.float32(rgb_image)
+
+    if scnr_type == "ne_m":
+        m = (rgb_image[red] + rgb_image[blue]) * 0.5
+        compare = rgb_image[1] < m
+        rgb_image[1] = compare * rgb_image[1] + np.invert(compare) * m
+
+    elif scnr_type == "ne_max":
+        compare = rgb_image[red] > rgb_image[blue]
+        m = compare * rgb_image[red] + np.invert(compare) * rgb_image[blue]
+        compare = rgb_image[1] < m
+        rgb_image[1] = compare * rgb_image[1] + np.invert(compare) * m
+
+    elif scnr_type == "ma_ad":
+        rgb_image = rgb_image / im_limit
+        unity_m = np.ones((rgb_image[1].shape[0], rgb_image[1].shape[1]))
+        compare = unity_m < (rgb_image[blue] + rgb_image[red])
+        m = compare * unity_m + np.invert(compare) * (rgb_image[blue] + rgb_image[red])
+        rgb_image[1] = rgb_image[1] * (1 - amount) * (1 - m) + m * rgb_image[1]
+        rgb_image = rgb_image * im_limit
+
+    elif scnr_type == "ma_max":
+        rgb_image = rgb_image / im_limit
+        compare = rgb_image[red] > rgb_image[blue]
+        m = compare * rgb_image[red] + np.invert(compare) * rgb_image[blue]
+        rgb_image[1] = rgb_image[1] * (1 - amount) * (1 - m) + m * rgb_image[1]
+        rgb_image = rgb_image * im_limit
+
+    if im_type == "uint16":
+        rgb_image = np.where(rgb_image < im_limit, rgb_image, im_limit)
+        rgb_image = np.uint16(rgb_image)
+    elif im_type == "uint8":
+        rgb_image = np.where(rgb_image < im_limit, rgb_image, im_limit)
+        rgb_image = np.uint8(rgb_image)
+
+    return rgb_image
 
 
 def save_tiff(work_path, stack_image, mode="rgb", param=[]):
@@ -35,12 +83,38 @@ def save_tiff(work_path, stack_image, mode="rgb", param=[]):
         new_stack_image = stack_image
 
     limit, im_type = test_utype(new_stack_image)
-    new_stack_image = np.float32(new_stack_image) * param[0] + param[1]
-    new_stack_image = np.where(new_stack_image < limit, new_stack_image, limit)
-    if im_type == "uint16":
-        new_stack_image = np.uint16(new_stack_image)
-    elif im_type == "uint8":
-        new_stack_image = np.uint8(new_stack_image)
+
+    if param[0] != 1 or param[1] != 0 or param[2] != 0 or param[3] != limit \
+            or param[4] != 1 or param[5] != 1 or param[6] != 1:
+
+        print("correct display image")
+        print("contrast value : %f" % param[0])
+        print("brightness value : %f" % param[1])
+        print("pente : %f" % (1./((param[3]-param[2])/limit)))
+        new_stack_image = np.float32(new_stack_image)
+        if param[4] != 1 or param[5] != 1 or param[6] != 1:
+            if mode == "rgb":
+                print("R contrast value : %f" % param[4])
+                print("G contrast value : %f" % param[5])
+                print("B contrast value : %f" % param[6])
+                new_stack_image[:, :, 0] = new_stack_image[:, :, 0] * param[6]
+                new_stack_image[:, :, 1] = new_stack_image[:, :, 1] * param[5]
+                new_stack_image[:, :, 2] = new_stack_image[:, :, 2] * param[4]
+
+        if param[2] != 0 or param[3] != limit:
+            new_stack_image = np.where(new_stack_image < param[3], new_stack_image, param[3])
+            new_stack_image = np.where(new_stack_image > param[2], new_stack_image, param[2])
+            new_stack_image = new_stack_image * (1. / ((param[3] - param[2]) / limit))
+
+        if param[0] != 1 or param[1] != 0:
+            new_stack_image = new_stack_image * param[0] + param[1]
+
+        new_stack_image = np.where(new_stack_image < limit, new_stack_image, limit)
+        if im_type == "uint16":
+            new_stack_image = np.uint16(new_stack_image)
+        elif im_type == "uint8":
+            new_stack_image = np.uint8(new_stack_image)
+
     cv2.imwrite(work_path + "/" + name_of_tiff_image, new_stack_image)
     print("TIFF image create : %s" % work_path + "/" + name_of_tiff_image)
 
@@ -80,9 +154,9 @@ def test_utype(image):
     # search type
     im_type = image.dtype.name
     if im_type == 'uint8':
-        limit = 2.**8-1
+        limit = 2. ** 8 - 1
     elif im_type == 'uint16':
-        limit = 2.**16-1
+        limit = 2. ** 16 - 1
     else:
         raise ValueError("fit format not support")
 
@@ -97,24 +171,40 @@ def create_first_ref_im(work_path, im_path, ref_name, save_im=False, param=[]):
     else:
         print("The file does not exist")
 
-    # test image format ".fit" or ".fits"
-    if im_path.find(".fits") == -1:
-        extension = ".fit"
+    # test image format ".fit" or ".fits" or other
+    if im_path.rfind(".fit") != -1:
+        if im_path[im_path.rfind(".fit"):] == ".fit":
+            extension = ".fit"
+        elif im_path[im_path.rfind(".fit"):] == ".fits":
+            extension = ".fits"
+        raw_im = False
     else:
-        extension = ".fits"
+        extension = im_path[im_path.rfind("."):]
+        raw_im = True
+
     # remove extension
     name = im_path.replace(extension, '')
     # remove path
     name = name[name.rfind("/") + 1:]
 
-    # open ref image
-    ref_fit = fits.open(im_path)
-    ref = ref_fit[0].data
-    # save header
-    ref_header = ref_fit[0].header
-    ref_fit.close()
-    # test rgb or gray
-    ref, mode = test_and_debayer_to_rgb(ref_header, ref)
+    if not raw_im:
+        # open ref image
+        ref_fit = fits.open(im_path)
+        ref = ref_fit[0].data
+        # save header
+        ref_header = ref_fit[0].header
+        ref_fit.close()
+        limit, im_type = test_utype(ref)
+        # test rgb or gray
+        ref, mode = test_and_debayer_to_rgb(ref_header, ref)
+    else:
+        print("convert DSLR image ...")
+        ref = rawpy.imread(im_path).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16)
+        mode = "rgb"
+        extension = ".fits"
+        limit = 2. ** 16 - 1
+        ref = np.rollaxis(ref, 2, 0)
+
     red = fits.PrimaryHDU(data=ref)
     red.writeto(work_path + "/" + ref_name)
     red.writeto(work_path + "/" + "first_" + ref_name)
@@ -125,29 +215,44 @@ def create_first_ref_im(work_path, im_path, ref_name, save_im=False, param=[]):
         # save stack image in fit
         red.writeto(work_path + "/" + "stack_image_" + name + extension)
 
+    return limit, mode
+
 
 def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=True, stack_methode="Sum", param=[]):
-
-    # test image format ".fit" or ".fits"
-    if new_image.find(".fits") == -1:
-        extension = ".fit"
+    # test image format ".fit" or ".fits" or other
+    if new_image.rfind(".fit") != -1:
+        if new_image[new_image.rfind(".fit"):] == ".fit":
+            extension = ".fit"
+        elif new_image[new_image.rfind(".fit"):] == ".fits":
+            extension = ".fits"
+        raw_im = False
     else:
-        extension = ".fits"
+        extension = new_image[new_image.rfind("."):]
+        raw_im = True
     # remove extension
     name = new_image.replace(extension, '')
     # remove path
     name = name[name.rfind("/") + 1:]
 
-    # open new image
-    new_fit = fits.open(new_image)
-    new = new_fit[0].data
-    # save header
-    new_header = new_fit[0].header
-    new_fit.close()
-    # test data type
-    new_limit, new_type = test_utype(new)
-    # test rgb or gray
-    new, new_mode = test_and_debayer_to_rgb(new_header, new)
+    if not raw_im:
+        # open new image
+        new_fit = fits.open(new_image)
+        new = new_fit[0].data
+        # save header
+        new_header = new_fit[0].header
+        new_fit.close()
+        # test data type
+        new_limit, new_type = test_utype(new)
+        # test rgb or gray
+        new, new_mode = test_and_debayer_to_rgb(new_header, new)
+    else:
+        print("convert DSLR image ...")
+        new = rawpy.imread(new_image).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16)
+        new_mode = "rgb"
+        extension = ".fits"
+        new_limit = 2. ** 16 - 1
+        new_type = "uint16"
+        new = np.rollaxis(new, 2, 0)
 
     # open ref image
     ref_fit = fits.open(work_path + "/" + ref_name)
@@ -241,6 +346,4 @@ def stack_live(work_path, new_image, ref_name, counter, save_im=False, align=Tru
 
     # save stack image in tiff (print image)
     os.remove(work_path + "/" + name_of_tiff_image)
-    save_tiff(work_path, np.array(stack_image), mode=mode, param=param)
-
-    return 1
+    tiff_name_path = save_tiff(work_path, np.array(stack_image), mode=mode, param=param)
