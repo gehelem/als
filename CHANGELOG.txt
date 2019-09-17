@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.2 (2019-05-21)
+========================
+
+- New feature : Stacked image's contrast and brightness can be adjusted
+
 Version 0.1 (2019-05-18)
 ========================
 

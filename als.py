@@ -20,6 +20,7 @@ import os
 from datetime import datetime
 import shutil
 import cv2
+import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -27,6 +28,10 @@ from alsui import Ui_stack_window  # import du fichier alsui.py généré par : 
 
 # from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import stack as stk
+
+
+name_of_tiff_image = "stack_image.tiff"
+name_of_fit_image = "stack_ref_image.fit"
 
 
 class MyEventHandler(FileSystemEventHandler, QtCore.QThread):
@@ -50,12 +55,13 @@ class MyEventHandler(FileSystemEventHandler, QtCore.QThread):
 class WatchOutForFileCreations(QtCore.QThread):
     print_image = QtCore.pyqtSignal()
 
-    def __init__(self, path, work_folder, align_on, save_on, stack_methode):
+    def __init__(self, path, work_folder, align_on, save_on, stack_methode, param):
         super(WatchOutForFileCreations, self).__init__()
         self.path = path
         self.work_folder = work_folder
         self.first = 0
         self.counter = 0
+        self.param = param
         print(self.work_folder)
         print(self.path)
         self.observer = Observer()
@@ -71,14 +77,15 @@ class WatchOutForFileCreations(QtCore.QThread):
     def created(self, new_image_path, align_on, save_on, stack_methode):
         self.counter = self.counter + 1
         if self.first == 0:
-            stk.create_first_ref_im(self.work_folder, new_image_path, "stack_ref_image.fit", save_im=save_on)
-            print("first file created : %s" % self.work_folder + "/stack_ref_image.fit")
+            stk.create_first_ref_im(self.work_folder, new_image_path, name_of_fit_image, save_im=save_on,
+                                    param=self.param)
+            print("first file created : %s" % self.work_folder + "/" + name_of_fit_image)
             self.first = 1
         else:
             # appelle de la fonction stack live
-            stk.stack_live(self.work_folder, new_image_path, "stack_ref_image.fit", self.counter,
-                           save_im=save_on, align=align_on, stack_methode=stack_methode)
-            print("file created : %s" % self.work_folder + "/stack_ref_image.fit")
+            stk.stack_live(self.work_folder, new_image_path, name_of_fit_image, self.counter,
+                           save_im=save_on, align=align_on, stack_methode=stack_methode, param=self.param)
+            print("file created : %s" % self.work_folder + "/" + name_of_fit_image)
         self.print_image.emit()
 
 
@@ -96,6 +103,10 @@ class als_main_window(QtWidgets.QMainWindow):
         self.counter = 0
         self.align = False
         self.dark = False
+        self.contrast_value = 1
+        self.luminosity_value = 0
+        self.black_value = 0
+        self.white_value = 65525
 
     def connect_actions(self):
 
@@ -106,28 +117,56 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.bBrowseFolder.clicked.connect(self.cb_browse_folder)
         self.ui.bBrowseDark.clicked.connect(self.cb_browse_dark)
         self.ui.bBrowseWork.clicked.connect(self.cb_browse_work)
+        self.ui.pb_apply_value.clicked.connect(lambda: self.apply_value(self.counter, self.ui.tWork.text(),
+                                                                        name_of_tiff_image))
 
     # ------------------------------------------------------------------------------
     # Callbacks
     def cb_save(self):
         timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now())))
         self.ui.log.append("Saving : stack-"+timestamp+".fit")
-        shutil.copy(os.path.expanduser(self.ui.tWork.text())+"/stack_ref_image.fit",
-                    os.path.expanduser(self.ui.tWork.text())+"/stack-"+timestamp+".fit")
+        shutil.copy(os.path.expanduser(self.ui.tWork.text()) + "/" + name_of_fit_image,
+                    os.path.expanduser(self.ui.tWork.text()) + "/stack-" + timestamp + ".fit")
 
-    def update_image(self):
-        self.counter = self.counter+1
-        self.ui.cnt.setText(str(self.counter))
-        effect = QtWidgets.QGraphicsColorizeEffect(self.ui.image_stack)
-        effect.setStrength(0.0)
-        self.ui.image_stack.setGraphicsEffect(effect)
-        pixmap_tiff = QtGui.QPixmap(os.path.expanduser(self.ui.tWork.text() + "/" + "stack_image.tiff"))
+    def apply_value(self, counter, work_folder, tiff_image):
+        self.contrast_value = self.ui.contrast_silder.value()
+        self.luminosity_value = self.ui.luminosity_slider.value()
+        self.black_value = self.ui.black_slider.value()
+        self.white_value = self.ui.white_slider.value()
+        if counter > 0:
+            new_tiff_image = self.ajuste_value(work_folder, tiff_image)
+            self.update_image(work_folder, new_tiff_image, add=False)
+        print("Define new display value")
+
+    def ajuste_value(self, work_folder, tiff_image):
+        image = cv2.imread(os.path.expanduser(work_folder+"/"+tiff_image), -1)
+        limit, im_type = stk.test_utype(image)
+        image = np.float32(image)*self.contrast_value+self.luminosity_value
+        image = np.where(image < limit, image, limit)
+        if im_type == "uint16":
+            image = np.uint16(image)
+        elif im_type == "uint8":
+            image = np.uint8(image)
+        # cv2.imshow("image", image/65525.)
+        cv2.imwrite(os.path.expanduser(work_folder+"/"+"new_" + name_of_tiff_image), image)
+        print("Adjusted GUI image")
+        return "new_" + name_of_tiff_image
+
+    def update_image(self, work_folder, tiff_image, add=True):
+        if add:
+            self.counter = self.counter+1
+            self.ui.cnt.setText(str(self.counter))
+
+        pixmap_tiff = QtGui.QPixmap(os.path.expanduser(work_folder+"/"+tiff_image))
+
         if pixmap_tiff.isNull():
             print("Image non valide !")
+
         pixmap_tiff_resize = pixmap_tiff.scaled(self.ui.image_stack.frameGeometry().width(),
                                                 self.ui.image_stack.frameGeometry().height(),
                                                 QtCore.Qt.KeepAspectRatio)
         self.ui.image_stack.setPixmap(pixmap_tiff_resize)
+        print("Updated GUI image")
 
     def cb_browse_folder(self):
         DirName = QtWidgets.QFileDialog.getExistingDirectory(self, "Répertoire à scanner", self.ui.tFolder.text())
@@ -171,12 +210,15 @@ class als_main_window(QtWidgets.QMainWindow):
             else:
                 self.ui.log.append("Play with NO alignement")
 
+            param = [self.contrast_value, self.luminosity_value, self.black_value, self.white_value]
+
             # Lancement du watchdog
             self.fileWatcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()),
                                                         os.path.expanduser(self.ui.tWork.text()),
                                                         self.align,
                                                         self.ui.cbKeep.isChecked(),
-                                                        self.ui.cmMode.currentText())
+                                                        self.ui.cmMode.currentText(),
+                                                        param)
 
             if os.path.exists(os.path.expanduser(self.ui.tWork.text())):
                 shutil.rmtree(os.path.expanduser(self.ui.tWork.text())+"/")
@@ -190,7 +232,8 @@ class als_main_window(QtWidgets.QMainWindow):
             # activate stop button
             self.ui.pbStop.setEnabled(True)
             self.counter = 0
-            self.fileWatcher.print_image.connect(lambda: self.update_image())
+            self.ui.cnt.setText(str(self.counter))
+            self.fileWatcher.print_image.connect(lambda: self.update_image(self.ui.tWork.text(), name_of_tiff_image))
         else:
             self.ui.log.append("No have path")
 
