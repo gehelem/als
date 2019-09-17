@@ -19,7 +19,8 @@ class DataStore:
     @log
     def scan_in_progress(self):
         """
-        Is scan in progress
+        Is scan in progress.
+
         :return: True if scanner is running, False otherwise
         :rtype: bool
         """
@@ -29,7 +30,8 @@ class DataStore:
     @log
     def scan_in_progress(self, in_progress):
         """
-        Sets flag for scanner running status
+        Sets flag for scanner running status.
+
         :param in_progress: is scanner running
         :type in_progress: bool
         """
@@ -39,7 +41,8 @@ class DataStore:
     @log
     def add_observer(self, observer):
         """
-        Adds an observer to our observers list
+        Adds an observer to our observers list.
+
         :param observer: the new observer
         :type observer: any
         """
@@ -48,7 +51,8 @@ class DataStore:
     @log
     def remove_observer(self, observer):
         """
-        Removes observer from our observers list
+        Removes observer from our observers list.
+
         :param observer: the observer to remove
         :type observer: any
         """
