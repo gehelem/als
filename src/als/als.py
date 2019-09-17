@@ -395,6 +395,7 @@ class MainWindow(QMainWindow):
 
         model.STORE.add_observer(self)
         model.STORE.scan_in_progress = False
+        model.STORE.web_server_is_running = False
 
     @log
     def closeEvent(self, event):
@@ -739,8 +740,16 @@ class MainWindow(QMainWindow):
         """
         Updates all displays and controls depending on DataStore held data
         """
-        message = f"Scanning '{config.get_scan_folder_path()}'" if model.STORE.scan_in_progress else "Scanner is idle"
-        self._ui.statusBar.showMessage(message)
+        messages = list()
+
+        messages.append(f"Scanning '{config.get_scan_folder_path()}'" if model.STORE.scan_in_progress else "Scanner : idle")
+
+        if model.STORE.web_server_is_running:
+            messages.append(f"Web server reachable at http://{MainWindow.get_ip()}:{config.get_www_server_port_number()}")
+        else:
+            messages.append("Web server : idle")
+
+        self._ui.statusBar.showMessage('   -   '.join(messages))
 
     @log
     def _setup_work_folder(self):
@@ -874,6 +883,7 @@ class MainWindow(QMainWindow):
 
             log_function(f"Web server started. http://{ip_address}:{port_number}")
             self._ui.action_prefs.setEnabled(False)
+            model.STORE.web_server_is_running = True
         except OSError:
             title = "Could not start web server"
             message = f"The web server needs to listen on port n°{port_number} but this port is already in use.\n\n"
@@ -891,6 +901,7 @@ class MainWindow(QMainWindow):
             self.thread.join()
             self.thread = None
             _LOGGER.info("Web server stopped")
+            model.STORE.web_server_is_running = False
             self._ui.action_prefs.setEnabled(self._ui.pbPlay.isEnabled())
 
     @staticmethod
