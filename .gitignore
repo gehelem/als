@@ -108,3 +108,4 @@ venv.bak/
 #als specific
 /scan
 /wrk
+resources_dir/user.ini

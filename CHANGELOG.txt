@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.5 (2019-07-10)
+========================
+
+- New feature : Stacked image can be served by new built-in web server
+
 Version 0.4 (2019-06-22)
 ========================
 
