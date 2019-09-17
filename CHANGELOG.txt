@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.4 (2019-06-22)
+========================
+
+- New feature : New stacked image processor : Wavelets
+
 Version 0.3 (2019-05-23)
 ========================
 

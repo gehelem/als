@@ -19,35 +19,35 @@
 import os
 from datetime import datetime
 import shutil
-import cv2
 import numpy as np
+import gettext
 from PyQt5 import QtCore, QtGui, QtWidgets
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from alsui import Ui_stack_window  # import du fichier alsui.py généré par : pyuic5 alsui.ui -x -o alsui.py
 from astropy.io import fits
 
-# from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+# Local stuff
+from Config import Config
 import stack as stk
+import preprocess as prepro
 
 name_of_tiff_image = "stack_image.tiff"
-name_of_fit_image = "stack_ref_image.fit"
+gettext.install('als', 'locale')
 
 
-# class ColorParam:
-#    def __init__(self):
-#        self.contrast = 1
-#        self.brightness = 0
-#        self.black = 0
-#        self.white = 65535
+class image_ref_save:
+    def __init__(self):
+        self.image = []
+        self.status = "stop"
 
 
-class MyEventHandler(FileSystemEventHandler, QtCore.QThread):
+class MyEventHandler(FileSystemEventHandler, QtCore.QThread, image_ref_save):
     created_signal = QtCore.pyqtSignal()
     new_image_path = ""
 
     def __init__(self):
-        super(MyEventHandler, self).__init__()
+        super().__init__()
 
     def on_created(self, event):
         # if not event.is_directory:
@@ -65,8 +65,14 @@ class WatchOutForFileCreations(QtCore.QThread):
 
     def __init__(self, path, work_folder, align_on, save_on, stack_methode,
                  log, white_slider, black_slider, contrast_slider, brightness_slider,
-                 R_slider, G_slider, B_slider, apply_button):
-        super(WatchOutForFileCreations, self).__init__()
+                 R_slider, G_slider, B_slider, apply_button,
+                 image_ref_save, dark_on, dark_path,
+                 scnr_on, scnr_mode, scnr_value,
+                 wavelets_on, wavelets_type, wavelets_use_luminance,
+                 wavelet_1_value, wavelet_2_value, wavelet_3_value,
+                 wavelet_4_value, wavelet_5_value):
+
+        super().__init__()
         self.white_slider = white_slider
         self.black_slider = black_slider
         self.contrast_slider = contrast_slider
@@ -80,88 +86,147 @@ class WatchOutForFileCreations(QtCore.QThread):
         self.work_folder = work_folder
         self.first = 0
         self.counter = 0
+        self.first_image = []
+        self.image_ref_save = image_ref_save
+        self.ref_image = []
+        self.dark_on = dark_on  # need add dark in stack_live function
+        self.dark_path = dark_path  # need add dark in stack_live function
+        self.scnr_on = scnr_on
+        self.scnr_mode = scnr_mode
+        self.scnr_value = scnr_value
+        self.wavelets_on = wavelets_on
+        self.wavelets_type = wavelets_type
+        self.wavelets_use_luminance = wavelets_use_luminance,
+        self.wavelet_1_value = wavelet_1_value
+        self.wavelet_2_value = wavelet_2_value
+        self.wavelet_3_value = wavelet_3_value
+        self.wavelet_4_value = wavelet_4_value
+        self.wavelet_5_value = wavelet_5_value
         print(self.work_folder)
         print(self.path)
+
+        # __ call watchdog __
+        # call observer :
         self.observer = Observer()
+        # call observer class :
         self.event_handler = MyEventHandler()
         self.observer.schedule(self.event_handler, self.path, recursive=False)
         self.observer.start()
+
         self.event_handler.created_signal.connect(lambda: self.created(self.event_handler.new_image_path,
                                                                        align_on, save_on, stack_methode))
 
-    def run(self):
-        pass
-
     def created(self, new_image_path, align_on, save_on, stack_methode):
-        self.counter = self.counter + 1
-        if self.first == 0:
-            limit, mode = stk.create_first_ref_im(self.work_folder, new_image_path, name_of_fit_image, save_im=save_on,
-                                                  param=[self.contrast_slider.value() / 10.,
-                                                         self.brightness_slider.value(),
-                                                         self.black_slider.value(),
-                                                         self.white_slider.value(),
-                                                         self.R_slider.value() / 100.,
-                                                         self.G_slider.value() / 100.,
-                                                         self.B_slider.value() / 100.
-                                                         ])
-            self.log.append("first file created : %s" % self.work_folder + "/" + name_of_fit_image)
-            self.first = 1
-            self.white_slider.setMaximum(np.int(limit))
-            self.brightness_slider.setMaximum(np.int(limit) / 2.)
-            if self.white_slider.value() > limit:
-                self.white_slider.setSliderPosition(limit)
-            self.black_slider.setMaximum(np.int(limit))
-            if self.black_slider.value() > limit:
-                self.black_slider.setSliderPosition(limit)
-            if self.brightness_slider.value() > limit / 2.:
-                self.brightness_slider.setSliderPosition(limit / 2.)
-            if limit == 2. ** 16 - 1:
-                self.log.append("Read 16bit image ...")
-            elif limit == 2. ** 8 - 1:
-                self.log.append("Read 8bit image ...")
-            self.white_slider.setEnabled(True)
-            self.black_slider.setEnabled(True)
-            self.contrast_slider.setEnabled(True)
-            self.brightness_slider.setEnabled(True)
-            self.apply_button.setEnabled(True)
+        if self.image_ref_save.status == "play":
+            self.counter = self.counter + 1
+            self.log.append(_("Reading new frame..."))
+            if self.first == 0:
+                self.log.append(_("Reading first frame..."))
+                self.first_image, limit, mode = stk.create_first_ref_im(self.work_folder, new_image_path,
+                                                                        save_im=save_on)
 
-            if mode == "rgb":
-                # activation des barre r, g, b
-                self.log.append("Read RGB image ...")
-                self.R_slider.setEnabled(True)
-                self.G_slider.setEnabled(True)
-                self.B_slider.setEnabled(True)
-            elif mode == "gray":
-                # desactivation des barre r, g, b
-                self.log.append("Read B&W image ...")
-                self.R_slider.setEnabled(False)
-                self.G_slider.setEnabled(False)
-                self.B_slider.setEnabled(False)
+                self.image_ref_save.image = self.first_image
 
+                prepro.save_tiff(self.work_folder, self.image_ref_save.image, self.log,
+                                 mode=mode, scnr_on=self.scnr_on,
+                                 wavelets_on=self.wavelets_on,
+                                 wavelets_type=str(self.wavelets_type.currentText()),
+                                 wavelets_use_luminance=self.wavelets_use_luminance,
+                                 param=[self.contrast_slider.value() / 10.,
+                                        self.brightness_slider.value(),
+                                        self.black_slider.value(),
+                                        self.white_slider.value(),
+                                        self.R_slider.value() / 100.,
+                                        self.G_slider.value() / 100.,
+                                        self.B_slider.value() / 100.,
+                                        self.scnr_mode.currentText(),
+                                        self.scnr_value.value(),
+                                        {1: int(self.wavelet_1_value.text()) / 100.,
+                                         2: int(self.wavelet_2_value.text()) / 100.,
+                                         3: int(self.wavelet_3_value.text()) / 100.,
+                                         4: int(self.wavelet_4_value.text()) / 100.,
+                                         5: int(self.wavelet_5_value.text()) / 100.},
+                                        ])
+                self.first = 1
+                self.white_slider.setMaximum(np.int(limit))
+                self.brightness_slider.setMaximum(np.int(limit) / 2.)
+                self.brightness_slider.setMinimum(np.int(-1 * limit) / 2.)
+                if self.white_slider.value() > limit:
+                    self.white_slider.setSliderPosition(limit)
+                elif self.white_slider.value() < -1 * limit:
+                    self.white_slider.setSliderPosition(-1 * limit)
+                self.black_slider.setMaximum(np.int(limit))
+                if self.black_slider.value() > limit:
+                    self.black_slider.setSliderPosition(limit)
+                if self.brightness_slider.value() > limit / 2.:
+                    self.brightness_slider.setSliderPosition(limit / 2.)
+                if limit == 2. ** 16 - 1:
+                    self.log.append(_("Read 16bit frame ..."))
+                elif limit == 2. ** 8 - 1:
+                    self.log.append(_("Read 8bit frame ..."))
+                self.white_slider.setEnabled(True)
+                self.black_slider.setEnabled(True)
+                self.contrast_slider.setEnabled(True)
+                self.brightness_slider.setEnabled(True)
+                self.apply_button.setEnabled(True)
+
+            else:
+                # appelle de la fonction stack live
+                if align_on:
+                    self.log.append(_("Stack and Align New frame..."))
+                else:
+                    self.log.append(_("Stack New frame..."))
+
+                self.image_ref_save.image, limit, mode = stk.stack_live(self.work_folder, new_image_path,
+                                                                        self.counter,
+                                                                        ref=self.image_ref_save.image,
+                                                                        first_ref=self.first_image,
+                                                                        save_im=save_on,
+                                                                        align=align_on,
+                                                                        stack_methode=stack_methode)
+
+                prepro.save_tiff(self.work_folder, self.image_ref_save.image, self.log,
+                                 mode=mode, scnr_on=self.scnr_on,
+                                 wavelets_on=self.wavelets_on,
+                                 wavelets_type=str(self.wavelets_type.currentText()),
+                                 wavelets_use_luminance=self.wavelets_use_luminance,
+                                 param=[self.contrast_slider.value() / 10.,
+                                        self.brightness_slider.value(),
+                                        self.black_slider.value(),
+                                        self.white_slider.value(),
+                                        self.R_slider.value() / 100.,
+                                        self.G_slider.value() / 100.,
+                                        self.B_slider.value() / 100.,
+                                        self.scnr_mode.currentText(),
+                                        self.scnr_value.value(),
+                                        {1: int(self.wavelet_1_value.text()) / 100.,
+                                         2: int(self.wavelet_2_value.text()) / 100.,
+                                         3: int(self.wavelet_3_value.text()) / 100.,
+                                         4: int(self.wavelet_4_value.text()) / 100.,
+                                         5: int(self.wavelet_5_value.text()) / 100.}
+                                        ])
+
+                self.log.append(_("... Stack finished"))
+            self.print_image.emit()
         else:
-            # appelle de la fonction stack live
-            stk.stack_live(self.work_folder, new_image_path, name_of_fit_image, self.counter,
-                           save_im=save_on, align=align_on, stack_methode=stack_methode,
-                           param=[self.contrast_slider.value() / 10.,
-                                  self.brightness_slider.value(),
-                                  self.black_slider.value(),
-                                  self.white_slider.value(),
-                                  self.R_slider.value() / 100.,
-                                  self.G_slider.value() / 100.,
-                                  self.B_slider.value() / 100.
-                                  ])
-            self.log.append("file created : %s" % self.work_folder + "/" + name_of_fit_image)
-        self.print_image.emit()
+            self.log.append(_("New image detected but not considered"))
 
 
 # ------------------------------------------------------------------------------
 
 
 class als_main_window(QtWidgets.QMainWindow):
+
     def __init__(self, parent=None):
-        super(als_main_window, self).__init__(parent)
+        super().__init__(parent)
         self.ui = Ui_stack_window()
         self.ui.setupUi(self)
+
+        self.config = Config(path='./als.ini')
+        self.config.read()
+        self.ui.tFolder.setText(os.path.expanduser(self.config['Default']['folderscan']))
+        self.ui.tDark.setText(os.path.expanduser(self.config['Default']['filedark']))
+        self.ui.tWork.setText(os.path.expanduser(self.config['Default']['folderwork']))
 
         self.connect_actions()
         self.running = False
@@ -169,12 +234,19 @@ class als_main_window(QtWidgets.QMainWindow):
         self.align = False
         self.dark = False
         self.pause = False
+        self.image_ref_save = image_ref_save()
+
+        self.setWindowTitle(_("Astro Live Stacker"))
+
+    def closeEvent(self, event):
+        super().closeEvent(event)
 
     def connect_actions(self):
 
         self.ui.pbPlay.clicked.connect(self.cb_play)
         self.ui.pbStop.clicked.connect(self.cb_stop)
         self.ui.pbReset.clicked.connect(self.cb_reset)
+        self.ui.pbPause.clicked.connect(self.cb_pause)
         self.ui.pbSave.clicked.connect(self.cb_save)
         self.ui.bBrowseFolder.clicked.connect(self.cb_browse_folder)
         self.ui.bBrowseDark.clicked.connect(self.cb_browse_dark)
@@ -191,111 +263,96 @@ class als_main_window(QtWidgets.QMainWindow):
         self.ui.R_slider.valueChanged['int'].connect(lambda: self.ui.R_value.setNum(self.ui.R_slider.value() / 100.))
         self.ui.G_slider.valueChanged['int'].connect(lambda: self.ui.G_value.setNum(self.ui.G_slider.value() / 100.))
         self.ui.B_slider.valueChanged['int'].connect(lambda: self.ui.B_value.setNum(self.ui.B_slider.value() / 100.))
+        self.ui.SCNR_Slider.valueChanged['int'].connect(
+            lambda: self.ui.SCNR_value.setNum(self.ui.SCNR_Slider.value() / 100.))
 
     # ------------------------------------------------------------------------------
     # Callbacks
     def cb_save(self):
         timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now())))
-        self.ui.log.append("Saving : stack-" + timestamp + ".fit")
-        shutil.copy(os.path.expanduser(self.ui.tWork.text()) + "/" + name_of_fit_image,
-                    os.path.expanduser(self.ui.tWork.text()) + "/stack-" + timestamp + ".fit")
+        self.ui.log.append(_("Saving : ") + "stack_image_" + timestamp + ".fit")
+        # save stack image in fit
+        red = fits.PrimaryHDU(data=self.image_ref_save.image)
+        red.writeto(self.ui.tWork.text() + "/" + "stack_image_" + timestamp + ".fit")
+        # red.close()
+        del red
 
     def apply_value(self, counter, work_folder):
         if counter > 0:
-            new_tiff_image = self.ajuste_value(work_folder)
-            self.update_image(work_folder, new_tiff_image, add=False)
-        self.ui.log.append("Define new display value")
+            self.ajuste_value(work_folder)
+            self.update_image(work_folder, add=False)
+        self.ui.log.append(_("Define new display value"))
 
     def ajuste_value(self, work_folder):
-        # open ref image
-        image_fit = fits.open(os.path.expanduser(work_folder + "/" + name_of_fit_image))
-        image = image_fit[0].data
-        image_fit.close()
 
         # test rgb or gray
-        if len(image.shape) == 2:
+        if len(self.image_ref_save.image.shape) == 2:
             mode = "gray"
-        elif len(image.shape) == 3:
+        elif len(self.image_ref_save.image.shape) == 3:
             mode = "rgb"
         else:
-            raise ValueError("fit format not support")
-        # apply cv2 transformation in rgb image
-        if mode == "rgb":
-            image = np.rollaxis(image, 0, 3)
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        else:
-            image = image
-        # test type image
-        limit, im_type = stk.test_utype(image)
+            raise ValueError(_("fit format not supported"))
 
-        # apply value transformation
-        image = np.float32(image)
+        prepro.save_tiff(work_folder, self.image_ref_save.image, self.ui.log,
+                         mode=mode,
+                         scnr_on=self.ui.cbSCNR.isChecked(),
+                         wavelets_on=self.ui.cbWavelets.isChecked(),
+                         wavelets_type=str(self.ui.cBoxWaveType.currentText()),
+                         wavelets_use_luminance=self.ui.cbLuminanceWavelet.isChecked(),
+                         param=[self.ui.contrast_slider.value() / 10.,
+                                self.ui.brightness_slider.value(),
+                                self.ui.black_slider.value(),
+                                self.ui.white_slider.value(),
+                                self.ui.R_slider.value() / 100.,
+                                self.ui.G_slider.value() / 100.,
+                                self.ui.B_slider.value() / 100.,
+                                self.ui.cmSCNR.currentText(),
+                                self.ui.SCNR_Slider.value() / 100.,
+                                {1: int(self.ui.wavelet_1_label.text()) / 100.,
+                                 2: int(self.ui.wavelet_2_label.text()) / 100.,
+                                 3: int(self.ui.wavelet_3_label.text()) / 100.,
+                                 4: int(self.ui.wavelet_4_label.text()) / 100.,
+                                 5: int(self.ui.wavelet_5_label.text()) / 100.},
+                                ])
 
-        print("correct display image")
-        print("contrast value : %s" % str(self.ui.contrast_slider.value() / 10.))
-        print("brightness value : %s" % str(self.ui.brightness_slider.value()))
-        print("pente : %f" % (1. / ((self.ui.white_slider.value() - self.ui.black_slider.value()) / limit)))
+        self.ui.log.append(_("Adjust GUI image"))
 
-        if (self.ui.R_slider.value() / 100.) != 1 or \
-                (self.ui.G_slider.value() / 100.) != 1 or \
-                (self.ui.B_slider.value() / 100.) != 1:
-            if mode == "rgb":
-                print("R contrast value : %s" % str(self.ui.R_slider.value() / 100.))
-                print("G contrast value : %s" % str(self.ui.G_slider.value() / 100.))
-                print("B contrast value : %s" % str(self.ui.B_slider.value() / 100.))
-                image[:, :, 0] = image[:, :, 0] * (self.ui.B_slider.value() / 100.)
-                image[:, :, 1] = image[:, :, 1] * (self.ui.G_slider.value() / 100.)
-                image[:, :, 2] = image[:, :, 2] * (self.ui.R_slider.value() / 100.)
-        if self.ui.black_slider.value() != 0 or self.ui.white_slider.value() != limit:
-            image = np.where(image < self.ui.white_slider.value(), image, self.ui.white_slider.value())
-            image = np.where(image > self.ui.black_slider.value(), image, self.ui.black_slider.value())
-            image = image * (1. / ((self.ui.white_slider.value() - self.ui.black_slider.value()) / limit))
-
-        image = image * (self.ui.contrast_slider.value() / 10.) + self.ui.brightness_slider.value()
-        image = np.where(image < limit, image, limit)
-        if im_type == "uint16":
-            image = np.uint16(image)
-        elif im_type == "uint8":
-            image = np.uint8(image)
-
-        # write tiff file
-        # cv2.imshow("image", image/65535.)
-        cv2.imwrite(os.path.expanduser(work_folder + "/" + name_of_tiff_image), image)
-        self.ui.log.append("Adjusted GUI image")
-        return name_of_tiff_image
-
-    def update_image(self, work_folder, tiff_image, add=True):
+    def update_image(self, work_folder, add=True):
         if add:
             self.counter = self.counter + 1
             self.ui.cnt.setText(str(self.counter))
 
-        pixmap_tiff = QtGui.QPixmap(os.path.expanduser(work_folder + "/" + tiff_image))
+        pixmap_tiff = QtGui.QPixmap(os.path.expanduser(work_folder + "/" + name_of_tiff_image))
 
         if pixmap_tiff.isNull():
-            self.ui.log.append("Image non valide !")
+            self.ui.log.append(_("invalid frame"))
 
         pixmap_tiff_resize = pixmap_tiff.scaled(self.ui.image_stack.frameGeometry().width(),
                                                 self.ui.image_stack.frameGeometry().height(),
                                                 QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         self.ui.image_stack.setPixmap(pixmap_tiff_resize)
-        self.ui.log.append("Updated GUI image")
+        self.ui.log.append(_("Updated GUI image"))
+        print(_("Updated GUI image"))
 
     def cb_browse_folder(self):
-        DirName = QtWidgets.QFileDialog.getExistingDirectory(self, "Répertoire à scanner", self.ui.tFolder.text())
+        DirName = QtWidgets.QFileDialog.getExistingDirectory(self, _("Scan folder"), self.ui.tFolder.text())
         if DirName:
             self.ui.tFolder.setText(DirName)
             self.ui.pbPlay.setEnabled(True)
+            self.config['Default']['folderscan'] = DirName
 
     def cb_browse_dark(self):
-        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Fichier de Dark", "",
+        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, _("Dark file"), "",
                                                             "Fit Files (*.fit);;All Files (*)")
         if fileName:
             self.ui.tDark.setText(fileName)
+            self.config['Default']['filedark'] = fileName
 
     def cb_browse_work(self):
-        DirName = QtWidgets.QFileDialog.getExistingDirectory(self, "Répertoire de travail", self.ui.tWork.text())
+        DirName = QtWidgets.QFileDialog.getExistingDirectory(self, _("Work folder"), self.ui.tWork.text())
         if DirName:
             self.ui.tWork.setText(DirName)
+            self.config['Default']['folderwork'] = DirName
 
     def cb_play(self):
 
@@ -313,18 +370,11 @@ class als_main_window(QtWidgets.QMainWindow):
             self.counter = 0
             self.ui.cnt.setText(str(self.counter))
 
-            if self.pause:
-                self.fileWatcher.observer.start()
-                self.pause = False
-                # desactivate play button
-                self.ui.pbPlay.setEnabled(False)
-                # activate stop button
-                self.ui.pbStop.setEnabled(True)
-            else:
+            if self.image_ref_save.status == "stop":
                 # Print scan folder
-                self.ui.log.append("Dossier a scanner : " + os.path.expanduser(self.ui.tFolder.text()))
+                self.ui.log.append(_("Scan folder : ") + os.path.expanduser(self.ui.tFolder.text()))
                 # Print work folder
-                self.ui.log.append("Dossier de travail : " + os.path.expanduser(self.ui.tWork.text()))
+                self.ui.log.append(_("Work folder : ") + os.path.expanduser(self.ui.tWork.text()))
 
                 # check align
                 if self.ui.cbAlign.isChecked():
@@ -337,11 +387,11 @@ class als_main_window(QtWidgets.QMainWindow):
 
                 # Print live method
                 if self.align and self.dark:
-                    self.ui.log.append("Play with alignement type: " + self.ui.cmMode.currentText() + " and Dark")
+                    self.ui.log.append(_("Play with alignement type: ") + self.ui.cmMode.currentText() + " and Dark")
                 elif self.align:
-                    self.ui.log.append("Play with alignement type: " + self.ui.cmMode.currentText())
+                    self.ui.log.append(_("Play with alignement type: ") + self.ui.cmMode.currentText())
                 else:
-                    self.ui.log.append("Play with NO alignement")
+                    self.ui.log.append(_("Play with NO alignement"))
 
                 # Lancement du watchdog
                 self.fileWatcher = WatchOutForFileCreations(os.path.expanduser(self.ui.tFolder.text()),
@@ -357,8 +407,21 @@ class als_main_window(QtWidgets.QMainWindow):
                                                             self.ui.R_slider,
                                                             self.ui.G_slider,
                                                             self.ui.B_slider,
-                                                            self.ui.pb_apply_value
-                                                            )
+                                                            self.ui.pb_apply_value,
+                                                            self.image_ref_save,
+                                                            self.dark,
+                                                            os.path.expanduser(self.ui.tDark.text()),
+                                                            self.ui.cbSCNR,
+                                                            self.ui.cmSCNR,
+                                                            self.ui.SCNR_Slider,
+                                                            self.ui.cbWavelets,
+                                                            self.ui.cBoxWaveType,
+                                                            self.ui.cbLuminanceWavelet,
+                                                            self.ui.wavelet_1_label,
+                                                            self.ui.wavelet_2_label,
+                                                            self.ui.wavelet_3_label,
+                                                            self.ui.wavelet_4_label,
+                                                            self.ui.wavelet_5_label)
 
                 if os.path.exists(os.path.expanduser(self.ui.tWork.text())):
                     shutil.rmtree(os.path.expanduser(self.ui.tWork.text()) + "/")
@@ -367,36 +430,41 @@ class als_main_window(QtWidgets.QMainWindow):
                     os.mkdir(os.path.expanduser(self.ui.tWork.text()))
 
                 self.fileWatcher.start()
-                self.running = True
+            else:
+                self.ui.log.append("Play")
 
-                # desactivate play button
-                self.ui.pbPlay.setEnabled(False)
-                self.ui.pbReset.setEnabled(False)
-                # activate stop button
-                self.ui.pbStop.setEnabled(True)
+            self.image_ref_save.status = "play"
+            # desactivate play button
+            self.ui.pbPlay.setEnabled(False)
+            self.ui.pbReset.setEnabled(False)
+            # activate stop button
+            self.ui.pbStop.setEnabled(True)
+            # activate pause button
+            self.ui.pbPause.setEnabled(True)
 
-                self.fileWatcher.print_image.connect(
-                    lambda: self.update_image(self.ui.tWork.text(), name_of_tiff_image))
+            self.fileWatcher.print_image.connect(
+                lambda: self.update_image(self.ui.tWork.text(), name_of_tiff_image))
 
         else:
-            self.ui.log.append("No have path")
+            self.ui.log.append(_("No path"))
 
     def cb_stop(self):
         self.fileWatcher.observer.stop()
-        self.running = False
+        self.image_ref_save.status = "stop"
         self.ui.pbStop.setEnabled(False)
         self.ui.pbPlay.setEnabled(True)
         self.ui.pbReset.setEnabled(True)
+        self.ui.pbPause.setEnabled(False)
         self.ui.log.append("Stop")
 
     def cb_pause(self):
         self.fileWatcher.observer.stop()
-        self.running = False
-        self.pause = True
+        self.image_ref_save.status = "pause"
         self.ui.pbStop.setEnabled(False)
         self.ui.pbPlay.setEnabled(True)
-        self.ui.pbReset.setEnabled(True)
-        self.ui.log.append("Stop")
+        self.ui.pbReset.setEnabled(False)
+        self.ui.pbPause.setEnabled(False)
+        self.ui.log.append("Pause")
 
     def cb_reset(self):
         self.ui.log.append("Reset")
