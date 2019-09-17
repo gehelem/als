@@ -1,3 +1,6 @@
+"""
+Provides image preprocessing features
+"""
 # ALS - Astro Live Stacker
 # Copyright (C) 2019  Sébastien Durand (Dragonlost) - Gilles Le Maréchal (Gehelem)
 #
@@ -25,14 +28,14 @@ import numpy as np
 from pywi.processing.transform import starlet
 
 # Local stuff
-import stack as stk
-from code_utilities import log
+from als import stack as stk
+from als.code_utilities import log
 
 NAME_OF_TIFF_IMAGE = "stack_image.tiff"
 NAME_OF_JPEG_IMAGE = "stack_image.jpg"
 NAME_OF_PNG_IMAGE = "stack_image.png"
 
-_logger = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 
 @log
@@ -41,23 +44,22 @@ def wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
     Module allowing to play with coefficients of a redudant frame from the
     wavelet family.
     A ratio is applied to each level
-    :param image:      input image
-    :param wavelets_type: either 'deep sky' or 'planetary' gives the family
-                            of wavelets to be used for processing
-    :param parameters: ratio to be applied for each level of the wavelet
-                        decomposition
-    :return:           denoised/enhanced image
+    :param image:         input image
+    :param wavelets_type: either 'deep sky' or 'planetary' gives the family of wavelets to be used for processing
+    :param parameters:    ratio to be applied for each level of the wavelet decomposition
+    :return:              denoised/enhanced image
     """
 
     @log
     def apply_dt_wavelets(img, param):
+        # pylint: disable=E1101
         # Compute 5 levels of dtcwt with the antonini/qshift settings
         input_shape = img.shape
         transform = dtcwt.Transform2d(biort='antonini', qshift='qshift_06')
-        t = transform.forward(img, nlevels=len(param))
+        result = transform.forward(img, nlevels=len(param))
 
         for level, ratio in param.items():
-            data = t.highpasses[level - 1]
+            data = result.highpasses[level - 1]
             if ratio < 1:
                 norm = np.absolute(data)
                 # 1 keeps 100% of the coefficients, 0 keeps 0% of the coeff
@@ -68,17 +70,17 @@ def wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
             else:
                 # Just applying gain for this level
                 data *= ratio
-        ret = transform.inverse(t)
+        ret = transform.inverse(result)
         # in some cases dtcwt does reshape the image for performance purpose
         return ret[:input_shape[0], :input_shape[1]]
 
     @log
     def apply_star_wavelets(img, param):
         # Compute 5 levels of starlets
-        t = starlet.wavelet_transform(img, number_of_scales=len(param))
+        result = starlet.wavelet_transform(img, number_of_scales=len(param))
 
         for level, ratio in param.items():
-            data = t[level - 1]
+            data = result[level - 1]
             if ratio < 1:
                 norm = np.absolute(data)
                 # 1 keeps 100% of the coefficients, 0 keeps 0% of the coeff
@@ -89,7 +91,7 @@ def wavelets(image, wavelets_type, wavelets_use_luminance, parameters):
             else:
                 # Just applying gain for this level
                 data *= ratio
-        return starlet.inverse_wavelet_transform(t)
+        return starlet.inverse_wavelet_transform(result)
 
     # Choose in between members of a catalog
     wavelet_db = {'deep sky': apply_star_wavelets,
@@ -199,7 +201,7 @@ def save_tiff(work_path, stack_image, log_ui, mode="rgb", scnr_on=False,
         new_stack_image = stack_image
 
     # read image number type
-    limit, im_type = stk.test_utype(new_stack_image)
+    limit, im_type = stk.get_limit_and_utype(new_stack_image)
 
     # if no have change, no process
     if param[0] != 1 or param[1] != 0 or param[2] != 0 or param[3] != limit \
@@ -268,19 +270,19 @@ def save_tiff(work_path, stack_image, log_ui, mode="rgb", scnr_on=False,
     # use cv2 fonction for save print image in tiff format
     if image_type == "tiff":
         cv2.imwrite(work_path + "/" + NAME_OF_TIFF_IMAGE, new_stack_image)
-        _logger.info(_("TIFF image create :") + "%s" % work_path + "/" + NAME_OF_TIFF_IMAGE)
+        _LOGGER.info(_("TIFF image create :") + "%s" % work_path + "/" + NAME_OF_TIFF_IMAGE)
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
 
     elif image_type == "png":
         print(new_stack_image.dtype)
         cv2.imwrite(work_path + "/" + NAME_OF_PNG_IMAGE, new_stack_image, [cv2.IMWRITE_PNG_COMPRESSION, 9])
-        _logger.info(_("PNG image create :") + "%s" % work_path + "/" + NAME_OF_PNG_IMAGE)
+        _LOGGER.info(_("PNG image create :") + "%s" % work_path + "/" + NAME_OF_PNG_IMAGE)
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
 
     elif image_type == "jpeg":
         # limitate to 8bit
         image_to_save = new_stack_image
-        if "uint16" == image_to_save.dtype:
+        if image_to_save.dtype == "uint16":
             bit_depth = 16
         else:
             bit_depth = 8
@@ -289,9 +291,9 @@ def save_tiff(work_path, stack_image, log_ui, mode="rgb", scnr_on=False,
             image_to_save = (image_to_save / (((2**bit_depth)-1) / ((2**8)-1))).astype('uint8')
 
         cv2.imwrite(work_path + "/" + NAME_OF_JPEG_IMAGE, image_to_save, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
-        _logger.info(_("JPEG image create :") + "%s" % work_path + "/" + NAME_OF_JPEG_IMAGE)
+        _LOGGER.info(_("JPEG image create :") + "%s" % work_path + "/" + NAME_OF_JPEG_IMAGE)
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
     elif image_type == "no":
-        _logger.info(_("No image create, als use RAM"))
+        _LOGGER.info(_("No image create, als use RAM"))
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
     return new_stack_image
