@@ -32,6 +32,7 @@ _WORK_FOLDER_PATH = "work_folder_path"
 _LOG_LEVEL = "log_level"
 _WWW_SERVER_PORT = "www_server_port"
 _WINDOW_GEOMETRY = "window_geometry"
+_IMAGE_SAVE_FORMAT = "image_save_format"
 
 # keys used to describe logging level
 _LOG_LEVEL_DEBUG = "DEBUG"
@@ -39,6 +40,12 @@ _LOG_LEVEL_INFO = "INFO"
 _LOG_LEVEL_WARNING = "WARNING"
 _LOG_LEVEL_ERROR = "ERROR"
 _LOG_LEVEL_CRITICAL = "CRITICAL"
+
+# keys used to describe file save formats
+IMAGE_SAVE_TIFF = "tiff"
+IMAGE_SAVE_PNG = "png"
+IMAGE_SAVE_JPEG = "jpg"
+IMAGE_SAVE_FIT = "fit"
 
 # store of matches between human readable log levels and logging module constants
 _LOG_LEVELS = {
@@ -53,13 +60,48 @@ _LOG_LEVELS = {
 _DEFAULTS = {
     _SCAN_FOLDER_PATH:    os.path.expanduser("~/als/scan"),
     _WORK_FOLDER_PATH:    os.path.expanduser("~/als/work"),
-    _LOG_LEVEL:           "INFO",
+    _LOG_LEVEL:           _LOG_LEVEL_INFO,
     _WWW_SERVER_PORT:     "8000",
-    _WINDOW_GEOMETRY: "50,100,1024,800"
+    _WINDOW_GEOMETRY:     "50,100,1024,800",
+    _IMAGE_SAVE_FORMAT:   IMAGE_SAVE_JPEG,
 }
 _MAIN_SECTION_NAME = "main"
 
+# application constants
+STACKED_IMAGE_FILE_NAME_BASE = "stack_image"
+WEB_SERVED_IMAGE_FILE_NAME_BASE = "web_image"
+
 _CONFIG_PARSER = ConfigParser()
+
+
+def get_image_save_format():
+    """
+    Retrieves the configured image save format.
+
+    :return: format code. Can be any value from :
+
+      - IMAGE_SAVE_TIFF
+      - IMAGE_SAVE_PNG
+      - IMAGE_SAVE_JPEG
+
+    :rtype: str
+    """
+    return _get(_IMAGE_SAVE_FORMAT)
+
+
+def set_image_save_format(save_format):
+    """
+    Sets image save format.
+
+    :param save_format: format code. Can be any value from :
+
+      - IMAGE_SAVE_TIFF
+      - IMAGE_SAVE_PNG
+      - IMAGE_SAVE_JPEG
+
+    :type save_format: str
+    """
+    _set(_IMAGE_SAVE_FORMAT, save_format)
 
 
 def is_debug_log_on():

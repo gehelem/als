@@ -30,6 +30,15 @@ class PreferencesDialog(QDialog):
         self._ui.ln_web_server_port.setText(str(config.get_www_server_port_number()))
         self._ui.chk_debug_logs.setChecked(config.is_debug_log_on())
 
+        config_to_image_save_type_mapping = {
+
+            config.IMAGE_SAVE_JPEG: self._ui.radioSaveJpeg,
+            config.IMAGE_SAVE_PNG:  self._ui.radioSavePng,
+            config.IMAGE_SAVE_TIFF: self._ui.radioSaveTiff
+        }
+
+        config_to_image_save_type_mapping[config.get_image_save_format()].setChecked(True)
+
     # FIXME : using @log on this causes
     # TypeError: accept() takes 1 positional argument but 2 were given
     def accept(self):
@@ -50,6 +59,19 @@ class PreferencesDialog(QDialog):
             return
 
         config.set_debug_log(self._ui.chk_debug_logs.isChecked())
+
+        image_save_type_to_config_mapping = {
+
+            self._ui.radioSaveJpeg: config.IMAGE_SAVE_JPEG,
+            self._ui.radioSavePng:  config.IMAGE_SAVE_PNG,
+            self._ui.radioSaveTiff: config.IMAGE_SAVE_TIFF
+        }
+
+        for radio_button, image_save_type in image_save_type_to_config_mapping.items():
+            if radio_button.isChecked():
+                config.set_image_save_format(image_save_type)
+                break
+
         config.save()
 
         super().accept()

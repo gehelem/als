@@ -18,22 +18,15 @@ Provides image preprocessing features
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-# Numerical stuff
 import logging
 
 import cv2
-# Wavelet stuff
 import dtcwt
 import numpy as np
 from pywi.processing.transform import starlet
-
-# Local stuff
 from als import stack as stk
 from als.code_utilities import log
 
-NAME_OF_TIFF_IMAGE = "stack_image.tiff"
-NAME_OF_JPEG_IMAGE = "stack_image.jpg"
-NAME_OF_PNG_IMAGE = "stack_image.png"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -171,20 +164,18 @@ def scnr(rgb_image, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
 
 
 @log
-def save_tiff(work_path, stack_image, log_ui, mode="rgb", scnr_on=False,
-              wavelets_on=False, wavelets_type='deep sky',
-              wavelets_use_luminance=False, param=[], image_type="tiff"):
+def post_process_image(stack_image, log_ui, mode="rgb", scnr_on=False,
+                       wavelets_on=False, wavelets_type='deep sky',
+                       wavelets_use_luminance=False, param=[]):
     """
     Fonction for create print image and post process this image
 
-    :param work_path: string, path for work folder
     :param stack_image: np.array(uintX), Image, 3xMxN or MxN
     :param log_ui: QT log for print text in QT GUI
     :param mode: image mode ("rgb" or "gray")
     :param scnr_on: bool, activate scnr correction
     :param wavelets_on: bool, activate wavelet filtering
     :param param: post process param
-    :param image_type: "tiff", "no" and "jpeg"
     :return: no return
 
     """
@@ -267,33 +258,4 @@ def save_tiff(work_path, stack_image, log_ui, mode="rgb", scnr_on=False,
         elif im_type == "uint8":
             new_stack_image = np.uint8(new_stack_image)
 
-    # use cv2 fonction for save print image in tiff format
-    if image_type == "tiff":
-        cv2.imwrite(work_path + "/" + NAME_OF_TIFF_IMAGE, new_stack_image)
-        _LOGGER.info(_("TIFF image create :") + "%s" % work_path + "/" + NAME_OF_TIFF_IMAGE)
-        new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
-
-    elif image_type == "png":
-        print(new_stack_image.dtype)
-        cv2.imwrite(work_path + "/" + NAME_OF_PNG_IMAGE, new_stack_image, [cv2.IMWRITE_PNG_COMPRESSION, 9])
-        _LOGGER.info(_("PNG image create :") + "%s" % work_path + "/" + NAME_OF_PNG_IMAGE)
-        new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
-
-    elif image_type == "jpeg":
-        # limitate to 8bit
-        image_to_save = new_stack_image
-        if image_to_save.dtype == "uint16":
-            bit_depth = 16
-        else:
-            bit_depth = 8
-
-        if bit_depth > 8:
-            image_to_save = (image_to_save / (((2**bit_depth)-1) / ((2**8)-1))).astype('uint8')
-
-        cv2.imwrite(work_path + "/" + NAME_OF_JPEG_IMAGE, image_to_save, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
-        _LOGGER.info(_("JPEG image create :") + "%s" % work_path + "/" + NAME_OF_JPEG_IMAGE)
-        new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
-    elif image_type == "no":
-        _LOGGER.info(_("No image create, als use RAM"))
-        new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_BGR2RGB)
     return new_stack_image

@@ -23,30 +23,37 @@ import gettext
 import logging
 import os
 import shutil
+import sys
 import threading
 from datetime import datetime
 from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 
+import cv2
 import numpy as np
 from PyQt5.QtCore import pyqtSignal, QFileInfo, QThread, Qt, pyqtSlot, QTimer, QEvent
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMainWindow, QApplication
+
 from astroalign import MaxIterError
-from astropy.io import fits
 from qimage2ndarray import array2qimage
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-from als import preprocess as prepro, stack as stk, config, model
+from als import preprocess as prepro, stack as stk, model
 from als.code_utilities import log
-from als.model import VERSION
+from als.io.output import ImageSaver, save_image
+from als.model import VERSION, STORE
 from als.ui.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
+
+try:
+    from als import config
+except ValueError as value_error:
+    error_box("Config file is invalid", str(value_error))
+    print(f"***** ERROR : user config file is invalid : {value_error}")
+    sys.exit(1)
+
 from generated.als_ui import Ui_stack_window
 
-NAME_OF_TIFF_IMAGE = "stack_image.tiff"
-NAME_OF_JPEG_IMAGE = "stack_image.jpg"
-NAME_OF_PNG_IMAGE = "stack_image.png"
-SAVE_TYPE = "png"
 DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS = 100
 LOG_DOCK_INITIAL_HEIGHT = 60
 
@@ -261,27 +268,26 @@ class WatchOutForFileCreations(QThread):
 
                 self.image_ref_save.image = self.first_image
 
-                self.image_ref_save.stack_image = prepro.save_tiff(self.work_folder, self.image_ref_save.image,
-                                                                   self.log,
-                                                                   mode=mode, scnr_on=self.scnr_on.isChecked(),
-                                                                   wavelets_on=self.wavelets_on.isChecked(),
-                                                                   wavelets_type=str(self.wavelets_type.currentText()),
-                                                                   wavelets_use_luminance=self.wavelets_use_luminance.isChecked(),
-                                                                   param=[self.contrast_slider.value() / 10.,
-                                                                          self.brightness_slider.value(),
-                                                                          self.black_slider.value(),
-                                                                          self.white_slider.value(),
-                                                                          self.r_slider.value() / 100.,
-                                                                          self.g_slider.value() / 100.,
-                                                                          self.b_slider.value() / 100.,
-                                                                          self.scnr_mode.currentText(),
-                                                                          self.scnr_value.value(),
-                                                                          {1: int(self.wavelet_1_value.text()) / 100.,
-                                                                           2: int(self.wavelet_2_value.text()) / 100.,
-                                                                           3: int(self.wavelet_3_value.text()) / 100.,
-                                                                           4: int(self.wavelet_4_value.text()) / 100.,
-                                                                           5: int(self.wavelet_5_value.text()) / 100.}],
-                                                                   image_type=SAVE_TYPE)
+                self.image_ref_save.stack_image = prepro.post_process_image(self.image_ref_save.image,
+                                                                            self.log,
+                                                                            mode=mode, scnr_on=self.scnr_on.isChecked(),
+                                                                            wavelets_on=self.wavelets_on.isChecked(),
+                                                                            wavelets_type=str(self.wavelets_type.currentText()),
+                                                                            wavelets_use_luminance=self.wavelets_use_luminance.isChecked(),
+                                                                            param=[self.contrast_slider.value() / 10.,
+                                                                                   self.brightness_slider.value(),
+                                                                                   self.black_slider.value(),
+                                                                                   self.white_slider.value(),
+                                                                                   self.r_slider.value() / 100.,
+                                                                                   self.g_slider.value() / 100.,
+                                                                                   self.b_slider.value() / 100.,
+                                                                                   self.scnr_mode.currentText(),
+                                                                                   self.scnr_value.value(),
+                                                                                   {1: int(self.wavelet_1_value.text()) / 100.,
+                                                                                    2: int(self.wavelet_2_value.text()) / 100.,
+                                                                                    3: int(self.wavelet_3_value.text()) / 100.,
+                                                                                    4: int(self.wavelet_4_value.text()) / 100.,
+                                                                                    5: int(self.wavelet_5_value.text()) / 100.}])
                 self.first = 1
                 self.white_slider.setMaximum(np.int(limit))
                 self.brightness_slider.setMaximum(np.int(limit) / 2.)
@@ -331,29 +337,30 @@ class WatchOutForFileCreations(QThread):
                     _LOGGER.warning(message)
                     return
 
-                self.image_ref_save.stack_image = prepro.save_tiff(self.work_folder, self.image_ref_save.image,
-                                                                   self.log,
-                                                                   mode=mode, scnr_on=self.scnr_on.isChecked(),
-                                                                   wavelets_on=self.wavelets_on.isChecked(),
-                                                                   wavelets_type=str(self.wavelets_type.currentText()),
-                                                                   wavelets_use_luminance=self.wavelets_use_luminance.isChecked(),
-                                                                   param=[self.contrast_slider.value() / 10.,
-                                                                          self.brightness_slider.value(),
-                                                                          self.black_slider.value(),
-                                                                          self.white_slider.value(),
-                                                                          self.r_slider.value() / 100.,
-                                                                          self.g_slider.value() / 100.,
-                                                                          self.b_slider.value() / 100.,
-                                                                          self.scnr_mode.currentText(),
-                                                                          self.scnr_value.value(),
-                                                                          {1: int(self.wavelet_1_value.text()) / 100.,
-                                                                           2: int(self.wavelet_2_value.text()) / 100.,
-                                                                           3: int(self.wavelet_3_value.text()) / 100.,
-                                                                           4: int(self.wavelet_4_value.text()) / 100.,
-                                                                           5: int(self.wavelet_5_value.text()) / 100.}],
-                                                                   image_type=SAVE_TYPE)
+                self.image_ref_save.stack_image = prepro.post_process_image(self.image_ref_save.image,
+                                                                            self.log,
+                                                                            mode=mode, scnr_on=self.scnr_on.isChecked(),
+                                                                            wavelets_on=self.wavelets_on.isChecked(),
+                                                                            wavelets_type=str(self.wavelets_type.currentText()),
+                                                                            wavelets_use_luminance=self.wavelets_use_luminance.isChecked(),
+                                                                            param=[self.contrast_slider.value() / 10.,
+                                                                                   self.brightness_slider.value(),
+                                                                                   self.black_slider.value(),
+                                                                                   self.white_slider.value(),
+                                                                                   self.r_slider.value() / 100.,
+                                                                                   self.g_slider.value() / 100.,
+                                                                                   self.b_slider.value() / 100.,
+                                                                                   self.scnr_mode.currentText(),
+                                                                                   self.scnr_value.value(),
+                                                                                   {1: int(self.wavelet_1_value.text()) / 100.,
+                                                                                    2: int(self.wavelet_2_value.text()) / 100.,
+                                                                                    3: int(self.wavelet_3_value.text()) / 100.,
+                                                                                    4: int(self.wavelet_4_value.text()) / 100.,
+                                                                                    5: int(self.wavelet_5_value.text()) / 100.}])
 
                 self.log.append(_("... Stack finished"))
+
+            save_stack_result(self.image_ref_save.stack_image)
             self.print_image.emit()
         else:
             message = _("New image detected but not considered")
@@ -397,6 +404,11 @@ class MainWindow(QMainWindow):
         model.STORE.scan_in_progress = False
         model.STORE.web_server_is_running = False
 
+        self._image_saver = ImageSaver()
+        self._image_saver.save_successful_signal[str].connect(self.on_image_save_success)
+        self._image_saver.save_fail_signal[str].connect(self.on_image_save_failure)
+        self._image_saver.start()
+
     @log
     def closeEvent(self, event):
         """Handles window close events."""
@@ -410,6 +422,16 @@ class MainWindow(QMainWindow):
         window_rect = self.geometry()
         config.set_window_geometry((window_rect.x(), window_rect.y(), window_rect.width(), window_rect.height()))
         config.save()
+
+        self._image_saver.stop()
+
+        if self._image_saver.isRunning():
+            message = "Making sure all images are saved..."
+            _LOGGER.info(message)
+            self._ui.log.append(message)
+            self._ui.statusBar.showMessage(message)
+            QApplication.setOverrideCursor(Qt.WaitCursor)
+            self._image_saver.wait()
 
         super().closeEvent(event)
 
@@ -513,21 +535,20 @@ class MainWindow(QMainWindow):
     @log
     def cb_save(self):
         """Qt slot for louse clicks on the 'save' button."""
-        timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now())))
-        self._ui.log.append(_("Saving : ") + "stack_image_" + timestamp + ".fit")
-        # save stack image in fit
-        red = fits.PrimaryHDU(data=self.image_ref_save.image)
-        red.writeto(config.get_work_folder_path() + "/" + "stack_image_" + timestamp + ".fit")
-        # red.close()
-        del red
+
+        timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now()))).replace(' ', "-").replace(":", '-')
+
+        save_image(self.image_ref_save.image,
+                   config.IMAGE_SAVE_FIT,
+                   config.get_work_folder_path(),
+                   config.STACKED_IMAGE_FILE_NAME_BASE + '-' + timestamp)
 
     @pyqtSlot(name="on_pb_apply_value_clicked")
     @log
     def cb_apply_value(self):
         """Qt slot for clicks on the 'apply' button"""
-        work_folder = config.get_work_folder_path()
         if self.counter > 0:
-            self.adjust_value(work_folder)
+            self.adjust_value()
             self.update_image(False)
         self._ui.log.append(_("Define new display value"))
 
@@ -552,12 +573,10 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     @log
-    def adjust_value(self, work_folder):
+    def adjust_value(self):
         """
         Adjusts stacked image according to GUU controls
 
-        :param work_folder: Path of the work folder
-        :type work_folder: str
         """
 
         # test rgb or gray
@@ -568,29 +587,30 @@ class MainWindow(QMainWindow):
         else:
             raise ValueError(_("fit format not supported"))
 
-        self.image_ref_save.stack_image = prepro.save_tiff(work_folder, self.image_ref_save.image, self._ui.log,
-                                                           mode=mode,
-                                                           scnr_on=self._ui.cbSCNR.isChecked(),
-                                                           wavelets_on=self._ui.cbWavelets.isChecked(),
-                                                           wavelets_type=str(self._ui.cBoxWaveType.currentText()),
-                                                           wavelets_use_luminance=self._ui.cbLuminanceWavelet.isChecked(),
-                                                           param=[self._ui.contrast_slider.value() / 10.,
-                                                                  self._ui.brightness_slider.value(),
-                                                                  self._ui.black_slider.value(),
-                                                                  self._ui.white_slider.value(),
-                                                                  self._ui.R_slider.value() / 100.,
-                                                                  self._ui.G_slider.value() / 100.,
-                                                                  self._ui.B_slider.value() / 100.,
-                                                                  self._ui.cmSCNR.currentText(),
-                                                                  self._ui.SCNR_Slider.value() / 100.,
-                                                                  {1: int(self._ui.wavelet_1_label.text()) / 100.,
-                                                                   2: int(self._ui.wavelet_2_label.text()) / 100.,
-                                                                   3: int(self._ui.wavelet_3_label.text()) / 100.,
-                                                                   4: int(self._ui.wavelet_4_label.text()) / 100.,
-                                                                   5: int(self._ui.wavelet_5_label.text()) / 100.}],
-                                                           image_type=SAVE_TYPE)
+        self.image_ref_save.stack_image = prepro.post_process_image(self.image_ref_save.image, self._ui.log,
+                                                                    mode=mode,
+                                                                    scnr_on=self._ui.cbSCNR.isChecked(),
+                                                                    wavelets_on=self._ui.cbWavelets.isChecked(),
+                                                                    wavelets_type=str(self._ui.cBoxWaveType.currentText()),
+                                                                    wavelets_use_luminance=self._ui.cbLuminanceWavelet.isChecked(),
+                                                                    param=[self._ui.contrast_slider.value() / 10.,
+                                                                           self._ui.brightness_slider.value(),
+                                                                           self._ui.black_slider.value(),
+                                                                           self._ui.white_slider.value(),
+                                                                           self._ui.R_slider.value() / 100.,
+                                                                           self._ui.G_slider.value() / 100.,
+                                                                           self._ui.B_slider.value() / 100.,
+                                                                           self._ui.cmSCNR.currentText(),
+                                                                           self._ui.SCNR_Slider.value() / 100.,
+                                                                           {1: int(self._ui.wavelet_1_label.text()) / 100.,
+                                                                            2: int(self._ui.wavelet_2_label.text()) / 100.,
+                                                                            3: int(self._ui.wavelet_3_label.text()) / 100.,
+                                                                            4: int(self._ui.wavelet_4_label.text()) / 100.,
+                                                                            5: int(self._ui.wavelet_5_label.text()) / 100.}])
 
         self._ui.log.append(_("Adjust GUI image"))
+
+        save_stack_result(self.image_ref_save.stack_image)
 
     @log
     def update_image(self, add=True):
@@ -607,9 +627,7 @@ class MainWindow(QMainWindow):
             _LOGGER.info(message)
 
         if self.counter > 0:
-
-            # read image in RAM ( need save_type = "no"):
-            qimage = array2qimage(self.image_ref_save.stack_image, normalize=(2 ** 16 - 1))
+            qimage = array2qimage(cv2.cvtColor(self.image_ref_save.stack_image, cv2.COLOR_BGR2RGB), normalize=(2 ** 16 - 1))
             pixmap = QPixmap.fromImage(qimage)
 
             if pixmap.isNull():
@@ -735,6 +753,24 @@ class MainWindow(QMainWindow):
 
         model.STORE.scan_in_progress = True
 
+    def on_image_save_success(self, message):
+        """
+        Qt slot for successful image save
+
+        :param message: the message to display
+        :type message: str
+        """
+        self._ui.log.append(message)
+
+    def on_image_save_failure(self, message):
+        """
+        Qt slot for failed image save
+
+        :param message: the message to display
+        :type message: str
+        """
+        self._ui.log.append(message)
+
     @log
     def update_store_display(self):
         """
@@ -757,7 +793,7 @@ class MainWindow(QMainWindow):
         work_dir_path = config.get_work_folder_path()
         resources_dir_path = os.path.dirname(os.path.realpath(__file__)) + "/../resources"
         shutil.copy(resources_dir_path + "/index.html", work_dir_path)
-        shutil.copy(resources_dir_path + "/waiting.jpg", work_dir_path + "/" + NAME_OF_JPEG_IMAGE)
+        shutil.copy(resources_dir_path + "/waiting.jpg", work_dir_path + "/" + config.WEB_SERVED_IMAGE_FILE_NAME_BASE + ".jpg")
 
     @pyqtSlot(name="on_pbStop_clicked")
     @log
@@ -927,26 +963,41 @@ class MainWindow(QMainWindow):
         return ip_address
 
 
-# ------------------------------------------------------------------------------
+@log
+def save_stack_result(image):
+    """
+    Saves stacking result image to disk
+
+    :param image: the image to save
+    :type image: numpy.Array
+    """
+
+    # we save the image no matter what, then save a jpg for the webserver if it is running
+    save_image(image,
+               config.get_image_save_format(),
+               config.get_work_folder_path(),
+               config.STACKED_IMAGE_FILE_NAME_BASE)
+
+    if STORE.web_server_is_running:
+        save_image(image,
+                   config.IMAGE_SAVE_JPEG,
+                   config.get_work_folder_path(),
+                   config.WEB_SERVED_IMAGE_FILE_NAME_BASE)
+
 
 def main():
     """app launcher"""
-    import sys
     app = QApplication(sys.argv)
 
-    try:
-        pass
-    except ValueError as value_error:
-        error_box("Config file is invalid", str(value_error))
-        print(f"***** ERROR : user config file is invalid : {value_error}")
-        sys.exit(1)
-
     _LOGGER.info(f"Starting Astro Live Stacker v{VERSION} in {os.path.dirname(os.path.realpath(__file__))}")
+
     _LOGGER.debug("Building and showing main window")
     window = MainWindow()
+
     (x, y, width, height) = config.get_window_geometry()
     window.setGeometry(x, y, width, height)
     window.show()
+
     app_return_code = app.exec()
     _LOGGER.info(f"Astro Live Stacker terminated with return code = {app_return_code}")
     sys.exit(app_return_code)
