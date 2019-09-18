@@ -33,7 +33,6 @@ import numpy as np
 from PyQt5.QtCore import pyqtSignal, QFileInfo, QThread, Qt, pyqtSlot, QTimer, QEvent
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMainWindow, QApplication
-
 from astroalign import MaxIterError
 from qimage2ndarray import array2qimage
 from watchdog.events import FileSystemEventHandler
@@ -790,10 +789,14 @@ class MainWindow(QMainWindow):
     @log
     def _setup_work_folder(self):
         """Prepares the work folder."""
+
         work_dir_path = config.get_work_folder_path()
         resources_dir_path = os.path.dirname(os.path.realpath(__file__)) + "/../resources"
+
         shutil.copy(resources_dir_path + "/index.html", work_dir_path)
-        shutil.copy(resources_dir_path + "/waiting.jpg", work_dir_path + "/" + config.WEB_SERVED_IMAGE_FILE_NAME_BASE + ".jpg")
+
+        standby_image_path = work_dir_path + "/" + config.WEB_SERVED_IMAGE_FILE_NAME_BASE + '.' + config.IMAGE_SAVE_JPEG
+        shutil.copy(resources_dir_path + "/waiting.jpg", standby_image_path)
 
     @pyqtSlot(name="on_pbStop_clicked")
     @log
