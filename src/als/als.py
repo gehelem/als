@@ -405,7 +405,7 @@ class MainWindow(QMainWindow):
 
         self._image_saver = ImageSaver()
         self._image_saver.save_successful_signal[str].connect(self.on_image_save_success)
-        self._image_saver.save_fail_signal[str].connect(self.on_image_save_failure)
+        self._image_saver.save_fail_signal[str, str].connect(self.on_image_save_failure)
         self._image_saver.start()
 
     @log
@@ -752,23 +752,26 @@ class MainWindow(QMainWindow):
 
         model.STORE.scan_in_progress = True
 
-    def on_image_save_success(self, message):
+    def on_image_save_success(self, image_path):
         """
         Qt slot for successful image save
 
-        :param message: the message to display
-        :type message: str
+        :param image_path: the path of saved image
+        :type image_path: str
         """
-        self._ui.log.append(message)
+        self._ui.log.append(f"Saved image : {image_path}")
 
-    def on_image_save_failure(self, message):
+    def on_image_save_failure(self, image_path, details):
         """
         Qt slot for failed image save
 
-        :param message: the message to display
-        :type message: str
+        :param image_path: path that couldn't be saved to
+        :type image_path: str
+
+        :param details: details on save failure
+        :type details: str
         """
-        self._ui.log.append(message)
+        self._ui.log.append(f"ERROR : Failed to save image {image_path} : {details}")
 
     @log
     def update_store_display(self):

@@ -8,7 +8,6 @@ from queue import Queue
 
 import cv2
 from PyQt5.QtCore import QThread, pyqtSignal
-
 from astropy.io import fits
 
 from als import config
@@ -20,48 +19,6 @@ _LOGGER = logging.getLogger(__name__)
 _IMAGE_SAVE_QUEUE = Queue()
 
 
-class ImageSaveCommand:
-    """
-    Represents an image save command.
-
-    It encapsulated the image itself, the filename to save to and the target folder
-    """
-
-    @log
-    def __init__(self, image, target_path):
-        """
-        Creates a new ImageSaveCommand.
-
-        :param image: the image to save
-        :type image: numpy.Array
-
-        :param target_path: absolute path of the file to save image to
-        :type target_path: str
-        """
-        self._image = image
-        self._target_path = target_path
-
-    @log
-    def get_image(self):
-        """
-        Retrieves image data.
-
-        :return: the image data
-        :rtype: numpy.Array
-        """
-        return self._image
-
-    @log
-    def get_target_path(self):
-        """
-        Retrieves target path.
-
-        :return: absolute path of the file to save image to
-        :rtype: str
-        """
-        return self._target_path
-
-
 class ImageSaver(QThread):
     """
     Saves images according to commands posted to IMAGE_SAVE_QUEUE in its own thread
@@ -69,7 +26,7 @@ class ImageSaver(QThread):
     """
 
     save_successful_signal = pyqtSignal(str)
-    save_fail_signal = pyqtSignal(str)
+    save_fail_signal = pyqtSignal([str, str])
 
     @log
     def __init__(self):
@@ -104,43 +61,47 @@ class ImageSaver(QThread):
         self._stop_asked = True
 
     @log
-    def _save_image(self, command):
+    def _save_image(self, save_command_dict):
         """
         Saves image to work folder
 
-        :param command: the image save command
-        :type command: ImageSaveCommand
+        :param save_command_dict: all infos needed to save an image
+        :type save_command_dict: a dict, with 2 keys :
+
+          - 'image' (numpy.Array) : the image data
+          - 'target_path' (str)   : the absolute path of the file to save to
         """
 
-        target_path = command.get_target_path()
+        target_path = save_command_dict['target_path']
+        image = save_command_dict['image']
 
-        if target_path.endswith(config.IMAGE_SAVE_TIFF):
-            save_successful, details = ImageSaver._save_image_as_tiff(command.get_image(), target_path)
+        if target_path.endswith('.' + config.IMAGE_SAVE_TIFF):
+            save_is_successful, failure_details = ImageSaver._save_image_as_tiff(image, target_path)
 
-        elif target_path.endswith(config.IMAGE_SAVE_PNG):
-            save_successful, details = ImageSaver._save_image_as_png(command.get_image(), target_path)
+        elif target_path.endswith('.' + config.IMAGE_SAVE_PNG):
+            save_is_successful, failure_details = ImageSaver._save_image_as_png(image, target_path)
 
-        elif target_path.endswith(config.IMAGE_SAVE_JPEG):
-            save_successful, details = ImageSaver._save_image_as_jpg(command.get_image(), target_path)
+        elif target_path.endswith('.' + config.IMAGE_SAVE_JPEG):
+            save_is_successful, failure_details = ImageSaver._save_image_as_jpg(image, target_path)
 
-        elif target_path.endswith(config.IMAGE_SAVE_FIT):
-            save_successful, details = ImageSaver._save_image_as_fit(command.get_image(), target_path)
+        elif target_path.endswith('.' + config.IMAGE_SAVE_FIT):
+            save_is_successful, failure_details = ImageSaver._save_image_as_fit(image, target_path)
 
         else:
             # Unsupported format in config file. Should never happen
-            save_successful, details = False, f"Unsupported File format for {target_path}"
+            save_is_successful, failure_details = False, f"Unsupported File format for {target_path}"
 
-        if save_successful:
-            message = f"Successful image save : {target_path}"
+        if save_is_successful:
+            message = f"Image saved : {target_path}"
             _LOGGER.info(message)
-            self.save_successful_signal.emit(message)
+            self.save_successful_signal.emit(target_path)
 
         else:
-            message = f"ERROR, Failed to save image {target_path}. "
-            if details.strip():
-                message += details
+            message = f"Failed to save image : {target_path}. "
+            if failure_details.strip():
+                message += failure_details
             _LOGGER.error(message)
-            self.save_fail_signal.emit(message)
+            self.save_fail_signal.emit(target_path, failure_details)
 
     @staticmethod
     @log
@@ -159,7 +120,8 @@ class ImageSaver(QThread):
           - True if save succeeded, False otherwise
           - Details on cause of save failure, if occurs
 
-        As we are using cv2.imwrite, we won't get any details on failures
+        As we are using cv2.imwrite, we won't get any details on failures. So failure details will always
+        be the empty string.
         """
 
         return cv2.imwrite(target_path, image), ""
@@ -181,7 +143,8 @@ class ImageSaver(QThread):
           - True if save succeeded, False otherwise
           - Details on cause of save failure, if occurs
 
-        As we are using cv2.imwrite, we won't get any details on failures
+        As we are using cv2.imwrite, we won't get any details on failures. So failure details will always
+        be the empty string.
         """
 
         return cv2.imwrite(target_path,
@@ -205,7 +168,8 @@ class ImageSaver(QThread):
           - True if save succeeded, False otherwise
           - Details on cause of save failure, if occurs
 
-        As we are using cv2.imwrite, we won't get any details on failures
+        As we are using cv2.imwrite, we won't get any details on failures. So failure details will always
+        be the empty string.
         """
 
         image_to_save = image
@@ -267,4 +231,4 @@ def save_image(image_data, image_save_format, target_folder, file_name_base):
     :type file_name_base: str
     """
     target_path = target_folder + "/" + file_name_base + '.' + image_save_format
-    _IMAGE_SAVE_QUEUE.put(ImageSaveCommand(image_data, target_path))
+    _IMAGE_SAVE_QUEUE.put({'image': image_data, 'target_path': target_path})
