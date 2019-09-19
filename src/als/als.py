@@ -778,7 +778,6 @@ class MainWindow(QMainWindow):
         self.file_watcher.observer.stop()
         self.file_watcher.terminate()
         self.image_ref_save.status = "stop"
-        self.image_ref_save.stack_image = None
         self._ui.cbAlign.setEnabled(True)
         self._ui.cmMode.setEnabled(True)
         self._ui.pbStop.setEnabled(False)
