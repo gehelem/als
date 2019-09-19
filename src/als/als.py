@@ -178,7 +178,7 @@ class WatchOutForFileCreations(QThread):
 
     @log
     def __init__(self, path, work_folder, align_on, save_on, stack_method,
-                 log_ui, white_slider, black_slider, contrast_slider, brightness_slider,
+                 white_slider, black_slider, contrast_slider, brightness_slider,
                  r_slider, g_slider, b_slider, apply_button,
                  image_ref_save,
                  scnr_on, scnr_mode, scnr_value,
@@ -198,7 +198,6 @@ class WatchOutForFileCreations(QThread):
         self.g_slider = g_slider
         self.b_slider = b_slider
         self.apply_button = apply_button
-        self.log = log_ui
         self.path = path
         self.work_folder = work_folder
         self.first = 0
@@ -217,8 +216,6 @@ class WatchOutForFileCreations(QThread):
         self.wavelet_3_value = wavelet_3_value
         self.wavelet_4_value = wavelet_4_value
         self.wavelet_5_value = wavelet_5_value
-        _LOGGER.info(f" Work folder = '{self.work_folder}'")
-        _LOGGER.info(f" Scan folder = '{self.path}'")
 
         # __ call watchdog __
         # call observer :
@@ -252,9 +249,9 @@ class WatchOutForFileCreations(QThread):
         if self.image_ref_save.status == "play" and not to_be_ignored:
 
             self.counter = self.counter + 1
-            self.log.append(_("Reading new frame..."))
+            _LOGGER.info("Reading new frame...")
             if self.first == 0:
-                self.log.append(_("Reading first frame..."))
+                _LOGGER.info("Reading first frame...")
                 self.first_image, limit, mode = stk.create_first_ref_im(self.work_folder, new_image_path,
                                                                         save_im=self.save_on)
 
@@ -294,9 +291,9 @@ class WatchOutForFileCreations(QThread):
                 if self.brightness_slider.value() > limit / 2.:
                     self.brightness_slider.setSliderPosition(limit / 2.)
                 if limit == 2. ** 16 - 1:
-                    self.log.append(_("Read 16bit frame ..."))
+                    _LOGGER.info("Read 16bit frame ...")
                 elif limit == 2. ** 8 - 1:
-                    self.log.append(_("Read 8bit frame ..."))
+                    _LOGGER.info("Read 8bit frame ...")
                 if mode == "rgb":
                     self.r_slider.setEnabled(True)
                     self.g_slider.setEnabled(True)
@@ -310,9 +307,9 @@ class WatchOutForFileCreations(QThread):
             else:
                 # appel de la fonction stack live
                 if self.align_on:
-                    self.log.append(_("Stack and Align New frame..."))
+                    _LOGGER.info("Stack and Align New frame...")
                 else:
-                    self.log.append(_("Stack New frame..."))
+                    _LOGGER.info("Stack New frame...")
 
                 try:
                     self.image_ref_save.image, limit, mode = stk.stack_live(self.work_folder, new_image_path,
@@ -325,7 +322,6 @@ class WatchOutForFileCreations(QThread):
                 except MaxIterError:
                     message = _(f"WARNING : {new_image_path} could not be aligned : Max iteration reached. "
                                 f"Image is ignored")
-                    self.log.append(message)
                     _LOGGER.warning(message)
                     return
 
@@ -350,13 +346,12 @@ class WatchOutForFileCreations(QThread):
                                                                                     4: int(self.wavelet_4_value.text()) / 100.,
                                                                                     5: int(self.wavelet_5_value.text()) / 100.}])
 
-                self.log.append(_("... Stack finished"))
+                _LOGGER.info("... Stack finished")
 
             save_stack_result(self.image_ref_save.stack_image)
             self.print_image.emit()
         else:
             message = _("New image detected but not considered")
-            self.log.append(message)
             _LOGGER.info(message)
 
 
@@ -418,7 +413,6 @@ class MainWindow(QMainWindow):
         if self._image_saver.isRunning():
             message = "Making sure all images are saved..."
             _LOGGER.info(message)
-            self._ui.log.append(message)
             self._ui.statusBar.showMessage(message)
             QApplication.setOverrideCursor(Qt.WaitCursor)
             self._image_saver.wait()
@@ -540,7 +534,7 @@ class MainWindow(QMainWindow):
         if self.counter > 0:
             self.adjust_value()
             self.update_image(False)
-        self._ui.log.append(_("Define new display value"))
+        _LOGGER.info("Define new display value")
 
     @pyqtSlot(name="on_action_quit_triggered")
     @log
@@ -598,7 +592,7 @@ class MainWindow(QMainWindow):
                                                                             4: int(self._ui.wavelet_4_label.text()) / 100.,
                                                                             5: int(self._ui.wavelet_5_label.text()) / 100.}])
 
-        self._ui.log.append(_("Adjust GUI image"))
+        _LOGGER.info("Adjust GUI image")
 
         save_stack_result(self.image_ref_save.stack_image)
 
@@ -613,7 +607,6 @@ class MainWindow(QMainWindow):
             self.counter += 1
             self._ui.cnt.setText(str(self.counter))
             message = _("update GUI image")
-            self._ui.log.append(_(message))
             _LOGGER.info(message)
 
         if self.counter > 0:
@@ -621,7 +614,6 @@ class MainWindow(QMainWindow):
             pixmap = QPixmap.fromImage(qimage)
 
             if pixmap.isNull():
-                self._ui.log.append(_("invalid frame"))
                 _LOGGER.error("Got a null pixmap from stack")
                 return
 
@@ -672,10 +664,6 @@ class MainWindow(QMainWindow):
             self._ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
             self.counter = 0
             self._ui.cnt.setText(str(self.counter))
-            # Print scan folder
-            self._ui.log.append(_("Scan folder : ") + config.get_scan_folder_path())
-            # Print work folder
-            self._ui.log.append(_("Work folder : ") + config.get_work_folder_path())
 
         # check align
         if self._ui.cbAlign.isChecked():
@@ -683,16 +671,15 @@ class MainWindow(QMainWindow):
 
         # Print live method
         if self.align:
-            self._ui.log.append(_("Play with alignement type: ") + self._ui.cmMode.currentText())
+            _LOGGER.info(f"Play with alignement type: {self._ui.cmMode.currentText()}")
         else:
-            self._ui.log.append(_("Play with NO alignement"))
+            _LOGGER.info("Play with NO alignement")
 
         self.file_watcher = WatchOutForFileCreations(config.get_scan_folder_path(),
                                                      config.get_work_folder_path(),
                                                      self.align,
                                                      self._ui.cbKeep.isChecked(),
                                                      self._ui.cmMode.currentText(),
-                                                     self._ui.log,
                                                      self._ui.white_slider,
                                                      self._ui.black_slider,
                                                      self._ui.contrast_slider,
@@ -741,6 +728,9 @@ class MainWindow(QMainWindow):
 
         self._ui.action_prefs.setEnabled(False)
 
+        _LOGGER.info(f"Work folder : '{config.get_work_folder_path()}'")
+        _LOGGER.info(f"Scan folder : '{config.get_scan_folder_path()}'")
+
         model.STORE.scan_in_progress = True
 
     def on_log_message(self, message):
@@ -750,7 +740,8 @@ class MainWindow(QMainWindow):
         :param message: the log message
         :type message: str
         """
-        self._ui.log.append(message)
+        self._ui.log.addItem(message)
+        self._ui.log.scrollToBottom()
 
     @log
     def update_store_display(self):
@@ -795,7 +786,7 @@ class MainWindow(QMainWindow):
         self._ui.pbReset.setEnabled(True)
         self._ui.pbPause.setEnabled(False)
         self._ui.action_prefs.setEnabled(not self._ui.cbWww.isChecked())
-        self._ui.log.append("Stop")
+        _LOGGER.info("Stop")
         model.STORE.scan_in_progress = False
 
     @pyqtSlot(name="on_pbPause_clicked")
@@ -809,14 +800,14 @@ class MainWindow(QMainWindow):
         self._ui.pbPlay.setEnabled(True)
         self._ui.pbReset.setEnabled(False)
         self._ui.pbPause.setEnabled(False)
-        self._ui.log.append("Pause")
+        _LOGGER.info("Pause")
         model.STORE.scan_in_progress = False
 
     @pyqtSlot(name="on_pbReset_clicked")
     @log
     def cb_reset(self):
         """Qt slot for mouse clicks on the 'Reset' button"""
-        self._ui.log.append("Reset")
+        _LOGGER.info("Reset")
         # reset slider, label, image, global value
 
         self._ui.contrast_slider.setValue(10)
@@ -904,7 +895,7 @@ class MainWindow(QMainWindow):
             else:
                 log_function = _LOGGER.info
 
-            log_function(f"Web server started. http://{ip_address}:{port_number}")
+            log_function(f"Web server started. Reachable at http://{ip_address}:{port_number}")
             self._ui.action_prefs.setEnabled(False)
             model.STORE.web_server_is_running = True
         except OSError:
