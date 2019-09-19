@@ -726,8 +726,6 @@ class MainWindow(QMainWindow):
         # activate pause button
         self._ui.pbPause.setEnabled(True)
 
-        self._ui.action_prefs.setEnabled(False)
-
         _LOGGER.info(f"Work folder : '{config.get_work_folder_path()}'")
         _LOGGER.info(f"Scan folder : '{config.get_scan_folder_path()}'")
 
@@ -744,12 +742,13 @@ class MainWindow(QMainWindow):
         self._ui.log.scrollToBottom()
 
     @log
-    def update_store_display(self):
+    def update_according_to_app_state(self):
         """
         Updates all displays and controls depending on DataStore held data
         """
         messages = list()
 
+        # update statusBar according to status of folder scanner and web server
         messages.append(f"Scanning '{config.get_scan_folder_path()}'" if model.STORE.scan_in_progress else "Scanner : idle")
 
         if model.STORE.web_server_is_running:
@@ -758,6 +757,9 @@ class MainWindow(QMainWindow):
             messages.append("Web server : idle")
 
         self._ui.statusBar.showMessage('   -   '.join(messages))
+
+        # update preferences accessibility according to scanner and webserver status
+        self._ui.action_prefs.setEnabled(not STORE.web_server_is_running and not STORE.scan_in_progress)
 
     @log
     def _setup_work_folder(self):
@@ -785,7 +787,6 @@ class MainWindow(QMainWindow):
         self._ui.pbPlay.setEnabled(True)
         self._ui.pbReset.setEnabled(True)
         self._ui.pbPause.setEnabled(False)
-        self._ui.action_prefs.setEnabled(not self._ui.cbWww.isChecked())
         _LOGGER.info("Stop")
         model.STORE.scan_in_progress = False
 
@@ -896,7 +897,6 @@ class MainWindow(QMainWindow):
                 log_function = _LOGGER.info
 
             log_function(f"Web server started. Reachable at http://{ip_address}:{port_number}")
-            self._ui.action_prefs.setEnabled(False)
             model.STORE.web_server_is_running = True
         except OSError:
             title = "Could not start web server"
@@ -916,7 +916,6 @@ class MainWindow(QMainWindow):
             self.thread = None
             _LOGGER.info("Web server stopped")
             model.STORE.web_server_is_running = False
-            self._ui.action_prefs.setEnabled(self._ui.pbPlay.isEnabled())
 
     @staticmethod
     @log

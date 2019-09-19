@@ -88,7 +88,7 @@ class DataStore:
         Tells all registered observers to update their display
         """
         for observer in self._observers:
-            observer.update_store_display()
+            observer.update_according_to_app_state()
 
 
 STORE = DataStore()
