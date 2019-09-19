@@ -258,7 +258,6 @@ class WatchOutForFileCreations(QThread):
                 self.image_ref_save.image = self.first_image
 
                 self.image_ref_save.stack_image = prepro.post_process_image(self.image_ref_save.image,
-                                                                            self.log,
                                                                             mode=mode, scnr_on=self.scnr_on.isChecked(),
                                                                             wavelets_on=self.wavelets_on.isChecked(),
                                                                             wavelets_type=str(self.wavelets_type.currentText()),
@@ -326,7 +325,6 @@ class WatchOutForFileCreations(QThread):
                     return
 
                 self.image_ref_save.stack_image = prepro.post_process_image(self.image_ref_save.image,
-                                                                            self.log,
                                                                             mode=mode, scnr_on=self.scnr_on.isChecked(),
                                                                             wavelets_on=self.wavelets_on.isChecked(),
                                                                             wavelets_type=str(self.wavelets_type.currentText()),
@@ -571,7 +569,7 @@ class MainWindow(QMainWindow):
         else:
             raise ValueError(_("fit format not supported"))
 
-        self.image_ref_save.stack_image = prepro.post_process_image(self.image_ref_save.image, self._ui.log,
+        self.image_ref_save.stack_image = prepro.post_process_image(self.image_ref_save.image,
                                                                     mode=mode,
                                                                     scnr_on=self._ui.cbSCNR.isChecked(),
                                                                     wavelets_on=self._ui.cbWavelets.isChecked(),

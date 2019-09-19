@@ -164,7 +164,7 @@ def scnr(rgb_image, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
 
 
 @log
-def post_process_image(stack_image, log_ui, mode="rgb", scnr_on=False,
+def post_process_image(stack_image, mode="rgb", scnr_on=False,
                        wavelets_on=False, wavelets_type='deep sky',
                        wavelets_use_luminance=False, param=[]):
     """
@@ -182,13 +182,13 @@ def post_process_image(stack_image, log_ui, mode="rgb", scnr_on=False,
 
     # change action for mode :
     if mode == "rgb":
-        log_ui.append(_("Save New Image in RGB..."))
+        _LOGGER.info(_("Save New Image in RGB..."))
         # convert classic classic order to cv2 order
         new_stack_image = np.rollaxis(stack_image, 0, 3)
         # convert RGB color order to BGR
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_RGB2BGR)
     elif mode == "gray":
-        log_ui.append(_("Save New Image in B&W..."))
+        _LOGGER.info(_("Save New Image in B&W..."))
         new_stack_image = stack_image
 
     # read image number type
@@ -199,23 +199,23 @@ def post_process_image(stack_image, log_ui, mode="rgb", scnr_on=False,
             or param[5] != 1 or param[6] != 1 or param[8] != 50 or any([v != 1 for _, v in param[9].items()]):
 
         # print param value for post process
-        log_ui.append(_("Post-Process New Image..."))
-        log_ui.append(_("correct display image"))
-        log_ui.append(_("contrast value :") + " %f" % param[0])
-        log_ui.append(_("brightness value :") + "%f" % param[1])
-        log_ui.append(_("pente : ") + "%f" % (1. / ((param[3] - param[2]) / limit)))
+        _LOGGER.info(_("Post-Process New Image..."))
+        _LOGGER.info(_("correct display image"))
+        _LOGGER.info(_("contrast value :") + " %f" % param[0])
+        _LOGGER.info(_("brightness value :") + "%f" % param[1])
+        _LOGGER.info(_("pente : ") + "%f" % (1. / ((param[3] - param[2]) / limit)))
 
         # need convert to float32 for excess value
         new_stack_image = np.float32(new_stack_image)
 
         if scnr_on:
-            log_ui.append(_("apply SCNR"))
-            log_ui.append(_("SCNR type") + "%s" % param[7])
+            _LOGGER.info(_("apply SCNR"))
+            _LOGGER.info(_("SCNR type") + "%s" % param[7])
             new_stack_image = scnr(new_stack_image, limit, rgb_type="BGR", scnr_type=param[7], amount=param[8])
 
         if wavelets_on:
-            log_ui.append("apply Wavelets")
-            log_ui.append("Wavelets parameters {}".format(param[9]))
+            _LOGGER.info("apply Wavelets")
+            _LOGGER.info("Wavelets parameters {}".format(param[9]))
             new_stack_image = wavelets(new_stack_image,
                                        wavelets_type=wavelets_type,
                                        wavelets_use_luminance=wavelets_use_luminance,
@@ -226,9 +226,9 @@ def post_process_image(stack_image, log_ui, mode="rgb", scnr_on=False,
             if mode == "rgb":
                 # invert Red and Blue for cv2
                 # print RGB contrast value
-                log_ui.append(_("R contrast value : ") + "%f" % param[4])
-                log_ui.append(_("G contrast value : ") + "%f" % param[5])
-                log_ui.append(_("B contrast value : ") + "%f" % param[6])
+                _LOGGER.info(_("R contrast value : ") + "%f" % param[4])
+                _LOGGER.info(_("G contrast value : ") + "%f" % param[5])
+                _LOGGER.info(_("B contrast value : ") + "%f" % param[6])
 
                 # multiply by RGB factor
                 new_stack_image[:, :, 0] = new_stack_image[:, :, 0] * param[6]
