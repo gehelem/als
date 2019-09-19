@@ -35,7 +35,7 @@
          <string/>
         </property>
         <property name="pixmap">
-         <pixmap>:/icons/dslr-camera.svg</pixmap>
+         <pixmap resource="../../resources/resource.qrc">:/icons/dslr-camera.svg</pixmap>
         </property>
         <property name="scaledContents">
          <bool>false</bool>
@@ -1275,6 +1275,14 @@
          <width>65535</width>
          <height>65535</height>
         </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>Courier 10 Pitch</family>
+         <pointsize>9</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
        </property>
       </widget>
      </item>

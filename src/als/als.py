@@ -38,18 +38,11 @@ from qimage2ndarray import array2qimage
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-from als import preprocess as prepro, stack as stk, model
+from als import config, preprocess as prepro, stack as stk, model
 from als.code_utilities import log
 from als.io.output import ImageSaver, save_image
 from als.model import VERSION, STORE
 from als.ui.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
-
-try:
-    from als import config
-except ValueError as value_error:
-    error_box("Config file is invalid", str(value_error))
-    print(f"***** ERROR : user config file is invalid : {value_error}")
-    sys.exit(1)
 
 from generated.als_ui import Ui_stack_window
 
@@ -404,8 +397,6 @@ class MainWindow(QMainWindow):
         model.STORE.web_server_is_running = False
 
         self._image_saver = ImageSaver()
-        self._image_saver.save_successful_signal[str].connect(self.on_image_save_success)
-        self._image_saver.save_fail_signal[str, str].connect(self.on_image_save_failure)
         self._image_saver.start()
 
     @log
@@ -752,26 +743,14 @@ class MainWindow(QMainWindow):
 
         model.STORE.scan_in_progress = True
 
-    def on_image_save_success(self, image_path):
+    def on_log_message(self, message):
         """
-        Qt slot for successful image save
+        print received log message to GUI log window
 
-        :param image_path: the path of saved image
-        :type image_path: str
+        :param message: the log message
+        :type message: str
         """
-        self._ui.log.append(f"Saved image : {image_path}")
-
-    def on_image_save_failure(self, image_path, details):
-        """
-        Qt slot for failed image save
-
-        :param image_path: path that couldn't be saved to
-        :type image_path: str
-
-        :param details: details on save failure
-        :type details: str
-        """
-        self._ui.log.append(f"ERROR : Failed to save image {image_path} : {details}")
+        self._ui.log.append(message)
 
     @log
     def update_store_display(self):
@@ -995,14 +974,16 @@ def main():
     """app launcher"""
     app = QApplication(sys.argv)
 
-    _LOGGER.info(f"Starting Astro Live Stacker v{VERSION} in {os.path.dirname(os.path.realpath(__file__))}")
+    config.setup()
 
     _LOGGER.debug("Building and showing main window")
     window = MainWindow()
-
+    config.register_log_receiver(window)
     (x, y, width, height) = config.get_window_geometry()
     window.setGeometry(x, y, width, height)
     window.show()
+
+    _LOGGER.info(f"Astro Live Stacker version {VERSION} started")
 
     app_return_code = app.exec()
     _LOGGER.info(f"Astro Live Stacker terminated with return code = {app_return_code}")

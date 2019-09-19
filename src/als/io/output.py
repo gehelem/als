@@ -94,14 +94,14 @@ class ImageSaver(QThread):
         if save_is_successful:
             message = f"Image saved : {target_path}"
             _LOGGER.info(message)
-            self.save_successful_signal.emit(target_path)
 
         else:
             message = f"Failed to save image : {target_path}. "
             if failure_details.strip():
                 message += failure_details
             _LOGGER.error(message)
-            self.save_fail_signal.emit(target_path, failure_details)
+            if save_command_dict['report_on_failure']:
+                self.save_fail_signal.emit(target_path, failure_details)
 
     @staticmethod
     @log
@@ -214,9 +214,11 @@ class ImageSaver(QThread):
 
 
 @log
-def save_image(image_data, image_save_format, target_folder, file_name_base):
+def save_image(image_data, image_save_format, target_folder, file_name_base, report_on_failure=False):
     """
     Saves an image to disk.
+
+    Image is pushed to a queue polled by a worker thread
 
     :param image_data: the image data
     :type image_data: numpy.Array
@@ -229,6 +231,9 @@ def save_image(image_data, image_save_format, target_folder, file_name_base):
 
     :param file_name_base: filename base (without extension)
     :type file_name_base: str
+
+    :param report_on_failure: ask worker thread to report save failure
+    :type report_on_failure: bool
     """
     target_path = target_folder + "/" + file_name_base + '.' + image_save_format
-    _IMAGE_SAVE_QUEUE.put({'image': image_data, 'target_path': target_path})
+    _IMAGE_SAVE_QUEUE.put({'image': image_data, 'target_path': target_path, 'report_on_failure': report_on_failure})
