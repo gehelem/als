@@ -41,10 +41,32 @@ def log(func):
 
 
 class Timer:
+    """
+    A context manager, timing any portion of code it encloses.
+
+    Basic usage :
+
+    .. code-block:: python
+
+        with Timer() as t:
+
+            # your code here
+            # it can be many lines
+            pass
+
+        _LOGGER.info(f"code ran in {t.elapsed_in_milli} ms.")
+
+    The context manager exposes 2 attributes :
+
+        - elapsed_in_milli (float) = elapsed time
+        - elapsed_in_milli_as_str (str) = string representation of elapsed time with only 3 decimal positions
+
+    """
     def __enter__(self):
         self.start = time()
         return self
 
     def __exit__(self, *args):
         self.end = time()
-        self.elapsed_in_milli = "%0.3f" % ((self.end - self.start) * 1000)
+        self.elapsed_in_milli = (self.end - self.start) * 1000
+        self.elapsed_in_milli_as_str = "%0.3f" % self.elapsed_in_milli
