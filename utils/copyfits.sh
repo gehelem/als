@@ -22,9 +22,12 @@ fi
 
 rm -rf ${SCAN}/*
 
-for i in ${SAMPLES}/Light*
+for i in ${SAMPLES}/*.{fits,FITS,fit,FIT,jpg,JPG,jpeg,JPEG}
 do
-    cp -v ${i} ${SCAN}
-    sleep 5
+    if [ -f "${i}" ]  #to avoid fake outputs when extention isn't found
+    then
+        cp -v "${i}" ${SCAN}
+        sleep 5
+    fi
 done
 
