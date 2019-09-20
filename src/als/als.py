@@ -39,7 +39,7 @@ from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 from als import config, preprocess as prepro, stack as stk, model
-from als.code_utilities import log
+from als.code_utilities import log, Timer
 from als.io.output import ImageSaver, save_image
 from als.model import VERSION, STORE
 from als.ui.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
@@ -959,18 +959,19 @@ def save_stack_result(image):
 
 def main():
     """app launcher"""
-    app = QApplication(sys.argv)
+    with Timer() as startup:
+        app = QApplication(sys.argv)
 
-    config.setup()
+        config.setup()
 
-    _LOGGER.debug("Building and showing main window")
-    window = MainWindow()
-    config.register_log_receiver(window)
-    (x, y, width, height) = config.get_window_geometry()
-    window.setGeometry(x, y, width, height)
-    window.show()
+        _LOGGER.debug("Building and showing main window")
+        window = MainWindow()
+        config.register_log_receiver(window)
+        (x, y, width, height) = config.get_window_geometry()
+        window.setGeometry(x, y, width, height)
+        window.show()
 
-    _LOGGER.info(f"Astro Live Stacker version {VERSION} started")
+    _LOGGER.info(f"Astro Live Stacker version {VERSION} started in {startup.elapsed_in_milli} ms.")
 
     app_return_code = app.exec()
     _LOGGER.info(f"Astro Live Stacker terminated with return code = {app_return_code}")

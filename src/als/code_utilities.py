@@ -38,3 +38,13 @@ def log(func):
                      (end_time - start_time) * 1000)
         return result
     return wrapped
+
+
+class Timer:
+    def __enter__(self):
+        self.start = time()
+        return self
+
+    def __exit__(self, *args):
+        self.end = time()
+        self.elapsed_in_milli = "%0.3f" % ((self.end - self.start) * 1000)
