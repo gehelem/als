@@ -6,3 +6,4 @@
 /src/generated/*_rc.py
 .coverage
 htmlcov/
+/venv/
