@@ -192,7 +192,7 @@ def save_tiff(work_path, stack_image, log_ui, mode="rgb", scnr_on=False,
     # change action for mode :
     if mode == "rgb":
         log_ui.append(_("Save New Image in RGB..."))
-        # convert clissic classic order to cv2 order
+        # convert classic classic order to cv2 order
         new_stack_image = np.rollaxis(stack_image, 0, 3)
         # convert RGB color order to BGR
         new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_RGB2BGR)
@@ -204,8 +204,8 @@ def save_tiff(work_path, stack_image, log_ui, mode="rgb", scnr_on=False,
     limit, im_type = stk.get_limit_and_utype(new_stack_image)
 
     # if no have change, no process
-    if param[0] != 1 or param[1] != 0 or param[2] != 0 or param[3] != limit \
-            or param[4] != 1 or param[5] != 1 or param[6] != 1 or any([v != 1 for _, v in param[9].items()]):
+    if param[0] != 1 or param[1] != 0 or param[2] != 0 or param[3] != limit or param[4] != 1 \
+            or param[5] != 1 or param[6] != 1 or param[8] != 50 or any([v != 1 for _, v in param[9].items()]):
 
         # print param value for post process
         log_ui.append(_("Post-Process New Image..."))
