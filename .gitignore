@@ -5,5 +5,8 @@
 /src/generated/*_ui.py
 /src/generated/*_rc.py
 .coverage
+.idea
 htmlcov/
 /venv/
+__pycache__/
+*.swp
