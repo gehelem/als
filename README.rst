@@ -5,10 +5,8 @@ ALS - Astro Live Stacker
 .. image:: https://img.shields.io/travis/com/gehelem/als
 .. image:: https://img.shields.io/github/license/gehelem/als
 
-Description
-===========
 
-A standalone Python GUI application for live astrophotography stacking.
+A desktop application for astrophotography live stacking.
 
 .. image:: als-screenshot.png
    :align: center
@@ -17,7 +15,6 @@ Features
 ========
 
 ALS polls a folder on your machine and aligns + stacks any new picture saved into that folder.
-
 
 ALS is compatible with `.fit` and `.fits` in 8bits and 16bits unsigned (B&W, RGB, and No Debayering)
 and with RAW camera files : https://www.libraw.org/supported-cameras
@@ -34,57 +31,106 @@ As pictures are added to the stack, user can enhance the resulting image with va
 The resulting image can be saved to disk and served by a built-in web server, so your mates at the astro
 club can see your wonderful images.
 
+Download
+========
+
+**The following download and install procedure has been tested on a freshly installed Ubuntu 18 LTS (a.k.a. Bionic).
+Your mileage may vary.**
+
+Until ALS is properly released to the usual software outlets, you have two options to get ALS on your computer :
+`Download an archive from GitHub`_ or `Clone the whole source code repo`_.
+
+One word about what ALS versions you have access to, using either option : Stable ALS releases are available
+via downloadable archives published on ALS's GitHub page. If you want to check what will be part of the next stable
+release, then cloning the repo is the way to go.
+
+Download an archive from GitHub
++++++++++++++++++++++++++++++++
+
+#. Point your browser of choice to the `ALS GitHub releases page <https://github.com/gehelem/als/releases>`_
+#. CLick the version you want to use
+#. Download desired archive format, zip or tar.gz
+#. Extract the archive in the folder of your choice
+
+Clone the whole source code repo
+++++++++++++++++++++++++++++++++
+
+1. Check if git is available on your system : Ask for git version in a terminal :
+
+.. code-block:: shell
+
+  $ git --version
+  git version 2.17.1
+
+if you get an error like :
+
+.. code-block:: shell
+
+  $ git --version
+  git: command not found
+
+Then you need to install git on your system. Simply issue the following command :
+
+.. code-block:: shell
+
+  $ sudo apt-get update && sudo apt-get install -y git
+
+2. clone ALS repo : you'll have to specify the branch you want to check out : ``master`` for latest stable release,
+``develop`` for bleeding edge features. Your desired branch name must be used after the ``-b`` option in the command
+below :
+
+.. code-block:: shell
+
+  $ git clone https://github.com/gehelem/als.git -b <branch_name_chosen_above>
+
+
 Installation
 ============
 
-Until ALS is properly released to the usual software outlets, the best way to run ALS on your machine
-is to use Python's virtual envs.
+In order to manage ALS's various dependencies without modifying your current system's Python install and libraries, you
+are advised to use Python Virtual Environments. The below procedure will guide you through the process of creating a
+virtual environment and installing ALS's dependencies into it.
 
-**The following install procedure has been tested on a freshly installed Ubuntu 18 LTS (a.k.a. Bionic). Your mileage
-may vary.**
+.. note::
 
-*All below commands have to be used in your terminal of choice.*
+  All below commands have to be used in your terminal of choice. In all of them, please replace ``ALS_HOME`` with the
+  actual path of the folder in which you extracted the GitHub archive or cloned de ALS repo. See `Download`_ section for
+  details
 
 1. **Install a few system packages** :
 
-- `git` to retrieve ALS sources
 - `gcc` and `python3-dev` to compile some dependencies (don't be scared)
 - `python3-venv` to handle virtualenvs
 
 .. code-block::
 
-  $ sudo apt update && sudo apt install -y git gcc python3-dev python3-venv
+  $ sudo apt update && sudo apt install -y gcc python3-dev python3-venv
 
 
-2. **Fetch ALS sources with the `develop` branch checked out**.
-   This will create a folder named `als` wherever you currently are.
+2. **Dive into ALS folder**.
+
 
 .. code-block::
 
-  $ git clone https://github.com/gehelem/als -b develop
+  $ cd ALS_HOME
 
 
 3. **Create your virtualenv with provided script**
 
-   This will create a folder named `venv` inside the `als` folder, download and install all dependencies.
+   This will create a folder named `venv` inside the `ALS_HOME` folder, then download and install all dependencies into
+   it.
 
 .. code-block::
 
-  $ ./als/utils/venv_setup.sh
+  $ ./utils/venv_setup.sh
 
-4. **Dive into the `als` folder**
-
-.. code-block::
-
-  $ cd als
-
-5. **Activate the newly created virtualenv**
+4. **Activate the newly created virtualenv**
 
 .. code-block::
 
-  $ source venv/bin/activate
+  $ source ./venv/bin/activate
 
-6. **Setup ALS into your virtualenv in development mode**. This is for now the only supported setup mode.
+5. **Setup ALS into your virtualenv in development mode**. This is for now the only supported setup mode.
    This allows you to run ALS easily, as it adds a launcher script inside your active virtual env.
 
 .. code-block::
