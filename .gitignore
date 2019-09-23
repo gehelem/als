@@ -9,3 +9,4 @@
 htmlcov/
 /venv/
 __pycache__/
+*.swp
