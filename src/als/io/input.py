@@ -15,7 +15,6 @@ class InputListener(QObject):
     """
     In charge of input management, **abstract class**
     """
-    pass
 
     @staticmethod
     def create_listener(listener_type):
@@ -54,8 +53,14 @@ class FileSystemListener(InputListener):
     pass
 
 
-class ImageFileReader(QObject):
+def read_image(path):
     """
-    Encapsulates everything needed to read image files from disk
+    Reads an image from disk
+
+    :param path: path to the file to load image from
+    :type path:  pathlib.Path
+
+    :return: the image read from disk
+    :rtype: Image
     """
     pass
