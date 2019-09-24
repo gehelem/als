@@ -5,8 +5,13 @@ We need to read file and in the future, get images from INDI
 """
 import logging
 from abc import abstractmethod
+from pathlib import Path
+from pprint import pprint
 
+import numpy as np
+import rawpy
 from PyQt5.QtCore import QObject
+from astropy.io import fits
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -17,7 +22,7 @@ class InputListener(QObject):
     """
 
     @staticmethod
-    def create_listener(listener_type):
+    def create_listener(listener_type: str):
         """
         Creates specialized input listeners.
 
@@ -53,7 +58,7 @@ class FileSystemListener(InputListener):
     pass
 
 
-def read_image(path):
+def read_image(path: Path):
     """
     Reads an image from disk
 
@@ -63,4 +68,30 @@ def read_image(path):
     :return: the image read from disk
     :rtype: Image
     """
-    pass
+    if path.suffix.lower() in ['.fit', '.fits']:
+        return _read_fit_image(path)
+
+    return _read_raw_image(path)
+
+
+def _read_fit_image(path: Path):
+    """
+    read FIT image from filesystem
+
+    :param path: path to image file to load from
+    :type path: pathlib.Path
+
+    :return: the loaded image, with data and headers parsed
+    :rtype: Image
+    """
+    with fits.open(path.absolute()) as fit:
+        data = fit[0].data
+        headers = fit[0].header
+
+    pprint(data)
+    pprint(headers)
+
+
+def _read_raw_image(path: Path):
+    raw_image = rawpy.imread(path.absolute()).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16, user_flip=0)
+    new_image = np.rollaxis(raw_image, 2, 0)
