@@ -17,8 +17,8 @@ class InputListener(QObject):
     """
     pass
 
-    @abstractmethod
-    def create_listener(self, listener_type):
+    @staticmethod
+    def create_listener(listener_type):
         """
         Creates specialized input listeners.
 
@@ -29,6 +29,20 @@ class InputListener(QObject):
 
         :return: an input listener
         :rtype: FileSystemListener
+        """
+        pass
+
+    @abstractmethod
+    def start(self):
+        """
+        Start listening for new images.
+        """
+        pass
+
+    @abstractmethod
+    def stop(self):
+        """
+        Stop listening for new images.
         """
         pass
 
