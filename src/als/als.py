@@ -784,7 +784,7 @@ class MainWindow(QMainWindow):
         self._ui.pbReset.setEnabled(False)
         self._ui.pbPause.setEnabled(False)
         _LOGGER.info("Pause")
-        self._input_listener.stop()
+        self._input_listener.pause()
 
     @pyqtSlot(name="on_pbReset_clicked")
     @log

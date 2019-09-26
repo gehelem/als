@@ -85,12 +85,13 @@ class FileSystemListener(InputListener, FileSystemEventHandler):
         STORE.scan_in_progress = True
 
     @log
+    def pause(self):
+        self._stop_observer()
+
+    @log
     def stop(self):
-        if self._observer is not None:
-            self._observer.stop()
-        self._observer = None
-        _LOGGER.info("File Listener stopped")
-        STORE.scan_in_progress = False
+        self._stop_observer()
+        self._purge_queue()
 
     @log
     def on_moved(self, event):
@@ -119,6 +120,19 @@ class FileSystemListener(InputListener, FileSystemEventHandler):
                 time.sleep(_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC)
 
             self._enqueue_image(read_image(Path(image_path)))
+
+    @log
+    def _stop_observer(self):
+        if self._observer is not None:
+            self._observer.stop()
+        self._observer = None
+        _LOGGER.info("File Listener stopped")
+        STORE.scan_in_progress = False
+
+    @log
+    def _purge_queue(self):
+        while not _IMAGE_INPUT_QUEUE.empty():
+            _IMAGE_INPUT_QUEUE.get()
 
     @log
     def _enqueue_image(self, image: Image):
