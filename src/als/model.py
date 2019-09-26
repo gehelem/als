@@ -118,3 +118,6 @@ class Image:
 
     def needs_debayering(self):
         return self._bayer_pattern is not None
+
+    def is_color(self):
+        return len(self._data.shape) > 2

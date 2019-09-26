@@ -11,7 +11,6 @@ import numpy as np
 import rawpy
 from PyQt5.QtCore import QObject
 from astropy.io import fits
-from astropy.io.fits import Header
 
 from als.model import Image
 
@@ -86,19 +85,22 @@ def _read_fit_image(path: Path):
     :return: the loaded image, with data and headers parsed
     :rtype: Image
     """
-    with fits.open(path.absolute()) as fit:
+    with fits.open(str(path.resolve())) as fit:
         data = fit[0].data
         header = fit[0].header
 
-    return _create_image(header, data)
-
-
-def _create_image(header: Header, data):
     image = Image(data)
-    image.bayer_pattern = header['BAYERPAT']
+
+    if 'BAYERPAT' in header:
+        image.bayer_pattern = header['BAYERPAT']
+
     return image
 
 
 def _read_raw_image(path: Path):
-    raw_image = rawpy.imread(path.absolute()).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16, user_flip=0)
-    new_image = np.rollaxis(raw_image, 2, 0)
+    raw_image = rawpy.imread(str(path.resolve())).postprocess(gamma=(1, 1),
+                                                              no_auto_bright=True,
+                                                              output_bps=16,
+                                                              user_flip=0)
+
+    return Image(np.rollaxis(raw_image, 2, 0))
