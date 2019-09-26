@@ -18,7 +18,7 @@ from watchdog.observers.polling import PollingObserver
 
 from als import config
 from als.code_utilities import log
-from als.model import Image
+from als.model import Image, STORE
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -82,6 +82,7 @@ class FileSystemListener(InputListener, FileSystemEventHandler):
         self._observer.schedule(self, config.get_scan_folder_path(), recursive=False)
         self._observer.start()
         _LOGGER.info("File Listener started")
+        STORE.scan_in_progress = True
 
     @log
     def stop(self):
@@ -89,6 +90,7 @@ class FileSystemListener(InputListener, FileSystemEventHandler):
             self._observer.stop()
         self._observer = None
         _LOGGER.info("File Listener stopped")
+        STORE.scan_in_progress = False
 
     @log
     def on_moved(self, event):
@@ -96,10 +98,7 @@ class FileSystemListener(InputListener, FileSystemEventHandler):
             image_path = event.dest_path
             _LOGGER.debug(f"File move detected : {image_path}")
 
-            image = read_image(Path(image_path))
-
-            if image is not None:
-                _IMAGE_INPUT_QUEUE.put(image)
+            self._enqueue_image(read_image(Path(image_path)))
 
     @log
     def on_created(self, event):
@@ -119,10 +118,14 @@ class FileSystemListener(InputListener, FileSystemEventHandler):
                 last_file_size = size
                 time.sleep(_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC)
 
-            image = read_image(Path(image_path))
+            self._enqueue_image(read_image(Path(image_path)))
 
-            if image is not None:
-                _IMAGE_INPUT_QUEUE.put(image)
+    @log
+    def _enqueue_image(self, image: Image):
+        if image is not None:
+            _IMAGE_INPUT_QUEUE.put(image)
+
+        _LOGGER.debug("Input queue size = %d" % _IMAGE_INPUT_QUEUE.qsize())
 
 
 @log

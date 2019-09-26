@@ -717,7 +717,6 @@ class MainWindow(QMainWindow):
         _LOGGER.info(f"Scan folder : '{config.get_scan_folder_path()}'")
 
         self._input_listener.start()
-        model.STORE.scan_in_progress = True
 
     def on_log_message(self, message):
         """
@@ -774,7 +773,6 @@ class MainWindow(QMainWindow):
         self._ui.pbPause.setEnabled(False)
         _LOGGER.info("Stop")
         self._input_listener.stop()
-        model.STORE.scan_in_progress = False
 
     @pyqtSlot(name="on_pbPause_clicked")
     @log
@@ -787,7 +785,6 @@ class MainWindow(QMainWindow):
         self._ui.pbPause.setEnabled(False)
         _LOGGER.info("Pause")
         self._input_listener.stop()
-        model.STORE.scan_in_progress = False
 
     @pyqtSlot(name="on_pbReset_clicked")
     @log
