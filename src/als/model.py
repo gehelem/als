@@ -92,3 +92,29 @@ class DataStore:
 
 
 STORE = DataStore()
+
+
+class Image:
+
+    def __init__(self, data):
+        self._data = data
+        self._bayer_pattern = None
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        self._data = data
+
+    @property
+    def bayer_pattern(self):
+        return self._bayer_pattern
+
+    @bayer_pattern.setter
+    def bayer_pattern(self, bayer_pattern):
+        self._bayer_pattern = bayer_pattern
+
+    def needs_debayering(self):
+        return self._bayer_pattern is not None

@@ -12,6 +12,7 @@ import numpy as np
 import rawpy
 from PyQt5.QtCore import QObject
 from astropy.io import fits
+from astropy.io.fits import Header
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -86,10 +87,16 @@ def _read_fit_image(path: Path):
     """
     with fits.open(path.absolute()) as fit:
         data = fit[0].data
-        headers = fit[0].header
+        header = fit[0].header
+
+    _parse_header(header, data)
 
     pprint(data)
-    pprint(headers)
+    pprint(header)
+
+
+def _parse_header(header: Header, data):
+    cards = header.cards
 
 
 def _read_raw_image(path: Path):
