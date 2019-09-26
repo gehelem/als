@@ -50,19 +50,25 @@ class InputListener(QObject):
         if listener_type == "FS":
             return FileSystemListener()
 
+        raise ValueError(f"unrecognized listener type : {listener_type}")
+
     @abstractmethod
     def start(self):
         """
         Start listening for new images.
         """
-        pass
 
     @abstractmethod
     def stop(self):
         """
-        Stop listening for new images.
+        Stop listening for new images and purge input queue
         """
-        pass
+
+    @abstractmethod
+    def pause(self):
+        """
+        Simply stop listening for new images
+        """
 
 
 class FileSystemListener(InputListener, FileSystemEventHandler):
