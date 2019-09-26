@@ -41,6 +41,7 @@ from watchdog.observers import Observer
 from als import config, preprocess as prepro, stack as stk, model
 from als.code_utilities import log, Timer
 from als.io.output import ImageSaver, save_image
+from als.io.input import InputListener
 from als.model import VERSION, STORE
 from als.ui.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
 
@@ -225,7 +226,8 @@ class WatchOutForFileCreations(QThread):
         self.observer.schedule(self.event_handler, self.path, recursive=False)
         self.observer.start()
 
-        self.event_handler.created_signal[str].connect(self.created)
+        # TODO : temp test code
+        #  self.event_handler.created_signal[str].connect(self.created)
 
     @log
     def created(self, new_image_path):
@@ -402,12 +404,16 @@ class MainWindow(QMainWindow):
         self._image_saver = ImageSaver()
         self._image_saver.start()
 
+        # TODO : remove this test code
+        self._input_listener = InputListener.create_listener("FS")
+
     @log
     def closeEvent(self, event):
         """Handles window close events."""
         # pylint: disable=C0103
 
         self._stop_www()
+        self.cb_stop()
 
         _LOGGER.debug(f"Window size : {self.size()}")
         _LOGGER.debug(f"Window position : {self.pos()}")
@@ -686,32 +692,6 @@ class MainWindow(QMainWindow):
         else:
             _LOGGER.info("Play with NO alignement")
 
-        self.file_watcher = WatchOutForFileCreations(config.get_scan_folder_path(),
-                                                     config.get_work_folder_path(),
-                                                     self.align,
-                                                     self._ui.cbKeep.isChecked(),
-                                                     self._ui.cmMode.currentText(),
-                                                     self._ui.white_slider,
-                                                     self._ui.black_slider,
-                                                     self._ui.contrast_slider,
-                                                     self._ui.brightness_slider,
-                                                     self._ui.R_slider,
-                                                     self._ui.G_slider,
-                                                     self._ui.B_slider,
-                                                     self._ui.pb_apply_value,
-                                                     self.image_ref_save,
-                                                     self._ui.cbSCNR,
-                                                     self._ui.cmSCNR,
-                                                     self._ui.SCNR_Slider,
-                                                     self._ui.cbWavelets,
-                                                     self._ui.cBoxWaveType,
-                                                     self._ui.cbLuminanceWavelet,
-                                                     self._ui.wavelet_1_label,
-                                                     self._ui.wavelet_2_label,
-                                                     self._ui.wavelet_3_label,
-                                                     self._ui.wavelet_4_label,
-                                                     self._ui.wavelet_5_label)
-
         try:
             self._setup_work_folder()
         except OSError as os_error:
@@ -721,10 +701,6 @@ class MainWindow(QMainWindow):
             _LOGGER.error(f"{title} : {os_error}")
             self.cb_stop()
             return
-
-        self.file_watcher.start()
-        self.file_watcher.print_image.connect(
-            lambda: self.update_image(config.get_work_folder_path()))
 
         self.image_ref_save.status = "play"
         self.image_ref_save.image = None
@@ -740,6 +716,7 @@ class MainWindow(QMainWindow):
         _LOGGER.info(f"Work folder : '{config.get_work_folder_path()}'")
         _LOGGER.info(f"Scan folder : '{config.get_scan_folder_path()}'")
 
+        self._input_listener.start()
         model.STORE.scan_in_progress = True
 
     def on_log_message(self, message):
@@ -788,8 +765,6 @@ class MainWindow(QMainWindow):
     @log
     def cb_stop(self):
         """Qt slot for mouse clicks on the 'Stop' button"""
-        self.file_watcher.observer.stop()
-        self.file_watcher.terminate()
         self.image_ref_save.status = "stop"
         self._ui.cbAlign.setEnabled(True)
         self._ui.cmMode.setEnabled(True)
@@ -798,20 +773,20 @@ class MainWindow(QMainWindow):
         self._ui.pbReset.setEnabled(True)
         self._ui.pbPause.setEnabled(False)
         _LOGGER.info("Stop")
+        self._input_listener.stop()
         model.STORE.scan_in_progress = False
 
     @pyqtSlot(name="on_pbPause_clicked")
     @log
     def cb_pause(self):
         """Qt slot for mouse clicks on the 'Pause' button"""
-        self.file_watcher.observer.stop()
-        self.file_watcher.terminate()
         self.image_ref_save.status = "pause"
         self._ui.pbStop.setEnabled(False)
         self._ui.pbPlay.setEnabled(True)
         self._ui.pbReset.setEnabled(False)
         self._ui.pbPause.setEnabled(False)
         _LOGGER.info("Pause")
+        self._input_listener.stop()
         model.STORE.scan_in_progress = False
 
     @pyqtSlot(name="on_pbReset_clicked")

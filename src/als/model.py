@@ -113,6 +113,7 @@ class Image:
     def __init__(self, data: ndarray):
         self._data = data
         self._bayer_pattern: str = None
+        self._origin: str = "UNDEFINED"
 
     @property
     def data(self):
@@ -121,6 +122,14 @@ class Image:
     @data.setter
     def data(self, data):
         self._data = data
+
+    @property
+    def origin(self):
+        return self._origin
+
+    @origin.setter
+    def origin(self, origin):
+        self._origin = origin
 
     @property
     def bayer_pattern(self):
