@@ -98,9 +98,17 @@ def _read_fit_image(path: Path):
 
 
 def _read_raw_image(path: Path):
+    """
+    Reads a RAW DLSR image from file
+
+    :param path: path to the file to read from
+    :type path: pathlib.Path
+
+    :return: the image
+    :rtype: Image
+    """
     raw_image = rawpy.imread(str(path.resolve())).postprocess(gamma=(1, 1),
                                                               no_auto_bright=True,
                                                               output_bps=16,
                                                               user_flip=0)
-
     return Image(np.rollaxis(raw_image, 2, 0))

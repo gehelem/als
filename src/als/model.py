@@ -1,6 +1,8 @@
 """
 Stores all data needed and shared by app modules
 """
+from numpy.core.multiarray import ndarray
+
 import als
 from als.code_utilities import log
 
@@ -95,10 +97,22 @@ STORE = DataStore()
 
 
 class Image:
+    """
+    Represents an image, our basic processing object.
 
-    def __init__(self, data):
+    Image data is a numpy array. Array's data type is unspecified for now
+    but we'd surely benefit from enforcing one (uint32 for example) as it will
+    ease the development of any later processing code
+
+    We also store the bayer pattern applied to the image, if applicable.
+
+    If image is from a sensor without a bayer array, or image has already been debayered, the
+    bayer pattern must be None.
+    """
+
+    def __init__(self, data: ndarray):
         self._data = data
-        self._bayer_pattern = None
+        self._bayer_pattern: str = None
 
     @property
     def data(self):
@@ -117,7 +131,19 @@ class Image:
         self._bayer_pattern = bayer_pattern
 
     def needs_debayering(self):
+        """
+        Tells if a bayer pattern is applied to the image
+
+        :return: True if a bayer pattern is applied to the image, False otherwise
+        """
         return self._bayer_pattern is not None
 
     def is_color(self):
+        """
+        Tells if the image has color information
+
+        image has color information if its data array has more than 2 dimensions
+
+        :return: True if the image has color information, False otherwise
+        """
         return len(self._data.shape) > 2
