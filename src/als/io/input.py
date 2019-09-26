@@ -65,36 +65,30 @@ class InputListener(QObject):
         pass
 
 
-class FileSystemListener(InputListener):
+class FileSystemListener(InputListener, FileSystemEventHandler):
     """
     Watches file changes (creation, move) in a specific filesystem folder
     """
 
+    @log
     def __init__(self):
         InputListener.__init__(self)
+        FileSystemEventHandler.__init__(self)
         self._observer = None
 
+    @log
     def start(self):
         self._observer = PollingObserver()
-        self._observer.schedule(InputQueueFeeder(), config.get_scan_folder_path(), recursive=False)
+        self._observer.schedule(self, config.get_scan_folder_path(), recursive=False)
         self._observer.start()
+        _LOGGER.info("File Listener started")
 
+    @log
     def stop(self):
         if self._observer is not None:
             self._observer.stop()
         self._observer = None
-
-
-class InputQueueFeeder(FileSystemEventHandler):
-    """
-    Filesystem event handler used to detect new files in a folder.
-
-    Put new Images in the input queue as new files are detected.
-    """
-
-    @log
-    def __init__(self):
-        super().__init__()
+        _LOGGER.info("File Listener stopped")
 
     @log
     def on_moved(self, event):
