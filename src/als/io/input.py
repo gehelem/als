@@ -6,13 +6,14 @@ We need to read file and in the future, get images from INDI
 import logging
 from abc import abstractmethod
 from pathlib import Path
-from pprint import pprint
 
 import numpy as np
 import rawpy
 from PyQt5.QtCore import QObject
 from astropy.io import fits
 from astropy.io.fits import Header
+
+from als.model import Image
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -89,14 +90,13 @@ def _read_fit_image(path: Path):
         data = fit[0].data
         header = fit[0].header
 
-    _parse_header(header, data)
-
-    pprint(data)
-    pprint(header)
+    return _create_image(header, data)
 
 
-def _parse_header(header: Header, data):
-    cards = header.cards
+def _create_image(header: Header, data):
+    image = Image(data)
+    image.bayer_pattern = header['BAYERPAT']
+    return image
 
 
 def _read_raw_image(path: Path):
