@@ -1,7 +1,7 @@
 """
 Stores all data needed and shared by app modules
 """
-from numpy.core.multiarray import ndarray
+from numpy import ndarray
 
 import als
 from als.code_utilities import log
@@ -111,12 +111,24 @@ class Image:
     """
 
     def __init__(self, data: ndarray):
+        """
+        Constructs an Image
+
+        :param data: the image data
+        :type data: numpy.ndarray
+        """
         self._data = data
         self._bayer_pattern: str = None
         self._origin: str = "UNDEFINED"
 
     @property
     def data(self):
+        """
+        Retrieves image data
+
+        :return: image data
+        :rtype: numpy.ndarray
+        """
         return self._data
 
     @data.setter
@@ -125,6 +137,14 @@ class Image:
 
     @property
     def origin(self):
+        """
+        retrieves info on image origin.
+
+        If Image has been read from a disk file, origin contains the file path
+
+        :return: origin representation
+        :rtype: str
+        """
         return self._origin
 
     @origin.setter
@@ -133,6 +153,12 @@ class Image:
 
     @property
     def bayer_pattern(self):
+        """
+        Retrieves the bayer pattern applied to the image, if applicable.
+
+        :return: the bayer pattern or None if image is B&W or image is color and debayered
+        :rtype: str
+        """
         return self._bayer_pattern
 
     @bayer_pattern.setter
