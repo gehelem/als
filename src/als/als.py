@@ -787,7 +787,7 @@ class MainWindow(QMainWindow):
     def cb_pause(self):
         """Qt slot for mouse clicks on the 'Pause' button"""
         self.image_ref_save.status = "pause"
-        self._ui.pbStop.setEnabled(False)
+        self._ui.pbStop.setEnabled(True)
         self._ui.pbPlay.setEnabled(True)
         self._ui.pbReset.setEnabled(False)
         self._ui.pbPause.setEnabled(False)

@@ -87,10 +87,11 @@ class FileSystemListener(FileSystemEventHandler):
     @log
     def _stop_observer(self):
         if self._observer is not None:
+            _LOGGER.info("Stopping File Listener... Waiting for current operation to complete...")
             self._observer.stop()
-        self._observer = None
-        _LOGGER.info("File Listener stopped")
-        STORE.scan_in_progress = False
+            self._observer = None
+            _LOGGER.info("File Listener stopped")
+            STORE.scan_in_progress = False
 
 
 @log
