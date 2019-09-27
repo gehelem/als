@@ -13,6 +13,7 @@ import numpy as np
 import rawpy
 from PyQt5.QtCore import QObject, QFileInfo
 from astropy.io import fits
+from rawpy._rawpy import LibRawNonFatalError, LibRawFatalError
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers.polling import PollingObserver
 
@@ -144,8 +145,7 @@ class FileSystemListener(InputListener, FileSystemEventHandler):
     def _enqueue_image(self, image: Image):
         if image is not None:
             _IMAGE_INPUT_QUEUE.put(image)
-
-        _LOGGER.debug("Input queue size = %d" % _IMAGE_INPUT_QUEUE.qsize())
+            _LOGGER.debug("Input queue size = %d" % _IMAGE_INPUT_QUEUE.qsize())
 
 
 @log
@@ -174,9 +174,10 @@ def read_image(path: Path):
         else:
             image = _read_raw_image(path)
 
-        file_path_str = str(path.resolve())
-        image.origin = f"FILE : {file_path_str}"
-        _LOGGER.info(f"Successful image read from file '{file_path_str}'")
+        if image is not None:
+            file_path_str = str(path.resolve())
+            image.origin = f"FILE : {file_path_str}"
+            _LOGGER.info(f"Successful image read from file '{file_path_str}'")
 
     return image
 
@@ -190,16 +191,21 @@ def _read_fit_image(path: Path):
     :type path: pathlib.Path
 
     :return: the loaded image, with data and headers parsed
-    :rtype: Image
+    :rtype: Image or None if a known error occurred
     """
-    with fits.open(str(path.resolve())) as fit:
-        data = fit[0].data
-        header = fit[0].header
+    try:
+        with fits.open(str(path.resolve())) as fit:
+            data = fit[0].data
+            header = fit[0].header
 
-    image = Image(data)
+        image = Image(data)
 
-    if 'BAYERPAT' in header:
-        image.bayer_pattern = header['BAYERPAT']
+        if 'BAYERPAT' in header:
+            image.bayer_pattern = header['BAYERPAT']
+
+    except OSError as error:
+        _report_error(path, error)
+        return None
 
     return image
 
@@ -213,10 +219,27 @@ def _read_raw_image(path: Path):
     :type path: pathlib.Path
 
     :return: the image
-    :rtype: Image
+    :rtype: Image or None if a known error occurred
     """
-    raw_image = rawpy.imread(str(path.resolve())).postprocess(gamma=(1, 1),
-                                                              no_auto_bright=True,
-                                                              output_bps=16,
-                                                              user_flip=0)
-    return Image(np.rollaxis(raw_image, 2, 0))
+
+    try:
+        with open(str(path.resolve()), 'rb') as image_file:
+            raw_image = rawpy.imread(image_file)
+
+        processed_image = raw_image.postprocess(gamma=(1, 1),
+                                                no_auto_bright=True,
+                                                output_bps=16,
+                                                user_flip=0)
+
+        return Image(np.rollaxis(processed_image, 2, 0))
+
+    except LibRawNonFatalError as non_fatal_error:
+        _report_error(path, non_fatal_error)
+        return None
+    except LibRawFatalError as fatal_error:
+        _report_error(path, fatal_error)
+        return None
+
+
+def _report_error(path: Path, error: Exception):
+    _LOGGER.error(f"Error reading from file {str(path.resolve())} : {str(error)}")
