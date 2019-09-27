@@ -5,13 +5,12 @@ We need to read file and in the future, get images from INDI
 """
 import logging
 import time
-from abc import abstractmethod
 from pathlib import Path
 from queue import Queue
 
 import numpy as np
 import rawpy
-from PyQt5.QtCore import QObject, QFileInfo
+from PyQt5.QtCore import QFileInfo
 from astropy.io import fits
 from rawpy._rawpy import LibRawNonFatalError, LibRawFatalError
 from watchdog.events import FileSystemEventHandler
@@ -30,56 +29,13 @@ _IGNORED_FILENAME_START_PATTERNS = ['.', '~', 'tmp']
 _DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC = 0.1
 
 
-class InputListener(QObject):
-    """
-    In charge of input management, **abstract class**
-    """
-
-    @staticmethod
-    def create_listener(listener_type: str):
-        """
-        Creates specialized input listeners.
-
-        :param listener_type: what type of listener to create
-        :type listener_type: str : allowed values :
-
-          - 'FS' to create a filesystem listener
-
-        :return: an input listener
-        :rtype: FileSystemListener
-        """
-        if listener_type == "FS":
-            return FileSystemListener()
-
-        raise ValueError(f"unrecognized listener type : {listener_type}")
-
-    @abstractmethod
-    def start(self):
-        """
-        Start listening for new images.
-        """
-
-    @abstractmethod
-    def stop(self):
-        """
-        Stop listening for new images and purge input queue
-        """
-
-    @abstractmethod
-    def pause(self):
-        """
-        Simply stop listening for new images
-        """
-
-
-class FileSystemListener(InputListener, FileSystemEventHandler):
+class FileSystemListener(FileSystemEventHandler):
     """
     Watches file changes (creation, move) in a specific filesystem folder
     """
 
     @log
     def __init__(self):
-        InputListener.__init__(self)
         FileSystemEventHandler.__init__(self)
         self._observer = None
 
