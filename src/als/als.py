@@ -371,6 +371,10 @@ class WatchOutForFileCreations(QThread):
 class MainWindow(QMainWindow):
     """ALS main window."""
 
+    start_scanner_signal = pyqtSignal()
+    stop_scanner_signal = pyqtSignal()
+    pause_scanner_signal = pyqtSignal()
+
     @log
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -406,6 +410,10 @@ class MainWindow(QMainWindow):
 
         # TODO : remove this test code
         self._input_listener = FileSystemListener()
+
+        self.start_scanner_signal.connect(self._input_listener.start)
+        self.stop_scanner_signal.connect(self._input_listener.stop)
+        self.pause_scanner_signal.connect(self._input_listener.pause)
 
     @log
     def closeEvent(self, event):
@@ -716,7 +724,7 @@ class MainWindow(QMainWindow):
         _LOGGER.info(f"Work folder : '{config.get_work_folder_path()}'")
         _LOGGER.info(f"Scan folder : '{config.get_scan_folder_path()}'")
 
-        self._input_listener.start()
+        self.start_scanner_signal.emit()
 
     def on_log_message(self, message):
         """
@@ -772,7 +780,7 @@ class MainWindow(QMainWindow):
         self._ui.pbReset.setEnabled(True)
         self._ui.pbPause.setEnabled(False)
         _LOGGER.info("Stop")
-        self._input_listener.stop()
+        self.stop_scanner_signal.emit()
 
     @pyqtSlot(name="on_pbPause_clicked")
     @log
@@ -784,7 +792,7 @@ class MainWindow(QMainWindow):
         self._ui.pbReset.setEnabled(False)
         self._ui.pbPause.setEnabled(False)
         _LOGGER.info("Pause")
-        self._input_listener.pause()
+        self.pause_scanner_signal.emit()
 
     @pyqtSlot(name="on_pbReset_clicked")
     @log
