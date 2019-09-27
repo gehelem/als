@@ -98,7 +98,7 @@ class FileSystemListener(InputListener, FileSystemEventHandler):
     @log
     def stop(self):
         self._stop_observer()
-        self._purge_queue()
+        _purge_queue()
 
     @log
     def on_moved(self, event):
@@ -106,7 +106,7 @@ class FileSystemListener(InputListener, FileSystemEventHandler):
             image_path = event.dest_path
             _LOGGER.debug(f"File move detected : {image_path}")
 
-            self._enqueue_image(read_image(Path(image_path)))
+            _enqueue_image(read_image(Path(image_path)))
 
     @log
     def on_created(self, event):
@@ -126,7 +126,7 @@ class FileSystemListener(InputListener, FileSystemEventHandler):
                 last_file_size = size
                 time.sleep(_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC)
 
-            self._enqueue_image(read_image(Path(image_path)))
+            _enqueue_image(read_image(Path(image_path)))
 
     @log
     def _stop_observer(self):
@@ -136,16 +136,18 @@ class FileSystemListener(InputListener, FileSystemEventHandler):
         _LOGGER.info("File Listener stopped")
         STORE.scan_in_progress = False
 
-    @log
-    def _purge_queue(self):
-        while not _IMAGE_INPUT_QUEUE.empty():
-            _IMAGE_INPUT_QUEUE.get()
 
-    @log
-    def _enqueue_image(self, image: Image):
-        if image is not None:
-            _IMAGE_INPUT_QUEUE.put(image)
-            _LOGGER.debug(f"Input queue size = {_IMAGE_INPUT_QUEUE.qsize()}")
+@log
+def _purge_queue():
+    while not _IMAGE_INPUT_QUEUE.empty():
+        _IMAGE_INPUT_QUEUE.get()
+
+
+@log
+def _enqueue_image(image: Image):
+    if image is not None:
+        _IMAGE_INPUT_QUEUE.put(image)
+        _LOGGER.debug(f"Input queue size = {_IMAGE_INPUT_QUEUE.qsize()}")
 
 
 @log
