@@ -156,7 +156,7 @@ def read_image(path: Path):
     :param path: path to the file to load image from
     :type path:  pathlib.Path
 
-    :return: the image read from disk or None if image is ignored
+    :return: the image read from disk or None if image is ignored or an error occurred
     :rtype: Image or None
     """
 
@@ -190,11 +190,12 @@ def _read_fit_image(path: Path):
     :param path: path to image file to load from
     :type path: pathlib.Path
 
-    :return: the loaded image, with data and headers parsed
-    :rtype: Image or None if a known error occurred
+    :return: the loaded image, with data and headers parsed or None if a known error occurred
+    :rtype: Image or None
     """
     try:
         with fits.open(str(path.resolve())) as fit:
+            # pylint: disable=E1101
             data = fit[0].data
             header = fit[0].header
 
@@ -218,8 +219,8 @@ def _read_raw_image(path: Path):
     :param path: path to the file to read from
     :type path: pathlib.Path
 
-    :return: the image
-    :rtype: Image or None if a known error occurred
+    :return: the image or None if a known error occurred
+    :rtype: Image or None
     """
 
     try:
