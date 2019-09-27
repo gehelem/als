@@ -41,7 +41,7 @@ from watchdog.observers import Observer
 from als import config, preprocess as prepro, stack as stk, model
 from als.code_utilities import log, Timer
 from als.io.output import ImageSaver, save_image
-from als.io.input import FileSystemListener
+from als.io.input import FolderScanner
 from als.model import VERSION, STORE
 from als.ui.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
 
@@ -408,12 +408,11 @@ class MainWindow(QMainWindow):
         self._image_saver = ImageSaver()
         self._image_saver.start()
 
-        # TODO : remove this test code
-        self._input_listener = FileSystemListener()
+        self._folder_scanner = FolderScanner()
 
-        self.start_scanner_signal.connect(self._input_listener.start)
-        self.stop_scanner_signal.connect(self._input_listener.stop)
-        self.pause_scanner_signal.connect(self._input_listener.pause)
+        self.start_scanner_signal.connect(self._folder_scanner.start)
+        self.stop_scanner_signal.connect(self._folder_scanner.stop)
+        self.pause_scanner_signal.connect(self._folder_scanner.pause)
 
     @log
     def closeEvent(self, event):

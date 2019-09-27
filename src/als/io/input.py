@@ -29,9 +29,11 @@ _IGNORED_FILENAME_START_PATTERNS = ['.', '~', 'tmp']
 _DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC = 0.1
 
 
-class FileSystemListener(FileSystemEventHandler):
+class FolderScanner(FileSystemEventHandler):
     """
     Watches file changes (creation, move) in a specific filesystem folder
+
+    the watched directory is retrieved from user config on scanner startup
     """
 
     @log
@@ -44,7 +46,7 @@ class FileSystemListener(FileSystemEventHandler):
         self._observer = PollingObserver()
         self._observer.schedule(self, config.get_scan_folder_path(), recursive=False)
         self._observer.start()
-        _LOGGER.info("File Listener started")
+        _LOGGER.info("Folder scanner started")
         STORE.scan_in_progress = True
 
     @log
@@ -87,10 +89,10 @@ class FileSystemListener(FileSystemEventHandler):
     @log
     def _stop_observer(self):
         if self._observer is not None:
-            _LOGGER.info("Stopping File Listener... Waiting for current operation to complete...")
+            _LOGGER.info("Stopping folder scanner... Waiting for current operation to complete...")
             self._observer.stop()
             self._observer = None
-            _LOGGER.info("File Listener stopped")
+            _LOGGER.info("Folder scanner stopped")
             STORE.scan_in_progress = False
 
 
