@@ -10,9 +10,9 @@ from queue import Queue
 
 import numpy as np
 import rawpy
+from rawpy._rawpy import LibRawNonFatalError, LibRawFatalError
 from PyQt5.QtCore import QFileInfo
 from astropy.io import fits
-from rawpy._rawpy import LibRawNonFatalError, LibRawFatalError
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers.polling import PollingObserver
 
@@ -43,6 +43,9 @@ class FolderScanner(FileSystemEventHandler):
 
     @log
     def start(self):
+        """
+        Starts scanning scan folder for new files
+        """
         self._observer = PollingObserver()
         self._observer.schedule(self, config.get_scan_folder_path(), recursive=False)
         self._observer.start()
@@ -51,10 +54,20 @@ class FolderScanner(FileSystemEventHandler):
 
     @log
     def pause(self):
+        """
+        Pauses scanning scan folder for new files
+
+        Scanner is stopped
+        """
         self._stop_observer()
 
     @log
     def stop(self):
+        """
+        Stops scanning scan folder for new files
+
+        Scanner is stopped and input queue is purged
+        """
         self._stop_observer()
         _purge_queue()
 
