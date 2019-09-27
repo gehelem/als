@@ -98,13 +98,14 @@ class FileSystemListener(FileSystemEventHandler):
 def _purge_queue():
     while not _IMAGE_INPUT_QUEUE.empty():
         _IMAGE_INPUT_QUEUE.get()
+    _LOGGER.info("Input queue purged")
 
 
 @log
 def _enqueue_image(image: Image):
     if image is not None:
         _IMAGE_INPUT_QUEUE.put(image)
-        _LOGGER.debug(f"Input queue size = {_IMAGE_INPUT_QUEUE.qsize()}")
+        _LOGGER.info(f"Input queue size = {_IMAGE_INPUT_QUEUE.qsize()}")
 
 
 @log
