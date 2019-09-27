@@ -234,7 +234,7 @@ def save():
             _CONFIG_PARSER.write(config_file)
         _get_logger().info("User configuration saved")
     except OSError as os_error:
-        _get_logger().error("Could not save settings. Error : %s", os_error)
+        _get_logger().error(f"Could not save settings. Error : {os_error}")
         dialogs.error_box("Settings not saved", f"Your settings could not be saved\n\nDetails : {os_error}")
 
 

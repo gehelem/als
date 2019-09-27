@@ -25,17 +25,11 @@ def log(func):
     def wrapped(*args, **kwargs):
         function_name = func.__qualname__
         logger = logging.getLogger(func.__module__)
-        logger.debug("%s() called with : %s - %s",
-                     function_name,
-                     str(args),
-                     str(kwargs))
+        logger.debug(f"{function_name}() called with : {str(args)} - {str(kwargs)}")
         start_time = time()
         result = func(*args, **kwargs)
         end_time = time()
-        logger.debug("%s() returned %s in %0.3f ms",
-                     function_name,
-                     str(result),
-                     (end_time - start_time) * 1000)
+        logger.debug(f"{function_name}() returned {str(result)} in {(end_time - start_time) * 1000:0.3f} ms")
         return result
     return wrapped
 

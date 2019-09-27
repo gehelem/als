@@ -145,7 +145,7 @@ class FileSystemListener(InputListener, FileSystemEventHandler):
     def _enqueue_image(self, image: Image):
         if image is not None:
             _IMAGE_INPUT_QUEUE.put(image)
-            _LOGGER.debug("Input queue size = %d" % _IMAGE_INPUT_QUEUE.qsize())
+            _LOGGER.debug(f"Input queue size = {_IMAGE_INPUT_QUEUE.qsize()}")
 
 
 @log
