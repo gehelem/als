@@ -8,7 +8,6 @@ import time
 from pathlib import Path
 from queue import Queue
 
-import numpy as np
 import rawpy
 from rawpy._rawpy import LibRawNonFatalError, LibRawFatalError
 from PyQt5.QtCore import QFileInfo
@@ -16,17 +15,29 @@ from astropy.io import fits
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers.polling import PollingObserver
 
-from als import config
 from als.code_utilities import log
-from als.model import Image, STORE
+from als.model import Image
 
 _LOGGER = logging.getLogger(__name__)
 
-# queue to which are posted all loaded images
-_IMAGE_INPUT_QUEUE = Queue()
-
 _IGNORED_FILENAME_START_PATTERNS = ['.', '~', 'tmp']
 _DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC = 0.1
+
+
+class InputError(Exception):
+    """
+    Base class for all Exception subclasses in this module
+    """
+    pass
+
+
+class ScannerStartError(InputError):
+    """
+    Raised when folder scanner start is in error.
+    """
+
+    def __init__(self, error: Exception):
+        Exception.__init__(error)
 
 
 class FolderScanner(FileSystemEventHandler):
@@ -34,23 +45,32 @@ class FolderScanner(FileSystemEventHandler):
     Watches file changes (creation, move) in a specific filesystem folder
 
     the watched directory is retrieved from user config on scanner startup
+
+    Each time an image is read from file, it is pushed to the main input queue
     """
 
     @log
-    def __init__(self):
+    def __init__(self, input_queue: Queue):
         FileSystemEventHandler.__init__(self)
         self._observer = None
+        self._input_queue = input_queue
 
     @log
-    def start(self):
+    def start(self, scan_folder_path: Path):
         """
         Starts scanning scan folder for new files
+
+        :param scan_folder_path: the path of the folder to start scanning
+        :type scan_folder_path: Path
         """
-        self._observer = PollingObserver()
-        self._observer.schedule(self, config.get_scan_folder_path(), recursive=False)
-        self._observer.start()
-        _LOGGER.info("Folder scanner started")
-        STORE.scan_in_progress = True
+        try:
+            self._observer = PollingObserver()
+            self._observer.schedule(self, str(scan_folder_path.resolve()), recursive=False)
+            self._observer.start()
+            _LOGGER.info("Folder scanner started")
+        except OSError as os_error:
+            _LOGGER.error(f"Folder scan start failed : {os_error}")
+            raise ScannerStartError(os_error)
 
     @log
     def pause(self):
@@ -69,7 +89,7 @@ class FolderScanner(FileSystemEventHandler):
         Scanner is stopped and input queue is purged
         """
         self._stop_observer()
-        _purge_queue()
+        self.purge_queue()
 
     @log
     def on_moved(self, event):
@@ -77,7 +97,7 @@ class FolderScanner(FileSystemEventHandler):
             image_path = event.dest_path
             _LOGGER.debug(f"File move detected : {image_path}")
 
-            _enqueue_image(read_image(Path(image_path)))
+            self.enqueue_image(read_image(Path(image_path)))
 
     @log
     def on_created(self, event):
@@ -97,7 +117,7 @@ class FolderScanner(FileSystemEventHandler):
                 last_file_size = size
                 time.sleep(_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC)
 
-            _enqueue_image(read_image(Path(image_path)))
+            self.enqueue_image(read_image(Path(image_path)))
 
     @log
     def _stop_observer(self):
@@ -106,21 +126,18 @@ class FolderScanner(FileSystemEventHandler):
             self._observer.stop()
             self._observer = None
             _LOGGER.info("Folder scanner stopped")
-            STORE.scan_in_progress = False
 
+    @log
+    def purge_queue(self):
+        while not self._input_queue.empty():
+            self._input_queue.get()
+        _LOGGER.info("Input queue purged")
 
-@log
-def _purge_queue():
-    while not _IMAGE_INPUT_QUEUE.empty():
-        _IMAGE_INPUT_QUEUE.get()
-    _LOGGER.info("Input queue purged")
-
-
-@log
-def _enqueue_image(image: Image):
-    if image is not None:
-        _IMAGE_INPUT_QUEUE.put(image)
-        _LOGGER.info(f"Input queue size = {_IMAGE_INPUT_QUEUE.qsize()}")
+    @log
+    def enqueue_image(self, image: Image):
+        if image is not None:
+            self._input_queue.put(image)
+            _LOGGER.info(f"Input queue size = {self._input_queue.qsize()}")
 
 
 @log
@@ -150,9 +167,7 @@ def read_image(path: Path):
             image = _read_raw_image(path)
 
         if image is not None:
-            file_path_str = str(path.resolve())
-            image.origin = f"FILE : {file_path_str}"
-            _LOGGER.info(f"Successful image read from file '{file_path_str}'")
+            _LOGGER.info(f"Successful image read from {image.origin}")
 
     return image
 
@@ -179,8 +194,10 @@ def _read_fit_image(path: Path):
         if 'BAYERPAT' in header:
             image.bayer_pattern = header['BAYERPAT']
 
+        _set_image_file_origin(image, path)
+
     except OSError as error:
-        _report_error(path, error)
+        _report_fs_error(path, error)
         return None
 
     return image
@@ -213,7 +230,7 @@ def _read_raw_image(path: Path):
             # | G | B |
             # +---+---+
             #
-            # RawPy will report the CFA description as 2 discrete values :
+            # RawPy will report the bayer pattern description as 2 discrete values :
             #
             # 1) raw_image.raw_pattern : a 2x2 numpy array representing the indices used to express the bayer patten
             #
@@ -229,40 +246,50 @@ def _read_raw_image(path: Path):
             #
             # [0, 1, 3, 2]
             #
-            # 2) raw_image.color_desc : a bytes literal formed of the color of each pixel of the bayer pattern, in ascending
-            #                           index order from raw_image.raw_pattern
+            # 2) raw_image.color_desc : a bytes literal formed of the color of each pixel of the bayer pattern, in
+            #                           ascending index order from raw_image.raw_pattern
             #
             # in our example, its value is : b'RGBG'
             #
-            # We need to express/store this pattern in a more common way, i.e. as it would be described in a FITS header.
-            # Or put simply, we want to express the bayer pattern as it would be described if raw_image.raw_pattern was :
+            # We need to express/store this pattern in a more common way, i.e. as it would be described in a FITS
+            # header. Or put simply, we want to express the bayer pattern as it would be described if
+            # raw_image.raw_pattern was :
             #
             # +---+---+
             # | 0 | 1 |
             # +---+---+
             # | 2 | 3 |
             # +---+---+
-            indices = raw_image.raw_pattern.flatten()
-            color_desc = raw_image.color_desc.decode()
+            bayer_pattern_indices = raw_image.raw_pattern.flatten()
+            bayer_pattern_desc = raw_image.color_desc.decode()
 
-            assert len(indices) == len(color_desc)
+            _LOGGER.debug(f"Bayer pattern indices = {bayer_pattern_indices}")
+            _LOGGER.debug(f"Bayer pattern description = {bayer_pattern_desc}")
+
+            assert len(bayer_pattern_indices) == len(bayer_pattern_desc)
             bayer_pattern = ""
-            for i in range(len(indices)):
-                assert indices[i] < len(indices)
-                bayer_pattern += color_desc[indices[i]]
+            for i in range(len(bayer_pattern_indices)):
+                assert bayer_pattern_indices[i] < len(bayer_pattern_indices)
+                bayer_pattern += bayer_pattern_desc[bayer_pattern_indices[i]]
+
+            _LOGGER.debug(f"Computed, FITS-compatible bayer pattern = {bayer_pattern}")
 
             new_image = Image(raw_image.raw_image_visible)
             new_image.bayer_pattern = bayer_pattern
-
+            _set_image_file_origin(new_image, path)
             return new_image
 
     except LibRawNonFatalError as non_fatal_error:
-        _report_error(path, non_fatal_error)
+        _report_fs_error(path, non_fatal_error)
         return None
     except LibRawFatalError as fatal_error:
-        _report_error(path, fatal_error)
+        _report_fs_error(path, fatal_error)
         return None
 
 
-def _report_error(path: Path, error: Exception):
+def _report_fs_error(path: Path, error: Exception):
     _LOGGER.error(f"Error reading from file {str(path.resolve())} : {str(error)}")
+
+
+def _set_image_file_origin(image: Image, path: Path):
+    image.origin = f"FILE : {str(path.resolve())}"

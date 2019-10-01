@@ -27,6 +27,7 @@ import sys
 import threading
 from datetime import datetime
 from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -38,11 +39,11 @@ from qimage2ndarray import array2qimage
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-from als import config, preprocess as prepro, stack as stk, model
 from als.code_utilities import log, Timer
 from als.io.output import ImageSaver, save_image
-from als.io.input import FolderScanner
 from als.model import VERSION, STORE
+from als import preprocess as prepro, stack as stk, config, model
+from als.io.input import FolderScanner, ScannerStartError
 from als.ui.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
 
 from generated.als_ui import Ui_stack_window
@@ -369,11 +370,11 @@ class WatchOutForFileCreations(QThread):
 
 
 class MainWindow(QMainWindow):
-    """ALS main window."""
+    """
+    ALS main window.
 
-    start_scanner_signal = pyqtSignal()
-    stop_scanner_signal = pyqtSignal()
-    pause_scanner_signal = pyqtSignal()
+    It also acts as the main controller, for now
+    """
 
     @log
     def __init__(self, parent=None):
@@ -408,11 +409,9 @@ class MainWindow(QMainWindow):
         self._image_saver = ImageSaver()
         self._image_saver.start()
 
-        self._folder_scanner = FolderScanner()
+        self._folder_scanner = FolderScanner(STORE.input_queue)
 
-        self.start_scanner_signal.connect(self._folder_scanner.start)
-        self.stop_scanner_signal.connect(self._folder_scanner.stop)
-        self.pause_scanner_signal.connect(self._folder_scanner.pause)
+        self.update_store_display()
 
     @log
     def closeEvent(self, event):
@@ -712,18 +711,15 @@ class MainWindow(QMainWindow):
         self.image_ref_save.status = "play"
         self.image_ref_save.image = None
         self.image_ref_save.stack_image = None
-        # deactivate play button
-        self._ui.pbPlay.setEnabled(False)
-        self._ui.pbReset.setEnabled(False)
-        # activate stop button
-        self._ui.pbStop.setEnabled(True)
-        # activate pause button
-        self._ui.pbPause.setEnabled(True)
 
         _LOGGER.info(f"Work folder : '{config.get_work_folder_path()}'")
         _LOGGER.info(f"Scan folder : '{config.get_scan_folder_path()}'")
 
-        self.start_scanner_signal.emit()
+        try:
+            self._folder_scanner.start(Path(config.get_scan_folder_path()))
+            STORE.record_scanner_start()
+        except ScannerStartError as start_error:
+            dialogs.error_box("Could not start folder scanner", str(start_error))
 
     def on_log_message(self, message):
         """
@@ -740,13 +736,16 @@ class MainWindow(QMainWindow):
         """
         Updates all displays and controls depending on DataStore held data
         """
+
+        # build status bar messages display
         messages = list()
 
         # update statusBar according to status of folder scanner and web server
-        messages.append(f"Scanning '{config.get_scan_folder_path()}'" if model.STORE.scan_in_progress else "Scanner : idle")
+        messages.append(f"Scanning '{config.get_scan_folder_path()}'" if STORE.scanner_is_started else "Scanner : idle")
 
-        if model.STORE.web_server_is_running:
-            messages.append(f"Web server reachable at http://{MainWindow.get_ip()}:{config.get_www_server_port_number()}")
+        if STORE.web_server_is_running:
+            messages.append(f"Web server reachable at "
+                            f"http://{MainWindow.get_ip()}:{config.get_www_server_port_number()}")
         else:
             messages.append("Web server : idle")
 
@@ -754,6 +753,12 @@ class MainWindow(QMainWindow):
 
         # update preferences accessibility according to scanner and webserver status
         self._ui.action_prefs.setEnabled(not STORE.web_server_is_running and not STORE.scan_in_progress)
+
+        # handle Start / Pause / Stop buttons
+        self._ui.pbPlay.setEnabled(STORE.scanner_is_stopped or STORE.scanner_is_paused)
+        self._ui.pbReset.setEnabled(STORE.scanner_is_stopped)
+        self._ui.pbStop.setEnabled(STORE.scanner_is_started or STORE.scanner_is_paused)
+        self._ui.pbPause.setEnabled(STORE.scanner_is_started)
 
     @log
     def _setup_work_folder(self):
@@ -774,24 +779,19 @@ class MainWindow(QMainWindow):
         self.image_ref_save.status = "stop"
         self._ui.cbAlign.setEnabled(True)
         self._ui.cmMode.setEnabled(True)
-        self._ui.pbStop.setEnabled(False)
-        self._ui.pbPlay.setEnabled(True)
-        self._ui.pbReset.setEnabled(True)
-        self._ui.pbPause.setEnabled(False)
+        self._ui.action_prefs.setEnabled(not self._ui.cbWww.isChecked())
         _LOGGER.info("Stop")
-        self.stop_scanner_signal.emit()
+        self._folder_scanner.stop()
+        STORE.record_scanner_stop()
 
     @pyqtSlot(name="on_pbPause_clicked")
     @log
     def cb_pause(self):
         """Qt slot for mouse clicks on the 'Pause' button"""
         self.image_ref_save.status = "pause"
-        self._ui.pbStop.setEnabled(True)
-        self._ui.pbPlay.setEnabled(True)
-        self._ui.pbReset.setEnabled(False)
-        self._ui.pbPause.setEnabled(False)
         _LOGGER.info("Pause")
-        self.pause_scanner_signal.emit()
+        self._folder_scanner.pause()
+        STORE.record_scanner_pause()
 
     @pyqtSlot(name="on_pbReset_clicked")
     @log

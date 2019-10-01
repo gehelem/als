@@ -1,6 +1,8 @@
 """
 Stores all data needed and shared by app modules
 """
+from queue import Queue
+
 from numpy import ndarray
 
 import als
@@ -15,8 +17,15 @@ class DataStore:
     """
     def __init__(self):
         self._observers = []
-        self._scan_in_progress = False
+        self._scanner_is_started = False
+        self._scanner_is_stopped = True
+        self._scanner_is_paused = False
         self._web_server_is_running = False
+        self._input_queue = Queue()
+
+    @property
+    def input_queue(self):
+        return self._input_queue
 
     @property
     @log
@@ -43,25 +52,65 @@ class DataStore:
 
     @property
     @log
-    def scan_in_progress(self):
+    def scanner_is_started(self):
         """
-        Is scan in progress.
+        Is scanner started.
 
-        :return: True if scanner is running, False otherwise
+        :return: True if scanner is started, False otherwise
         :rtype: bool
         """
-        return self._scan_in_progress
+        return self._scanner_is_started
 
-    @scan_in_progress.setter
     @log
-    def scan_in_progress(self, in_progress):
+    def record_scanner_start(self):
         """
-        Sets flag for scanner running status.
+        Sets flag for scanner started status.
+        """
+        self._scanner_is_started = True
+        self._scanner_is_stopped = False
+        self._scanner_is_paused = False
+        self._notify_observers()
 
-        :param in_progress: is scanner running
-        :type in_progress: bool
+    @property
+    @log
+    def scanner_is_stopped(self):
         """
-        self._scan_in_progress = in_progress
+        Is scanner stopped.
+
+        :return: True if scanner is stopped, False otherwise
+        :rtype: bool
+        """
+        return self._scanner_is_stopped
+
+    @log
+    def record_scanner_stop(self):
+        """
+        Sets flag for scanner stopped status.
+        """
+        self._scanner_is_started = False
+        self._scanner_is_stopped = True
+        self._scanner_is_paused = False
+        self._notify_observers()
+
+    @property
+    @log
+    def scanner_is_paused(self):
+        """
+        Is scanner paused.
+
+        :return: True if scanner is paused, False otherwise
+        :rtype: bool
+        """
+        return self._scanner_is_paused
+
+    @log
+    def record_scanner_pause(self):
+        """
+        Sets flag for scanner paused status.
+        """
+        self._scanner_is_started = False
+        self._scanner_is_stopped = False
+        self._scanner_is_paused = True
         self._notify_observers()
 
     @log
