@@ -199,15 +199,14 @@ def _read_raw_image(path: Path):
     """
 
     try:
-        with open(str(path.resolve()), 'rb') as image_file:
-            raw_image = rawpy.imread(image_file)
+        with rawpy.imread(str(path.resolve())) as raw_image:
 
-        processed_image = raw_image.postprocess(gamma=(1, 1),
-                                                no_auto_bright=True,
-                                                output_bps=16,
-                                                user_flip=0)
+            bayer_pattern = raw_image.color_desc.decode()
 
-        return Image(np.rollaxis(processed_image, 2, 0))
+            new_image = Image(raw_image.raw_image)
+            new_image.bayer_pattern = bayer_pattern
+
+            return new_image
 
     except LibRawNonFatalError as non_fatal_error:
         _report_error(path, non_fatal_error)
