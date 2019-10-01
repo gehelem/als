@@ -28,16 +28,12 @@ class InputError(Exception):
     """
     Base class for all Exception subclasses in this module
     """
-    pass
 
 
 class ScannerStartError(InputError):
     """
     Raised when folder scanner start is in error.
     """
-
-    def __init__(self, error: Exception):
-        Exception.__init__(error)
 
 
 class FolderScanner(FileSystemEventHandler):
@@ -73,23 +69,17 @@ class FolderScanner(FileSystemEventHandler):
             raise ScannerStartError(os_error)
 
     @log
-    def pause(self):
-        """
-        Pauses scanning scan folder for new files
-
-        Scanner is stopped
-        """
-        self._stop_observer()
-
-    @log
     def stop(self):
         """
         Stops scanning scan folder for new files
 
         Scanner is stopped and input queue is purged
         """
-        self._stop_observer()
-        self.purge_queue()
+        if self._observer is not None:
+            _LOGGER.info("Stopping folder scanner... Waiting for current operation to complete...")
+            self._observer.stop()
+            self._observer = None
+            _LOGGER.info("Folder scanner stopped")
 
     @log
     def on_moved(self, event):
@@ -120,21 +110,13 @@ class FolderScanner(FileSystemEventHandler):
             self.enqueue_image(read_image(Path(image_path)))
 
     @log
-    def _stop_observer(self):
-        if self._observer is not None:
-            _LOGGER.info("Stopping folder scanner... Waiting for current operation to complete...")
-            self._observer.stop()
-            self._observer = None
-            _LOGGER.info("Folder scanner stopped")
-
-    @log
-    def purge_queue(self):
-        while not self._input_queue.empty():
-            self._input_queue.get()
-        _LOGGER.info("Input queue purged")
-
-    @log
     def enqueue_image(self, image: Image):
+        """
+        Push an image to the input queue
+
+        :param image: the image to push
+        :type image: Image
+        """
         if image is not None:
             self._input_queue.put(image)
             _LOGGER.info(f"Input queue size = {self._input_queue.qsize()}")
@@ -268,9 +250,9 @@ def _read_raw_image(path: Path):
 
             assert len(bayer_pattern_indices) == len(bayer_pattern_desc)
             bayer_pattern = ""
-            for i in range(len(bayer_pattern_indices)):
+            for i, index in enumerate(bayer_pattern_indices):
                 assert bayer_pattern_indices[i] < len(bayer_pattern_indices)
-                bayer_pattern += bayer_pattern_desc[bayer_pattern_indices[i]]
+                bayer_pattern += bayer_pattern_desc[index]
 
             _LOGGER.debug(f"Computed, FITS-compatible bayer pattern = {bayer_pattern}")
 

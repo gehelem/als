@@ -17,14 +17,20 @@ class DataStore:
     """
     def __init__(self):
         self._observers = []
-        self._scanner_is_started = False
-        self._scanner_is_stopped = True
-        self._scanner_is_paused = False
+        self._session_is_started = False
+        self._session_is_stopped = True
+        self._session_is_paused = False
         self._web_server_is_running = False
         self._input_queue = Queue()
 
     @property
     def input_queue(self):
+        """
+        Retrieves the input queue.
+
+        :return: the main input queue
+        :rtype: Queue
+        """
         return self._input_queue
 
     @property
@@ -52,65 +58,65 @@ class DataStore:
 
     @property
     @log
-    def scanner_is_started(self):
+    def session_is_started(self):
         """
-        Is scanner started.
+        Is session started.
 
-        :return: True if scanner is started, False otherwise
+        :return: True if session is started, False otherwise
         :rtype: bool
         """
-        return self._scanner_is_started
+        return self._session_is_started
 
     @log
-    def record_scanner_start(self):
+    def record_session_start(self):
         """
-        Sets flag for scanner started status.
+        Sets flag for session started status.
         """
-        self._scanner_is_started = True
-        self._scanner_is_stopped = False
-        self._scanner_is_paused = False
+        self._session_is_started = True
+        self._session_is_stopped = False
+        self._session_is_paused = False
         self._notify_observers()
 
     @property
     @log
-    def scanner_is_stopped(self):
+    def session_is_stopped(self):
         """
-        Is scanner stopped.
+        Is session stopped.
 
-        :return: True if scanner is stopped, False otherwise
+        :return: True if session is stopped, False otherwise
         :rtype: bool
         """
-        return self._scanner_is_stopped
+        return self._session_is_stopped
 
     @log
-    def record_scanner_stop(self):
+    def record_session_stop(self):
         """
-        Sets flag for scanner stopped status.
+        Sets flag for session stopped status.
         """
-        self._scanner_is_started = False
-        self._scanner_is_stopped = True
-        self._scanner_is_paused = False
+        self._session_is_started = False
+        self._session_is_stopped = True
+        self._session_is_paused = False
         self._notify_observers()
 
     @property
     @log
-    def scanner_is_paused(self):
+    def session_is_paused(self):
         """
-        Is scanner paused.
+        Is session paused.
 
-        :return: True if scanner is paused, False otherwise
+        :return: True if session is paused, False otherwise
         :rtype: bool
         """
-        return self._scanner_is_paused
+        return self._session_is_paused
 
     @log
-    def record_scanner_pause(self):
+    def record_session_pause(self):
         """
-        Sets flag for scanner paused status.
+        Sets flag for session paused status.
         """
-        self._scanner_is_started = False
-        self._scanner_is_stopped = False
-        self._scanner_is_paused = True
+        self._session_is_started = False
+        self._session_is_stopped = False
+        self._session_is_paused = True
         self._notify_observers()
 
     @log

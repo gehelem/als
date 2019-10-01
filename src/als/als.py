@@ -717,7 +717,7 @@ class MainWindow(QMainWindow):
 
         try:
             self._folder_scanner.start(Path(config.get_scan_folder_path()))
-            STORE.record_scanner_start()
+            STORE.record_session_start()
         except ScannerStartError as start_error:
             dialogs.error_box("Could not start folder scanner", str(start_error))
 
@@ -741,7 +741,7 @@ class MainWindow(QMainWindow):
         messages = list()
 
         # update statusBar according to status of folder scanner and web server
-        messages.append(f"Scanning '{config.get_scan_folder_path()}'" if STORE.scanner_is_started else "Scanner : idle")
+        messages.append(f"Scanning '{config.get_scan_folder_path()}'" if STORE.session_is_started else "Scanner : idle")
 
         if STORE.web_server_is_running:
             messages.append(f"Web server reachable at "
@@ -755,10 +755,10 @@ class MainWindow(QMainWindow):
         self._ui.action_prefs.setEnabled(not STORE.web_server_is_running and not STORE.scan_in_progress)
 
         # handle Start / Pause / Stop buttons
-        self._ui.pbPlay.setEnabled(STORE.scanner_is_stopped or STORE.scanner_is_paused)
-        self._ui.pbReset.setEnabled(STORE.scanner_is_stopped)
-        self._ui.pbStop.setEnabled(STORE.scanner_is_started or STORE.scanner_is_paused)
-        self._ui.pbPause.setEnabled(STORE.scanner_is_started)
+        self._ui.pbPlay.setEnabled(STORE.session_is_stopped or STORE.session_is_paused)
+        self._ui.pbReset.setEnabled(STORE.session_is_stopped)
+        self._ui.pbStop.setEnabled(STORE.session_is_started or STORE.session_is_paused)
+        self._ui.pbPause.setEnabled(STORE.session_is_started)
 
     @log
     def _setup_work_folder(self):
@@ -782,7 +782,8 @@ class MainWindow(QMainWindow):
         self._ui.action_prefs.setEnabled(not self._ui.cbWww.isChecked())
         _LOGGER.info("Stop")
         self._folder_scanner.stop()
-        STORE.record_scanner_stop()
+        self._purge_queue()
+        STORE.record_session_stop()
 
     @pyqtSlot(name="on_pbPause_clicked")
     @log
@@ -790,8 +791,8 @@ class MainWindow(QMainWindow):
         """Qt slot for mouse clicks on the 'Pause' button"""
         self.image_ref_save.status = "pause"
         _LOGGER.info("Pause")
-        self._folder_scanner.pause()
-        STORE.record_scanner_pause()
+        self._folder_scanner.stop()
+        STORE.record_session_pause()
 
     @pyqtSlot(name="on_pbReset_clicked")
     @log
@@ -908,6 +909,16 @@ class MainWindow(QMainWindow):
             self.thread = None
             _LOGGER.info("Web server stopped")
             model.STORE.web_server_is_running = False
+
+    @log
+    def _purge_queue(self):
+        """
+        Purge the input queue
+
+        """
+        while not STORE.input_queue.empty():
+            STORE.input_queue.get()
+        _LOGGER.info("Input queue purged")
 
     @staticmethod
     @log
