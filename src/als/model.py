@@ -188,7 +188,7 @@ class Image:
                 f'Color = {self.is_color()},\n'
                 f'Needs Debayer = {self.needs_debayering()},\n'
                 f'Bayer Pattern = {self.bayer_pattern},\n'
-                f'Width * Height = {self._data.shape[0]} * {self._data.shape[1]},\n'
+                f'Width * Height = {self._data.shape[1]} * {self._data.shape[0]},\n'
                 f'Data type = {self._data.dtype.name},\n'
                 f'Origin = {self.origin})'
                 )
