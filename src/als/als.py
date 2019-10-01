@@ -45,6 +45,7 @@ from als import preprocess as prepro, stack as stk, config, model
 from als.code_utilities import log
 from als.io.input import ScannerStartError, InputScanner
 from als.model import VERSION, STORE
+from als.preprocess import PreProcessor
 from als.ui import dialogs
 from als.ui.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
 
@@ -413,6 +414,9 @@ class MainWindow(QMainWindow):
 
         self._folder_scanner = InputScanner.create_scanner(STORE.input_queue)
 
+        self._pre_processor = PreProcessor(STORE.input_queue)
+        self._pre_processor.start()
+
         self.update_store_display()
 
     @log
@@ -422,6 +426,8 @@ class MainWindow(QMainWindow):
 
         self._stop_www()
         self.cb_stop()
+        self._pre_processor.stop()
+        self._pre_processor.wait()
 
         _LOGGER.debug(f"Window size : {self.size()}")
         _LOGGER.debug(f"Window position : {self.pos()}")
