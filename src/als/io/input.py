@@ -5,6 +5,7 @@ We need to read file and in the future, get images from INDI
 """
 import logging
 import time
+from abc import abstractmethod
 from pathlib import Path
 from queue import Queue
 
@@ -15,6 +16,7 @@ from astropy.io import fits
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers.polling import PollingObserver
 
+from als import config
 from als.code_utilities import log
 from als.model import Image
 
@@ -36,7 +38,68 @@ class ScannerStartError(InputError):
     """
 
 
-class FolderScanner(FileSystemEventHandler):
+class InputScanner:
+    """
+    Base abstract class for all code responsible of ALS "image acquisition".
+
+    Subclasses are responsible for replying to start & stop commands and feed the input queue as new images are "read"
+    """
+
+    @log
+    def __init__(self, input_queue: Queue):
+        self._input_queue = input_queue
+
+    @log
+    def enqueue_image(self, image: Image):
+        """
+        Push an image to the input queue
+
+        :param image: the image to push
+        :type image: Image
+        """
+        if image is not None:
+            self._input_queue.put(image)
+            _LOGGER.info(f"Input queue size = {self._input_queue.qsize()}")
+
+    @abstractmethod
+    def start(self):
+        """
+        Starts checking for new images
+
+        :raises: ScannerStartError if startup fails
+        """
+
+    @abstractmethod
+    def stop(self):
+        """
+        Stops checking for new images
+        """
+
+    @staticmethod
+    def create_scanner(input_queue: Queue, scanner_type: str = "FS"):
+        """
+        Factory for image scanners.
+
+        :param input_queue: the input queue the created scanner will push to
+        :type input_queue: Queue
+
+        :param scanner_type: the type of scanner to create. Accepted values are :
+
+          - "FS" for a filesystem scanner
+
+        :type scanner_type: str.
+
+        :return: the right scanner implementation
+        :rtype: InputScanner subclasses
+        """
+
+        if scanner_type == "FS":
+            return FolderScanner(input_queue)
+
+        raise ValueError(f"Unsupported scanner type : {scanner_type}")
+
+
+class FolderScanner(FileSystemEventHandler, InputScanner):
     """
     Watches file changes (creation, move) in a specific filesystem folder
 
@@ -44,24 +107,20 @@ class FolderScanner(FileSystemEventHandler):
 
     Each time an image is read from file, it is pushed to the main input queue
     """
-
     @log
     def __init__(self, input_queue: Queue):
         FileSystemEventHandler.__init__(self)
+        InputScanner.__init__(self, input_queue)
         self._observer = None
-        self._input_queue = input_queue
 
     @log
-    def start(self, scan_folder_path: Path):
+    def start(self):
         """
         Starts scanning scan folder for new files
-
-        :param scan_folder_path: the path of the folder to start scanning
-        :type scan_folder_path: Path
         """
         try:
             self._observer = PollingObserver()
-            self._observer.schedule(self, str(scan_folder_path.resolve()), recursive=False)
+            self._observer.schedule(self, config.get_scan_folder_path(), recursive=False)
             self._observer.start()
             _LOGGER.info("Folder scanner started")
         except OSError as os_error:
@@ -108,18 +167,6 @@ class FolderScanner(FileSystemEventHandler):
                 time.sleep(_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC)
 
             self.enqueue_image(read_image(Path(image_path)))
-
-    @log
-    def enqueue_image(self, image: Image):
-        """
-        Push an image to the input queue
-
-        :param image: the image to push
-        :type image: Image
-        """
-        if image is not None:
-            self._input_queue.put(image)
-            _LOGGER.info(f"Input queue size = {self._input_queue.qsize()}")
 
 
 @log

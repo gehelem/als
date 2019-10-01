@@ -27,7 +27,6 @@ import sys
 import threading
 from datetime import datetime
 from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
-from pathlib import Path
 
 import cv2
 import numpy as np
@@ -43,7 +42,10 @@ from als.code_utilities import log, Timer
 from als.io.output import ImageSaver, save_image
 from als.model import VERSION, STORE
 from als import preprocess as prepro, stack as stk, config, model
-from als.io.input import FolderScanner, ScannerStartError
+from als.code_utilities import log
+from als.io.input import ScannerStartError, InputScanner
+from als.model import VERSION, STORE
+from als.ui import dialogs
 from als.ui.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
 
 from generated.als_ui import Ui_stack_window
@@ -409,7 +411,7 @@ class MainWindow(QMainWindow):
         self._image_saver = ImageSaver()
         self._image_saver.start()
 
-        self._folder_scanner = FolderScanner(STORE.input_queue)
+        self._folder_scanner = InputScanner.create_scanner(STORE.input_queue)
 
         self.update_store_display()
 
@@ -716,7 +718,7 @@ class MainWindow(QMainWindow):
         _LOGGER.info(f"Scan folder : '{config.get_scan_folder_path()}'")
 
         try:
-            self._folder_scanner.start(Path(config.get_scan_folder_path()))
+            self._folder_scanner.start()
             STORE.record_session_start()
         except ScannerStartError as start_error:
             dialogs.error_box("Could not start folder scanner", str(start_error))
