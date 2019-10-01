@@ -201,7 +201,55 @@ def _read_raw_image(path: Path):
     try:
         with rawpy.imread(str(path.resolve())) as raw_image:
 
-            bayer_pattern = raw_image.color_desc.decode()
+            # in here, we make sure we store the bayer pattern as it would be advertised if image was a FITS image.
+            #
+            # lets assume image comes from a DSLR sensor with the most common bayer pattern.
+            #
+            # The actual/physical bayer pattern would look like a repetition of :
+            #
+            # +---+---+
+            # | R | G |
+            # +---+---+
+            # | G | B |
+            # +---+---+
+            #
+            # RawPy will report the CFA description as 2 discrete values :
+            #
+            # 1) raw_image.raw_pattern : a 2x2 numpy array representing the indices used to express the bayer patten
+            #
+            # in our example, its value is :
+            #
+            # +---+---+
+            # | 0 | 1 |
+            # +---+---+
+            # | 3 | 2 |
+            # +---+---+
+            #
+            # and its flatten version is :
+            #
+            # [0, 1, 3, 2]
+            #
+            # 2) raw_image.color_desc : a bytes literal formed of the color of each pixel of the bayer pattern, in ascending
+            #                           index order from raw_image.raw_pattern
+            #
+            # in our example, its value is : b'RGBG'
+            #
+            # We need to express/store this pattern in a more common way, i.e. as it would be described in a FITS header.
+            # Or put simply, we want to express the bayer pattern as it would be described if raw_image.raw_pattern was :
+            #
+            # +---+---+
+            # | 0 | 1 |
+            # +---+---+
+            # | 2 | 3 |
+            # +---+---+
+            indices = raw_image.raw_pattern.flatten()
+            color_desc = raw_image.color_desc.decode()
+
+            assert len(indices) == len(color_desc)
+            bayer_pattern = ""
+            for i in range(len(indices)):
+                assert indices[i] < len(indices)
+                bayer_pattern += color_desc[indices[i]]
 
             new_image = Image(raw_image.raw_image_visible)
             new_image.bayer_pattern = bayer_pattern
