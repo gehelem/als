@@ -182,3 +182,13 @@ class Image:
         :return: True if the image has color information, False otherwise
         """
         return len(self._data.shape) > 2
+
+    def __repr__(self):
+        return (f'{self.__class__.__name__}(\n'
+                f'Color = {self.is_color()},\n'
+                f'Needs Debayer = {self.needs_debayering()},\n'
+                f'Bayer Pattern = {self.bayer_pattern},\n'
+                f'Width * Height = {self._data.shape[0]} * {self._data.shape[1]},\n'
+                f'Data type = {self._data.dtype.name},\n'
+                f'Origin = {self.origin})'
+                )
