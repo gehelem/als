@@ -42,14 +42,20 @@ class PreProcessor(QThread):
         self._stop_asked = False
         self._input_queue = input_queue
 
+        self._processes = [
+            self._debayer_image,
+        ]
+
     @log
     def run(self):
         while not self._stop_asked:
             if self._input_queue.qsize() > 0:
                 image = self._input_queue.get()
-                _LOGGER.debug(f"Pre-processing image : {image}")
-                image = self._debayer_image(image)
-                _LOGGER.debug(f"Debayered image : {image}")
+                for process in self._processes:
+                    image = process(image)
+
+            # TODO : push image to stacker
+            
             self.msleep(20)
 
     @log
