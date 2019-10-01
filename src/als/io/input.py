@@ -308,7 +308,7 @@ def _read_raw_image(path: Path):
 
             _LOGGER.debug(f"Computed, FITS-compatible bayer pattern = {bayer_pattern}")
 
-            new_image = Image(raw_image.raw_image_visible)
+            new_image = Image(raw_image.raw_image_visible.copy())
             new_image.bayer_pattern = bayer_pattern
             _set_image_file_origin(new_image, path)
             return new_image
