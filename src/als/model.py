@@ -156,7 +156,7 @@ class Image:
     Represents an image, our basic processing object.
 
     Image data is a numpy array. Array's data type is unspecified for now
-    but we'd surely benefit from enforcing one (uint32 for example) as it will
+    but we'd surely benefit from enforcing one (float32 for example) as it will
     ease the development of any later processing code
 
     We also store the bayer pattern applied to the image, if applicable.
