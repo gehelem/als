@@ -42,7 +42,12 @@ class InputScanner:
     """
     Base abstract class for all code responsible of ALS "image acquisition".
 
-    Subclasses are responsible for replying to start & stop commands and feed the input queue as new images are "read"
+    Subclasses are responsible for :
+
+      - replying to start & stop commands
+      - reading images from actual source
+      - creating Image objects
+      - feeding the input queue as new images are "read"
     """
 
     @log
@@ -90,7 +95,7 @@ class InputScanner:
         :type scanner_type: str.
 
         :return: the right scanner implementation
-        :rtype: InputScanner subclasses
+        :rtype: InputScanner subclass
         """
 
         if scanner_type == "FS":
@@ -146,7 +151,7 @@ class FolderScanner(FileSystemEventHandler, InputScanner):
             image_path = event.dest_path
             _LOGGER.debug(f"File move detected : {image_path}")
 
-            self.enqueue_image(read_image(Path(image_path)))
+            self.enqueue_image(_read_disk_image(Path(image_path)))
 
     @log
     def on_created(self, event):
@@ -166,11 +171,11 @@ class FolderScanner(FileSystemEventHandler, InputScanner):
                 last_file_size = size
                 time.sleep(_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC)
 
-            self.enqueue_image(read_image(Path(image_path)))
+            self.enqueue_image(_read_disk_image(Path(image_path)))
 
 
 @log
-def read_image(path: Path):
+def _read_disk_image(path: Path):
     """
     Reads an image from disk
 
