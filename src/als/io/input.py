@@ -203,7 +203,7 @@ def _read_raw_image(path: Path):
 
             bayer_pattern = raw_image.color_desc.decode()
 
-            new_image = Image(raw_image.raw_image)
+            new_image = Image(raw_image.raw_image_visible)
             new_image.bayer_pattern = bayer_pattern
 
             return new_image
