@@ -240,10 +240,10 @@ class Image:
 
     def __repr__(self):
         return (f'{self.__class__.__name__}('
-                f'Color = {self.is_color()}, '
-                f'Needs Debayer = {self.needs_debayering()}, '
-                f'Bayer Pattern = {self.bayer_pattern}, '
-                f'Width * Height = {self._data.shape[1]} * {self._data.shape[0]}, '
-                f'Data type = {self._data.dtype.name}, '
-                f'Origin = {self.origin})'
+                f'Color={self.is_color()}, '
+                f'Needs Debayer={self.needs_debayering()}, '
+                f'Bayer Pattern={self.bayer_pattern}, '
+                f'Dimensions={self._data.shape[1]}*{self._data.shape[0]}, '
+                f'Data type={self._data.dtype.name}, '
+                f'Origin={self.origin})'
                 )
