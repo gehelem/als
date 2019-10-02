@@ -19,75 +19,19 @@ Provides image preprocessing features
 
 
 import logging
-from queue import Queue
 
 import cv2
 import dtcwt
 import numpy as np
 from PyQt5.QtCore import QThread
 from pywi.processing.transform import starlet
+# Local stuff
 from als import stack as stk
 from als.code_utilities import log
-from als.model import Image
+from pywi.processing.transform import starlet
 
 
 _LOGGER = logging.getLogger(__name__)
-
-
-class PreProcessor(QThread):
-
-    @log
-    def __init__(self, input_queue: Queue):
-        QThread.__init__(self)
-        self._stop_asked = False
-        self._input_queue = input_queue
-
-        self._processes = [
-            self._debayer_image,
-        ]
-
-    @log
-    def run(self):
-        while not self._stop_asked:
-            if self._input_queue.qsize() > 0:
-                image = self._input_queue.get()
-                for process in self._processes:
-                    image = process(image)
-
-            # TODO : push image to stacker
-            
-            self.msleep(20)
-
-    @log
-    def stop(self):
-        self._stop_asked = True
-
-    @log
-    def _debayer_image(self, image: Image):
-
-        if image.needs_debayering():
-
-            bayer_pattern = image.bayer_pattern
-
-            cv2_debayer_dict = {
-
-                "BG": cv2.COLOR_BAYER_BG2RGB,
-                "GB": cv2.COLOR_BAYER_GB2RGB,
-                "RG": cv2.COLOR_BAYER_RG2RGB,
-                "GR": cv2.COLOR_BAYER_GR2RGB
-            }
-
-            cv_debay = bayer_pattern[3] + bayer_pattern[2]
-
-            try:
-                debayered_data = cv2.cvtColor(image.data, cv2_debayer_dict[cv_debay])
-            except KeyError:
-                raise ValueError(f"unsupported bayer pattern : {bayer_pattern}")
-
-            image.data = debayered_data
-            image.bayer_pattern = None
-
-        return image
 
 
 @log

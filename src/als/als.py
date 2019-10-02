@@ -34,6 +34,7 @@ from PyQt5.QtCore import pyqtSignal, QFileInfo, QThread, Qt, pyqtSlot, QTimer, Q
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMainWindow, QApplication
 from astroalign import MaxIterError
+from astropy.io import fits
 from qimage2ndarray import array2qimage
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
@@ -42,14 +43,16 @@ from als.code_utilities import log, Timer
 from als.io.output import ImageSaver, save_image
 from als.model import VERSION, STORE
 from als import preprocess as prepro, stack as stk, config, model
-from als.code_utilities import log
+from als.processing import PreProcessPipeline
 from als.io.input import ScannerStartError, InputScanner
 from als.model import VERSION, STORE
-from als.preprocess import PreProcessor
 from als.ui import dialogs
 from als.ui.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
 
 from generated.als_ui import Ui_stack_window
+from qimage2ndarray import array2qimage
+from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
 
 DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS = 100
 LOG_DOCK_INITIAL_HEIGHT = 60
@@ -412,10 +415,10 @@ class MainWindow(QMainWindow):
         self._image_saver = ImageSaver()
         self._image_saver.start()
 
-        self._folder_scanner = InputScanner.create_scanner(STORE.input_queue)
+        self._input_scanner = InputScanner.create_scanner(STORE.input_queue)
 
-        self._pre_processor = PreProcessor(STORE.input_queue)
-        self._pre_processor.start()
+        self._pre_process_pipeline = PreProcessPipeline(STORE.input_queue)
+        self._pre_process_pipeline.start()
 
         self.update_store_display()
 
@@ -426,8 +429,8 @@ class MainWindow(QMainWindow):
 
         self._stop_www()
         self.cb_stop()
-        self._pre_processor.stop()
-        self._pre_processor.wait()
+        self._pre_process_pipeline.stop()
+        self._pre_process_pipeline.wait()
 
         _LOGGER.debug(f"Window size : {self.size()}")
         _LOGGER.debug(f"Window position : {self.pos()}")
@@ -724,7 +727,7 @@ class MainWindow(QMainWindow):
         _LOGGER.info(f"Scan folder : '{config.get_scan_folder_path()}'")
 
         try:
-            self._folder_scanner.start()
+            self._input_scanner.start()
             STORE.record_session_start()
         except ScannerStartError as start_error:
             dialogs.error_box("Could not start folder scanner", str(start_error))
@@ -789,7 +792,7 @@ class MainWindow(QMainWindow):
         self._ui.cmMode.setEnabled(True)
         self._ui.action_prefs.setEnabled(not self._ui.cbWww.isChecked())
         _LOGGER.info("Stop")
-        self._folder_scanner.stop()
+        self._input_scanner.stop()
         self._purge_queue()
         STORE.record_session_stop()
 
@@ -799,7 +802,7 @@ class MainWindow(QMainWindow):
         """Qt slot for mouse clicks on the 'Pause' button"""
         self.image_ref_save.status = "pause"
         _LOGGER.info("Pause")
-        self._folder_scanner.stop()
+        self._input_scanner.stop()
         STORE.record_session_pause()
 
     @pyqtSlot(name="on_pbReset_clicked")
