@@ -136,8 +136,6 @@ class FolderScanner(FileSystemEventHandler, InputScanner):
     def stop(self):
         """
         Stops scanning scan folder for new files
-
-        Scanner is stopped and input queue is purged
         """
         if self._observer is not None:
             _LOGGER.info("Stopping folder scanner... Waiting for current operation to complete...")
