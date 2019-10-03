@@ -883,8 +883,10 @@ class MainWindow(QMainWindow):
             else:
                 log_function = _LOGGER.info
 
-            log_function(f"Web server started. http://{ip_address}:{port_number}")
+            url = f"http://{ip_address}:{port_number}"
+            log_function(f"Web server started. {url}")
             self._ui.action_prefs.setEnabled(False)
+            QApplication.clipboard().setText(url)
             model.STORE.web_server_is_running = True
         except OSError:
             title = "Could not start web server"
