@@ -288,7 +288,7 @@ class Image:
 
         :return: True if the image has color information, False otherwise
         """
-        return len(self._data.shape) > 2
+        return self._data.ndim > 2
 
     def __repr__(self):
         return (f'{self.__class__.__name__}('
