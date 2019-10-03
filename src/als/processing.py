@@ -77,7 +77,7 @@ class ImageDebayer(ImageProcessor):
 class PreProcessPipeline(QThread):
     """
     Responsible of grabbing images from the input queue and applying a set of pre-processing units to each one, before pushing
-    it to the stackign queue.
+    it to the stacking queue.
     """
 
     @log
