@@ -123,10 +123,11 @@ class FolderScanner(FileSystemEventHandler, InputScanner):
         Starts scanning scan folder for new files
         """
         try:
+            scan_folder_path =  config.get_scan_folder_path()
             self._observer = PollingObserver()
-            self._observer.schedule(self, config.get_scan_folder_path(), recursive=False)
+            self._observer.schedule(self, scan_folder_path, recursive=False)
             self._observer.start()
-            _LOGGER.info("Folder scanner started")
+            _LOGGER.info(f"Folder scanner started scanning {scan_folder_path}")
         except OSError as os_error:
             _LOGGER.error(f"Folder scan start failed : {os_error}")
             raise ScannerStartError(os_error)
