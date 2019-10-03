@@ -64,7 +64,6 @@ class InputScanner:
         """
         if image is not None:
             self._input_queue.put(image)
-            _LOGGER.info(f"Input queue size = {self._input_queue.qsize()}")
 
     @abstractmethod
     def start(self):
