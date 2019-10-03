@@ -7,7 +7,7 @@ from queue import Queue
 
 import cv2
 from PyQt5.QtCore import QThread
-from als.code_utilities import log
+from als.code_utilities import log, Timer
 from als.model import Image
 
 _LOGGER = logging.getLogger(__name__)
@@ -100,11 +100,14 @@ class PreProcessPipeline(QThread):
                 image = self._input_queue.get()
                 try:
                     for processor in self._processors:
-                        image = processor.process_image(image)
-
+                        with Timer() as code_timer:
+                            image = processor.process_image(image)
+                        _LOGGER.info(f"Applied process '{processor.__class__.__name__}' to {image} : "
+                                     f"in {code_timer.elapsed_in_milli_as_str} ms")
                     # TODO : push image to stacker
                 except ProcessingError as processing_error:
-                    _LOGGER.error(f"Error applying process '{processor.__class__.__name__}' to {image} : {processing_error}")
+                    _LOGGER.error(f"Error applying process '{processor.__class__.__name__}' to {image} : {processing_error} ***"
+                                  f"Image will be ignored")
 
             self.msleep(20)
 
