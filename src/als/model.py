@@ -25,7 +25,20 @@ class SignalingQueue(Queue, QObject):
     """
 
     item_pushed_signal = pyqtSignal(int)
+    """
+    Qt signal stating that a new item has just been pushed to the queue.
+    
+    :param: the new size of the queue
+    :type: int
+    """
+
     item_popped_signal = pyqtSignal(int)
+    """
+    Qt signal stating that a new item has just been popped from the queue.
+
+    :param: the new size of the queue
+    :type: int
+    """
 
     def __init__(self, maxsize=0):
         Queue.__init__(self, maxsize)
