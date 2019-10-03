@@ -430,8 +430,11 @@ class MainWindow(QMainWindow):
         """Handles window close events."""
         # pylint: disable=C0103
 
-        self._stop_www()
-        self.cb_stop()
+        if STORE.web_server_is_running:
+            self._stop_www()
+        if STORE.session_is_started:
+            self.cb_stop()
+
         self._pre_process_pipeline.stop()
         self._pre_process_pipeline.wait()
 
