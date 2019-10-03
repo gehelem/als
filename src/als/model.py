@@ -3,12 +3,51 @@ Stores all data needed and shared by app modules
 """
 from queue import Queue
 
+from PyQt5.QtCore import pyqtSignal, QObject
 from numpy import ndarray
 
 import als
 from als.code_utilities import log
 
 VERSION = als.__version__
+
+
+class SignalingQueue(Queue, QObject):
+    """
+    Queue subclass that emits Qt signals when items are added or removed from the queue.
+
+    Signals are :
+
+      - item_pushed_signal
+      - item_popped_signal
+
+    And they both carry the queue's size after the signaled operation
+    """
+
+    item_pushed_signal = pyqtSignal(int)
+    item_popped_signal = pyqtSignal(int)
+
+    def __init__(self, maxsize=0):
+        Queue.__init__(self, maxsize)
+        QObject.__init__(self)
+
+    def get(self, block=True, timeout=None):
+        item = super().get(block, timeout)
+        self.item_popped_signal.emit(self.qsize())
+        return item
+
+    def get_nowait(self):
+        item = super().get_nowait()
+        self.item_popped_signal.emit(self.qsize())
+        return item
+
+    def put(self, item, block=True, timeout=None):
+        super().put(item, block, timeout)
+        self.item_pushed_signal.emit(self.qsize())
+
+    def put_nowait(self, item):
+        super().put_nowait(item)
+        self.item_pushed_signal.emit(self.qsize())
 
 
 class DataStore:
@@ -21,7 +60,7 @@ class DataStore:
         self._session_is_stopped = True
         self._session_is_paused = False
         self._web_server_is_running = False
-        self._input_queue = Queue()
+        self._input_queue = SignalingQueue()
 
     @property
     def input_queue(self):
