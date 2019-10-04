@@ -76,8 +76,8 @@ class ImageDebayer(ImageProcessor):
 
 class PreProcessPipeline(QThread):
     """
-    Responsible of grabbing images from the input queue and applying a set of pre-processing units to each one, before pushing
-    it to the stacking queue.
+    Responsible of grabbing images from the input queue and applying a set of pre-processing units to each one, before
+    pushing it to the stacking queue.
     """
 
     @log
@@ -96,17 +96,23 @@ class PreProcessPipeline(QThread):
         If any processing error occurs, the current image is dropped
         """
         while not self._stop_asked:
+
             if self._input_queue.qsize() > 0:
                 image = self._input_queue.get()
+
                 try:
                     for processor in self._processors:
+
                         with Timer() as code_timer:
                             image = processor.process_image(image)
-                        _LOGGER.info(f"Applied process '{processor.__class__.__name__}' to {image} : "
+
+                        _LOGGER.info(f"Applied process '{processor.__class__.__name__}' to {image.origin} : "
                                      f"in {code_timer.elapsed_in_milli_as_str} ms")
                     # TODO : push image to stacker
+
                 except ProcessingError as processing_error:
-                    _LOGGER.error(f"Error applying process '{processor.__class__.__name__}' to {image} : {processing_error} ***"
+                    _LOGGER.error(f"Error applying process '{processor.__class__.__name__}' to {image} : "
+                                  f"{processing_error} *** "
                                   f"Image will be ignored")
 
             self.msleep(20)

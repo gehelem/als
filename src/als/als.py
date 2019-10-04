@@ -614,7 +614,7 @@ class MainWindow(QMainWindow):
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.info(f"New image pre-processing stared. Input queue size : {new_size}")
+        _LOGGER.info(f"Image taken from input queue. Input queue size : {new_size}")
 
     @log
     def adjust_value(self):
