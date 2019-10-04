@@ -18,12 +18,14 @@ from watchdog.observers.polling import PollingObserver
 
 from als import config
 from als.code_utilities import log
-from als.model import Image
+from als.model import Image, SignalingQueue
 
 _LOGGER = logging.getLogger(__name__)
 
 _IGNORED_FILENAME_START_PATTERNS = ['.', '~', 'tmp']
 _DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC = 0.1
+
+SCANNER_TYPE_FILESYSTEM = "FS"
 
 
 class InputError(Exception):
@@ -51,7 +53,7 @@ class InputScanner:
     """
 
     @log
-    def __init__(self, input_queue: Queue):
+    def __init__(self, input_queue: SignalingQueue):
         self._input_queue = input_queue
 
     @log
@@ -80,7 +82,7 @@ class InputScanner:
         """
 
     @staticmethod
-    def create_scanner(input_queue: Queue, scanner_type: str = "FS"):
+    def create_scanner(input_queue: Queue, scanner_type: str = SCANNER_TYPE_FILESYSTEM):
         """
         Factory for image scanners.
 
@@ -97,7 +99,7 @@ class InputScanner:
         :rtype: InputScanner subclass
         """
 
-        if scanner_type == "FS":
+        if scanner_type == SCANNER_TYPE_FILESYSTEM:
             return FolderScanner(input_queue)
 
         raise ValueError(f"Unsupported scanner type : {scanner_type}")
@@ -112,7 +114,7 @@ class FolderScanner(FileSystemEventHandler, InputScanner):
     Each time an image is read from file, it is pushed to the main input queue
     """
     @log
-    def __init__(self, input_queue: Queue):
+    def __init__(self, input_queue: SignalingQueue):
         FileSystemEventHandler.__init__(self)
         InputScanner.__init__(self, input_queue)
         self._observer = None
@@ -123,7 +125,7 @@ class FolderScanner(FileSystemEventHandler, InputScanner):
         Starts scanning scan folder for new files
         """
         try:
-            scan_folder_path =  config.get_scan_folder_path()
+            scan_folder_path = config.get_scan_folder_path()
             self._observer = PollingObserver()
             self._observer.schedule(self, scan_folder_path, recursive=False)
             self._observer.start()
@@ -157,7 +159,7 @@ class FolderScanner(FileSystemEventHandler, InputScanner):
             file_is_incomplete = True
             last_file_size = -1
             image_path = event.src_path
-            _LOGGER.debug(f"File creation detected : {image_path}. Waiting until file is fully written to disk...")
+            _LOGGER.debug(f"File creation detected : {image_path}. Waiting until file is complete and readable ...")
 
             while file_is_incomplete:
                 info = QFileInfo(image_path)
@@ -165,7 +167,7 @@ class FolderScanner(FileSystemEventHandler, InputScanner):
                 _LOGGER.debug(f"File {image_path}'s size = {size}")
                 if size == last_file_size:
                     file_is_incomplete = False
-                    _LOGGER.debug(f"File {image_path} has been fully written to disk")
+                    _LOGGER.debug(f"File {image_path} is ready to be read")
                 last_file_size = size
                 time.sleep(_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC)
 
