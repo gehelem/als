@@ -74,6 +74,11 @@ class DataStore:
         self._session_is_paused = False
         self._web_server_is_running = False
         self._input_queue = SignalingQueue()
+        self._stack_queue = SignalingQueue()
+
+    @property
+    def stack_queue(self):
+        return self._stack_queue
 
     @property
     def input_queue(self):

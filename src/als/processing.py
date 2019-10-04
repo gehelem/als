@@ -3,12 +3,11 @@ Provides all means of image processing
 """
 import logging
 from abc import abstractmethod
-from queue import Queue
 
 import cv2
 from PyQt5.QtCore import QThread
 from als.code_utilities import log, Timer
-from als.model import Image
+from als.model import Image, SignalingQueue
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -41,7 +40,7 @@ class ImageProcessor:
         """
 
 
-class ImageDebayer(ImageProcessor):
+class Debayer(ImageProcessor):
     """
     Provides image debayering.
     """
@@ -81,12 +80,13 @@ class PreProcessPipeline(QThread):
     """
 
     @log
-    def __init__(self, input_queue: Queue):
+    def __init__(self, input_queue: SignalingQueue, stack_queue: SignalingQueue):
         QThread.__init__(self)
         self._stop_asked = False
         self._input_queue = input_queue
+        self._stack_queue = stack_queue
 
-        self._processors = [ImageDebayer(), ]
+        self._processors = [Debayer(), ]
 
     @log
     def run(self):
@@ -100,20 +100,27 @@ class PreProcessPipeline(QThread):
             if self._input_queue.qsize() > 0:
                 image = self._input_queue.get()
 
-                try:
-                    for processor in self._processors:
+                _LOGGER.info(f"Start pre-processing image : {image.origin}")
 
+                for processor in self._processors:
+
+                    try:
                         with Timer() as code_timer:
                             image = processor.process_image(image)
 
-                        _LOGGER.info(f"Applied process '{processor.__class__.__name__}' to {image.origin} : "
-                                     f"in {code_timer.elapsed_in_milli_as_str} ms")
-                    # TODO : push image to stacker
+                        _LOGGER.info(
+                            f"Applied process '{processor.__class__.__name__}' to image {image.origin} : "
+                            f"in {code_timer.elapsed_in_milli_as_str} ms")
 
-                except ProcessingError as processing_error:
-                    _LOGGER.error(f"Error applying process '{processor.__class__.__name__}' to {image} : "
-                                  f"{processing_error} *** "
-                                  f"Image will be ignored")
+                    except ProcessingError as processing_error:
+                        _LOGGER.warning(
+                            f"Error applying process '{processor.__class__.__name__}' to image {image} : "
+                            f"{processing_error} *** "
+                            f"Image will be ignored")
+                        break
+
+                _LOGGER.info(f"Done pre-processing image {image.origin}")
+                self._stack_queue.put(image)
 
             self.msleep(20)
 

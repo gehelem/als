@@ -417,7 +417,7 @@ class MainWindow(QMainWindow):
 
         self._input_scanner = InputScanner.create_scanner(STORE.input_queue)
 
-        self._pre_process_pipeline = PreProcessPipeline(STORE.input_queue)
+        self._pre_process_pipeline = PreProcessPipeline(STORE.input_queue, STORE.stack_queue)
         self._pre_process_pipeline.start()
 
         self.update_store_display()
