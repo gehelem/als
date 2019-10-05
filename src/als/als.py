@@ -425,6 +425,9 @@ class MainWindow(QMainWindow):
         STORE.input_queue.item_pushed_signal[int].connect(self.on_input_queue_pushed)
         STORE.input_queue.item_popped_signal[int].connect(self.on_input_queue_popped)
 
+        STORE.stack_queue.item_pushed_signal[int].connect(self.on_stack_queue_pushed)
+        STORE.stack_queue.item_popped_signal[int].connect(self.on_stack_queue_popped)
+
     @log
     def closeEvent(self, event):
         """Handles window close events."""
@@ -615,6 +618,26 @@ class MainWindow(QMainWindow):
         :type new_size: int
         """
         _LOGGER.info(f"Image taken from input queue. Input queue size : {new_size}")
+
+    @log
+    def on_stack_queue_pushed(self, new_size):
+        """
+        Qt slot executed when an item has just been pushed to the stack queue
+
+        :param new_size: new queue size
+        :type new_size: int
+        """
+        _LOGGER.info(f"New image added to the stack queue. Stack queue size : {new_size}")
+
+    @log
+    def on_stack_queue_popped(self, new_size):
+        """
+        Qt slot executed when an item has just been popped from the stack queue
+
+        :param new_size: new queue size
+        :type new_size: int
+        """
+        _LOGGER.info(f"Image taken from stack queue. Stack queue size : {new_size}")
 
     @log
     def adjust_value(self):
