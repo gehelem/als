@@ -608,6 +608,7 @@ class MainWindow(QMainWindow):
         :type new_size: int
         """
         _LOGGER.info(f"New image added to the input queue. Input queue size : {new_size}")
+        self._ui.lbl_input_queue_size.setText(str(new_size))
 
     @log
     def on_input_queue_popped(self, new_size):
@@ -618,6 +619,7 @@ class MainWindow(QMainWindow):
         :type new_size: int
         """
         _LOGGER.info(f"Image taken from input queue. Input queue size : {new_size}")
+        self._ui.lbl_input_queue_size.setText(str(new_size))
 
     @log
     def on_stack_queue_pushed(self, new_size):
@@ -628,6 +630,7 @@ class MainWindow(QMainWindow):
         :type new_size: int
         """
         _LOGGER.info(f"New image added to the stack queue. Stack queue size : {new_size}")
+        self._ui.lbl_stack_queue_size.setText(str(new_size))
 
     @log
     def on_stack_queue_popped(self, new_size):
@@ -638,6 +641,7 @@ class MainWindow(QMainWindow):
         :type new_size: int
         """
         _LOGGER.info(f"Image taken from stack queue. Stack queue size : {new_size}")
+        self._ui.lbl_stack_queue_size.setText(str(new_size))
 
     @log
     def adjust_value(self):
@@ -842,7 +846,7 @@ class MainWindow(QMainWindow):
         self._ui.action_prefs.setEnabled(not self._ui.cbWww.isChecked())
         _LOGGER.info("Stop")
         self._input_scanner.stop()
-        self._purge_queue()
+        self._purge_input_queue()
         STORE.record_session_stop()
 
     @pyqtSlot(name="on_pbPause_clicked")
@@ -971,7 +975,7 @@ class MainWindow(QMainWindow):
             model.STORE.web_server_is_running = False
 
     @log
-    def _purge_queue(self):
+    def _purge_input_queue(self):
         """
         Purge the input queue
 
@@ -979,6 +983,16 @@ class MainWindow(QMainWindow):
         while not STORE.input_queue.empty():
             STORE.input_queue.get()
         _LOGGER.info("Input queue purged")
+
+    @log
+    def _purge_stack_queue(self):
+        """
+        Purge the stack queue
+
+        """
+        while not STORE.stack_queue.empty():
+            STORE.stack_queue.get()
+        _LOGGER.info("Stack queue purged")
 
     @staticmethod
     @log
