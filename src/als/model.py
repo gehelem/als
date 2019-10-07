@@ -216,10 +216,9 @@ class Image:
     but we'd surely benefit from enforcing one (float32 for example) as it will
     ease the development of any later processing code
 
-    We also store the bayer pattern applied to the image, if applicable.
+    We also store the bayer pattern the image was shot with, if applicable.
 
-    If image is from a sensor without a bayer array, or image has already been debayered, the
-    bayer pattern must be None.
+    If image is from a sensor without a bayer array, the bayer pattern must be None.
     """
 
     def __init__(self, data: ndarray):
@@ -266,9 +265,9 @@ class Image:
     @property
     def bayer_pattern(self):
         """
-        Retrieves the bayer pattern applied to the image, if applicable.
+        Retrieves the bayer pattern the image was shot with, if applicable.
 
-        :return: the bayer pattern or None if image is B&W or image is color and debayered
+        :return: the bayer pattern or None
         :rtype: str
         """
         return self._bayer_pattern
@@ -279,11 +278,11 @@ class Image:
 
     def needs_debayering(self):
         """
-        Tells if a bayer pattern is applied to the image
+        Tells if image needs debayering
 
-        :return: True if a bayer pattern is applied to the image, False otherwise
+        :return: True if a bayer pattern is known and data does not have 3 dimensions
         """
-        return self._bayer_pattern is not None
+        return self._bayer_pattern is not None and self.data.ndim < 3
 
     def is_color(self):
         """
@@ -303,7 +302,7 @@ class Image:
         :return: True if no color info is stored in data array, False otherwise
         :rtype: bool
         """
-        return not self.is_color()
+        return self._data.ndim == 2 and self._bayer_pattern is None
 
     def __repr__(self):
         return (f'{self.__class__.__name__}('

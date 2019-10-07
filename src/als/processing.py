@@ -89,7 +89,6 @@ class Debayer(ImageProcessor):
                 raise ProcessingError(f"unsupported bayer pattern : {bayer_pattern}")
 
             image.data = debayered_data
-            image.bayer_pattern = None
 
         return image
 
