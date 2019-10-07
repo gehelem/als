@@ -444,10 +444,8 @@ class MainWindow(QMainWindow):
             self.cb_stop()
 
         self._pre_process_pipeline.stop()
-        self._pre_process_pipeline.wait()
 
         self._stacker.stop()
-        self._stacker.wait()
 
         _LOGGER.debug(f"Window size : {self.size()}")
         _LOGGER.debug(f"Window position : {self.pos()}")

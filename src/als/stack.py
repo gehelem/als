@@ -93,6 +93,8 @@ class Stacker(QThread):
     @log
     def stop(self):
         self._stop_asked = True
+        self.wait()
+        _LOGGER.info("Stacker stopped")
 
 
 @log

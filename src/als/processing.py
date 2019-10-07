@@ -154,3 +154,5 @@ class PreProcessPipeline(QThread):
         Sets flag that will interrupt the main loop in run()
         """
         self._stop_asked = True
+        self.wait()
+        _LOGGER.info("PreProcess pipeline stopped")
