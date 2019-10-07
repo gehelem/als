@@ -48,7 +48,9 @@ class Standardize(ImageProcessor):
     Here are the aspects we enforce :
 
       #. data array of color (debayered) images have color as the first axis. So a typical shape for a color image would
-         be : (3, lines, rows).
+         be : (3, y, x).
+
+      #. each array element is of type float32
 
     """
     @log
@@ -57,6 +59,8 @@ class Standardize(ImageProcessor):
         if image.is_color():
             color_axis_index = image.data.shape.index(min(image.data.shape))
             image.data = np.moveaxis(image.data, color_axis_index, 0)
+
+        image.data = np.float32(image.data)
 
         return image
 
