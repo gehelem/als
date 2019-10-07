@@ -22,6 +22,7 @@ import astroalign as al
 import cv2
 import numpy as np
 import rawpy
+from PyQt5.QtCore import QThread, pyqtSignal
 from astropy.io import fits
 from tqdm import tqdm
 
@@ -29,8 +30,69 @@ from tqdm import tqdm
 # cv2 order = MxNx3
 # uint = unsignet int ( 0 to ...)
 from als.code_utilities import log
+from als.model import Image
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class Stacker(QThread):
+
+    stack_size_changed_signal = pyqtSignal(int)
+
+    """
+    Responsible of image stacking, that is alignment and registration
+    """
+    @log
+    def __init__(self, stack_queue):
+        QThread.__init__(self)
+        self._stack_queue = stack_queue
+        self._images = list()
+        self._stop_asked = False
+
+    @log
+    def reset(self):
+        self._images.clear()
+        self.stack_size_changed_signal.emit(self.size)
+
+    @log
+    def _add_image(self, image: Image):
+        self._images.append(image)
+        self.stack_size_changed_signal.emit(self.size)
+
+    @property
+    def size(self):
+        return len(self._images)
+
+    @log
+    def run(self):
+        while not self._stop_asked:
+            if self._stack_queue.qsize() > 0:
+                self._add_image(self._stack_queue.get())
+                last_image = self._images[-1]
+
+                _LOGGER.info(f"Start stacking image : {last_image.origin}")
+
+                if self.size > 1:
+                    self._align_image(last_image)
+                    self._register_image(last_image)
+
+            # TODO : publish result
+
+            self.msleep(20)
+
+    @log
+    def _align_image(self, image):
+        # TODO
+        pass
+
+    @log
+    def _register_image(self, image):
+        # TODO
+        pass
+
+    @log
+    def stop(self):
+        self._stop_asked = True
 
 
 @log

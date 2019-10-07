@@ -46,6 +46,7 @@ from als import preprocess as prepro, stack as stk, config, model
 from als.processing import PreProcessPipeline
 from als.io.input import ScannerStartError, InputScanner
 from als.model import VERSION, STORE
+from als.stack import Stacker
 from als.ui import dialogs
 from als.ui.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
 
@@ -420,6 +421,10 @@ class MainWindow(QMainWindow):
         self._pre_process_pipeline = PreProcessPipeline(STORE.input_queue, STORE.stack_queue)
         self._pre_process_pipeline.start()
 
+        self._stacker = Stacker(STORE.stack_queue)
+        self._stacker.start()
+        self._stacker.stack_size_changed_signal[int].connect(self.on_stack_size_changed)
+
         self.update_store_display()
 
         STORE.input_queue.item_pushed_signal[int].connect(self.on_input_queue_pushed)
@@ -440,6 +445,9 @@ class MainWindow(QMainWindow):
 
         self._pre_process_pipeline.stop()
         self._pre_process_pipeline.wait()
+
+        self._stacker.stop()
+        self._stacker.wait()
 
         _LOGGER.debug(f"Window size : {self.size()}")
         _LOGGER.debug(f"Window position : {self.pos()}")
@@ -642,6 +650,10 @@ class MainWindow(QMainWindow):
         """
         _LOGGER.info(f"Image taken from stack queue. Stack queue size : {new_size}")
         self._ui.lbl_stack_queue_size.setText(str(new_size))
+
+    @log
+    def on_stack_size_changed(self, size):
+        self._ui.cnt.setText(str(size))
 
     @log
     def adjust_value(self):
@@ -892,6 +904,8 @@ class MainWindow(QMainWindow):
         self._ui.cbSCNR.setChecked(False)
         self._ui.cbWavelets.setChecked(False)
         self._ui.cbLuminanceWavelet.setChecked(False)
+
+        self._stacker.reset()
 
     @pyqtSlot(bool, name="on_log_dock_visibilityChanged")
     @log
