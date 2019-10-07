@@ -5,6 +5,7 @@ import logging
 from abc import abstractmethod
 
 import cv2
+import numpy as np
 from PyQt5.QtCore import QThread
 from als.code_utilities import log, Timer
 from als.model import Image, SignalingQueue
@@ -38,6 +39,26 @@ class ImageProcessor:
         :return: the processed image
         :rtype: Image
         """
+
+
+class Standardize(ImageProcessor):
+    """
+    Make image data structure conform to all processing needs.
+
+    Here are the aspects we enforce :
+
+      #. data array of color (debayered) images have color as the first axis. So a typical shape for a color image would
+         be : (3, lines, rows).
+
+    """
+    @log
+    def process_image(self, image: Image):
+
+        if image.is_color():
+            color_axis_index = image.data.shape.index(min(image.data.shape))
+            image.data = np.moveaxis(image.data, color_axis_index, 0)
+
+        return image
 
 
 class Debayer(ImageProcessor):
@@ -85,8 +106,8 @@ class PreProcessPipeline(QThread):
         self._stop_asked = False
         self._input_queue = input_queue
         self._stack_queue = stack_queue
-
-        self._processors = [Debayer(), ]
+        self._calibration_processes = []
+        self._processes_done_last = [Debayer(), Standardize()]
 
     @log
     def run(self):
@@ -102,7 +123,7 @@ class PreProcessPipeline(QThread):
 
                 _LOGGER.info(f"Start pre-processing image : {image.origin}")
 
-                for processor in self._processors:
+                for processor in self._calibration_processes + self._processes_done_last:
 
                     try:
                         with Timer() as code_timer:

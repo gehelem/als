@@ -292,15 +292,25 @@ class Image:
         image has color information if its data array has more than 2 dimensions
 
         :return: True if the image has color information, False otherwise
+        :rtype: bool
         """
         return self._data.ndim > 2
+
+    def is_bw(self):
+        """
+        Tells if image is black and white
+
+        :return: True if no color info is stored in data array, False otherwise
+        :rtype: bool
+        """
+        return not self.is_color()
 
     def __repr__(self):
         return (f'{self.__class__.__name__}('
                 f'Color={self.is_color()}, '
                 f'Needs Debayer={self.needs_debayering()}, '
                 f'Bayer Pattern={self.bayer_pattern}, '
-                f'Dimensions={self._data.shape[1]}*{self._data.shape[0]}, '
+                f'Data shape={self._data.shape}, '
                 f'Data type={self._data.dtype.name}, '
                 f'Origin={self.origin})'
                 )
