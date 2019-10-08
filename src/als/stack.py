@@ -63,6 +63,7 @@ class Stacker(QThread):
     def _store_new_reference_image(self, image: Image):
         # TODO : publish to datastore
         self._reference = image
+        self._reference.origin = "Stack reference"
         self._counter += 1
         self.stack_size_changed_signal.emit(self.size)
 
