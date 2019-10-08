@@ -4,7 +4,7 @@ Stores all data needed and shared by app modules
 from queue import Queue
 
 from PyQt5.QtCore import pyqtSignal, QObject
-from numpy import ndarray
+import numpy as np
 
 import als
 from als.code_utilities import log
@@ -295,7 +295,7 @@ class Image:
     If image is from a sensor without a bayer array, the bayer pattern must be None.
     """
 
-    def __init__(self, data: ndarray):
+    def __init__(self, data):
         """
         Constructs an Image
 
@@ -428,13 +428,21 @@ class Image:
         return self._data.shape == other.data.shape
 
     def __repr__(self):
-        return (f'{self.__class__.__name__}('
-                f'Color={self.is_color()}, '
-                f'Needs Debayer={self.needs_debayering()}, '
-                f'Bayer Pattern={self.bayer_pattern}, '
-                f'Width={self.width}, '
-                f'Height={self.height}, '
-                f'Data shape={self._data.shape}, '
-                f'Data type={self._data.dtype.name}, '
-                f'Origin={self.origin})'
-                )
+        representation = (f'{self.__class__.__name__}('
+                          f'Color={self.is_color()}, '
+                          f'Needs Debayer={self.needs_debayering()}, '
+                          f'Bayer Pattern={self.bayer_pattern}, '
+                          f'Width={self.width}, '
+                          f'Height={self.height}, '
+                          f'Data shape={self._data.shape}, '
+                          f'Data type={self._data.dtype.name}, '
+                          f'Origin={self.origin}, ')
+
+        if self.is_color():
+            representation += f"Mean R: {int(np.mean(self._data[0]))}, "
+            representation += f"Mean G: {int(np.mean(self._data[1]))}, "
+            representation += f"Mean B: {int(np.mean(self._data[2]))})"
+        else:
+            representation += f"Mean: {int(np.mean(self._data))})"
+
+        return representation

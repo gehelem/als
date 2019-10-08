@@ -49,7 +49,8 @@ class Stacker(QThread):
         self._stack_queue: SignalingQueue = stack_queue
         self._counter: int = 0
         self._stop_asked: bool = False
-        self._reference: Image = None
+        self._result: Image = None
+        self._align_reference = None
 
     @log
     def reset(self):
@@ -57,17 +58,18 @@ class Stacker(QThread):
         Reset stacker to its starting state : No reference and counter = 0.
         """
         self._counter = 0
-        self._reference = None
+        self._result = None
+        self._align_reference = None
         self.stack_size_changed_signal.emit(self.size)
 
     @log
     def _publish_stacking_result(self, image: Image):
-        self._reference = image
-        self._reference.origin = "Stack reference"
+        self._result = image
+        self._result.origin = "Stack reference"
         self._counter += 1
         self.stack_size_changed_signal.emit(self.size)
 
-        STORE.stacking_result = self._reference
+        STORE.stacking_result = self._result
         self.stack_result_ready_signal.emit()
 
     @property
@@ -102,10 +104,11 @@ class Stacker(QThread):
 
                     if self.size == 0:
                         self._publish_stacking_result(image)
+                        self._align_reference = image
 
                     else:
                         try:
-                            if not image.is_same_shape_as(self._reference):
+                            if not image.is_same_shape_as(self._result):
                                 raise StackingError(f"Image dimensions or color don't match stack content")
 
                             if STORE.align_before_stacking:
@@ -117,7 +120,7 @@ class Stacker(QThread):
                         except StackingError as stacking_error:
                             self._report_error(image, stacking_error)
 
-                _LOGGER.info(f"Done stacking image {image.origin} in "
+                _LOGGER.info(f"Done stacking image in "
                              f"{stacking_timer.elapsed_in_milli_as_str} ms")
 
             self.msleep(20)
@@ -126,7 +129,7 @@ class Stacker(QThread):
     def _align_image(self, image):
 
         with Timer() as transformation_find_timer:
-            transformation = self._compute_transformation(image)
+            transformation = self._find_transformation(image)
         _LOGGER.info(f"Computed transformation for alignment of {image.origin} in "
                      f"{transformation_find_timer.elapsed_in_milli_as_str} ms")
 
@@ -146,7 +149,7 @@ class Stacker(QThread):
             for channel in range(3):
                 processor = Process(target=Stacker._apply_single_channel_transformation,
                                     args=[image,
-                                          self._reference,
+                                          self._result,
                                           transformation,
                                           channel])
                 processor.start()
@@ -161,7 +164,7 @@ class Stacker(QThread):
             _LOGGER.debug(f"Aligning b&w image...")
             self._apply_single_channel_transformation(
                 image,
-                self._reference,
+                self._result,
                 transformation
             )
             _LOGGER.debug(f"Aligning b&w image : DONE")
@@ -183,7 +186,7 @@ class Stacker(QThread):
                 reference.data)
 
     @log
-    def _compute_transformation(self, image: Image):
+    def _find_transformation(self, image: Image):
 
         for ratio in [.1, .25, .5, .75, 1.]:
 
@@ -192,21 +195,22 @@ class Stacker(QThread):
             # pick green channel if image has color
             if image.is_color():
                 new_subset = image.data[1][top_line:bottom_line, left_column:right_column]
-                ref_subset = self._reference.data[1][top_line:bottom_line, left_column:right_column]
+                ref_subset = self._align_reference.data[1][top_line:bottom_line, left_column:right_column]
             else:
                 new_subset = image.data[top_line:bottom_line, left_column:right_column]
-                ref_subset = self._reference.data[top_line:bottom_line, left_column:right_column]
+                ref_subset = self._align_reference.data[top_line:bottom_line, left_column:right_column]
 
             try:
                 _LOGGER.debug(f"Searching valid transformation on subset "
                               f"with ratio:{ratio} and shape: {new_subset.shape}")
 
-                transformation, __ = al.find_transform(new_subset, ref_subset)
+                transformation, matches = al.find_transform(new_subset, ref_subset)
 
                 _LOGGER.debug(f"Found transformation with subset ratio = {ratio}")
                 _LOGGER.debug(f"rotation : {transformation.rotation}")
                 _LOGGER.debug(f"translation : {transformation.translation}")
                 _LOGGER.debug(f"scale : {transformation.scale}")
+                _LOGGER.debug(f"image feature matches : {len(matches[0])}")
 
                 return transformation
 
@@ -223,8 +227,8 @@ class Stacker(QThread):
     @log
     def _get_image_subset_bounds(self, ratio: float):
 
-        width = self._reference.width
-        height = self._reference.height
+        width = self._result.width
+        height = self._result.height
 
         horizontal_margin = int((width - (width * ratio)) / 2)
         vertical_margin = int((height - (height * ratio)) / 2)
@@ -243,9 +247,9 @@ class Stacker(QThread):
         with Timer() as registering_timer:
 
             if stacking_mode == STACKING_MODE_SUM:
-                image.data = image.data + self._reference.data
+                image.data = image.data + self._result.data
             elif stacking_mode == STACKING_MODE_MEAN:
-                image.data = (self.size * self._reference.data + image.data) / (self.size + 1)
+                image.data = (self.size * self._result.data + image.data) / (self.size + 1)
             else:
                 raise StackingError(f"Unsupported stacking mode : {stacking_mode}")
 
