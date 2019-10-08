@@ -662,6 +662,10 @@ class MainWindow(QMainWindow):
         STORE.stacking_mode = text
 
     @log
+    def on_chk_align_toggled(self, checked: bool):
+        STORE.align_before_stacking = checked
+
+    @log
     def adjust_value(self):
         """
         Adjusts stacked image according to GUU controls
@@ -764,14 +768,14 @@ class MainWindow(QMainWindow):
             self._ui.G_slider.setEnabled(False)
             self._ui.B_slider.setEnabled(False)
             self._ui.pb_apply_value.setEnabled(False)
-            self._ui.cbAlign.setEnabled(False)
+            self._ui.chk_align.setEnabled(False)
             self._ui.cb_stacking_mode.setEnabled(False)
             self._ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
             self.counter = 0
             self._ui.cnt.setText(str(self.counter))
 
         # check align
-        if self._ui.cbAlign.isChecked():
+        if self._ui.chk_align.isChecked():
             self.align = True
 
         # Print live method
@@ -859,7 +863,7 @@ class MainWindow(QMainWindow):
     def cb_stop(self):
         """Qt slot for mouse clicks on the 'Stop' button"""
         self.image_ref_save.status = "stop"
-        self._ui.cbAlign.setEnabled(True)
+        self._ui.chk_align.setEnabled(True)
         self._ui.cb_stacking_mode.setEnabled(True)
         self._ui.action_prefs.setEnabled(not self._ui.cbWww.isChecked())
         _LOGGER.info("Stop")

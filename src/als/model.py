@@ -77,8 +77,17 @@ class DataStore:
         self._session_is_paused = False
         self._web_server_is_running = False
         self._stacking_mode = ""
+        self._align_before_stacking = True
         self._input_queue = SignalingQueue()
         self._stack_queue = SignalingQueue()
+
+    @property
+    def align_before_stacking(self):
+        return self._align_before_stacking
+
+    @align_before_stacking.setter
+    def align_before_stacking(self, align: bool):
+        self._align_before_stacking = align
 
     @property
     def stacking_mode(self):

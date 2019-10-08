@@ -1141,7 +1141,7 @@
       </layout>
      </item>
      <item>
-      <widget class="QCheckBox" name="cbAlign">
+      <widget class="QCheckBox" name="chk_align">
        <property name="maximumSize">
         <size>
          <width>150</width>
@@ -1158,6 +1158,27 @@
         <bool>true</bool>
        </property>
       </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_11">
+       <item>
+        <widget class="QLabel" name="label_10">
+         <property name="text">
+          <string>Stacking mode :</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="cb_stacking_mode">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>30</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -1186,27 +1207,6 @@
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_11">
-       <item>
-        <widget class="QLabel" name="label_10">
-         <property name="text">
-          <string>Stacking mode :</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="cb_stacking_mode">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>30</height>
-          </size>
          </property>
         </widget>
        </item>
@@ -1399,22 +1399,6 @@
   <include location="../../resources/resource.qrc"/>
  </resources>
  <connections>
-  <connection>
-   <sender>cbAlign</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>cb_stacking_mode</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>176</x>
-     <y>104</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>218</x>
-     <y>176</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>actionQuit</sender>
    <signal>triggered()</signal>
