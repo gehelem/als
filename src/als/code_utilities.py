@@ -34,6 +34,7 @@ def log(func):
     return wrapped
 
 
+# pylint: disable=W0201
 class Timer:
     """
     A context manager, timing any portion of code it encloses.
