@@ -29,6 +29,12 @@ from als.model import Image, SignalingQueue, STORE, STACKING_MODE_SUM, STACKING_
 _LOGGER = logging.getLogger(__name__)
 
 
+class StackingError(Exception):
+    """
+    Base class for stacking errors
+    """
+
+
 class Stacker(QThread):
     """
     Responsible of image stacking : alignment and registration
@@ -86,23 +92,31 @@ class Stacker(QThread):
 
                 image = self._stack_queue.get()
 
-                _LOGGER.info(f"Start stacking image : {image.origin}")
+                _LOGGER.info(f"Start stacking image {image.origin}")
 
                 with Timer() as stacking_timer:
+
                     if self.size == 0:
                         self._store_new_reference_image(image)
+
                     else:
-                        if STORE.align_before_stacking:
-                            try:
-                                image = self._align_image(image)
-                                image = self._register_image(image)
-                                self._store_new_reference_image(image)
+                        try:
+                            if not image.is_same_shape_as(self._reference):
+                                raise StackingError(f"Image dimensions or color don't match stack content")
 
-                            except MaxIterError as max_iteration_error:
-                                _LOGGER.warning(f"Could not align image {image.origin} : {max_iteration_error}. "
-                                                "Image is SKIPPED")
+                            if STORE.align_before_stacking:
+                                self._align_image(image)
 
-                _LOGGER.info(f"Finished stacking image : {image.origin} in "
+                            self._register_image(image, STORE.stacking_mode)
+                            self._store_new_reference_image(image)
+
+                        except MaxIterError:
+                            self._report_error(image, "Max iteration reached when computing alignment")
+
+                        except StackingError as stacking_error:
+                            self._report_error(image, stacking_error)
+
+                _LOGGER.info(f"Done stacking image {image.origin} in "
                              f"{stacking_timer.elapsed_in_milli_as_str} ms")
 
             self.msleep(20)
@@ -116,11 +130,9 @@ class Stacker(QThread):
                      f"{transformation_find_timer.elapsed_in_milli_as_str} ms")
 
         with Timer() as transformation_apply_timer:
-            image = self._apply_transformation(image, transformation)
+            self._apply_transformation(image, transformation)
         _LOGGER.info(f"Applied transformation for alignment of {image.origin} in "
                      f"{transformation_apply_timer.elapsed_in_milli_as_str} ms")
-
-        return image
 
     @log
     def _apply_transformation(self, image: Image, transformation: SimilarityTransform):
@@ -142,8 +154,6 @@ class Stacker(QThread):
                 self._reference.data)
             _LOGGER.debug(f"Aligning b&w image : DONE")
 
-        return image
-
     @log
     def _compute_transformation(self, image: Image):
 
@@ -159,23 +169,24 @@ class Stacker(QThread):
         return transformation
 
     @log
-    def _register_image(self, image):
+    def _register_image(self, image, stacking_mode: str):
 
         with Timer() as registering_timer:
-
-            stacking_mode = STORE.stacking_mode
 
             if stacking_mode == STACKING_MODE_SUM:
                 image.data = image.data + self._reference.data
             elif stacking_mode == STACKING_MODE_MEAN:
                 image.data = (self.size * self._reference.data + image.data) / (self.size + 1)
             else:
-                _LOGGER.warning(f"Unsupported stacking mode : {stacking_mode}. {image.origin} is SKIPPED")
+                raise StackingError(f"Unsupported stacking mode : {stacking_mode}")
 
         _LOGGER.info(f"Done {stacking_mode}-registering {image.origin} in "
                      f"{registering_timer.elapsed_in_milli_as_str} ms")
 
-        return image
+
+    @log
+    def _report_error(self, image, error):
+        _LOGGER.warning(f"Could not stack image {image.origin} : {error}")
 
     @log
     def stop(self):

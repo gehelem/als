@@ -357,6 +357,18 @@ class Image:
         """
         return self._data.ndim == 2 and self._bayer_pattern is None
 
+    def is_same_shape_as(self, other):
+        """
+        Is this image's shape equal to another's ?
+
+        :param other: other image to compare shape with
+        :type other: Image
+
+        :return: True if shapes are equal, False otherwise
+        :rtype: bool
+        """
+        return self._data.shape == other.data.shape
+
     def __repr__(self):
         return (f'{self.__class__.__name__}('
                 f'Color={self.is_color()}, '
