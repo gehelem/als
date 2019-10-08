@@ -20,7 +20,6 @@ import logging
 
 import astroalign as al
 from PyQt5.QtCore import QThread, pyqtSignal
-from astroalign import MaxIterError
 from skimage.transform import SimilarityTransform
 
 from als.code_utilities import log, Timer
@@ -110,9 +109,6 @@ class Stacker(QThread):
                             self._register_image(image, STORE.stacking_mode)
                             self._store_new_reference_image(image)
 
-                        except MaxIterError:
-                            self._report_error(image, "Max iteration reached when computing alignment")
-
                         except StackingError as stacking_error:
                             self._report_error(image, stacking_error)
 
@@ -157,16 +153,23 @@ class Stacker(QThread):
     @log
     def _compute_transformation(self, image: Image):
 
-        _ALIGNMENT_SUBSET_RATIOS = [.1, .25, .5, .75, 1.]
-        
-        for ratio in _ALIGNMENT_SUBSET_RATIOS:
+        for ratio in [.1, .25, .5, .75, 1.]:
+
+            top_line, bottom_line, left_column, right_column = self._get_image_subset_bounds(ratio)
+
+            # pick green channel if image has color
+            if image.is_color():
+                new_subset = image.data[1][top_line:bottom_line, left_column:right_column]
+                ref_subset = self._reference.data[1][top_line:bottom_line, left_column:right_column]
+            else:
+                new_subset = image.data[top_line:bottom_line, left_column:right_column]
+                ref_subset = self._reference.data[top_line:bottom_line, left_column:right_column]
 
             try:
-                _LOGGER.debug(f"Searching valid transformation on subset with ratio = {ratio}.")
-                transformation, __ = al.find_transform(
-                    self._get_centered_subregion(image, ratio),
-                    self._get_centered_subregion(self._reference, ratio)
-                )
+                _LOGGER.debug(f"Searching valid transformation on subset "
+                              f"with ratio:{ratio} and shape: {new_subset.shape}")
+
+                transformation, __ = al.find_transform(new_subset, ref_subset)
 
                 _LOGGER.debug(f"Found transformation with subset ratio = {ratio}")
                 _LOGGER.debug(f"rotation : {transformation.rotation}")
@@ -175,26 +178,24 @@ class Stacker(QThread):
 
                 return transformation
 
+            # pylint: disable=W0703
             except Exception as alignment_error:
                 # we have no choice but catching Exception, here. That's what AstroAlign raises in some cases
                 # this will take care of MaxIterError as well...
                 if ratio == 1.:
                     raise StackingError(alignment_error)
-                else:
-                    _LOGGER.debug(f"Could not find transformation on subset with ratio = {ratio}.")
-                    continue
+
+                _LOGGER.debug(f"Could not find transformation on subset with ratio = {ratio}.")
+                continue
 
     @log
-    def _get_centered_subregion(self, image: Image, ratio: float):
-        
-        width = image.width
-        height = image.height
-        
+    def _get_image_subset_bounds(self, ratio: float):
+
+        width = self._reference.width
+        height = self._reference.height
+
         horizontal_margin = int((width - (width * ratio)) / 2)
         vertical_margin = int((height - (height * ratio)) / 2)
-
-        _LOGGER.debug(f"Horizontal margin = {horizontal_margin}")
-        _LOGGER.debug(f"Vertical margin = {vertical_margin}")
 
         left_column = 0 + horizontal_margin
         right_column = width - horizontal_margin - 1
@@ -202,16 +203,7 @@ class Stacker(QThread):
         top_line = 0 + vertical_margin
         bottom_line = height - vertical_margin - 1
 
-        _LOGGER.debug(f"Subset left column = {left_column}")
-        _LOGGER.debug(f"Subset right column = {right_column}")
-        _LOGGER.debug(f"Subset top line = {top_line}")
-        _LOGGER.debug(f"Subset bottom line = {bottom_line}")
-
-        # pick green channel for star matching on color images
-        if image.is_color():
-            return image.data[1][top_line:bottom_line, left_column:right_column]
-        else:
-            return image.data[top_line:bottom_line, left_column:right_column]
+        return top_line, bottom_line, left_column, right_column
 
     @log
     def _register_image(self, image, stacking_mode: str):
@@ -228,6 +220,7 @@ class Stacker(QThread):
         _LOGGER.info(f"Done {stacking_mode}-registering {image.origin} in "
                      f"{registering_timer.elapsed_in_milli_as_str} ms")
 
+    # pylint: disable=R0201
     @log
     def _report_error(self, image, error):
         _LOGGER.warning(f"Could not stack image {image.origin} : {error}")
