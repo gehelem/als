@@ -20,6 +20,7 @@ import logging
 
 import astroalign as al
 from PyQt5.QtCore import QThread, pyqtSignal
+from astroalign import MaxIterError
 from skimage.transform import SimilarityTransform
 
 from als.code_utilities import log, Timer
@@ -29,12 +30,12 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class Stacker(QThread):
-
-    stack_size_changed_signal = pyqtSignal(int)
-
     """
     Responsible of image stacking : alignment and registration
     """
+
+    stack_size_changed_signal = pyqtSignal(int)
+
     @log
     def __init__(self, stack_queue):
         QThread.__init__(self)
@@ -45,12 +46,15 @@ class Stacker(QThread):
 
     @log
     def reset(self):
+        """
+        Reset stacker to its starting state : No reference and counter = 0.
+        """
         self._counter = 0
         self._reference = None
         self.stack_size_changed_signal.emit(self.size)
 
     @log
-    def _store_result_image(self, image: Image):
+    def _store_new_reference_image(self, image: Image):
         # TODO : publish to datastore
         self._reference = image
         self._counter += 1
@@ -58,10 +62,24 @@ class Stacker(QThread):
 
     @property
     def size(self):
+        """
+        Retrieves the number of stacked images since last reset
+
+        :return: how many images did we stack
+        :rtype: int
+        """
         return self._counter
 
     @log
     def run(self):
+        """
+        Performs all stacking duties :
+
+         - Get new image from queue
+         - Align image if asked for
+         - Register image in stack
+         - publish resulting image
+        """
         while not self._stop_asked:
 
             if self._stack_queue.qsize() > 0:
@@ -72,12 +90,17 @@ class Stacker(QThread):
 
                 with Timer() as stacking_timer:
                     if self.size == 0:
-                        self._store_result_image(image)
+                        self._store_new_reference_image(image)
                     else:
                         if STORE.align_before_stacking:
-                            image = self._align_image(image)
-                        image = self._register_image(image)
-                        self._store_result_image(image)
+                            try:
+                                image = self._align_image(image)
+                                image = self._register_image(image)
+                                self._store_new_reference_image(image)
+
+                            except MaxIterError as max_iteration_error:
+                                _LOGGER.warning(f"Could not align image {image.origin} : {max_iteration_error}. "
+                                                "Image is SKIPPED")
 
                 _LOGGER.info(f"Finished stacking image : {image.origin} in "
                              f"{stacking_timer.elapsed_in_milli_as_str} ms")
@@ -98,7 +121,6 @@ class Stacker(QThread):
                      f"{transformation_apply_timer.elapsed_in_milli_as_str} ms")
 
         return image
-
 
     @log
     def _apply_transformation(self, image: Image, transformation: SimilarityTransform):
@@ -157,6 +179,9 @@ class Stacker(QThread):
 
     @log
     def stop(self):
+        """
+        Flips a flag used to end the main thread loop
+        """
         self._stop_asked = True
         self.wait()
         _LOGGER.info("Stacker stopped")
