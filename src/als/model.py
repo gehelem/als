@@ -30,7 +30,7 @@ class SignalingQueue(Queue, QObject):
     item_pushed_signal = pyqtSignal(int)
     """
     Qt signal stating that a new item has just been pushed to the queue.
-    
+
     :param: the new size of the queue
     :type: int
     """
@@ -66,6 +66,7 @@ class SignalingQueue(Queue, QObject):
         self.item_pushed_signal.emit(self.qsize())
 
 
+# pylint: disable=R0902
 class DataStore:
     """
     Holds and maintain application dynamic data
@@ -83,6 +84,12 @@ class DataStore:
 
     @property
     def align_before_stacking(self):
+        """
+        Retrieves flag set if alignment is ON
+
+        :return: is alignment ON ?
+        :rtype: bool
+        """
         return self._align_before_stacking
 
     @align_before_stacking.setter
@@ -91,10 +98,26 @@ class DataStore:
 
     @property
     def stacking_mode(self):
+        """
+        Retrieves stacking mode.
+
+        :return: String representation of user chosen stacking mode.
+        :rtype: str
+        """
         return self._stacking_mode
 
     @stacking_mode.setter
     def stacking_mode(self, text: str):
+        """
+        Sets stacking mode.
+
+        :param text: String representation of user chosen stacking mode. Allowed values are :
+
+          - Sum : Stacking mode is sum
+          - Mean : stacking mode is mean
+
+        :type text: str
+        """
         if text.strip() in [STACKING_MODE_MEAN, STACKING_MODE_SUM]:
             self._stacking_mode = text
         else:
@@ -102,6 +125,12 @@ class DataStore:
 
     @property
     def stack_queue(self):
+        """
+        Retrieves the stack queue
+
+        :return: the stack queue
+        :type: SignalingQueue
+        """
         return self._stack_queue
 
     @property
@@ -110,7 +139,7 @@ class DataStore:
         Retrieves the input queue.
 
         :return: the main input queue
-        :rtype: Queue
+        :rtype: SignalingQueue
         """
         return self._input_queue
 

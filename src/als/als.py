@@ -30,7 +30,7 @@ from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 
 import cv2
 import numpy as np
-from PyQt5.QtCore import pyqtSignal, QFileInfo, QThread, Qt, pyqtSlot, QTimer, QEvent
+from PyQt5.QtCore import Qt, pyqtSlot, QTimer, QEvent
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMainWindow, QApplication
 from astroalign import MaxIterError
@@ -41,8 +41,7 @@ from watchdog.observers import Observer
 
 from als.code_utilities import log, Timer
 from als.io.output import ImageSaver, save_image
-from als.model import VERSION, STORE
-from als import preprocess as prepro, stack as stk, config, model
+from als import preprocess as prepro, config, model
 from als.processing import PreProcessPipeline
 from als.io.input import ScannerStartError, InputScanner
 from als.model import VERSION, STORE, STACKING_MODE_SUM, STACKING_MODE_MEAN
@@ -51,9 +50,6 @@ from als.ui import dialogs
 from als.ui.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
 
 from generated.als_ui import Ui_stack_window
-from qimage2ndarray import array2qimage
-from watchdog.events import FileSystemEventHandler
-from watchdog.observers import Observer
 
 DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS = 100
 LOG_DOCK_INITIAL_HEIGHT = 60
@@ -135,245 +131,6 @@ class ImageRefSave:
         self.image = None
         self.status = "stop"
         self.stack_image = None
-
-
-class MyEventHandler(FileSystemEventHandler, QThread, ImageRefSave):
-    """Filesystem event handler used to detect new images in a folder."""
-    created_signal = pyqtSignal(str)
-
-    @log
-    def __init__(self):
-        super().__init__()
-
-    @log
-    def on_moved(self, event):
-        if event.event_type == 'moved':
-            image_path = event.dest_path
-            _LOGGER.info(f"New image ready to be processed : {image_path}")
-            _LOGGER.debug(f"'created' signal emitted from MyEventHandler.on_moved. Image path = {image_path}")
-            self.created_signal.emit(image_path)
-
-    @log
-    def on_created(self, event):
-        if event.event_type == 'created':
-            file_is_incomplete = True
-            last_file_size = -1
-            image_path = event.src_path
-            _LOGGER.debug(f"New image file detected : {image_path}. Waiting untill file is fully written to disk...")
-
-            while file_is_incomplete:
-                info = QFileInfo(image_path)
-                size = info.size()
-                _LOGGER.debug(f"File {image_path}'s size = {size}")
-                if size == last_file_size:
-                    file_is_incomplete = False
-                    _LOGGER.debug(f"File {image_path} has been fully written to disk")
-                last_file_size = size
-                self.msleep(DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS)
-
-            _LOGGER.info(f"New image ready to be processed : {image_path}")
-            _LOGGER.debug(f"'created' signal emitted from MyEventHandler.on_created. Image path = {image_path}")
-            self.created_signal.emit(image_path)
-
-
-# ------------------------------------------------------------------------------
-
-
-class WatchOutForFileCreations(QThread):
-    """This object listens to filesystem events and triggers image read and processing.
-
-    Needs refactoring : It does too much things and should not be given GUI state"""
-    print_image = pyqtSignal()
-
-    @log
-    def __init__(self, path, work_folder, align_on, save_on, stack_method,
-                 white_slider, black_slider, contrast_slider, brightness_slider,
-                 r_slider, g_slider, b_slider, apply_button,
-                 image_ref_save,
-                 scnr_on, scnr_mode, scnr_value,
-                 wavelets_on, wavelets_type, wavelets_use_luminance,
-                 wavelet_1_value, wavelet_2_value, wavelet_3_value,
-                 wavelet_4_value, wavelet_5_value):
-
-        super().__init__()
-        self.align_on = align_on
-        self.save_on = save_on
-        self.stack_method = stack_method
-        self.white_slider = white_slider
-        self.black_slider = black_slider
-        self.contrast_slider = contrast_slider
-        self.brightness_slider = brightness_slider
-        self.r_slider = r_slider
-        self.g_slider = g_slider
-        self.b_slider = b_slider
-        self.apply_button = apply_button
-        self.path = path
-        self.work_folder = work_folder
-        self.first = 0
-        self.counter = 0
-        self.first_image = None
-        self.image_ref_save = image_ref_save
-        self.ref_image = None
-        self.scnr_on = scnr_on
-        self.scnr_mode = scnr_mode
-        self.scnr_value = scnr_value
-        self.wavelets_on = wavelets_on
-        self.wavelets_type = wavelets_type
-        self.wavelets_use_luminance = wavelets_use_luminance
-        self.wavelet_1_value = wavelet_1_value
-        self.wavelet_2_value = wavelet_2_value
-        self.wavelet_3_value = wavelet_3_value
-        self.wavelet_4_value = wavelet_4_value
-        self.wavelet_5_value = wavelet_5_value
-
-        # __ call watchdog __
-        # call observer :
-        self.observer = Observer()
-        # call observer class :
-        self.event_handler = MyEventHandler()
-        self.observer.schedule(self.event_handler, self.path, recursive=False)
-        self.observer.start()
-
-        # TODO : temp test code
-        #  self.event_handler.created_signal[str].connect(self.created)
-
-    @log
-    def created(self, new_image_path):
-        """
-        trigger image stacking.
-
-        :param new_image_path: path to image file to stack
-        :type new_image_path: str
-        :return: None
-        """
-
-        new_image_file_name = new_image_path.split("/")[-1]
-        ignored_start_patterns = ['.', '~', 'tmp']
-        to_be_ignored = False
-
-        for pattern in ignored_start_patterns:
-            if new_image_file_name.startswith(pattern):
-                to_be_ignored = True
-                break
-
-        if self.image_ref_save.status == "play" and not to_be_ignored:
-
-            self.counter = self.counter + 1
-            _LOGGER.info("Reading new frame...")
-            if self.first == 0:
-                _LOGGER.info("Reading first frame...")
-                self.first_image, limit, mode = stk.create_first_ref_im(new_image_path)
-
-                self.image_ref_save.image = self.first_image
-
-                if self.save_on:
-                    save_image(self.image_ref_save.image,
-                               config.get_image_save_format(),
-                               config.get_work_folder_path(),
-                               config.STACKED_IMAGE_FILE_NAME_BASE + '-' + _get_timestamp())
-
-                self.image_ref_save.stack_image = prepro.post_process_image(self.image_ref_save.image,
-                                                                            mode=mode, scnr_on=self.scnr_on.isChecked(),
-                                                                            wavelets_on=self.wavelets_on.isChecked(),
-                                                                            wavelets_type=str(self.wavelets_type.currentText()),
-                                                                            wavelets_use_luminance=self.wavelets_use_luminance.isChecked(),
-                                                                            param=[self.contrast_slider.value() / 10.,
-                                                                                   self.brightness_slider.value(),
-                                                                                   self.black_slider.value(),
-                                                                                   self.white_slider.value(),
-                                                                                   self.r_slider.value() / 100.,
-                                                                                   self.g_slider.value() / 100.,
-                                                                                   self.b_slider.value() / 100.,
-                                                                                   self.scnr_mode.currentText(),
-                                                                                   self.scnr_value.value(),
-                                                                                   {1: int(self.wavelet_1_value.text()) / 100.,
-                                                                                    2: int(self.wavelet_2_value.text()) / 100.,
-                                                                                    3: int(self.wavelet_3_value.text()) / 100.,
-                                                                                    4: int(self.wavelet_4_value.text()) / 100.,
-                                                                                    5: int(self.wavelet_5_value.text()) / 100.}])
-                self.first = 1
-                self.white_slider.setMaximum(np.int(limit))
-                self.brightness_slider.setMaximum(np.int(limit) / 2.)
-                self.brightness_slider.setMinimum(np.int(-1 * limit) / 2.)
-                if self.white_slider.value() > limit:
-                    self.white_slider.setSliderPosition(limit)
-                elif self.white_slider.value() < -1 * limit:
-                    self.white_slider.setSliderPosition(-1 * limit)
-                self.black_slider.setMaximum(np.int(limit))
-                if self.black_slider.value() > limit:
-                    self.black_slider.setSliderPosition(limit)
-                if self.brightness_slider.value() > limit / 2.:
-                    self.brightness_slider.setSliderPosition(limit / 2.)
-                if limit == 2. ** 16 - 1:
-                    _LOGGER.info("Read 16bit frame ...")
-                elif limit == 2. ** 8 - 1:
-                    _LOGGER.info("Read 8bit frame ...")
-                if mode == "rgb":
-                    self.r_slider.setEnabled(True)
-                    self.g_slider.setEnabled(True)
-                    self.b_slider.setEnabled(True)
-                self.white_slider.setEnabled(True)
-                self.black_slider.setEnabled(True)
-                self.contrast_slider.setEnabled(True)
-                self.brightness_slider.setEnabled(True)
-                self.apply_button.setEnabled(True)
-
-            else:
-                # appel de la fonction stack live
-                if self.align_on:
-                    _LOGGER.info("Stack and Align New frame...")
-                else:
-                    _LOGGER.info("Stack New frame...")
-
-                try:
-                    self.image_ref_save.image, limit, mode = stk.stack_live(new_image_path,
-                                                                            self.counter,
-                                                                            ref=self.image_ref_save.image,
-                                                                            first_ref=self.first_image,
-                                                                            align=self.align_on,
-                                                                            stack_methode=self.stack_method)
-                except MaxIterError:
-                    message = _(f"WARNING : {new_image_path} could not be aligned : Max iteration reached. "
-                                f"Image is ignored")
-                    _LOGGER.warning(message)
-                    return
-
-                if self.save_on:
-                    save_image(self.image_ref_save.image,
-                               config.get_image_save_format(),
-                               config.get_work_folder_path(),
-                               config.STACKED_IMAGE_FILE_NAME_BASE + '-' + _get_timestamp())
-
-                self.image_ref_save.stack_image = prepro.post_process_image(self.image_ref_save.image,
-                                                                            mode=mode, scnr_on=self.scnr_on.isChecked(),
-                                                                            wavelets_on=self.wavelets_on.isChecked(),
-                                                                            wavelets_type=str(self.wavelets_type.currentText()),
-                                                                            wavelets_use_luminance=self.wavelets_use_luminance.isChecked(),
-                                                                            param=[self.contrast_slider.value() / 10.,
-                                                                                   self.brightness_slider.value(),
-                                                                                   self.black_slider.value(),
-                                                                                   self.white_slider.value(),
-                                                                                   self.r_slider.value() / 100.,
-                                                                                   self.g_slider.value() / 100.,
-                                                                                   self.b_slider.value() / 100.,
-                                                                                   self.scnr_mode.currentText(),
-                                                                                   self.scnr_value.value(),
-                                                                                   {1: int(self.wavelet_1_value.text()) / 100.,
-                                                                                    2: int(self.wavelet_2_value.text()) / 100.,
-                                                                                    3: int(self.wavelet_3_value.text()) / 100.,
-                                                                                    4: int(self.wavelet_4_value.text()) / 100.,
-                                                                                    5: int(self.wavelet_5_value.text()) / 100.}])
-
-                _LOGGER.info("... Stack finished")
-
-            save_stack_result(self.image_ref_save.stack_image)
-            self.print_image.emit()
-        else:
-            message = _("New image detected but not considered")
-            _LOGGER.info(message)
-
-
-# ------------------------------------------------------------------------------
 
 
 class MainWindow(QMainWindow):
@@ -654,15 +411,35 @@ class MainWindow(QMainWindow):
         self._ui.lbl_stack_queue_size.setText(str(new_size))
 
     @log
-    def on_stack_size_changed(self, size):
-        self._ui.cnt.setText(str(size))
+    def on_stack_size_changed(self, new_size: int):
+        """
+        Qt slot executed when stack size changed
 
+        :param new_size: new stack size
+        :type new_size: int
+        """
+        self._ui.cnt.setText(str(new_size))
+
+    # pylint: disable=C0103
     @log
-    def on_cb_stacking_mode_currentTextChanged(self, text):
+    def on_cb_stacking_mode_currentTextChanged(self, text: str):
+        """
+        Qt slot executed when stacking mode comb box changed
+
+        :param text: new stacking mode
+        :type text: str
+        :return:
+        """
         STORE.stacking_mode = text
 
     @log
     def on_chk_align_toggled(self, checked: bool):
+        """
+        Qt slot executed when 'align' check box is changed
+
+        :param checked: is checkbox checked ?
+        :type checked: bool
+        """
         STORE.align_before_stacking = checked
 
     @log

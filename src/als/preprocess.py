@@ -167,6 +167,25 @@ def scnr(rgb_image, im_limit, rgb_type="RGB", scnr_type="ne_m", amount=0.5):
 
 
 @log
+def get_limit_and_utype(image):
+    """
+    Test Image types (uint8 or uint16)
+
+    :param image: image, numpy array
+    :return: limit and type of image
+    """
+    # search type (uint8 or uint16)
+    im_type = image.dtype.name
+    if im_type == 'uint8':
+        limit = 2. ** 8 - 1
+    elif im_type == 'uint16':
+        limit = 2. ** 16 - 1
+    else:
+        raise ValueError("fit format not support")
+
+    return limit, im_type
+
+@log
 def post_process_image(stack_image, mode="rgb", scnr_on=False,
                        wavelets_on=False, wavelets_type='deep sky',
                        wavelets_use_luminance=False, param=[]):
@@ -193,7 +212,7 @@ def post_process_image(stack_image, mode="rgb", scnr_on=False,
         new_stack_image = stack_image
 
     # read image number type
-    limit, im_type = stk.get_limit_and_utype(new_stack_image)
+    limit, im_type = get_limit_and_utype(new_stack_image)
 
     # if no have change, no process
     if param[0] != 1 or param[1] != 0 or param[2] != 0 or param[3] != limit or param[4] != 1 \

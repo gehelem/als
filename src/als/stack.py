@@ -19,19 +19,11 @@ Provides image stacking features
 import logging
 
 import astroalign as al
-import cv2
-import numpy as np
-import rawpy
 from PyQt5.QtCore import QThread, pyqtSignal
-from astropy.io import fits
 from skimage.transform import SimilarityTransform
-from tqdm import tqdm
 
-# classic order = 3xMxN
-# cv2 order = MxNx3
-# uint = unsignet int ( 0 to ...)
 from als.code_utilities import log, Timer
-from als.model import Image, SignalingQueue, STORE
+from als.model import Image, SignalingQueue, STORE, STACKING_MODE_SUM, STACKING_MODE_MEAN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -41,7 +33,7 @@ class Stacker(QThread):
     stack_size_changed_signal = pyqtSignal(int)
 
     """
-    Responsible of image stacking, that is alignment and registration
+    Responsible of image stacking : alignment and registration
     """
     @log
     def __init__(self, stack_queue):
@@ -74,19 +66,20 @@ class Stacker(QThread):
 
             if self._stack_queue.qsize() > 0:
 
-                new_image = self._stack_queue.get()
+                image = self._stack_queue.get()
 
-                _LOGGER.info(f"Start stacking image : {new_image.origin}")
+                _LOGGER.info(f"Start stacking image : {image.origin}")
 
                 with Timer() as stacking_timer:
                     if self.size == 0:
-                        self._store_result_image(new_image)
+                        self._store_result_image(image)
                     else:
-                        aligned_image = self._align_image(new_image)
-                        registered_image = self._register_image(aligned_image)
-                        self._store_result_image(registered_image)
+                        if STORE.align_before_stacking:
+                            image = self._align_image(image)
+                        image = self._register_image(image)
+                        self._store_result_image(image)
 
-                _LOGGER.info(f"Finished stacking image : {new_image.origin} in "
+                _LOGGER.info(f"Finished stacking image : {image.origin} in "
                              f"{stacking_timer.elapsed_in_milli_as_str} ms")
 
             self.msleep(20)
@@ -94,13 +87,8 @@ class Stacker(QThread):
     @log
     def _align_image(self, image):
 
-        # in here, we should only be called when alignment is ON and Stacker already has a reference / result image
-        # but we check anyway
-        if not STORE.align_before_stacking or self._reference is None:
-            return image
-
         with Timer() as transformation_find_timer:
-            transformation = self._find_transformation(image)
+            transformation = self._compute_transformation(image)
         _LOGGER.info(f"Computed transformation for alignment of {image.origin} in "
                      f"{transformation_find_timer.elapsed_in_milli_as_str} ms")
 
@@ -114,11 +102,6 @@ class Stacker(QThread):
 
     @log
     def _apply_transformation(self, image: Image, transformation: SimilarityTransform):
-
-        # in here, we should only be called when alignment is ON and Stacker already has a reference / result image
-        # but we check anyway
-        if not STORE.align_before_stacking or self._reference is None:
-            return image
 
         if image.is_color():
             _LOGGER.debug(f"Aligning color image...")
@@ -140,7 +123,7 @@ class Stacker(QThread):
         return image
 
     @log
-    def _find_transformation(self, image: Image):
+    def _compute_transformation(self, image: Image):
 
         # pick green channel for star matching on color images
 
@@ -155,7 +138,21 @@ class Stacker(QThread):
 
     @log
     def _register_image(self, image):
-        # TODO
+
+        with Timer() as registering_timer:
+
+            stacking_mode = STORE.stacking_mode
+
+            if stacking_mode == STACKING_MODE_SUM:
+                image.data = image.data + self._reference.data
+            elif stacking_mode == STACKING_MODE_MEAN:
+                image.data = (self.size * self._reference.data + image.data) / (self.size + 1)
+            else:
+                _LOGGER.warning(f"Unsupported stacking mode : {stacking_mode}. {image.origin} is SKIPPED")
+
+        _LOGGER.info(f"Done {stacking_mode}-registering {image.origin} in "
+                     f"{registering_timer.elapsed_in_milli_as_str} ms")
+
         return image
 
     @log
@@ -163,250 +160,3 @@ class Stacker(QThread):
         self._stop_asked = True
         self.wait()
         _LOGGER.info("Stacker stopped")
-
-
-@log
-def test_and_debayer_to_rgb(header, image):
-    """
-    Function for test fit image type : B&W, RGB or RGB no debayer
-    For RGB no debayer this fonction debayer image
-
-    :param header: header of fit image
-    :param image: fit imae
-    :return: image and process mode ("gray" or "rgb")
-    """
-
-    # test image Type
-    # use fit header for separate B&W to no debayer image
-    if len(image.shape) == 2 and not "BAYERPAT" in header:
-        _LOGGER.info("B&W mode...")
-        new_mode = "gray"
-    elif len(image.shape) == 3:
-        _LOGGER.info("RGB mode...")
-        new_mode = "rgb"
-    elif len(image.shape) == 2 and "BAYERPAT" in header:
-        _LOGGER.info("debayering...")
-        debay = header["BAYERPAT"]
-
-        # test bayer type and debayer
-        cv_debay = debay[3] + debay[2]
-        if cv_debay == "BG":
-            rgb_image = cv2.cvtColor(image, cv2.COLOR_BAYER_BG2RGB)
-        elif cv_debay == "GB":
-            rgb_image = cv2.cvtColor(image, cv2.COLOR_BAYER_GB2RGB)
-        elif cv_debay == "RG":
-            rgb_image = cv2.cvtColor(image, cv2.COLOR_BAYER_RG2RGB)
-        elif cv_debay == "GR":
-            rgb_image = cv2.cvtColor(image, cv2.COLOR_BAYER_GR2RGB)
-        else:
-            raise ValueError("this debayer option not support")
-
-        # convert cv2 order to classic order:
-        image = np.rollaxis(rgb_image, 2, 0)
-        new_mode = "rgb"
-    else:
-        raise ValueError("fit format not support")
-
-    return image, new_mode
-
-
-@log
-def get_limit_and_utype(image):
-    """
-    Test Image types (uint8 or uint16)
-
-    :param image: image, numpy array
-    :return: limit and type of image
-    """
-    # search type (uint8 or uint16)
-    im_type = image.dtype.name
-    if im_type == 'uint8':
-        limit = 2. ** 8 - 1
-    elif im_type == 'uint16':
-        limit = 2. ** 16 - 1
-    else:
-        raise ValueError("fit format not support")
-
-    return limit, im_type
-
-
-@log
-def create_first_ref_im(im_path):
-    """
-    function for process first image (need remove and add option or read counter)
-
-    :param im_path: string, path of process image
-    :return: image: np.array 3xMxN or MxN
-             im_limit: int, bit limit (255 or 65535)
-             im_mode: string, mode : "rgb" or "gray"
-    """
-
-    # test image format ".fit" or ".fits" or other
-    if im_path.rfind(".fit") != -1:
-        if im_path[im_path.rfind(".fit"):] == ".fit":
-            extension = ".fit"
-        elif im_path[im_path.rfind(".fit"):] == ".fits":
-            extension = ".fits"
-        raw_im = False
-    else:
-        # Other format = raw camera format (cr2, ...)
-        extension = im_path[im_path.rfind("."):]
-        raw_im = True
-
-    # remove extension of path
-    name = im_path.replace(extension, '')
-    # remove path, juste save image name
-    name = name[name.rfind("/") + 1:]
-
-    if not raw_im:
-        # open ref fit image
-        new_fit = fits.open(im_path)
-        new = new_fit[0].data
-        # save fit header
-        new_header = new_fit[0].header
-        new_fit.close()
-        # test image type
-        im_limit, _ = get_limit_and_utype(new)
-        # test rgb or gray or no debayer
-        new, im_mode = test_and_debayer_to_rgb(new_header, new)
-    else:
-        _LOGGER.info("convert DSLR image ...")
-        # convert camera raw to numpy array
-        new = rawpy.imread(im_path).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16, user_flip=0)
-        im_mode = "rgb"
-        extension = ".fits"
-        im_limit = 2. ** 16 - 1
-        # convert cv2 order to classic order
-        new = np.rollaxis(new, 2, 0)
-
-    image = new
-    del new
-
-    return image, im_limit, im_mode
-
-
-@log
-def stack_live(im_path, counter, ref=[], first_ref=[], align=True,
-               stack_methode="Sum"):
-    """
-    function for process image, align and stack
-
-    :param im_path: string, path of process image
-    :param ref: np.array, stack image (no for first image)
-    :param first_ref: np.array, first image process, ref for alignement (no for first image)
-    :param counter: int, number of image stacked
-    :param align: bool, option for align image or not
-    :param stack_methode: string, stack methode ("sum" or "mean")
-    :return: image: np.array 3xMxN or MxN
-             im_limit: int, bit limit (255 or 65535)
-             im_mode: string, mode : "rgb" or "gray"
-
-    TODO: Add dark possibility
-    """
-
-    # test image format ".fit" or ".fits" or other
-    if im_path.rfind(".fit") != -1:
-        if im_path[im_path.rfind(".fit"):] == ".fit":
-            extension = ".fit"
-        elif im_path[im_path.rfind(".fit"):] == ".fits":
-            extension = ".fits"
-        raw_im = False
-    else:
-        # Other format = raw camera format (cr2, ...)
-        extension = im_path[im_path.rfind("."):]
-        raw_im = True
-    # remove extension of path
-    name = im_path.replace(extension, '')
-    # remove path, juste save image name
-    name = name[name.rfind("/") + 1:]
-
-    if not raw_im:
-        # open new image
-        new_fit = fits.open(im_path)
-        new = new_fit[0].data
-        # save header
-        new_header = new_fit[0].header
-        new_fit.close()
-        # test data type
-        im_limit, im_type = get_limit_and_utype(new)
-        # test rgb or gray
-        new, im_mode = test_and_debayer_to_rgb(new_header, new)
-    else:
-        _LOGGER.info("convert DSLR image ...")
-        new = rawpy.imread(im_path).postprocess(gamma=(1, 1), no_auto_bright=True, output_bps=16, user_flip=0)
-        im_mode = "rgb"
-        extension = ".fits"
-        im_limit = 2. ** 16 - 1
-        im_type = "uint16"
-        new = np.rollaxis(new, 2, 0)
-
-    # ____________________________________
-    # specific part for no first image
-    # choix rgb ou gray scale
-    _LOGGER.info("alignement and stacking...")
-
-    # choix du mode (rgb or B&W)
-    if im_mode == "rgb":
-        if align:
-            # alignement with green :
-            transformation, __ = al.find_transform(new[1], first_ref[1])
-
-        # stacking
-        stack_image = []
-        for j in tqdm(range(3)):
-            if align:
-                # align all color :
-                align_image = al.apply_transform(transformation, new[j], ref[j])
-
-            else:
-                align_image = new[j]
-
-            # chose stack methode
-            # need convert to float32 for excess value
-            if stack_methode == "Sum":
-                stack = np.float32(align_image) + np.float32(ref[j])
-            elif stack_methode == "Mean":
-                stack = ((counter - 1) * np.float32(ref[j]) + np.float32(align_image)) / counter
-            else:
-                raise ValueError("Stack method is not support")
-
-            # filter excess value > limit
-            if im_type == 'uint8':
-                stack_image.append(np.uint8(np.where(stack < 2 ** 8 - 1, stack, 2 ** 8 - 1)))
-            elif im_type == 'uint16':
-                stack_image.append(np.uint16(np.where(stack < 2 ** 16 - 1, stack, 2 ** 16 - 1)))
-        del stack
-        del new
-
-    elif im_mode == "gray":
-        if align:
-            # alignement
-            transformation, __ = al.find_transform(new, first_ref)
-            align_image = al.apply_transform(transformation, new, ref)
-        else:
-            align_image = new
-
-        del new
-
-        # chose stack methode
-        # need convert to float32 for excess value
-        if stack_methode == "Sum":
-            stack = np.float32(align_image) + np.float32(ref)
-        elif stack_methode == "Mean":
-            stack = ((counter - 1) * np.float32(ref) + np.float32(align_image)) / counter
-        else:
-            raise ValueError("Stack method is not support")
-
-        # filter excess value > limit
-        if im_type == 'uint8':
-            stack_image = np.uint8(np.where(stack < 2 ** 8 - 1, stack, 2 ** 8 - 1))
-        elif im_type == 'uint16':
-            stack_image = np.uint16(np.where(stack < 2 ** 16 - 1, stack, 2 ** 16 - 1))
-        del stack
-
-    else:
-        raise ValueError("Mode not support")
-
-    image = np.array(stack_image)
-
-    return image, im_limit, im_mode
