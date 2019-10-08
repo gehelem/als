@@ -17,6 +17,7 @@ Provides image stacking features
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
+from multiprocessing import Process
 
 import astroalign as al
 from PyQt5.QtCore import QThread, pyqtSignal
@@ -135,20 +136,47 @@ class Stacker(QThread):
 
         if image.is_color():
             _LOGGER.debug(f"Aligning color image...")
+
+            channel_processors = []
+
             for channel in range(3):
-                _LOGGER.debug(f"Aligning channel {['Red', 'Green', 'Blue'][channel]}")
-                image.data[channel] = al.apply_transform(
-                    transformation,
-                    image.data[channel],
-                    self._reference.data[channel])
-            _LOGGER.debug(f"Aligning color image : DONE")
+                processor = Process(target=Stacker._apply_single_channel_transformation,
+                                    args=[image,
+                                          self._reference,
+                                          transformation,
+                                          channel])
+                processor.start()
+                channel_processors.append(processor)
+
+            for processor in channel_processors:
+                processor.join()
+
+            _LOGGER.debug(f"Aligning color image DONE")
+
         else:
             _LOGGER.debug(f"Aligning b&w image...")
-            image.data = al.apply_transform(
-                transformation,
-                image.data,
-                self._reference.data)
+            self._apply_single_channel_transformation(
+                image,
+                self._reference,
+                transformation
+            )
             _LOGGER.debug(f"Aligning b&w image : DONE")
+
+    @staticmethod
+    @log
+    def _apply_single_channel_transformation(image, reference, transformation, channel=None):
+
+        if channel is not None:
+            image.data[channel] = al.apply_transform(
+                    transformation,
+                    image.data[channel],
+                    reference.data[channel])
+
+        else:
+            image.data = al.apply_transform(
+                    transformation,
+                    image.data,
+                    reference.data)
 
     @log
     def _compute_transformation(self, image: Image):
