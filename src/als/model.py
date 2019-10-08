@@ -79,8 +79,29 @@ class DataStore:
         self._web_server_is_running = False
         self._stacking_mode = ""
         self._align_before_stacking = True
+        self._stacking_result = None
         self._input_queue = SignalingQueue()
         self._stack_queue = SignalingQueue()
+
+    @property
+    def stacking_result(self):
+        """
+        Retrieves latest published stacking result
+
+        :return: the latest published stacking result
+        :rtype: Image
+        """
+        return self._stacking_result
+
+    @stacking_result.setter
+    def stacking_result(self, image):
+        """
+        Record the latest stacking result
+
+        :param image: the latest stacking result
+        :type: Image
+        """
+        self._stacking_result = image
 
     @property
     def align_before_stacking(self):
@@ -337,10 +358,10 @@ class Image:
         """
         if self._data.ndim == 2:
             return self._data.shape
-        else:
-            dimensions = list(self.data.shape)
-            dimensions.remove(min(dimensions))
-            return dimensions
+
+        dimensions = list(self.data.shape)
+        dimensions.remove(min(dimensions))
+        return dimensions
 
     @property
     def width(self):

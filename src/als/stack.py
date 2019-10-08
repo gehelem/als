@@ -41,6 +41,7 @@ class Stacker(QThread):
     """
 
     stack_size_changed_signal = pyqtSignal(int)
+    stack_result_ready_signal = pyqtSignal()
 
     @log
     def __init__(self, stack_queue):
@@ -60,12 +61,14 @@ class Stacker(QThread):
         self.stack_size_changed_signal.emit(self.size)
 
     @log
-    def _store_new_reference_image(self, image: Image):
-        # TODO : publish to datastore
+    def _publish_stacking_result(self, image: Image):
         self._reference = image
         self._reference.origin = "Stack reference"
         self._counter += 1
         self.stack_size_changed_signal.emit(self.size)
+
+        STORE.stacking_result = self._reference
+        self.stack_result_ready_signal.emit()
 
     @property
     def size(self):
@@ -98,7 +101,7 @@ class Stacker(QThread):
                 with Timer() as stacking_timer:
 
                     if self.size == 0:
-                        self._store_new_reference_image(image)
+                        self._publish_stacking_result(image)
 
                     else:
                         try:
@@ -109,7 +112,7 @@ class Stacker(QThread):
                                 self._align_image(image)
 
                             self._register_image(image, STORE.stacking_mode)
-                            self._store_new_reference_image(image)
+                            self._publish_stacking_result(image)
 
                         except StackingError as stacking_error:
                             self._report_error(image, stacking_error)
@@ -169,15 +172,15 @@ class Stacker(QThread):
 
         if channel is not None:
             image.data[channel] = al.apply_transform(
-                    transformation,
-                    image.data[channel],
-                    reference.data[channel])
+                transformation,
+                image.data[channel],
+                reference.data[channel])
 
         else:
             image.data = al.apply_transform(
-                    transformation,
-                    image.data,
-                    reference.data)
+                transformation,
+                image.data,
+                reference.data)
 
     @log
     def _compute_transformation(self, image: Image):

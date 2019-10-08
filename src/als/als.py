@@ -185,6 +185,7 @@ class MainWindow(QMainWindow):
         self._stacker = Stacker(STORE.stack_queue)
         self._stacker.start()
         self._stacker.stack_size_changed_signal[int].connect(self.on_stack_size_changed)
+        self._stacker.stack_result_ready_signal.connect(self.on_new_stack_result)
 
         self.update_store_display()
 
@@ -441,6 +442,14 @@ class MainWindow(QMainWindow):
         :type checked: bool
         """
         STORE.align_before_stacking = checked
+
+    @log
+    def on_new_stack_result(self):
+        """
+        Qt slot executed when a new stacking result is available
+        """
+        _LOGGER.info(f"New Stacking result available : {STORE.stacking_result}")
+        # TODO : exploit the result
 
     @log
     def adjust_value(self):
