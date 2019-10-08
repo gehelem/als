@@ -30,7 +30,7 @@ from tqdm import tqdm
 # cv2 order = MxNx3
 # uint = unsignet int ( 0 to ...)
 from als.code_utilities import log
-from als.model import Image
+from als.model import Image, SignalingQueue
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -45,38 +45,43 @@ class Stacker(QThread):
     @log
     def __init__(self, stack_queue):
         QThread.__init__(self)
-        self._stack_queue = stack_queue
-        self._images = list()
-        self._stop_asked = False
+        self._stack_queue: SignalingQueue = stack_queue
+        self._counter: int = 0
+        self._stop_asked: bool = False
+        self._reference: Image = None
 
     @log
     def reset(self):
-        self._images.clear()
+        self._counter = 0
         self.stack_size_changed_signal.emit(self.size)
 
     @log
-    def _add_image(self, image: Image):
-        self._images.append(image)
+    def _store_result_image(self, image: Image):
+        # TODO : publish to datastore
+        self._reference = image
+        self._counter += 1
         self.stack_size_changed_signal.emit(self.size)
 
     @property
     def size(self):
-        return len(self._images)
+        return self._counter
 
     @log
     def run(self):
         while not self._stop_asked:
+
             if self._stack_queue.qsize() > 0:
-                self._add_image(self._stack_queue.get())
-                last_image = self._images[-1]
 
-                _LOGGER.info(f"Start stacking image : {last_image.origin}")
+                new_image = self._stack_queue.get()
 
-                if self.size > 1:
-                    self._align_image(last_image)
-                    self._register_image(last_image)
+                _LOGGER.info(f"Start stacking image : {new_image.origin}")
 
-            # TODO : publish result
+                if self.size == 0:
+                    self._store_result_image(new_image)
+                else:
+                    aligned_image = self._align_image(new_image)
+                    registered_image = self._register_image(aligned_image)
+                    self._store_result_image(registered_image)
 
             self.msleep(20)
 
