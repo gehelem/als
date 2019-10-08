@@ -24,13 +24,14 @@ import numpy as np
 import rawpy
 from PyQt5.QtCore import QThread, pyqtSignal
 from astropy.io import fits
+from skimage.transform import SimilarityTransform
 from tqdm import tqdm
 
 # classic order = 3xMxN
 # cv2 order = MxNx3
 # uint = unsignet int ( 0 to ...)
-from als.code_utilities import log
-from als.model import Image, SignalingQueue
+from als.code_utilities import log, Timer
+from als.model import Image, SignalingQueue, STORE
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -53,6 +54,7 @@ class Stacker(QThread):
     @log
     def reset(self):
         self._counter = 0
+        self._reference = None
         self.stack_size_changed_signal.emit(self.size)
 
     @log
@@ -76,24 +78,85 @@ class Stacker(QThread):
 
                 _LOGGER.info(f"Start stacking image : {new_image.origin}")
 
-                if self.size == 0:
-                    self._store_result_image(new_image)
-                else:
-                    aligned_image = self._align_image(new_image)
-                    registered_image = self._register_image(aligned_image)
-                    self._store_result_image(registered_image)
+                with Timer() as stacking_timer:
+                    if self.size == 0:
+                        self._store_result_image(new_image)
+                    else:
+                        aligned_image = self._align_image(new_image)
+                        registered_image = self._register_image(aligned_image)
+                        self._store_result_image(registered_image)
+
+                _LOGGER.info(f"Finished stacking image : {new_image.origin} in "
+                             f"{stacking_timer.elapsed_in_milli_as_str} ms")
 
             self.msleep(20)
 
     @log
     def _align_image(self, image):
-        # TODO
-        pass
+
+        # in here, we should only be called when alignment is ON and Stacker already has a reference / result image
+        # but we check anyway
+        if not STORE.align_before_stacking or self._reference is None:
+            return image
+
+        with Timer() as transformation_find_timer:
+            transformation = self._find_transformation(image)
+        _LOGGER.info(f"Computed transformation for alignment of {image.origin} in "
+                     f"{transformation_find_timer.elapsed_in_milli_as_str} ms")
+
+        with Timer() as transformation_apply_timer:
+            image = self._apply_transformation(image, transformation)
+        _LOGGER.info(f"Applied transformation for alignment of {image.origin} in "
+                     f"{transformation_apply_timer.elapsed_in_milli_as_str} ms")
+
+        return image
+
+
+    @log
+    def _apply_transformation(self, image: Image, transformation: SimilarityTransform):
+
+        # in here, we should only be called when alignment is ON and Stacker already has a reference / result image
+        # but we check anyway
+        if not STORE.align_before_stacking or self._reference is None:
+            return image
+
+        if image.is_color():
+            _LOGGER.debug(f"Aligning color image...")
+            for channel in range(3):
+                _LOGGER.debug(f"Aligning channel {['Red', 'Green', 'Blue'][channel]}")
+                image.data[channel] = al.apply_transform(
+                    transformation,
+                    image.data[channel],
+                    self._reference.data[channel])
+            _LOGGER.debug(f"Aligning color image : DONE")
+        else:
+            _LOGGER.debug(f"Aligning b&w image...")
+            image.data = al.apply_transform(
+                transformation,
+                image.data,
+                self._reference.data)
+            _LOGGER.debug(f"Aligning b&w image : DONE")
+
+        return image
+
+    @log
+    def _find_transformation(self, image: Image):
+
+        # pick green channel for star matching on color images
+
+        if image.is_color():
+            (new_field, reference_field) = (image.data[1], self._reference.data[1])
+        else:
+            (new_field, reference_field) = (image.data, self._reference.data)
+
+        transformation, __ = al.find_transform(new_field, reference_field)
+
+        return transformation
 
     @log
     def _register_image(self, image):
         # TODO
-        pass
+        return image
 
     @log
     def stop(self):
