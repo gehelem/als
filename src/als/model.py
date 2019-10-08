@@ -325,6 +325,43 @@ class Image:
         """
         return self._bayer_pattern
 
+    @property
+    def dimensions(self):
+        """
+        Retrieves image dimensions as a tuple.
+
+        This is basically the underlying array's shape tuple, minus the color axis if image is color
+
+        :return: the image dimensions
+        :rtype: tuple
+        """
+        if self._data.ndim == 2:
+            return self._data.shape
+        else:
+            dimensions = list(self.data.shape)
+            dimensions.remove(min(dimensions))
+            return dimensions
+
+    @property
+    def width(self):
+        """
+        Retrieves image width
+
+        :return: image width in pixels
+        :rtype: int
+        """
+        return max(self.dimensions)
+
+    @property
+    def height(self):
+        """
+        Retrieves image height
+
+        :return: image height in pixels
+        :rtype: int
+        """
+        return min(self.dimensions)
+
     @bayer_pattern.setter
     def bayer_pattern(self, bayer_pattern):
         self._bayer_pattern = bayer_pattern
@@ -374,6 +411,8 @@ class Image:
                 f'Color={self.is_color()}, '
                 f'Needs Debayer={self.needs_debayering()}, '
                 f'Bayer Pattern={self.bayer_pattern}, '
+                f'Width={self.width}, '
+                f'Height={self.height}, '
                 f'Data shape={self._data.shape}, '
                 f'Data type={self._data.dtype.name}, '
                 f'Origin={self.origin})'
