@@ -45,7 +45,7 @@ from als.model import VERSION, STORE
 from als import preprocess as prepro, stack as stk, config, model
 from als.processing import PreProcessPipeline
 from als.io.input import ScannerStartError, InputScanner
-from als.model import VERSION, STORE
+from als.model import VERSION, STORE, STACKING_MODE_SUM, STACKING_MODE_MEAN
 from als.stack import Stacker
 from als.ui import dialogs
 from als.ui.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
@@ -389,6 +389,10 @@ class MainWindow(QMainWindow):
         self._ui = Ui_stack_window()
         self._ui.setupUi(self)
 
+        self._ui.cb_stacking_mode.addItem(STACKING_MODE_SUM)
+        self._ui.cb_stacking_mode.addItem(STACKING_MODE_MEAN)
+        self._ui.cb_stacking_mode.setCurrentIndex(0)
+
         # store if docks must be shown or not
         self.shown_log_dock = True
         self.show_session_dock = True
@@ -654,6 +658,10 @@ class MainWindow(QMainWindow):
         self._ui.cnt.setText(str(size))
 
     @log
+    def on_cb_stacking_mode_currentTextChanged(self, text):
+        STORE.stacking_mode = text
+
+    @log
     def adjust_value(self):
         """
         Adjusts stacked image according to GUU controls
@@ -757,7 +765,7 @@ class MainWindow(QMainWindow):
             self._ui.B_slider.setEnabled(False)
             self._ui.pb_apply_value.setEnabled(False)
             self._ui.cbAlign.setEnabled(False)
-            self._ui.cmMode.setEnabled(False)
+            self._ui.cb_stacking_mode.setEnabled(False)
             self._ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
             self.counter = 0
             self._ui.cnt.setText(str(self.counter))
@@ -768,7 +776,7 @@ class MainWindow(QMainWindow):
 
         # Print live method
         if self.align:
-            _LOGGER.info(f"Play with alignement type: {self._ui.cmMode.currentText()}")
+            _LOGGER.info(f"Play with alignement type: {self._ui.cb_stacking_mode.currentText()}")
         else:
             _LOGGER.info("Play with NO alignement")
 
@@ -852,7 +860,7 @@ class MainWindow(QMainWindow):
         """Qt slot for mouse clicks on the 'Stop' button"""
         self.image_ref_save.status = "stop"
         self._ui.cbAlign.setEnabled(True)
-        self._ui.cmMode.setEnabled(True)
+        self._ui.cb_stacking_mode.setEnabled(True)
         self._ui.action_prefs.setEnabled(not self._ui.cbWww.isChecked())
         _LOGGER.info("Stop")
         self._input_scanner.stop()

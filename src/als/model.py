@@ -11,6 +11,9 @@ from als.code_utilities import log
 
 VERSION = als.__version__
 
+STACKING_MODE_SUM = "Sum"
+STACKING_MODE_MEAN = "Mean"
+
 
 class SignalingQueue(Queue, QObject):
     """
@@ -73,8 +76,20 @@ class DataStore:
         self._session_is_stopped = True
         self._session_is_paused = False
         self._web_server_is_running = False
+        self._stacking_mode = ""
         self._input_queue = SignalingQueue()
         self._stack_queue = SignalingQueue()
+
+    @property
+    def stacking_mode(self):
+        return self._stacking_mode
+
+    @stacking_mode.setter
+    def stacking_mode(self, text: str):
+        if text.strip() in [STACKING_MODE_MEAN, STACKING_MODE_SUM]:
+            self._stacking_mode = text
+        else:
+            self._stacking_mode = STACKING_MODE_MEAN
 
     @property
     def stack_queue(self):

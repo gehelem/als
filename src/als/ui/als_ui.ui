@@ -1201,23 +1201,13 @@
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="cmMode">
+        <widget class="QComboBox" name="cb_stacking_mode">
          <property name="maximumSize">
           <size>
            <width>16777215</width>
            <height>30</height>
           </size>
          </property>
-         <item>
-          <property name="text">
-           <string>Sum</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Mean</string>
-          </property>
-         </item>
         </widget>
        </item>
       </layout>
@@ -1412,7 +1402,7 @@
   <connection>
    <sender>cbAlign</sender>
    <signal>clicked(bool)</signal>
-   <receiver>cmMode</receiver>
+   <receiver>cb_stacking_mode</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
