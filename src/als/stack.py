@@ -190,15 +190,15 @@ class Stacker(QThread):
 
         for ratio in [.1, .33, 1.]:
 
-            top_line, bottom_line, left_column, right_column = self._get_image_subset_bounds(ratio)
+            top, bottom, left, right = self._get_image_subset_bounds(ratio)
 
             # pick green channel if image has color
             if image.is_color():
-                new_subset = image.data[1][top_line:bottom_line, left_column:right_column]
-                ref_subset = self._align_reference.data[1][top_line:bottom_line, left_column:right_column]
+                new_subset = image.data[1][top:bottom, left:right]
+                ref_subset = self._align_reference.data[1][top:bottom, left:right]
             else:
-                new_subset = image.data[top_line:bottom_line, left_column:right_column]
-                ref_subset = self._align_reference.data[top_line:bottom_line, left_column:right_column]
+                new_subset = image.data[top:bottom, left:right]
+                ref_subset = self._align_reference.data[top:bottom, left:right]
 
             try:
                 _LOGGER.debug(f"Searching valid transformation on subset "
@@ -233,13 +233,13 @@ class Stacker(QThread):
         horizontal_margin = int((width - (width * ratio)) / 2)
         vertical_margin = int((height - (height * ratio)) / 2)
 
-        left_column = 0 + horizontal_margin
-        right_column = width - horizontal_margin - 1
+        left = 0 + horizontal_margin
+        right = width - horizontal_margin - 1
 
-        top_line = 0 + vertical_margin
-        bottom_line = height - vertical_margin - 1
+        top = 0 + vertical_margin
+        bottom = height - vertical_margin - 1
 
-        return top_line, bottom_line, left_column, right_column
+        return top, bottom, left, right
 
     @log
     def _register_image(self, image, stacking_mode: str):
