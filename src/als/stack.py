@@ -50,7 +50,7 @@ class Stacker(QThread):
         self._counter: int = 0
         self._stop_asked: bool = False
         self._result: Image = None
-        self._align_reference = None
+        self._align_reference: Image = None
 
     @log
     def reset(self):
@@ -114,14 +114,13 @@ class Stacker(QThread):
                             if STORE.align_before_stacking:
                                 self._align_image(image)
 
-                            self._register_image(image, STORE.stacking_mode)
+                            self._stack_image(image, STORE.stacking_mode)
                             self._publish_stacking_result(image)
 
                         except StackingError as stacking_error:
-                            _LOGGER.warning(f"Could not stack image {image.origin} : {stacking_error}")
+                            _LOGGER.warning(f"Could not stack image {image.origin} : {stacking_error}. Image is DISCARDED")
 
-                _LOGGER.info(f"Done stacking image in "
-                             f"{stacking_timer.elapsed_in_milli_as_str} ms")
+                _LOGGER.info(f"Done stacking image in {stacking_timer.elapsed_in_milli_as_str} ms")
 
             self.msleep(20)
 
@@ -130,7 +129,7 @@ class Stacker(QThread):
 
         with Timer() as transformation_find_timer:
             transformation = self._find_transformation(image)
-        _LOGGER.info(f"Computed transformation for alignment of {image.origin} in "
+        _LOGGER.info(f"Found transformation for alignment of {image.origin} in "
                      f"{transformation_find_timer.elapsed_in_milli_as_str} ms")
 
         with Timer() as transformation_apply_timer:
@@ -217,7 +216,7 @@ class Stacker(QThread):
             # pylint: disable=W0703
             except Exception as alignment_error:
                 # we have no choice but catching Exception, here. That's what AstroAlign raises in some cases
-                # this will take care of MaxIterError as well...
+                # this will catch MaxIterError as well...
                 if ratio == 1.:
                     raise StackingError(alignment_error)
 
@@ -235,14 +234,13 @@ class Stacker(QThread):
 
         left = 0 + horizontal_margin
         right = width - horizontal_margin - 1
-
         top = 0 + vertical_margin
         bottom = height - vertical_margin - 1
 
         return top, bottom, left, right
 
     @log
-    def _register_image(self, image, stacking_mode: str):
+    def _stack_image(self, image, stacking_mode: str):
 
         with Timer() as registering_timer:
 
@@ -253,8 +251,7 @@ class Stacker(QThread):
             else:
                 raise StackingError(f"Unsupported stacking mode : {stacking_mode}")
 
-        _LOGGER.info(f"Done {stacking_mode}-registering {image.origin} in "
-                     f"{registering_timer.elapsed_in_milli_as_str} ms")
+        _LOGGER.info(f"Done {stacking_mode}-stacking {image.origin} in {registering_timer.elapsed_in_milli_as_str} ms")
 
     @log
     def stop(self):
