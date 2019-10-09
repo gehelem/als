@@ -188,7 +188,7 @@ class Stacker(QThread):
     @log
     def _find_transformation(self, image: Image):
 
-        for ratio in [.1, .25, .5, .75, 1.]:
+        for ratio in [.1, .33, 1.]:
 
             top_line, bottom_line, left_column, right_column = self._get_image_subset_bounds(ratio)
 
