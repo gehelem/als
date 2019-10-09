@@ -118,7 +118,7 @@ class Stacker(QThread):
                             self._publish_stacking_result(image)
 
                         except StackingError as stacking_error:
-                            self._report_error(image, stacking_error)
+                            _LOGGER.warning(f"Could not stack image {image.origin} : {stacking_error}")
 
                 _LOGGER.info(f"Done stacking image in "
                              f"{stacking_timer.elapsed_in_milli_as_str} ms")
@@ -255,11 +255,6 @@ class Stacker(QThread):
 
         _LOGGER.info(f"Done {stacking_mode}-registering {image.origin} in "
                      f"{registering_timer.elapsed_in_milli_as_str} ms")
-
-    # pylint: disable=R0201
-    @log
-    def _report_error(self, image, error):
-        _LOGGER.warning(f"Could not stack image {image.origin} : {error}")
 
     @log
     def stop(self):
