@@ -264,7 +264,7 @@ class Stacker(QThread):
 
         for ratio in [.1, .33, 1.]:
 
-            top, bottom, left, right = self._get_image_subset_bounds(ratio)
+            top, bottom, left, right = self._get_image_subset_boundaries(ratio)
 
             # pick green channel if image has color
             if image.is_color():
@@ -299,7 +299,7 @@ class Stacker(QThread):
                 continue
 
     @log
-    def _get_image_subset_bounds(self, ratio: float):
+    def _get_image_subset_boundaries(self, ratio: float):
         """
         Retrieves a tuple of 4 int values representing the limits of a centered box (a.k.a. subset) as big as
         ratio * stored stacking result's size
