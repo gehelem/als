@@ -161,6 +161,8 @@ class Stacker(QThread):
             for processor in channel_processors:
                 processor.join()
 
+            _LOGGER.debug("Color channel processes are done. Fetching results and storing results...")
+
             for channel, data in results_dict.items():
                 image.data[channel] = data
 
