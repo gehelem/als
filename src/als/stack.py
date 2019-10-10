@@ -17,7 +17,7 @@ Provides image stacking features
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
-from multiprocessing import Process
+from multiprocessing import Process, Manager
 
 import astroalign as al
 from PyQt5.QtCore import QThread, pyqtSignal
@@ -143,6 +143,8 @@ class Stacker(QThread):
         if image.is_color():
             _LOGGER.debug(f"Aligning color image...")
 
+            manager = Manager()
+            results_dict = manager.dict()
             channel_processors = []
 
             for channel in range(3):
@@ -150,6 +152,7 @@ class Stacker(QThread):
                                     args=[image,
                                           self._result,
                                           transformation,
+                                          results_dict,
                                           channel])
                 processor.start()
                 channel_processors.append(processor)
@@ -157,29 +160,39 @@ class Stacker(QThread):
             for processor in channel_processors:
                 processor.join()
 
+            for channel, data in results_dict.items():
+                image.data[channel] = data
+
             _LOGGER.debug(f"Aligning color image DONE")
 
         else:
             _LOGGER.debug(f"Aligning b&w image...")
-            self._apply_single_channel_transformation(
+
+            result_dict = dict()
+
+            Stacker._apply_single_channel_transformation(
                 image,
                 self._result,
-                transformation
+                transformation,
+                result_dict
             )
+
+            image.data = result_dict[0]
+
             _LOGGER.debug(f"Aligning b&w image : DONE")
 
     @staticmethod
     @log
-    def _apply_single_channel_transformation(image, reference, transformation, channel=None):
+    def _apply_single_channel_transformation(image, reference, transformation, results_dict, channel=None):
 
         if channel is not None:
-            image.data[channel] = al.apply_transform(
+            results_dict[channel] = al.apply_transform(
                 transformation,
                 image.data[channel],
                 reference.data[channel])
 
         else:
-            image.data = al.apply_transform(
+            results_dict[0] = al.apply_transform(
                 transformation,
                 image.data,
                 reference.data)
