@@ -222,7 +222,7 @@ class Stacker(QThread):
                 _LOGGER.debug(f"rotation : {transformation.rotation}")
                 _LOGGER.debug(f"translation : {transformation.translation}")
                 _LOGGER.debug(f"scale : {transformation.scale}")
-                _LOGGER.debug(f"image feature matches : {len(matches[0])}")
+                _LOGGER.debug(f"image matched features count : {len(matches[0])}")
 
                 return transformation
 
