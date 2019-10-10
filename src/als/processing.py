@@ -19,6 +19,7 @@ class ProcessingError(Exception):
     """
 
 
+# pylint: disable=R0903
 class ImageProcessor:
     """
     Base abstract class for all image processors, regardless of what pipeline they are used in
@@ -41,6 +42,7 @@ class ImageProcessor:
         """
 
 
+# pylint: disable=R0903
 class Standardize(ImageProcessor):
     """
     Make image data structure conform to all processing needs.
@@ -65,6 +67,7 @@ class Standardize(ImageProcessor):
         return image
 
 
+# pylint: disable=R0903
 class Debayer(ImageProcessor):
     """
     Provides image debayering.
