@@ -20,6 +20,7 @@ import logging
 from multiprocessing import Process, Manager
 
 import astroalign as al
+import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal
 from skimage.transform import SimilarityTransform
 
@@ -186,16 +187,15 @@ class Stacker(QThread):
     def _apply_single_channel_transformation(image, reference, transformation, results_dict, channel=None):
 
         if channel is not None:
-            results_dict[channel] = al.apply_transform(
-                transformation,
-                image.data[channel],
-                reference.data[channel])
-
+            target_index = channel
+            source_data = image.data[channel]
+            reference_data = reference.data[channel]
         else:
-            results_dict[0] = al.apply_transform(
-                transformation,
-                image.data,
-                reference.data)
+            target_index = 0
+            source_data = image.data
+            reference_data = reference.data
+
+        results_dict[target_index] = np.float32(al.apply_transform(transformation, source_data, reference_data))
 
     @log
     def _find_transformation(self, image: Image):
