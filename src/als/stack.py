@@ -42,7 +42,10 @@ class Stacker(QThread):
     """
 
     stack_size_changed_signal = pyqtSignal(int)
+    """Qt signal emitted when stack size changed"""
+
     stack_result_ready_signal = pyqtSignal()
+    """Qt signal emitted when a new stack result is ready"""
 
     @log
     def __init__(self, stack_queue):
@@ -56,7 +59,7 @@ class Stacker(QThread):
     @log
     def reset(self):
         """
-        Reset stacker to its starting state : No reference and counter = 0.
+        Reset stacker to its starting state : No reference, no result and counter = 0.
         """
         self._counter = 0
         self._last_stacking_result = None
@@ -65,6 +68,12 @@ class Stacker(QThread):
 
     @log
     def _publish_stacking_result(self, image: Image):
+        """
+        Record a new stacking result
+
+        :param image: new stacking result
+        :type image: Image
+        """
         self._last_stacking_result = image
         self._last_stacking_result.origin = "Stack reference"
         self._counter += 1
@@ -90,7 +99,7 @@ class Stacker(QThread):
 
          - Get new image from queue
          - Align image if asked for
-         - Register image in stack
+         - Stack image
          - publish resulting image
         """
         while not self._stop_asked:
@@ -127,6 +136,14 @@ class Stacker(QThread):
 
     @log
     def _align_image(self, image):
+        """
+        align image with the current align reference
+
+        The image data is modified in place by this function
+
+        :param image: the image to be aligned
+        :type image: Image
+        """
 
         with Timer() as transformation_find_timer:
             transformation = self._find_transformation(image)
@@ -140,7 +157,20 @@ class Stacker(QThread):
 
     @log
     def _apply_transformation(self, image: Image, transformation: SimilarityTransform):
+        """
+        Apply a transformation to an image.
 
+        If image is color, channels are processed using multiprocessing, allowing global operation to take less time on
+        a multi core CPU
+
+        Image is modified in place by this function
+
+        :param image: the image to apply transformation to
+        :type image: Image
+
+        :param transformation: the transformation to apply
+        :type transformation: skimage.transform._geometric.SimilarityTransform
+        """
         if image.is_color():
             _LOGGER.debug(f"Aligning color image...")
 
@@ -187,6 +217,25 @@ class Stacker(QThread):
     @staticmethod
     @log
     def _apply_single_channel_transformation(image, reference, transformation, results_dict, channel=None):
+        """
+        apply a transformation on a specific channel (RGB) of a color image, or whole data of a b&w image.
+
+        :param image: the image to apply transformation to
+        :type image: Image
+
+        :param reference: the align reference image
+        :type reference: Image
+
+        :param transformation: the transformation to apply
+        :type transformation: skimage.transform._geometric.SimilarityTransform
+
+        :param results_dict: the dict into which transformation result is to be stored. dict key is the channel number for a
+               color image, or 0 for a b&w image
+        :type results_dict: dict
+
+        :param channel: the 0 indexed number of the color channel to process (0=red, 1=green, 2=blue)
+        :type channel: int
+        """
 
         if channel is not None:
             target_index = channel
@@ -201,6 +250,17 @@ class Stacker(QThread):
 
     @log
     def _find_transformation(self, image: Image):
+        """
+        Iteratively try and find a valid transformation to align image with stored align reference.
+
+        We perform 3 tries with growing image sizes of a centered image subset : 10%, 30% and 100% of image size
+
+        :param image: the image to be aligned
+        :type image: Image
+
+        :return: the found transformation
+        :raises: StackingError when no transformation is found using the whole image
+        """
 
         for ratio in [.1, .33, 1.]:
 
@@ -240,6 +300,16 @@ class Stacker(QThread):
 
     @log
     def _get_image_subset_bounds(self, ratio: float):
+        """
+        Retrieves a tuple of 4 int values representing the limits of a centered box (a.k.a. subset) as big as
+        ratio * stored stacking result's size
+
+        :param ratio: size ratio of subset vs stacking result
+        :type ratio: float
+
+        :return: a tuple of 4 int for top, bottom, left, right
+        :rtype: tuple
+        """
 
         width = self._last_stacking_result.width
         height = self._last_stacking_result.height
@@ -255,7 +325,18 @@ class Stacker(QThread):
         return top, bottom, left, right
 
     @log
-    def _stack_image(self, image, stacking_mode: str):
+    def _stack_image(self, image: Image, stacking_mode: str):
+        """
+        Compute stacking according to user defined stacking mode
+
+        the image data is modified in place by this function
+
+        :param image: the image to be stacked
+        :type image: Image
+
+        :param stacking_mode: a string representation of the desired stacking mode
+        :type stacking_mode: str
+        """
 
         with Timer() as registering_timer:
 
