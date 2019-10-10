@@ -49,7 +49,7 @@ class Stacker(QThread):
         self._stack_queue: SignalingQueue = stack_queue
         self._counter: int = 0
         self._stop_asked: bool = False
-        self._result: Image = None
+        self._last_stacking_result: Image = None
         self._align_reference: Image = None
 
     @log
@@ -58,18 +58,18 @@ class Stacker(QThread):
         Reset stacker to its starting state : No reference and counter = 0.
         """
         self._counter = 0
-        self._result = None
+        self._last_stacking_result = None
         self._align_reference = None
         self.stack_size_changed_signal.emit(self.size)
 
     @log
     def _publish_stacking_result(self, image: Image):
-        self._result = image
-        self._result.origin = "Stack reference"
+        self._last_stacking_result = image
+        self._last_stacking_result.origin = "Stack reference"
         self._counter += 1
         self.stack_size_changed_signal.emit(self.size)
 
-        STORE.stacking_result = self._result
+        STORE.stacking_result = self._last_stacking_result
         self.stack_result_ready_signal.emit()
 
     @property
@@ -108,7 +108,7 @@ class Stacker(QThread):
 
                     else:
                         try:
-                            if not image.is_same_shape_as(self._result):
+                            if not image.is_same_shape_as(self._last_stacking_result):
                                 raise StackingError(f"Image dimensions or color don't match stack content")
 
                             if STORE.align_before_stacking:
@@ -150,7 +150,7 @@ class Stacker(QThread):
             for channel in range(3):
                 processor = Process(target=Stacker._apply_single_channel_transformation,
                                     args=[image,
-                                          self._result,
+                                          self._last_stacking_result,
                                           transformation,
                                           results_dict,
                                           channel])
@@ -172,7 +172,7 @@ class Stacker(QThread):
 
             Stacker._apply_single_channel_transformation(
                 image,
-                self._result,
+                self._last_stacking_result,
                 transformation,
                 result_dict
             )
@@ -239,8 +239,8 @@ class Stacker(QThread):
     @log
     def _get_image_subset_bounds(self, ratio: float):
 
-        width = self._result.width
-        height = self._result.height
+        width = self._last_stacking_result.width
+        height = self._last_stacking_result.height
 
         horizontal_margin = int((width - (width * ratio)) / 2)
         vertical_margin = int((height - (height * ratio)) / 2)
@@ -258,9 +258,9 @@ class Stacker(QThread):
         with Timer() as registering_timer:
 
             if stacking_mode == STACKING_MODE_SUM:
-                image.data = image.data + self._result.data
+                image.data = image.data + self._last_stacking_result.data
             elif stacking_mode == STACKING_MODE_MEAN:
-                image.data = (self.size * self._result.data + image.data) / (self.size + 1)
+                image.data = (self.size * self._last_stacking_result.data + image.data) / (self.size + 1)
             else:
                 raise StackingError(f"Unsupported stacking mode : {stacking_mode}")
 
