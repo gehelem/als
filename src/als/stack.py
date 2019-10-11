@@ -73,7 +73,7 @@ class Stacker(QThread):
         :type image: Image
         """
         self._last_stacking_result = image
-        self._last_stacking_result.origin = "Stack reference"
+        self._last_stacking_result.origin = "Stacking result"
         self._counter += 1
         self.stack_size_changed_signal.emit(self.size)
         self._process_queue.put(self._last_stacking_result)

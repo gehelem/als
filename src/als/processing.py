@@ -100,6 +100,20 @@ class Debayer(ImageProcessor):
         return image
 
 
+class ConvertForOutput(ImageProcessor):
+    """
+    Move colors data to 3rd array axis for color images
+    """
+
+    @log
+    def process_image(self, image: Image):
+
+        if image.is_color():
+            image.data = np.moveaxis(image.data, 0, 2)
+
+        return image
+
+
 class PreProcessPipeline(QThread):
     """
     Responsible of grabbing images from the input queue and applying a set of pre-processing units to each one, before
@@ -176,7 +190,7 @@ class PostProcessPipeline(QThread):
         self._stop_asked = False
         self._process_queue = process_queue
         self._processes = []
-        self._processes_done_last = []
+        self._processes_done_last = [ConvertForOutput()]
 
     @log
     def run(self):
@@ -194,6 +208,8 @@ class PostProcessPipeline(QThread):
                 # we make sure we work on the latest stack result, dropping older images if needed
                 while self._process_queue.qsize() > 0:
                     image = self._process_queue.get()
+
+                image = image.clone()
 
                 _LOGGER.info(f"Start post-processing image : {image.origin}")
 
@@ -215,6 +231,8 @@ class PostProcessPipeline(QThread):
                         break
 
                 _LOGGER.info(f"Done post-processing image {image.origin}")
+
+                image.origin = "Post Processing Result"
                 STORE.process_result = image
                 self.new_processing_result_signal.emit()
 

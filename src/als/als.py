@@ -543,10 +543,6 @@ class MainWindow(QMainWindow):
         image = STORE.process_result
         image_raw_data = image.data.copy()
 
-        if image.is_color():
-            # TODO : move this outside of GUI code
-            image_raw_data = np.moveaxis(image_raw_data, 0, 2)
-
         image = array2qimage(image_raw_data, normalize=(2 ** 16 - 1))
         self._image_item.setPixmap(QPixmap.fromImage(image))
 

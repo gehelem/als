@@ -317,6 +317,18 @@ class Image:
         self._bayer_pattern: str = None
         self._origin: str = "UNDEFINED"
 
+    def clone(self):
+        """
+        Clone an image
+
+        :return: an image with global copied data
+        :rtype: Image
+        """
+        new = Image(self.data.copy())
+        new.bayer_pattern = self.bayer_pattern
+        new.origin = self.origin
+        return new
+
     @property
     def data(self):
         """
