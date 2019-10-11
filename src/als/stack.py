@@ -118,7 +118,12 @@ class Stacker(QThread):
                                 raise StackingError(f"Image dimensions or color don't match stack content")
 
                             if STORE.align_before_stacking:
-                                self._align_image(image)
+
+                                # alignment is a memory greedy process, we take special care of such errors
+                                try:
+                                    self._align_image(image)
+                                except OSError as os_error:
+                                    raise StackingError(os_error)
 
                             self._stack_image(image, STORE.stacking_mode)
                             self._publish_stacking_result(image)
