@@ -28,11 +28,11 @@ import threading
 from datetime import datetime
 from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 
-import cv2
 import numpy as np
+import cv2
 from PyQt5.QtCore import Qt, pyqtSlot, QTimer, QEvent
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QMainWindow, QApplication
+from PyQt5.QtWidgets import QMainWindow, QApplication, QGraphicsScene, QGraphicsPixmapItem
 from astroalign import MaxIterError
 from astropy.io import fits
 from qimage2ndarray import array2qimage
@@ -48,8 +48,8 @@ from als.model import VERSION, STORE, STACKING_MODE_SUM, STACKING_MODE_MEAN
 from als.stack import Stacker
 from als.ui import dialogs
 from als.ui.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
-
 from generated.als_ui import Ui_stack_window
+from qimage2ndarray import array2qimage
 
 DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS = 100
 LOG_DOCK_INITIAL_HEIGHT = 60
@@ -195,6 +195,13 @@ class MainWindow(QMainWindow):
         STORE.stack_queue.item_pushed_signal[int].connect(self.on_stack_queue_pushed)
         STORE.stack_queue.item_popped_signal[int].connect(self.on_stack_queue_popped)
 
+        self._scene = QGraphicsScene(self)
+        self._image_item = QGraphicsPixmapItem(QPixmap(":/icons/dslr-camera.svg"))
+        self._scene.addItem(self._image_item)
+        self._ui.image_view.setScene(self._scene)
+
+
+
     @log
     def closeEvent(self, event):
         """Handles window close events."""
@@ -247,9 +254,9 @@ class MainWindow(QMainWindow):
     def resizeEvent(self, event):
         """Handles window resize events."""
         # pylint: disable=C0103
-
-        super().resizeEvent(event)
-        self.update_image(False)
+        pass
+        # super().resizeEvent(event)
+        # self.update_image(False)
 
     # ------------------------------------------------------------------------------
     # Callbacks
@@ -449,7 +456,7 @@ class MainWindow(QMainWindow):
         Qt slot executed when a new stacking result is available
         """
         _LOGGER.info(f"New Stacking result available : {STORE.stacking_result}")
-        # TODO : exploit the result
+        self.update_image()
 
     @log
     def adjust_value(self):
@@ -498,28 +505,35 @@ class MainWindow(QMainWindow):
 
         :param add: True if a new image has been added to the stack, False otherwise
         """
-        if add:
-            self.counter += 1
-            self._ui.cnt.setText(str(self.counter))
-            message = _("update GUI image")
-            _LOGGER.info(message)
-
-        if self.counter > 0:
-            qimage = array2qimage(self.image_ref_save.stack_image, normalize=(2 ** 16 - 1))
-            pixmap = QPixmap.fromImage(qimage)
-
-            if pixmap.isNull():
-                _LOGGER.error("Got a null pixmap from stack")
-                return
-
-            pixmap_resize = pixmap.scaled(self._ui.image_stack.frameGeometry().width(),
-                                          self._ui.image_stack.frameGeometry().height(),
-                                          Qt.KeepAspectRatio, Qt.SmoothTransformation)
-
-            self._ui.image_stack.setPixmap(pixmap_resize)
-
-        else:
-            self._ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
+        image = array2qimage(np.moveaxis(STORE.stacking_result.data, 0, 2), normalize=(2 ** 16 - 1))
+        self._image_item.setPixmap(QPixmap.fromImage(image))
+        pass
+        # if add:
+        #     self.counter += 1
+        #     self._ui.cnt.setText(str(self.counter))
+        #     message = _("update GUI image")
+        #     self._ui.log.append(_(message))
+        #     _LOGGER.info(message)
+        #
+        # if self.counter > 0:
+        #
+        #     # read image in RAM ( need save_type = "no"):
+        #     qimage = array2qimage(self.image_ref_save.stack_image, normalize=(2 ** 16 - 1))
+        #     pixmap = QPixmap.fromImage(qimage)
+        #
+        #     if pixmap.isNull():
+        #         self._ui.log.append(_("invalid frame"))
+        #         _LOGGER.error("Got a null pixmap from stack")
+        #         return
+        #
+        #     pixmap_resize = pixmap.scaled(self._ui.image_stack.frameGeometry().width(),
+        #                                   self._ui.image_stack.frameGeometry().height(),
+        #                                   Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        #
+        #     self._ui.image_stack.setPixmap(pixmap_resize)
+        #
+        # else:
+        #     self._ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
 
     @pyqtSlot(name="on_pbPlay_clicked")
     @log
@@ -556,7 +570,6 @@ class MainWindow(QMainWindow):
             self._ui.pb_apply_value.setEnabled(False)
             self._ui.chk_align.setEnabled(False)
             self._ui.cb_stacking_mode.setEnabled(False)
-            self._ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
             self.counter = 0
             self._ui.cnt.setText(str(self.counter))
 
@@ -680,7 +693,6 @@ class MainWindow(QMainWindow):
         self._ui.R_slider.setValue(100)
         self._ui.G_slider.setValue(100)
         self._ui.B_slider.setValue(100)
-        self._ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
         self.image_ref_save.image = None
         self.image_ref_save.stack_image = None
         self._ui.contrast.setText(str(1))
@@ -736,7 +748,8 @@ class MainWindow(QMainWindow):
         """
         Updates central image display
         """
-        self.update_image(False)
+        pass
+        # self.update_image(False)
 
     @log
     def _start_www(self):
