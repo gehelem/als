@@ -11,6 +11,7 @@ class ImageView(QGraphicsView):
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
 
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
+        self.setDragMode(QGraphicsView.ScrollHandDrag)
 
         scale_ratio = 1.1
 
