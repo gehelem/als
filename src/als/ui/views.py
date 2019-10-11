@@ -8,6 +8,9 @@ from PyQt5.QtWidgets import QGraphicsView, QWidget
 
 
 class ImageView(QGraphicsView):
+
+    _ZOOM_SCALE_RATIO = 1.1
+
     """
     The main image view.
 
@@ -15,6 +18,8 @@ class ImageView(QGraphicsView):
     """
     def __init__(self, parent: typing.Optional[QWidget] = ...):
         super().__init__(parent)
+        self.setDragMode(QGraphicsView.ScrollHandDrag)
+        self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         """
@@ -23,15 +28,10 @@ class ImageView(QGraphicsView):
         :param event: The Qt wheel event
         :type event: QtGui.QWheelEvent
         """
-        self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
-        self.setDragMode(QGraphicsView.ScrollHandDrag)
-
-        scale_ratio = 1.1
-
         if event.angleDelta().y() > 0:
-            self.scale(scale_ratio, scale_ratio)
+            self.scale(self._ZOOM_SCALE_RATIO, self._ZOOM_SCALE_RATIO)
         elif event.angleDelta().y() < 0:
-            self.scale(1/scale_ratio, 1/scale_ratio)
+            self.scale(1 / self._ZOOM_SCALE_RATIO, 1 / self._ZOOM_SCALE_RATIO)
 
 
 
