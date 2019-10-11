@@ -452,7 +452,7 @@ class MainWindow(QMainWindow):
         :type new_size: int
         """
         _LOGGER.info(f"Image taken from process queue. Process queue size : {new_size}")
-        self._ui.lbl_stack_queue_size.setText(str(new_size))
+        self._ui.lbl_process_queue_size.setText(str(new_size))
 
     @log
     def on_stack_size_changed(self, new_size: int):
