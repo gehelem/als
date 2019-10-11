@@ -505,9 +505,15 @@ class MainWindow(QMainWindow):
 
         :param add: True if a new image has been added to the stack, False otherwise
         """
-        image = array2qimage(np.moveaxis(STORE.stacking_result.data, 0, 2), normalize=(2 ** 16 - 1))
+        image = STORE.stacking_result
+
+        if image.is_color():
+            # TODO : move this outside of GUI code
+            image.data = np.moveaxis(image.data, 0, 2)
+
+        image = array2qimage(image.data, normalize=(2 ** 16 - 1))
         self._image_item.setPixmap(QPixmap.fromImage(image))
-        pass
+
         # if add:
         #     self.counter += 1
         #     self._ui.cnt.setText(str(self.counter))
