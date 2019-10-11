@@ -35,7 +35,7 @@
          <string/>
         </property>
         <property name="pixmap">
-         <pixmap>:/icons/dslr-camera.svg</pixmap>
+         <pixmap resource="../../resources/resource.qrc">:/icons/dslr-camera.svg</pixmap>
         </property>
         <property name="scaledContents">
          <bool>false</bool>
@@ -1258,23 +1258,37 @@
     <string>Session log</string>
    </property>
    <attribute name="dockWidgetArea">
-    <number>4</number>
+    <number>8</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_2">
     <layout class="QVBoxLayout" name="verticalLayout_14">
      <item>
-      <widget class="QTextBrowser" name="log">
-       <property name="minimumSize">
-        <size>
-         <width>300</width>
-         <height>80</height>
-        </size>
+      <widget class="QListWidget" name="log">
+       <property name="font">
+        <font>
+         <family>Courier 10 Pitch</family>
+        </font>
        </property>
-       <property name="maximumSize">
-        <size>
-         <width>65535</width>
-         <height>65535</height>
-        </size>
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="showDropIndicator" stdset="0">
+        <bool>false</bool>
+       </property>
+       <property name="alternatingRowColors">
+        <bool>false</bool>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::NoSelection</enum>
+       </property>
+       <property name="textElideMode">
+        <enum>Qt::ElideNone</enum>
+       </property>
+       <property name="isWrapping" stdset="0">
+        <bool>false</bool>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
        </property>
       </widget>
      </item>

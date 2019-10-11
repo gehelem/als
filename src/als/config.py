@@ -20,8 +20,9 @@ import logging
 import os
 import sys
 from configparser import ConfigParser, DuplicateOptionError, ParsingError
+from logging import Handler, Formatter
 
-# config file path. We use the pseudo-standard hidden file in user's home
+from PyQt5.QtCore import pyqtSignal, QObject
 from als.ui import dialogs
 
 _CONFIG_FILE_PATH = os.path.expanduser("~/.als.cfg")
@@ -32,6 +33,7 @@ _WORK_FOLDER_PATH = "work_folder_path"
 _LOG_LEVEL = "log_level"
 _WWW_SERVER_PORT = "www_server_port"
 _WINDOW_GEOMETRY = "window_geometry"
+_IMAGE_SAVE_FORMAT = "image_save_format"
 
 # keys used to describe logging level
 _LOG_LEVEL_DEBUG = "DEBUG"
@@ -39,6 +41,12 @@ _LOG_LEVEL_INFO = "INFO"
 _LOG_LEVEL_WARNING = "WARNING"
 _LOG_LEVEL_ERROR = "ERROR"
 _LOG_LEVEL_CRITICAL = "CRITICAL"
+
+# keys used to describe file save formats
+IMAGE_SAVE_TIFF = "tiff"
+IMAGE_SAVE_PNG = "png"
+IMAGE_SAVE_JPEG = "jpg"
+IMAGE_SAVE_FIT = "fit"
 
 # store of matches between human readable log levels and logging module constants
 _LOG_LEVELS = {
@@ -53,13 +61,50 @@ _LOG_LEVELS = {
 _DEFAULTS = {
     _SCAN_FOLDER_PATH:    os.path.expanduser("~/als/scan"),
     _WORK_FOLDER_PATH:    os.path.expanduser("~/als/work"),
-    _LOG_LEVEL:           "INFO",
+    _LOG_LEVEL:           _LOG_LEVEL_INFO,
     _WWW_SERVER_PORT:     "8000",
-    _WINDOW_GEOMETRY: "50,100,1024,800"
+    _WINDOW_GEOMETRY:     "50,100,1024,800",
+    _IMAGE_SAVE_FORMAT:   IMAGE_SAVE_JPEG,
 }
 _MAIN_SECTION_NAME = "main"
 
+# application constants
+STACKED_IMAGE_FILE_NAME_BASE = "stack_image"
+WEB_SERVED_IMAGE_FILE_NAME_BASE = "web_image"
+
+# module global data
 _CONFIG_PARSER = ConfigParser()
+_SIGNAL_LOG_HANDLER = None
+
+
+def get_image_save_format():
+    """
+    Retrieves the configured image save format.
+
+    :return: format code. Can be any value from :
+
+      - IMAGE_SAVE_TIFF
+      - IMAGE_SAVE_PNG
+      - IMAGE_SAVE_JPEG
+
+    :rtype: str
+    """
+    return _get(_IMAGE_SAVE_FORMAT)
+
+
+def set_image_save_format(save_format):
+    """
+    Sets image save format.
+
+    :param save_format: format code. Can be any value from :
+
+      - IMAGE_SAVE_TIFF
+      - IMAGE_SAVE_PNG
+      - IMAGE_SAVE_JPEG
+
+    :type save_format: str
+    """
+    _set(_IMAGE_SAVE_FORMAT, save_format)
 
 
 def is_debug_log_on():
@@ -187,9 +232,9 @@ def save():
     try:
         with open(_CONFIG_FILE_PATH, "w") as config_file:
             _CONFIG_PARSER.write(config_file)
-        _LOGGER.info("User configuration saved")
+        _get_logger().info("User configuration saved")
     except OSError as os_error:
-        _LOGGER.error("Could not save settings. Error : %s", os_error)
+        _get_logger().error("Could not save settings. Error : %s", os_error)
         dialogs.error_box("Settings not saved", f"Your settings could not be saved\n\nDetails : {os_error}")
 
 
@@ -220,43 +265,102 @@ def _set(key, value):
         _CONFIG_PARSER.set(_MAIN_SECTION_NAME, key, value)
 
 
-# ConfigParser.read won't raise an exception if read fails because of missing file
-# so if app starts and no user settings file exists, we simply
-# get an "empty" config
-# if config file is invalid, we raise a ValueError with details
-try:
-    _CONFIG_PARSER.read(_CONFIG_FILE_PATH)
-except DuplicateOptionError as duplicate_error:
-    raise ValueError(duplicate_error)
-except ParsingError as parsing_error:
-    raise ValueError(parsing_error)
+def setup():
+    """
+    Sets config and log systems up.
+    """
+    # ConfigParser.read won't raise an exception if read fails because of missing file
+    # so if app starts and no user settings file exists, we simply
+    # get an "empty" config
+    #
+    # if config file is invalid, we raise a ValueError with details
+    try:
+        _CONFIG_PARSER.read(_CONFIG_FILE_PATH)
+    except DuplicateOptionError as duplicate_error:
+        raise ValueError(duplicate_error)
+    except ParsingError as parsing_error:
+        raise ValueError(parsing_error)
 
-# init logging system
-logging.basicConfig(level=_LOG_LEVELS[_get(_LOG_LEVEL)],
-                    format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
-                    stream=sys.stdout)
-_LOGGER = logging.getLogger(__name__)
+    _setup_logging()
 
-# in here, we maintain a list of third party loggers for which we don't want to see anything but WARNING & up
-_THIRD_PARTY_LOG_POLLUTERS = [
-    'watchdog.observers.inotify_buffer',
-]
+    # add our main config section if not already present (i.e. previous read failed)
+    if not _CONFIG_PARSER.has_section(_MAIN_SECTION_NAME):
+        _get_logger().debug('adding main section to config')
+        _CONFIG_PARSER.add_section(_MAIN_SECTION_NAME)
 
-for third_party_log_polluter in _THIRD_PARTY_LOG_POLLUTERS:
-    logging.getLogger(third_party_log_polluter).setLevel(logging.WARNING)
+    # cleanup unused options
+    for option in _CONFIG_PARSER.options(_MAIN_SECTION_NAME):
+        if option not in _DEFAULTS.keys():
+            _get_logger().debug("Removed obsolete config option : '%s'", option)
+            _CONFIG_PARSER.remove_option(_MAIN_SECTION_NAME, option)
 
-# add our main section if not already present (i.e. previous read failed)
-if not _CONFIG_PARSER.has_section(_MAIN_SECTION_NAME):
-    _LOGGER.debug('adding main section to config')
-    _CONFIG_PARSER.add_section(_MAIN_SECTION_NAME)
+    # dump user config
+    _get_logger().debug("User config file dump - START")
+    for option in _CONFIG_PARSER.options(_MAIN_SECTION_NAME):
+        _get_logger().debug("%s = %s", option, _get(option))
+    _get_logger().debug("User config file dump - END")
 
-# cleanup unused options
-for option in _CONFIG_PARSER.options(_MAIN_SECTION_NAME):
-    if option not in _DEFAULTS.keys():
-        _LOGGER.debug("Removed obsolete config option : '%s'", option)
-        _CONFIG_PARSER.remove_option(_MAIN_SECTION_NAME, option)
 
-_LOGGER.debug("User config file dump - START")
-for option in _CONFIG_PARSER.options(_MAIN_SECTION_NAME):
-    _LOGGER.debug("%s = %s", option, _get(option))
-_LOGGER.debug("User config file dump - END")
+class SignalLogHandler(Handler, QObject):
+    """
+    Logging handler responsible of sending log messages as a QT signal.
+
+    Any object can register, as soon as it has a on_log_message(str) function
+    """
+    message_signal = pyqtSignal(str)
+
+    def __init__(self):
+        Handler.__init__(self)
+        QObject.__init__(self)
+        self.setFormatter(Formatter('%(levelname)-8s : %(message)s'))
+
+    def emit(self, record):
+        self.message_signal.emit(self.format(record))
+
+    def add_receiver(self, receiver):
+        """
+        Connects this handler's message signal to a receiver
+
+        :param receiver: the receiver
+        :type receiver: any. It must have a on_log_message(str) function.
+        """
+        self.message_signal[str].connect(receiver.on_log_message)
+
+
+def register_log_receiver(receiver):
+    """
+    Registers any object as a log message receiver.
+
+    :param receiver: the receiver
+    :type receiver: any. It must have a on_log_message(str) function.
+    """
+
+    # pylint: disable=W0603
+    global _SIGNAL_LOG_HANDLER
+    _SIGNAL_LOG_HANDLER.add_receiver(receiver)
+
+
+def _setup_logging():
+    """
+    Sets up logging system.
+    """
+    logging.basicConfig(level=_LOG_LEVELS[_get(_LOG_LEVEL)],
+                        format='%(asctime)-15s %(processName)s:%(process)d/%(threadName)-12s '
+                               '%(name)-15s %(levelname)-8s %(message)s',
+                        stream=sys.stdout)
+    # pylint: disable=W0603
+    global _SIGNAL_LOG_HANDLER
+    _SIGNAL_LOG_HANDLER = SignalLogHandler()
+    _SIGNAL_LOG_HANDLER.setLevel(_LOG_LEVELS[_LOG_LEVEL_INFO])
+    logging.getLogger("").addHandler(_SIGNAL_LOG_HANDLER)
+
+    # in here, we maintain a list of third party loggers for which we don't want to see anything but WARNING & up
+    third_party_polluters = [
+        'watchdog.observers.inotify_buffer',
+    ]
+    for third_party_log_polluter in third_party_polluters:
+        logging.getLogger(third_party_log_polluter).setLevel(logging.WARNING)
+
+
+def _get_logger():
+    return logging.getLogger(__name__)
