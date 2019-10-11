@@ -30,7 +30,7 @@ from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 
 import numpy as np
 import cv2
-from PyQt5.QtCore import Qt, pyqtSlot, QTimer, QEvent
+from PyQt5.QtCore import Qt, pyqtSlot, QEvent
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMainWindow, QApplication, QGraphicsScene, QGraphicsPixmapItem
 from astroalign import MaxIterError
@@ -196,11 +196,18 @@ class MainWindow(QMainWindow):
         STORE.stack_queue.item_popped_signal[int].connect(self.on_stack_queue_popped)
 
         self._scene = QGraphicsScene(self)
+        self._ui.image_view.setScene(self._scene)
+        self._image_item = None
+
+        self.reset_image_view()
+
+    @log
+    def reset_image_view(self):
+        for item in self._scene.items():
+            self._scene.removeItem(item)
         self._image_item = QGraphicsPixmapItem(QPixmap(":/icons/dslr-camera.svg"))
         self._scene.addItem(self._image_item)
-        self._ui.image_view.setScene(self._scene)
-
-
+        self._ui.image_view.fitInView(self._image_item, Qt.KeepAspectRatio)
 
     @log
     def closeEvent(self, event):
@@ -721,6 +728,7 @@ class MainWindow(QMainWindow):
         self._ui.cbLuminanceWavelet.setChecked(False)
 
         self._stacker.reset()
+        self.reset_image_view()
 
     @pyqtSlot(bool, name="on_log_dock_visibilityChanged")
     @log
@@ -734,7 +742,6 @@ class MainWindow(QMainWindow):
 
         if not self.windowState() & Qt.WindowMinimized:
             self.shown_log_dock = visible
-            QTimer.singleShot(1, self.update_image_after_dock_change)
 
     @pyqtSlot(bool, name="on_session_dock_visibilityChanged")
     @log
@@ -748,15 +755,6 @@ class MainWindow(QMainWindow):
 
         if not self.windowState() & Qt.WindowMinimized:
             self.show_session_dock = visible
-            QTimer.singleShot(1, self.update_image_after_dock_change)
-
-    @log
-    def update_image_after_dock_change(self):
-        """
-        Updates central image display
-        """
-        pass
-        # self.update_image(False)
 
     @log
     def _start_www(self):
@@ -885,7 +883,7 @@ def main():
         (x, y, width, height) = config.get_window_geometry()
         window.setGeometry(x, y, width, height)
         window.show()
-
+        window.reset_image_view()
     _LOGGER.info(f"Astro Live Stacker version {VERSION} started in {startup.elapsed_in_milli} ms.")
 
     app_return_code = app.exec()
