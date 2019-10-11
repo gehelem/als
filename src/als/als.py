@@ -45,6 +45,7 @@ from als import preprocess as prepro, config, model
 from als.processing import PreProcessPipeline
 from als.io.input import ScannerStartError, InputScanner
 from als.model import VERSION, STORE, STACKING_MODE_SUM, STACKING_MODE_MEAN
+from als.processing import PreProcessPipeline, PostProcessPipeline
 from als.stack import Stacker
 from als.ui import dialogs
 from als.ui.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
@@ -182,10 +183,13 @@ class MainWindow(QMainWindow):
         self._pre_process_pipeline = PreProcessPipeline(STORE.input_queue, STORE.stack_queue)
         self._pre_process_pipeline.start()
 
-        self._stacker = Stacker(STORE.stack_queue)
+        self._stacker = Stacker(STORE.stack_queue, STORE.process_queue)
         self._stacker.start()
         self._stacker.stack_size_changed_signal[int].connect(self.on_stack_size_changed)
-        self._stacker.stack_result_ready_signal.connect(self.on_new_stack_result)
+
+        self._post_process_pipeline = PostProcessPipeline(STORE.process_queue)
+        self._post_process_pipeline.start()
+        self._post_process_pipeline.new_processing_result_signal.connect(self.on_new_process_result)
 
         self.update_store_display()
 
@@ -194,6 +198,9 @@ class MainWindow(QMainWindow):
 
         STORE.stack_queue.item_pushed_signal[int].connect(self.on_stack_queue_pushed)
         STORE.stack_queue.item_popped_signal[int].connect(self.on_stack_queue_popped)
+
+        STORE.process_queue.item_pushed_signal[int].connect(self.on_process_queue_pushed)
+        STORE.process_queue.item_popped_signal[int].connect(self.on_process_queue_popped)
 
         self._scene = QGraphicsScene(self)
         self._ui.image_view.setScene(self._scene)
@@ -220,8 +227,8 @@ class MainWindow(QMainWindow):
             self.cb_stop()
 
         self._pre_process_pipeline.stop()
-
         self._stacker.stop()
+        self._post_process_pipeline.stop()
 
         _LOGGER.debug(f"Window size : {self.size()}")
         _LOGGER.debug(f"Window position : {self.pos()}")
@@ -426,6 +433,28 @@ class MainWindow(QMainWindow):
         self._ui.lbl_stack_queue_size.setText(str(new_size))
 
     @log
+    def on_process_queue_pushed(self, new_size):
+        """
+        Qt slot executed when an item has just been pushed to the process queue
+
+        :param new_size: new queue size
+        :type new_size: int
+        """
+        _LOGGER.info(f"New image added to the process queue. Process queue size : {new_size}")
+        self._ui.lbl_process_queue_size.setText(str(new_size))
+
+    @log
+    def on_process_queue_popped(self, new_size):
+        """
+        Qt slot executed when an item has just been popped from the process queue
+
+        :param new_size: new queue size
+        :type new_size: int
+        """
+        _LOGGER.info(f"Image taken from process queue. Process queue size : {new_size}")
+        self._ui.lbl_stack_queue_size.setText(str(new_size))
+
+    @log
     def on_stack_size_changed(self, new_size: int):
         """
         Qt slot executed when stack size changed
@@ -458,11 +487,10 @@ class MainWindow(QMainWindow):
         STORE.align_before_stacking = checked
 
     @log
-    def on_new_stack_result(self):
+    def on_new_process_result(self):
         """
         Qt slot executed when a new stacking result is available
         """
-        _LOGGER.info(f"New Stacking result available : {STORE.stacking_result}")
         self.update_image()
 
     @log
@@ -512,7 +540,7 @@ class MainWindow(QMainWindow):
 
         :param add: True if a new image has been added to the stack, False otherwise
         """
-        image = STORE.stacking_result
+        image = STORE.process_result
         image_raw_data = image.data.copy()
 
         if image.is_color():

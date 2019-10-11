@@ -6,9 +6,9 @@ from abc import abstractmethod
 
 import cv2
 import numpy as np
-from PyQt5.QtCore import QThread
+from PyQt5.QtCore import QThread, pyqtSignal
 from als.code_utilities import log, Timer
-from als.model import Image, SignalingQueue
+from als.model import Image, SignalingQueue, STORE
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -159,3 +159,72 @@ class PreProcessPipeline(QThread):
         self._stop_asked = True
         self.wait()
         _LOGGER.info("PreProcess pipeline stopped")
+
+
+class PostProcessPipeline(QThread):
+    """
+    Responsible of grabbing images from the process queue and applying a set of post-processing units to each one, before
+    storing it into the dynamic data store
+    """
+
+    new_processing_result_signal = pyqtSignal()
+    """Qt signal emited when an new processing result is ready"""
+
+    @log
+    def __init__(self, process_queue: SignalingQueue):
+        QThread.__init__(self)
+        self._stop_asked = False
+        self._process_queue = process_queue
+        self._processes = []
+        self._processes_done_last = []
+
+    @log
+    def run(self):
+        """
+        Starts polling the process queue and perform post-processing units to each image popped from the queue
+
+        If any processing error occurs, the current image is dropped
+        """
+        while not self._stop_asked:
+
+            if self._process_queue.qsize() > 0:
+
+                image = self._process_queue.get()
+
+                # we make sure we work on the latest stack result, dropping older images if needed
+                while self._process_queue.qsize() > 0:
+                    image = self._process_queue.get()
+
+                _LOGGER.info(f"Start post-processing image : {image.origin}")
+
+                for processor in self._processes + self._processes_done_last:
+
+                    try:
+                        with Timer() as code_timer:
+                            image = processor.process_image(image)
+
+                        _LOGGER.info(
+                            f"Applied process '{processor.__class__.__name__}' to image {image.origin} : "
+                            f"in {code_timer.elapsed_in_milli_as_str} ms")
+
+                    except ProcessingError as processing_error:
+                        _LOGGER.warning(
+                            f"Error applying process '{processor.__class__.__name__}' to image {image} : "
+                            f"{processing_error} *** "
+                            f"Image will be ignored")
+                        break
+
+                _LOGGER.info(f"Done post-processing image {image.origin}")
+                STORE.process_result = image
+                self.new_processing_result_signal.emit()
+
+            self.msleep(20)
+
+    @log
+    def stop(self):
+        """
+        Sets flag that will interrupt the main loop in run()
+        """
+        self._stop_asked = True
+        self.wait()
+        _LOGGER.info("PostProcess pipeline stopped")

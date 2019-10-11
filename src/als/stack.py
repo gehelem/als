@@ -44,13 +44,11 @@ class Stacker(QThread):
     stack_size_changed_signal = pyqtSignal(int)
     """Qt signal emitted when stack size changed"""
 
-    stack_result_ready_signal = pyqtSignal()
-    """Qt signal emitted when a new stack result is ready"""
-
     @log
-    def __init__(self, stack_queue):
+    def __init__(self, stack_queue, process_queue):
         QThread.__init__(self)
         self._stack_queue: SignalingQueue = stack_queue
+        self._process_queue: SignalingQueue = process_queue
         self._counter: int = 0
         self._stop_asked: bool = False
         self._last_stacking_result: Image = None
@@ -78,9 +76,7 @@ class Stacker(QThread):
         self._last_stacking_result.origin = "Stack reference"
         self._counter += 1
         self.stack_size_changed_signal.emit(self.size)
-
-        STORE.stacking_result = self._last_stacking_result
-        self.stack_result_ready_signal.emit()
+        self._process_queue.put(self._last_stacking_result)
 
     @property
     def size(self):

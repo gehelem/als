@@ -79,29 +79,30 @@ class DataStore:
         self._web_server_is_running = False
         self._stacking_mode = ""
         self._align_before_stacking = True
-        self._stacking_result = None
+        self._process_result = None
         self._input_queue = SignalingQueue()
         self._stack_queue = SignalingQueue()
+        self._process_queue = SignalingQueue()
 
     @property
-    def stacking_result(self):
+    def process_result(self):
         """
-        Retrieves latest published stacking result
+        Retrieves latest published process result
 
-        :return: the latest published stacking result
+        :return: the latest published process result
         :rtype: Image
         """
-        return self._stacking_result
+        return self._process_result
 
-    @stacking_result.setter
-    def stacking_result(self, image):
+    @process_result.setter
+    def process_result(self, image):
         """
-        Record the latest stacking result
+        Record the latest process result
 
-        :param image: the latest stacking result
+        :param image: the latest process result
         :type: Image
         """
-        self._stacking_result = image
+        self._process_result = image
 
     @property
     def align_before_stacking(self):
@@ -143,6 +144,16 @@ class DataStore:
             self._stacking_mode = text
         else:
             self._stacking_mode = STACKING_MODE_MEAN
+
+    @property
+    def process_queue(self):
+        """
+        Retrieves the processing queue
+
+        :return: the processing queue
+        :rtype: SignalingQueue
+        """
+        return self._process_queue
 
     @property
     def stack_queue(self):
