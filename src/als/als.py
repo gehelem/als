@@ -264,14 +264,6 @@ class MainWindow(QMainWindow):
                 if self.show_session_dock:
                     self._ui.session_dock.show()
 
-    @log
-    def resizeEvent(self, event):
-        """Handles window resize events."""
-        # pylint: disable=C0103
-        pass
-        # super().resizeEvent(event)
-        # self.update_image(False)
-
     # ------------------------------------------------------------------------------
     # Callbacks
 
@@ -534,44 +526,15 @@ class MainWindow(QMainWindow):
         save_stack_result(self.image_ref_save.stack_image)
 
     @log
-    def update_image(self, add=True):
+    def update_image(self):
         """
         Update central image display.
-
-        :param add: True if a new image has been added to the stack, False otherwise
         """
         image = STORE.process_result
         image_raw_data = image.data.copy()
 
         image = array2qimage(image_raw_data, normalize=(2 ** 16 - 1))
         self._image_item.setPixmap(QPixmap.fromImage(image))
-
-        # if add:
-        #     self.counter += 1
-        #     self._ui.cnt.setText(str(self.counter))
-        #     message = _("update GUI image")
-        #     self._ui.log.append(_(message))
-        #     _LOGGER.info(message)
-        #
-        # if self.counter > 0:
-        #
-        #     # read image in RAM ( need save_type = "no"):
-        #     qimage = array2qimage(self.image_ref_save.stack_image, normalize=(2 ** 16 - 1))
-        #     pixmap = QPixmap.fromImage(qimage)
-        #
-        #     if pixmap.isNull():
-        #         self._ui.log.append(_("invalid frame"))
-        #         _LOGGER.error("Got a null pixmap from stack")
-        #         return
-        #
-        #     pixmap_resize = pixmap.scaled(self._ui.image_stack.frameGeometry().width(),
-        #                                   self._ui.image_stack.frameGeometry().height(),
-        #                                   Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        #
-        #     self._ui.image_stack.setPixmap(pixmap_resize)
-        #
-        # else:
-        #     self._ui.image_stack.setPixmap(QPixmap(":/icons/dslr-camera.svg"))
 
     @pyqtSlot(name="on_pbPlay_clicked")
     @log
