@@ -96,9 +96,9 @@ class ImageSaver(QThread):
             _LOGGER.info(message)
 
         else:
-            message = f"Failed to save image : {target_path}. "
+            message = f"Failed to save image : {target_path}"
             if failure_details.strip():
-                message += failure_details
+                message += ' : ' + failure_details
             _LOGGER.error(message)
             if save_command_dict['report_on_failure']:
                 self.save_fail_signal.emit(target_path, failure_details)
@@ -236,4 +236,7 @@ def save_image(image_data, image_save_format, target_folder, file_name_base, rep
     :type report_on_failure: bool
     """
     target_path = target_folder + "/" + file_name_base + '.' + image_save_format
-    _IMAGE_SAVE_QUEUE.put({'image': image_data, 'target_path': target_path, 'report_on_failure': report_on_failure})
+
+    _IMAGE_SAVE_QUEUE.put({'image': image_data.copy(),
+                           'target_path': target_path,
+                           'report_on_failure': report_on_failure})

@@ -252,10 +252,14 @@ class WatchOutForFileCreations(QThread):
             _LOGGER.info("Reading new frame...")
             if self.first == 0:
                 _LOGGER.info("Reading first frame...")
-                self.first_image, limit, mode = stk.create_first_ref_im(self.work_folder, new_image_path,
-                                                                        save_im=self.save_on)
+                self.first_image, limit, mode = stk.create_first_ref_im(new_image_path)
 
                 self.image_ref_save.image = self.first_image
+
+                save_image(np.moveaxis(self.image_ref_save.image, 0, 2),
+                           config.get_image_save_format(),
+                           config.get_work_folder_path(),
+                           config.STACKED_IMAGE_FILE_NAME_BASE + '-' + _get_timestamp())
 
                 self.image_ref_save.stack_image = prepro.post_process_image(self.image_ref_save.image,
                                                                             mode=mode, scnr_on=self.scnr_on.isChecked(),
@@ -311,11 +315,10 @@ class WatchOutForFileCreations(QThread):
                     _LOGGER.info("Stack New frame...")
 
                 try:
-                    self.image_ref_save.image, limit, mode = stk.stack_live(self.work_folder, new_image_path,
+                    self.image_ref_save.image, limit, mode = stk.stack_live(new_image_path,
                                                                             self.counter,
                                                                             ref=self.image_ref_save.image,
                                                                             first_ref=self.first_image,
-                                                                            save_im=self.save_on,
                                                                             align=self.align_on,
                                                                             stack_methode=self.stack_method)
                 except MaxIterError:
@@ -323,6 +326,11 @@ class WatchOutForFileCreations(QThread):
                                 f"Image is ignored")
                     _LOGGER.warning(message)
                     return
+
+                save_image(np.moveaxis(self.image_ref_save.image, 0, 2),
+                           config.get_image_save_format(),
+                           config.get_work_folder_path(),
+                           config.STACKED_IMAGE_FILE_NAME_BASE + '-' + _get_timestamp())
 
                 self.image_ref_save.stack_image = prepro.post_process_image(self.image_ref_save.image,
                                                                             mode=mode, scnr_on=self.scnr_on.isChecked(),
@@ -516,14 +524,17 @@ class MainWindow(QMainWindow):
     @pyqtSlot(name="on_pbSave_clicked")
     @log
     def cb_save(self):
-        """Qt slot for louse clicks on the 'save' button."""
+        """
+        Qt slot for louse clicks on the 'save' button.
 
-        timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now()))).replace(' ', "-").replace(":", '-')
+        This saves the processed image using user chosen format
 
-        save_image(self.image_ref_save.image,
-                   config.IMAGE_SAVE_FIT,
-                   config.get_work_folder_path(),
-                   config.STACKED_IMAGE_FILE_NAME_BASE + '-' + timestamp)
+        """
+        if self.image_ref_save.image is not None:
+            save_image(self.image_ref_save.image,
+                       config.get_image_save_format(),
+                       config.get_work_folder_path(),
+                       config.STACKED_IMAGE_FILE_NAME_BASE + '-' + _get_timestamp())
 
     @pyqtSlot(name="on_pb_apply_value_clicked")
     @log
@@ -937,6 +948,11 @@ class MainWindow(QMainWindow):
             test_socket.close()
         return ip_address
 
+
+def _get_timestamp():
+    timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now())))
+    timestamp = timestamp.replace(' ', "-").replace(":", '-').replace('.', '-')
+    return timestamp
 
 @log
 def save_stack_result(image):

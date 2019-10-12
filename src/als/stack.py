@@ -99,13 +99,11 @@ def get_limit_and_utype(image):
 
 
 @log
-def create_first_ref_im(work_path, im_path, save_im=False):
+def create_first_ref_im(im_path):
     """
     function for process first image (need remove and add option or read counter)
 
-    :param work_path: string, path of work folder
     :param im_path: string, path of process image
-    :param save_im: bool, option for save image in fit
     :return: image: np.array 3xMxN or MxN
              im_limit: int, bit limit (255 or 65535)
              im_mode: string, mode : "rgb" or "gray"
@@ -152,28 +150,19 @@ def create_first_ref_im(work_path, im_path, save_im=False):
     image = new
     del new
 
-    if save_im:
-        # save stack image in fit
-        red = fits.PrimaryHDU(data=image)
-        red.writeto(work_path + "/" + "stack_image_" + name + extension)
-        # delete image in memory
-        del red
-
     return image, im_limit, im_mode
 
 
 @log
-def stack_live(work_path, im_path, counter, ref=[], first_ref=[], save_im=False, align=True,
+def stack_live(im_path, counter, ref=[], first_ref=[], align=True,
                stack_methode="Sum"):
     """
     function for process image, align and stack
 
-    :param work_path: string, path of work folder
     :param im_path: string, path of process image
     :param ref: np.array, stack image (no for first image)
     :param first_ref: np.array, first image process, ref for alignement (no for first image)
     :param counter: int, number of image stacked
-    :param save_im: bool, option for save image in fit
     :param align: bool, option for align image or not
     :param stack_methode: string, stack methode ("sum" or "mean")
     :return: image: np.array 3xMxN or MxN
@@ -287,13 +276,5 @@ def stack_live(work_path, im_path, counter, ref=[], first_ref=[], save_im=False,
         raise ValueError("Mode not support")
 
     image = np.array(stack_image)
-    # _____________________________
-
-    if save_im:
-        # save stack image in fit
-        red = fits.PrimaryHDU(data=image)
-        red.writeto(work_path + "/" + "stack_image_" + name + extension)
-        # delete image in memory
-        del red
 
     return image, im_limit, im_mode
