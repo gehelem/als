@@ -621,7 +621,7 @@ class MainWindow(QMainWindow):
             _LOGGER.info(message)
 
         if self.counter > 0:
-            qimage = array2qimage(cv2.cvtColor(self.image_ref_save.stack_image, cv2.COLOR_BGR2RGB), normalize=(2 ** 16 - 1))
+            qimage = array2qimage(self.image_ref_save.stack_image, normalize=(2 ** 16 - 1))
             pixmap = QPixmap.fromImage(qimage)
 
             if pixmap.isNull():

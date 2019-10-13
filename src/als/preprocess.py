@@ -185,8 +185,6 @@ def post_process_image(stack_image, mode="rgb", scnr_on=False,
         _LOGGER.info(_("Save New Image in RGB..."))
         # convert classic classic order to cv2 order
         new_stack_image = np.rollaxis(stack_image, 0, 3)
-        # convert RGB color order to BGR
-        new_stack_image = cv2.cvtColor(new_stack_image, cv2.COLOR_RGB2BGR)
     elif mode == "gray":
         _LOGGER.info(_("Save New Image in B&W..."))
         new_stack_image = stack_image

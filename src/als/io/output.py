@@ -75,6 +75,16 @@ class ImageSaver(QThread):
         target_path = save_command_dict['target_path']
         image = _set_color_axis_as(2, save_command_dict['image'])
 
+        im_type = image.dtype.name
+        # filter excess value > limit
+        if im_type == 'uint8':
+            image = numpy.uint8(numpy.where(image < 2 ** 8 - 1, image, 2 ** 8 - 1))
+        elif im_type == 'uint16':
+            image = numpy.uint16(numpy.where(image < 2 ** 16 - 1, image, 2 ** 16 - 1))
+
+        if image.ndim > 2:
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+
         if target_path.endswith('.' + config.IMAGE_SAVE_TIFF):
             save_is_successful, failure_details = ImageSaver._save_image_as_tiff(image, target_path)
 
