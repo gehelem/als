@@ -357,7 +357,7 @@ class MainWindow(QMainWindow):
         """Qt slot for clicks on the 'apply' button"""
         if self.counter > 0:
             self.adjust_value()
-            self.update_image(False)
+            self.update_image()
         _LOGGER.info("Define new display value")
 
     @pyqtSlot(name="on_action_quit_triggered")
