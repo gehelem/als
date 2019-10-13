@@ -7,8 +7,8 @@ import logging
 from queue import Queue
 
 import cv2
+import numpy
 from PyQt5.QtCore import QThread, pyqtSignal
-from astropy.io import fits
 
 from als import config
 from als.code_utilities import log
@@ -73,7 +73,7 @@ class ImageSaver(QThread):
         """
 
         target_path = save_command_dict['target_path']
-        image = save_command_dict['image']
+        image = _set_color_axis_as(2, save_command_dict['image'])
 
         if target_path.endswith('.' + config.IMAGE_SAVE_TIFF):
             save_is_successful, failure_details = ImageSaver._save_image_as_tiff(image, target_path)
@@ -83,9 +83,6 @@ class ImageSaver(QThread):
 
         elif target_path.endswith('.' + config.IMAGE_SAVE_JPEG):
             save_is_successful, failure_details = ImageSaver._save_image_as_jpg(image, target_path)
-
-        elif target_path.endswith('.' + config.IMAGE_SAVE_FIT):
-            save_is_successful, failure_details = ImageSaver._save_image_as_fit(image, target_path)
 
         else:
             # Unsupported format in config file. Should never happen
@@ -123,7 +120,6 @@ class ImageSaver(QThread):
         As we are using cv2.imwrite, we won't get any details on failures. So failure details will always
         be the empty string.
         """
-
         return cv2.imwrite(target_path, image), ""
 
     @staticmethod
@@ -146,7 +142,6 @@ class ImageSaver(QThread):
         As we are using cv2.imwrite, we won't get any details on failures. So failure details will always
         be the empty string.
         """
-
         return cv2.imwrite(target_path,
                            image,
                            [cv2.IMWRITE_PNG_COMPRESSION, 9]), ""
@@ -171,46 +166,17 @@ class ImageSaver(QThread):
         As we are using cv2.imwrite, we won't get any details on failures. So failure details will always
         be the empty string.
         """
-
-        image_to_save = image
-        if image_to_save.dtype == "uint16":
+        if image.dtype == "uint16":
             bit_depth = 16
         else:
             bit_depth = 8
 
         if bit_depth > 8:
-            image_to_save = (image_to_save / (((2 ** bit_depth) - 1) / ((2 ** 8) - 1))).astype('uint8')
+            image = (image / (((2 ** bit_depth) - 1) / ((2 ** 8) - 1))).astype('uint8')
 
         return cv2.imwrite(target_path,
-                           image_to_save,
+                           image,
                            [int(cv2.IMWRITE_JPEG_QUALITY), 90]), ''
-
-    @staticmethod
-    @log
-    def _save_image_as_fit(image, target_path):
-        """
-        Saves image as fit.
-
-        :param image: the image to save
-        :type image: numpy.Array
-
-        :param target_path: the absolute path of the image file to save to
-        :type target_path: str
-
-        :return: a tuple with 2 values :
-
-          - True if save succeeded, False otherwise
-          - Details on cause of save failure, if occurs
-        """
-
-        hdu = fits.PrimaryHDU(data=image)
-
-        try:
-            hdu.writeto(target_path)
-            return True, ''
-
-        except OSError as os_error:
-            return False, str(os_error)
 
 
 @log
@@ -240,3 +206,22 @@ def save_image(image_data, image_save_format, target_folder, file_name_base, rep
     _IMAGE_SAVE_QUEUE.put({'image': image_data.copy(),
                            'target_path': target_path,
                            'report_on_failure': report_on_failure})
+
+
+def _set_color_axis_as(wanted_axis, image_data):
+
+    if image_data.ndim < 3:
+        return image_data
+
+    else:
+        # find what axis are the colors on.
+        # axis 0-based index is the index of the smallest data.shape item
+        shape = image_data.shape
+        color_axis = shape.index(min(shape))
+
+        _LOGGER.debug(f"data color axis = {color_axis}. Wanted color axis = {wanted_axis}")
+
+        if color_axis != wanted_axis:
+            return numpy.moveaxis(image_data, color_axis, wanted_axis)
+
+        return image_data

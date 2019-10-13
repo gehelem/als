@@ -256,10 +256,11 @@ class WatchOutForFileCreations(QThread):
 
                 self.image_ref_save.image = self.first_image
 
-                save_image(np.moveaxis(self.image_ref_save.image, 0, 2),
-                           config.get_image_save_format(),
-                           config.get_work_folder_path(),
-                           config.STACKED_IMAGE_FILE_NAME_BASE + '-' + _get_timestamp())
+                if self.save_on:
+                    save_image(self.image_ref_save.image,
+                               config.get_image_save_format(),
+                               config.get_work_folder_path(),
+                               config.STACKED_IMAGE_FILE_NAME_BASE + '-' + _get_timestamp())
 
                 self.image_ref_save.stack_image = prepro.post_process_image(self.image_ref_save.image,
                                                                             mode=mode, scnr_on=self.scnr_on.isChecked(),
@@ -327,10 +328,11 @@ class WatchOutForFileCreations(QThread):
                     _LOGGER.warning(message)
                     return
 
-                save_image(np.moveaxis(self.image_ref_save.image, 0, 2),
-                           config.get_image_save_format(),
-                           config.get_work_folder_path(),
-                           config.STACKED_IMAGE_FILE_NAME_BASE + '-' + _get_timestamp())
+                if self.save_on:
+                    save_image(self.image_ref_save.image,
+                               config.get_image_save_format(),
+                               config.get_work_folder_path(),
+                               config.STACKED_IMAGE_FILE_NAME_BASE + '-' + _get_timestamp())
 
                 self.image_ref_save.stack_image = prepro.post_process_image(self.image_ref_save.image,
                                                                             mode=mode, scnr_on=self.scnr_on.isChecked(),
