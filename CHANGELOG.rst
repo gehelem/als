@@ -14,6 +14,7 @@ Version 0.6 (Work in progress)
   - Image server port is configurable
   - Image server page is auto-refreshed
   - Remember window size and position
+  - Configurable image save file type
   - Log window and session controls can be hidden
 
 - Bug Fixes
