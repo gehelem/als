@@ -310,7 +310,7 @@ class SignalLogHandler(logging.Handler, QObject):
     def __init__(self):
         logging.Handler.__init__(self)
         QObject.__init__(self)
-        self.setFormatter(logging.Formatter('%(levelname)-8s : %(message)s'))
+        self.setFormatter(logging.Formatter('%(asctime)-15s %(levelname)-8s%(message)s'))
 
     def emit(self, record):
         self.message_signal.emit(self.format(record))
