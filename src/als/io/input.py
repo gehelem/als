@@ -7,18 +7,18 @@ import logging
 import time
 from abc import abstractmethod
 from pathlib import Path
-from queue import Queue
 
-import rawpy
-from rawpy._rawpy import LibRawNonFatalError, LibRawFatalError
-from PyQt5.QtCore import QFileInfo
 from astropy.io import fits
+from PyQt5.QtCore import QFileInfo
+from rawpy import imread
+from rawpy._rawpy import LibRawNonFatalError, LibRawFatalError
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers.polling import PollingObserver
 
 from als import config
 from als.code_utilities import log
 from als.model import Image, SignalingQueue
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -87,7 +87,7 @@ class InputScanner:
         Factory for image scanners.
 
         :param input_queue: the input queue the created scanner will push to
-        :type input_queue: Queue
+        :type input_queue: SignalingQueue
 
         :param scanner_type: the type of scanner to create. Accepted values are :
 
@@ -250,7 +250,7 @@ def _read_raw_image(path: Path):
     """
 
     try:
-        with rawpy.imread(str(path.resolve())) as raw_image:
+        with imread(str(path.resolve())) as raw_image:
 
             # in here, we make sure we store the bayer pattern as it would be advertised if image was a FITS image.
             #

@@ -83,6 +83,17 @@ class DataStore:
         self._input_queue = SignalingQueue()
         self._stack_queue = SignalingQueue()
         self._process_queue = SignalingQueue()
+        self._save_queue = SignalingQueue()
+
+    @property
+    def save_queue(self):
+        """
+        Retrieves save queue
+
+        :return: the save queue
+        :rtype: SignalingQueue
+        """
+        return self._save_queue
 
     @property
     def process_result(self):
@@ -328,7 +339,7 @@ class Image:
         new = Image(self.data.copy())
         new.bayer_pattern = self.bayer_pattern
         new.origin = self.origin
-        new._destination = self._destination
+        new.destination = self.destination
         return new
 
     @property
@@ -473,6 +484,13 @@ class Image:
         return self._data.shape == other.data.shape
 
     def set_color_axis_as(self, wanted_axis):
+        """
+        Reorganise internal data array so color information is on a specified axis
+
+        :param wanted_axis: The 0-based number of axis we want color info to be
+
+        Image data is modified in place
+        """
 
         if self._data.ndim > 2:
 

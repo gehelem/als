@@ -36,8 +36,8 @@ from qimage2ndarray import array2qimage
 from als import preprocess as prepro, config, model
 from als.code_utilities import log, Timer
 from als.io.input import ScannerStartError, InputScanner
-from als.io.output import ImageSaver, save_image
-from als.model import VERSION, STORE, STACKING_MODE_SUM, STACKING_MODE_MEAN
+from als.io.output import ImageSaver
+from als.model import VERSION, STORE, STACKING_MODE_SUM, STACKING_MODE_MEAN, Image
 from als.processing import PreProcessPipeline, PostProcessPipeline
 from als.stack import Stacker
 from als.ui import dialogs
@@ -168,7 +168,7 @@ class MainWindow(QMainWindow):
         model.STORE.web_server_is_running = False
         model.STORE.add_observer(self)
 
-        self._image_saver = ImageSaver()
+        self._image_saver = ImageSaver(STORE.save_queue)
         self._image_saver.start()
 
         self._input_scanner = InputScanner.create_scanner(STORE.input_queue)
@@ -203,6 +203,9 @@ class MainWindow(QMainWindow):
 
     @log
     def reset_image_view(self):
+        """
+        Reset image viewer to its inital state
+        """
         for item in self._scene.items():
             self._scene.removeItem(item)
         self._image_item = QGraphicsPixmapItem(QPixmap(":/icons/dslr-camera.svg"))
@@ -382,7 +385,7 @@ class MainWindow(QMainWindow):
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.info(f"New image added to the input queue. Input queue size : {new_size}")
+        _LOGGER.debug(f"New image added to the input queue. Input queue size : {new_size}")
         self._ui.lbl_input_queue_size.setText(str(new_size))
 
     @log
@@ -393,7 +396,7 @@ class MainWindow(QMainWindow):
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.info(f"Image taken from input queue. Input queue size : {new_size}")
+        _LOGGER.debug(f"Image taken from input queue. Input queue size : {new_size}")
         self._ui.lbl_input_queue_size.setText(str(new_size))
 
     @log
@@ -404,7 +407,7 @@ class MainWindow(QMainWindow):
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.info(f"New image added to the stack queue. Stack queue size : {new_size}")
+        _LOGGER.debug(f"New image added to the stack queue. Stack queue size : {new_size}")
         self._ui.lbl_stack_queue_size.setText(str(new_size))
 
     @log
@@ -415,7 +418,7 @@ class MainWindow(QMainWindow):
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.info(f"Image taken from stack queue. Stack queue size : {new_size}")
+        _LOGGER.debug(f"Image taken from stack queue. Stack queue size : {new_size}")
         self._ui.lbl_stack_queue_size.setText(str(new_size))
 
     @log
@@ -426,7 +429,7 @@ class MainWindow(QMainWindow):
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.info(f"New image added to the process queue. Process queue size : {new_size}")
+        _LOGGER.debug(f"New image added to the process queue. Process queue size : {new_size}")
         self._ui.lbl_process_queue_size.setText(str(new_size))
 
     @log
@@ -437,7 +440,7 @@ class MainWindow(QMainWindow):
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.info(f"Image taken from process queue. Process queue size : {new_size}")
+        _LOGGER.debug(f"Image taken from process queue. Process queue size : {new_size}")
         self._ui.lbl_process_queue_size.setText(str(new_size))
 
     @log
@@ -825,6 +828,7 @@ def _get_timestamp():
     timestamp = timestamp.replace(' ', "-").replace(":", '-').replace('.', '-')
     return timestamp
 
+
 @log
 def save_stack_result():
     """
@@ -844,6 +848,23 @@ def save_stack_result():
                    config.IMAGE_SAVE_JPEG,
                    config.get_work_folder_path(),
                    config.WEB_SERVED_IMAGE_FILE_NAME_BASE)
+
+
+@log
+def save_image(image: Image, file_extension: str, dest_folder_path: str, filename_base):
+    """
+    Save an image to disk
+    :param image: the image to save
+    :type image: Image
+    :param file_extension: The image save file format extension
+    :type file_extension: str
+    :param dest_folder_path: The path of the folder image will be saved to
+    :type dest_folder_path: str
+    :param filename_base: The name of the file to save to (without extension)
+    :type filename_base: str
+    """
+    image.destination = dest_folder_path + "/" + filename_base + '.' + file_extension
+    STORE.save_queue.put(image)
 
 
 def main():

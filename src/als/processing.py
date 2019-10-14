@@ -231,7 +231,7 @@ class PostProcessPipeline(QThread):
                             f"Image will be ignored")
                         break
 
-                _LOGGER.info(f"Done post-processing image {image.origin}")
+                _LOGGER.info(f"Done post-processing image : {image.origin}")
 
                 image.origin = "Post Processing Result"
                 STORE.process_result = image
