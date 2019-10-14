@@ -23,12 +23,9 @@ import logging
 import cv2
 import dtcwt
 import numpy as np
-from PyQt5.QtCore import QThread
 from pywi.processing.transform import starlet
-# Local stuff
-from als import stack as stk
+
 from als.code_utilities import log
-from pywi.processing.transform import starlet
 
 
 _LOGGER = logging.getLogger(__name__)

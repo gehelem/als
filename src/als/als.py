@@ -28,29 +28,22 @@ import threading
 from datetime import datetime
 from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 
-import numpy as np
-import cv2
 from PyQt5.QtCore import Qt, pyqtSlot, QEvent
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMainWindow, QApplication, QGraphicsScene, QGraphicsPixmapItem
-from astroalign import MaxIterError
-from astropy.io import fits
 from qimage2ndarray import array2qimage
-from watchdog.events import FileSystemEventHandler
-from watchdog.observers import Observer
 
-from als.code_utilities import log, Timer
-from als.io.output import ImageSaver, save_image
 from als import preprocess as prepro, config, model
-from als.processing import PreProcessPipeline
+from als.code_utilities import log, Timer
 from als.io.input import ScannerStartError, InputScanner
+from als.io.output import ImageSaver, save_image
 from als.model import VERSION, STORE, STACKING_MODE_SUM, STACKING_MODE_MEAN
 from als.processing import PreProcessPipeline, PostProcessPipeline
 from als.stack import Stacker
 from als.ui import dialogs
 from als.ui.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
 from generated.als_ui import Ui_stack_window
-from qimage2ndarray import array2qimage
+
 
 DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS = 100
 LOG_DOCK_INITIAL_HEIGHT = 60

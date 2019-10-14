@@ -220,10 +220,10 @@ def save_image(image_data, image_save_format, target_folder, file_name_base, rep
 
 def _set_color_axis_as(wanted_axis, image_data):
 
-    if image_data.ndim < 3:
-        return image_data
+    return_data = image_data
 
-    else:
+    if image_data.ndim > 2:
+
         # find what axis are the colors on.
         # axis 0-based index is the index of the smallest data.shape item
         shape = image_data.shape
@@ -232,6 +232,6 @@ def _set_color_axis_as(wanted_axis, image_data):
         _LOGGER.debug(f"data color axis = {color_axis}. Wanted color axis = {wanted_axis}")
 
         if color_axis != wanted_axis:
-            return numpy.moveaxis(image_data, color_axis, wanted_axis)
+            return_data = numpy.moveaxis(image_data, color_axis, wanted_axis)
 
-        return image_data
+    return return_data

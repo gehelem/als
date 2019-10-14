@@ -20,7 +20,6 @@ import logging
 import os
 import sys
 from configparser import ConfigParser, DuplicateOptionError, ParsingError
-from logging import Handler, Formatter
 
 from PyQt5.QtCore import pyqtSignal, QObject
 from als.ui import dialogs
@@ -301,7 +300,7 @@ def setup():
     _get_logger().debug("User config file dump - END")
 
 
-class SignalLogHandler(Handler, QObject):
+class SignalLogHandler(logging.Handler, QObject):
     """
     Logging handler responsible of sending log messages as a QT signal.
 
@@ -310,9 +309,9 @@ class SignalLogHandler(Handler, QObject):
     message_signal = pyqtSignal(str)
 
     def __init__(self):
-        Handler.__init__(self)
+        logging.Handler.__init__(self)
         QObject.__init__(self)
-        self.setFormatter(Formatter('%(levelname)-8s : %(message)s'))
+        self.setFormatter(logging.Formatter('%(levelname)-8s : %(message)s'))
 
     def emit(self, record):
         self.message_signal.emit(self.format(record))
