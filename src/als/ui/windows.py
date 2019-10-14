@@ -33,26 +33,23 @@ class MainWindow(QMainWindow):
 
     @log
     def __init__(self, controller: Controller, parent=None):
+
         super().__init__(parent)
         self._controller = controller
+
         self._ui = Ui_stack_window()
         self._ui.setupUi(self)
-
+        self.setWindowTitle(_("Astro Live Stacker") + f" - v{VERSION}")
         self._ui.cb_stacking_mode.addItem(STACKING_MODE_SUM)
         self._ui.cb_stacking_mode.addItem(STACKING_MODE_MEAN)
         self._ui.cb_stacking_mode.setCurrentIndex(0)
+        self._ui.postprocess_widget.setCurrentIndex(0)
 
         # store if docks must be shown or not
         self.shown_log_dock = True
         self.show_session_dock = True
 
-        self.running = False
         self.counter = 0
-        self.align = False
-        self.pause = False
-        self._ui.postprocess_widget.setCurrentIndex(0)
-
-        self.setWindowTitle(_("Astro Live Stacker") + f" - v{VERSION}")
 
         # web stuff
         self.thread = None
@@ -488,15 +485,12 @@ class MainWindow(QMainWindow):
         self.counter = 0
         self._ui.cnt.setText(str(self.counter))
 
-        # check align
-        if self._ui.chk_align.isChecked():
-            self.align = True
-
-        # Print live method
-        if self.align:
-            _LOGGER.info(f"Play with alignement type: {self._ui.cb_stacking_mode.currentText()}")
+        running_mode = f"{STORE.stacking_mode}"
+        if STORE.align_before_stacking:
+            running_mode += " with alignment"
         else:
-            _LOGGER.info("Play with NO alignement")
+            running_mode += " without alignment"
+        _LOGGER.info(f"Starting session in mode : {running_mode}")
 
         try:
             self._controller.setup_work_folder()
