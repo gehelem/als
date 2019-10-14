@@ -7,11 +7,11 @@ import logging
 from queue import Queue
 
 import cv2
-import numpy
 from PyQt5.QtCore import QThread, pyqtSignal
 
 from als import config
 from als.code_utilities import log
+from als.model import Image
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -102,12 +102,12 @@ class ImageSaver(QThread):
 
     @staticmethod
     @log
-    def _save_image_as_tiff(image, target_path):
+    def _save_image_as_tiff(image: Image, target_path: str):
         """
         Saves image as tiff.
 
         :param image: the image to save
-        :type image: numpy.Array
+        :type image: Image
 
         :param target_path: the absolute path of the image file to save to
         :type target_path: str
@@ -124,12 +124,12 @@ class ImageSaver(QThread):
 
     @staticmethod
     @log
-    def _save_image_as_png(image, target_path):
+    def _save_image_as_png(image: Image, target_path: str):
         """
         Saves image as png.
 
         :param image: the image to save
-        :type image: numpy.Array
+        :type image: Image
 
         :param target_path: the absolute path of the image file to save to
         :type target_path: str
@@ -148,7 +148,7 @@ class ImageSaver(QThread):
 
     @staticmethod
     @log
-    def _save_image_as_jpg(image, target_path):
+    def _save_image_as_jpg(image: Image, target_path: str):
         """
         Saves image as jpg.
 
@@ -166,13 +166,8 @@ class ImageSaver(QThread):
         As we are using cv2.imwrite, we won't get any details on failures. So failure details will always
         be the empty string.
         """
-        if image.data.dtype == "uint16":
-            bit_depth = 16
-        else:
-            bit_depth = 8
-
-        if bit_depth > 8:
-            image.data = (image.data / (((2 ** bit_depth) - 1) / ((2 ** 8) - 1))).astype('uint8')
+        # here we are sure that image data type us unsinged 16 bits. We need to downscale to 8 bits
+        image.data = (image.data / (((2 ** 16) - 1) / ((2 ** 8) - 1))).astype('uint8')
 
         return cv2.imwrite(target_path,
                            cv2.cvtColor(image.data, cv2.COLOR_RGB2BGR),
@@ -180,7 +175,7 @@ class ImageSaver(QThread):
 
 
 @log
-def save_image(image, image_save_format, target_folder, file_name_base, report_on_failure=False):
+def save_image(image: Image, image_save_format: str, target_folder: str, file_name_base: str, report_on_failure: bool = False):
     """
     Saves an image to disk.
 
