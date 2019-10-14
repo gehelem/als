@@ -82,7 +82,7 @@ class InputScanner:
         """
 
     @staticmethod
-    def create_scanner(input_queue: Queue, scanner_type: str = SCANNER_TYPE_FILESYSTEM):
+    def create_scanner(input_queue: SignalingQueue, scanner_type: str = SCANNER_TYPE_FILESYSTEM):
         """
         Factory for image scanners.
 
