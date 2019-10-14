@@ -75,8 +75,6 @@ class ImageSaver(QThread):
         image = save_command_dict['image']
         target_path = image.destination
 
-        image.data = cv2.cvtColor(image.data, cv2.COLOR_RGB2BGR)
-
         if target_path.endswith('.' + config.IMAGE_SAVE_TIFF):
             save_is_successful, failure_details = ImageSaver._save_image_as_tiff(image, target_path)
 
@@ -122,7 +120,7 @@ class ImageSaver(QThread):
         As we are using cv2.imwrite, we won't get any details on failures. So failure details will always
         be the empty string.
         """
-        return cv2.imwrite(target_path, image.data), ""
+        return cv2.imwrite(target_path, cv2.cvtColor(image.data, cv2.COLOR_RGB2BGR)), ""
 
     @staticmethod
     @log
@@ -145,7 +143,7 @@ class ImageSaver(QThread):
         be the empty string.
         """
         return cv2.imwrite(target_path,
-                           image.data,
+                           cv2.cvtColor(image.data, cv2.COLOR_RGB2BGR),
                            [cv2.IMWRITE_PNG_COMPRESSION, 9]), ""
 
     @staticmethod
@@ -177,7 +175,7 @@ class ImageSaver(QThread):
             image.data = (image.data / (((2 ** bit_depth) - 1) / ((2 ** 8) - 1))).astype('uint8')
 
         return cv2.imwrite(target_path,
-                           image.data,
+                           cv2.cvtColor(image.data, cv2.COLOR_RGB2BGR),
                            [int(cv2.IMWRITE_JPEG_QUALITY), 90]), ''
 
 

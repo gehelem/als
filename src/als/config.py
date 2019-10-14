@@ -45,7 +45,6 @@ _LOG_LEVEL_CRITICAL = "CRITICAL"
 IMAGE_SAVE_TIFF = "tiff"
 IMAGE_SAVE_PNG = "png"
 IMAGE_SAVE_JPEG = "jpg"
-IMAGE_SAVE_FIT = "fit"
 
 # store of matches between human readable log levels and logging module constants
 _LOG_LEVELS = {
