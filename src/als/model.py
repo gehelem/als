@@ -316,6 +316,7 @@ class Image:
         self._data = data
         self._bayer_pattern: str = None
         self._origin: str = "UNDEFINED"
+        self._destination: str = "UNDEFINED"
 
     def clone(self):
         """
@@ -327,7 +328,28 @@ class Image:
         new = Image(self.data.copy())
         new.bayer_pattern = self.bayer_pattern
         new.origin = self.origin
+        new._destination = self._destination
         return new
+
+    @property
+    def destination(self):
+        """
+        Retrieves image destination
+
+        :return: the destination
+        :rtype: str
+        """
+        return self._destination
+
+    @destination.setter
+    def destination(self, destination):
+        """
+        Sets image destination
+
+        :param destination: the image destination
+        :type destination: str
+        """
+        self._destination = destination
 
     @property
     def data(self):
@@ -450,6 +472,18 @@ class Image:
         """
         return self._data.shape == other.data.shape
 
+    def set_color_axis_as(self, wanted_axis):
+
+        if self._data.ndim > 2:
+
+            # find what axis are the colors on.
+            # axis 0-based index is the index of the smallest data.shape item
+            shape = self._data.shape
+            color_axis = shape.index(min(shape))
+
+            if color_axis != wanted_axis:
+                self._data = np.moveaxis(self._data, color_axis, wanted_axis)
+
     def __repr__(self):
         representation = (f'{self.__class__.__name__}('
                           f'Color={self.is_color()}, '
@@ -459,7 +493,8 @@ class Image:
                           f'Height={self.height}, '
                           f'Data shape={self._data.shape}, '
                           f'Data type={self._data.dtype.name}, '
-                          f'Origin={self.origin}, ')
+                          f'Origin={self.origin}, '
+                          f'Destination={self.destination}')
 
         if self.is_color():
             representation += f"Mean R: {int(np.mean(self._data[0]))}, "

@@ -102,14 +102,15 @@ class Debayer(ImageProcessor):
 
 class ConvertForOutput(ImageProcessor):
     """
-    Move colors data to 3rd array axis for color images
+    Moves colors data to 3rd array axis for color images and reduce data range to unsigned 16 bits
     """
-
     @log
     def process_image(self, image: Image):
 
         if image.is_color():
-            image.data = np.moveaxis(image.data, 0, 2)
+            image.set_color_axis_as(2)
+
+        image.data = np.uint16(np.where(image.data < 2 ** 16 - 1, image.data, 2 ** 16 - 1))
 
         return image
 

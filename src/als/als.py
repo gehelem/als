@@ -338,8 +338,9 @@ class MainWindow(QMainWindow):
         This saves the processed image using user chosen format
 
         """
-        if self.image_ref_save.image is not None:
-            save_image(self.image_ref_save.image,
+        image_to_save = STORE.process_result
+        if image_to_save is not None:
+            save_image(image_to_save,
                        config.get_image_save_format(),
                        config.get_work_folder_path(),
                        config.STACKED_IMAGE_FILE_NAME_BASE + '-' + _get_timestamp())
@@ -477,6 +478,7 @@ class MainWindow(QMainWindow):
         Qt slot executed when a new stacking result is available
         """
         self.update_image()
+        save_stack_result()
 
     @log
     def adjust_value(self):
@@ -631,7 +633,7 @@ class MainWindow(QMainWindow):
         self._ui.statusBar.showMessage('   -   '.join(messages))
 
         # update preferences accessibility according to scanner and webserver status
-        self._ui.action_prefs.setEnabled(not STORE.web_server_is_running and not STORE.scan_in_progress)
+        self._ui.action_prefs.setEnabled(not STORE.web_server_is_running and not STORE.session_is_started)
 
         # handle Start / Pause / Stop buttons
         self._ui.pbPlay.setEnabled(STORE.session_is_stopped or STORE.session_is_paused)
@@ -829,15 +831,14 @@ def _get_timestamp():
     return timestamp
 
 @log
-def save_stack_result(image):
+def save_stack_result():
     """
     Saves stacking result image to disk
-
-    :param image: the image to save
-    :type image: numpy.Array
     """
 
     # we save the image no matter what, then save a jpg for the webserver if it is running
+    image = STORE.process_result
+
     save_image(image,
                config.get_image_save_format(),
                config.get_work_folder_path(),

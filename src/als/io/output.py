@@ -68,22 +68,14 @@ class ImageSaver(QThread):
         :param save_command_dict: all infos needed to save an image
         :type save_command_dict: a dict, with 2 keys :
 
-          - 'image' (numpy.Array) : the image data
-          - 'target_path' (str)   : the absolute path of the file to save to
+          - 'image' (Image) : the image data
+          - 'treport_on_failure' (bool)   : Do we report save failures ?
         """
 
-        target_path = save_command_dict['target_path']
-        image = _set_color_axis_as(2, save_command_dict['image'])
+        image = save_command_dict['image']
+        target_path = image.destination
 
-        im_type = image.dtype.name
-        # filter excess value > limit
-        if im_type == 'uint8':
-            image = numpy.uint8(numpy.where(image < 2 ** 8 - 1, image, 2 ** 8 - 1))
-        elif im_type == 'uint16':
-            image = numpy.uint16(numpy.where(image < 2 ** 16 - 1, image, 2 ** 16 - 1))
-
-        if image.ndim > 2:
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        image.data = cv2.cvtColor(image.data, cv2.COLOR_RGB2BGR)
 
         if target_path.endswith('.' + config.IMAGE_SAVE_TIFF):
             save_is_successful, failure_details = ImageSaver._save_image_as_tiff(image, target_path)
@@ -130,7 +122,7 @@ class ImageSaver(QThread):
         As we are using cv2.imwrite, we won't get any details on failures. So failure details will always
         be the empty string.
         """
-        return cv2.imwrite(target_path, image), ""
+        return cv2.imwrite(target_path, image.data), ""
 
     @staticmethod
     @log
@@ -153,7 +145,7 @@ class ImageSaver(QThread):
         be the empty string.
         """
         return cv2.imwrite(target_path,
-                           image,
+                           image.data,
                            [cv2.IMWRITE_PNG_COMPRESSION, 9]), ""
 
     @staticmethod
@@ -163,7 +155,7 @@ class ImageSaver(QThread):
         Saves image as jpg.
 
         :param image: the image to save
-        :type image: numpy.Array
+        :type image: Image
 
         :param target_path: the absolute path of the image file to save to
         :type target_path: str
@@ -176,28 +168,28 @@ class ImageSaver(QThread):
         As we are using cv2.imwrite, we won't get any details on failures. So failure details will always
         be the empty string.
         """
-        if image.dtype == "uint16":
+        if image.data.dtype == "uint16":
             bit_depth = 16
         else:
             bit_depth = 8
 
         if bit_depth > 8:
-            image = (image / (((2 ** bit_depth) - 1) / ((2 ** 8) - 1))).astype('uint8')
+            image.data = (image.data / (((2 ** bit_depth) - 1) / ((2 ** 8) - 1))).astype('uint8')
 
         return cv2.imwrite(target_path,
-                           image,
+                           image.data,
                            [int(cv2.IMWRITE_JPEG_QUALITY), 90]), ''
 
 
 @log
-def save_image(image_data, image_save_format, target_folder, file_name_base, report_on_failure=False):
+def save_image(image, image_save_format, target_folder, file_name_base, report_on_failure=False):
     """
     Saves an image to disk.
 
     Image is pushed to a queue polled by a worker thread
 
-    :param image_data: the image data
-    :type image_data: numpy.Array
+    :param image: the image to save
+    :type image: Image
 
     :param image_save_format: image file format specifier
     :type image_save_format: str
@@ -211,27 +203,7 @@ def save_image(image_data, image_save_format, target_folder, file_name_base, rep
     :param report_on_failure: ask worker thread to report save failure
     :type report_on_failure: bool
     """
-    target_path = target_folder + "/" + file_name_base + '.' + image_save_format
+    image.destination = target_folder + "/" + file_name_base + '.' + image_save_format
 
-    _IMAGE_SAVE_QUEUE.put({'image': image_data.copy(),
-                           'target_path': target_path,
+    _IMAGE_SAVE_QUEUE.put({'image': image.clone(),
                            'report_on_failure': report_on_failure})
-
-
-def _set_color_axis_as(wanted_axis, image_data):
-
-    return_data = image_data
-
-    if image_data.ndim > 2:
-
-        # find what axis are the colors on.
-        # axis 0-based index is the index of the smallest data.shape item
-        shape = image_data.shape
-        color_axis = shape.index(min(shape))
-
-        _LOGGER.debug(f"data color axis = {color_axis}. Wanted color axis = {wanted_axis}")
-
-        if color_axis != wanted_axis:
-            return_data = numpy.moveaxis(image_data, color_axis, wanted_axis)
-
-    return return_data
