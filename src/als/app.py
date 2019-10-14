@@ -16,9 +16,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""The main module for ALS.
+"""
+The main module for ALS.
 
-Needs refactoring : too many unrelated classes"""
+Needs refactoring : too many unrelated classes
+"""
 import gettext
 import logging
 import os
