@@ -516,17 +516,12 @@ class MainWindow(QMainWindow):
                                                                             4: int(self._ui.wavelet_4_label.text()) / 100.,
                                                                             5: int(self._ui.wavelet_5_label.text()) / 100.}])
 
-        _LOGGER.info("Adjust GUI image")
-
-        save_stack_result(self.image_ref_save.stack_image)
-
     @log
     def update_image(self):
         """
         Update central image display.
         """
-        image = STORE.process_result
-        image_raw_data = image.data.copy()
+        image_raw_data = STORE.process_result.data.copy()
 
         image = array2qimage(image_raw_data, normalize=(2 ** 16 - 1))
         self._image_item.setPixmap(QPixmap.fromImage(image))
