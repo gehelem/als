@@ -58,8 +58,6 @@ class MainWindow(QMainWindow):
         # prevent log dock to be too tall
         self.resizeDocks([self._ui.log_dock], [self._LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
 
-        model.STORE.scan_in_progress = False
-        model.STORE.web_server_is_running = False
         model.STORE.add_observer(self)
 
         self._image_saver = ImageSaver(STORE.save_queue)

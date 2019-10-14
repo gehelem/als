@@ -26,7 +26,7 @@ import shutil
 from datetime import datetime
 
 from PyQt5.QtCore import QObject
-from als import config
+from als import config, model
 from als.code_utilities import log
 from als.model import STORE, Image
 
@@ -39,6 +39,12 @@ class Controller(QObject):
     """
     The application controller, in charge of implementing application logic
     """
+    @log
+    def __init__(self):
+        QObject.__init__(self)
+        model.STORE.scan_in_progress = False
+        model.STORE.web_server_is_running = False
+
     @log
     def purge_input_queue(self):
         """
