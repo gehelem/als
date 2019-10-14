@@ -1,54 +1,25 @@
-# !/usr/bin/python3
-# -*- coding: utf-8 -*-
-
-# ALS - Astro Live Stacker
-# Copyright (C) 2019  Sébastien Durand (Dragonlost) - Gilles Le Maréchal (Gehelem)
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-The main module for ALS.
-
-Needs refactoring : too many unrelated classes
+Holds all windows used in the app
 """
-import gettext
 import logging
 import os
-import shutil
-import sys
-from datetime import datetime
 
-from PyQt5.QtCore import Qt, pyqtSlot, QEvent
+from PyQt5.QtCore import QEvent, pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QMainWindow, QApplication, QGraphicsScene, QGraphicsPixmapItem
+from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QApplication
 from qimage2ndarray import array2qimage
 
-from als import config, model
-from als.code_utilities import log, Timer
-from als.io.input import ScannerStartError, InputScanner
-from als.io.network import StoppableServerThread, get_ip
+from als import model, config
+from als.logic import Controller
+from als.code_utilities import log
+from als.io.input import InputScanner, ScannerStartError
+from als.io.network import get_ip, StoppableServerThread
 from als.io.output import ImageSaver
-from als.model import VERSION, STORE, STACKING_MODE_SUM, STACKING_MODE_MEAN, Image
+from als.model import STACKING_MODE_SUM, STACKING_MODE_MEAN, VERSION, STORE
 from als.processing import PreProcessPipeline, PostProcessPipeline
 from als.stack import Stacker
-from als.ui import dialogs
-from als.ui.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
+from als.ui.dialogs import PreferencesDialog, AboutDialog, question, error_box, warning_box
 from generated.als_ui import Ui_stack_window
-
-DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS = 100
-LOG_DOCK_INITIAL_HEIGHT = 60
-
-gettext.install('als', 'locale')
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -56,13 +27,14 @@ _LOGGER = logging.getLogger(__name__)
 class MainWindow(QMainWindow):
     """
     ALS main window.
-
-    It also acts as the main controller, for now
     """
 
+    _LOG_DOCK_INITIAL_HEIGHT = 80
+
     @log
-    def __init__(self, parent=None):
+    def __init__(self, controller: Controller, parent=None):
         super().__init__(parent)
+        self._controller = controller
         self._ui = Ui_stack_window()
         self._ui.setupUi(self)
 
@@ -87,7 +59,7 @@ class MainWindow(QMainWindow):
         self.web_dir = None
 
         # prevent log dock to be too tall
-        self.resizeDocks([self._ui.log_dock], [LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
+        self.resizeDocks([self._ui.log_dock], [self._LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
 
         model.STORE.scan_in_progress = False
         model.STORE.web_server_is_running = False
@@ -271,10 +243,11 @@ class MainWindow(QMainWindow):
         """
         image_to_save = STORE.process_result
         if image_to_save is not None:
-            save_image(image_to_save,
-                       config.get_image_save_format(),
-                       config.get_work_folder_path(),
-                       config.STACKED_IMAGE_FILE_NAME_BASE + '-' + _get_timestamp())
+            self._controller.save_image(image_to_save,
+                                        config.get_image_save_format(),
+                                        config.get_work_folder_path(),
+                                        config.STACKED_IMAGE_FILE_NAME_BASE,
+                                        True)
 
     @pyqtSlot(name="on_pb_apply_value_clicked")
     @log
@@ -393,7 +366,6 @@ class MainWindow(QMainWindow):
         _LOGGER.debug(f"Image taken from save queue. Save queue size : {new_size}")
         self._ui.lbl_save_queue_size.setText(str(new_size))
 
-
     @log
     def on_stack_size_changed(self, new_size: int):
         """
@@ -432,7 +404,7 @@ class MainWindow(QMainWindow):
         Qt slot executed when a new stacking result is available
         """
         self.update_image()
-        save_stack_result()
+        self._controller.save_process_result()
 
     @log
     def adjust_value(self):
@@ -527,7 +499,7 @@ class MainWindow(QMainWindow):
             _LOGGER.info("Play with NO alignement")
 
         try:
-            self._setup_work_folder()
+            self._controller.setup_work_folder()
         except OSError as os_error:
             title = "Work folder could not be prepared"
             message = f"Details : {os_error}"
@@ -543,7 +515,7 @@ class MainWindow(QMainWindow):
             self._input_scanner.start()
             STORE.record_session_start()
         except ScannerStartError as start_error:
-            dialogs.error_box("Could not start folder scanner", str(start_error))
+            error_box("Could not start folder scanner", str(start_error))
 
     def on_log_message(self, message):
         """
@@ -584,18 +556,6 @@ class MainWindow(QMainWindow):
         self._ui.pbStop.setEnabled(STORE.session_is_started or STORE.session_is_paused)
         self._ui.pbPause.setEnabled(STORE.session_is_started)
 
-    @log
-    def _setup_work_folder(self):
-        """Prepares the work folder."""
-
-        work_dir_path = config.get_work_folder_path()
-        resources_dir_path = os.path.dirname(os.path.realpath(__file__)) + "/../resources"
-
-        shutil.copy(resources_dir_path + "/index.html", work_dir_path)
-
-        standby_image_path = work_dir_path + "/" + config.WEB_SERVED_IMAGE_FILE_NAME_BASE + '.' + config.IMAGE_SAVE_JPEG
-        shutil.copy(resources_dir_path + "/waiting.jpg", standby_image_path)
-
     @pyqtSlot(name="on_pbStop_clicked")
     @log
     def cb_stop(self):
@@ -604,7 +564,7 @@ class MainWindow(QMainWindow):
         self._ui.cb_stacking_mode.setEnabled(True)
         self._ui.action_prefs.setEnabled(not self._ui.cbWww.isChecked())
         self._input_scanner.stop()
-        self._purge_input_queue()
+        self._controller.purge_input_queue()
         STORE.record_session_stop()
 
     @pyqtSlot(name="on_pbPause_clicked")
@@ -718,93 +678,3 @@ class MainWindow(QMainWindow):
             self.thread = None
             _LOGGER.info("Web server stopped")
             model.STORE.web_server_is_running = False
-
-    @log
-    def _purge_input_queue(self):
-        """
-        Purge the input queue
-
-        """
-        while not STORE.input_queue.empty():
-            STORE.input_queue.get()
-        _LOGGER.info("Input queue purged")
-
-    @log
-    def _purge_stack_queue(self):
-        """
-        Purge the stack queue
-
-        """
-        while not STORE.stack_queue.empty():
-            STORE.stack_queue.get()
-        _LOGGER.info("Stack queue purged")
-
-
-def _get_timestamp():
-    timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now())))
-    timestamp = timestamp.replace(' ', "-").replace(":", '-').replace('.', '-')
-    return timestamp
-
-
-@log
-def save_stack_result():
-    """
-    Saves stacking result image to disk
-    """
-
-    # we save the image no matter what, then save a jpg for the webserver if it is running
-    image = STORE.process_result
-
-    save_image(image,
-               config.get_image_save_format(),
-               config.get_work_folder_path(),
-               config.STACKED_IMAGE_FILE_NAME_BASE)
-
-    if STORE.web_server_is_running:
-        save_image(image,
-                   config.IMAGE_SAVE_JPEG,
-                   config.get_work_folder_path(),
-                   config.WEB_SERVED_IMAGE_FILE_NAME_BASE)
-
-
-@log
-def save_image(image: Image, file_extension: str, dest_folder_path: str, filename_base):
-    """
-    Save an image to disk
-    :param image: the image to save
-    :type image: Image
-    :param file_extension: The image save file format extension
-    :type file_extension: str
-    :param dest_folder_path: The path of the folder image will be saved to
-    :type dest_folder_path: str
-    :param filename_base: The name of the file to save to (without extension)
-    :type filename_base: str
-    """
-    image_to_save = image.clone()
-    image_to_save.destination = dest_folder_path + "/" + filename_base + '.' + file_extension
-    STORE.save_queue.put(image_to_save)
-
-
-def main():
-    """app launcher"""
-    with Timer() as startup:
-        app = QApplication(sys.argv)
-
-        config.setup()
-
-        _LOGGER.debug("Building and showing main window")
-        window = MainWindow()
-        config.register_log_receiver(window)
-        (x, y, width, height) = config.get_window_geometry()
-        window.setGeometry(x, y, width, height)
-        window.show()
-        window.reset_image_view()
-    _LOGGER.info(f"Astro Live Stacker version {VERSION} started in {startup.elapsed_in_milli} ms.")
-
-    app_return_code = app.exec()
-    _LOGGER.info(f"Astro Live Stacker terminated with return code = {app_return_code}")
-    sys.exit(app_return_code)
-
-
-if __name__ == "__main__":
-    main()
