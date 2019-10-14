@@ -24,9 +24,7 @@ import logging
 import os
 import shutil
 import sys
-import threading
 from datetime import datetime
-from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 
 from PyQt5.QtCore import Qt, pyqtSlot, QEvent
 from PyQt5.QtGui import QPixmap
@@ -36,6 +34,7 @@ from qimage2ndarray import array2qimage
 from als import config, model
 from als.code_utilities import log, Timer
 from als.io.input import ScannerStartError, InputScanner
+from als.io.network import StoppableServerThread, get_ip
 from als.io.output import ImageSaver
 from als.model import VERSION, STORE, STACKING_MODE_SUM, STACKING_MODE_MEAN, Image
 from als.processing import PreProcessPipeline, PostProcessPipeline
@@ -44,76 +43,12 @@ from als.ui import dialogs
 from als.ui.dialogs import PreferencesDialog, question, error_box, warning_box, AboutDialog
 from generated.als_ui import Ui_stack_window
 
-
 DEFAULT_SCAN_SIZE_RETRY_PERIOD_MS = 100
 LOG_DOCK_INITIAL_HEIGHT = 60
 
 gettext.install('als', 'locale')
 
 _LOGGER = logging.getLogger(__name__)
-
-
-class HTTPHandler(SimpleHTTPRequestHandler):
-    """This handler uses server.base_path instead of always using os.getcwd()"""
-    @log
-    def translate_path(self, path):
-        path = SimpleHTTPRequestHandler.translate_path(self, path)
-        relpath = os.path.relpath(path, os.getcwd())
-        fullpath = os.path.join(self.server.base_path, relpath)
-        return fullpath
-
-
-class HTTPServer(BaseHTTPServer):
-    """The main server, you pass in base_path which is the path you want to serve requests from"""
-    @log
-    def __init__(self, base_path, server_address, request_handler_class=HTTPHandler):
-        self.base_path = base_path
-        BaseHTTPServer.__init__(self, server_address, request_handler_class)
-
-
-class StoppableServerThread(threading.Thread):
-    """
-    Thread class with a stop() method.
-
-    The thread itself has to check regularly for the stopped() condition.
-    """
-
-    # FIXME logging this init causes issue with server thread init. To be investigated
-    #  @log
-    def __init__(self, web_dir):
-        # web stuff
-        self.web_dir = web_dir
-        self.httpd = HTTPServer(self.web_dir, ("", config.get_www_server_port_number()))
-        self.httpd.timeout = 1
-
-        # thread stuff
-        self._stop_event = threading.Event()
-
-        # Init parent thread
-        super().__init__(target=self.serve)
-
-    @log
-    def serve(self):
-        """
-        Continuously handles incomming HTTP requests.
-        """
-        while not self.stopped():
-            self.httpd.handle_request()
-
-    @log
-    def stop(self):
-        """
-        Stops the web server.
-        """
-        self._stop_event.set()
-
-    def stopped(self):
-        """
-        Checks if server is stopped.
-
-        :return: True if server is stopped, False otherwise
-        """
-        return self._stop_event.is_set()
 
 
 class MainWindow(QMainWindow):
@@ -632,7 +567,7 @@ class MainWindow(QMainWindow):
 
         if STORE.web_server_is_running:
             messages.append(f"Web server reachable at "
-                            f"http://{MainWindow.get_ip()}:{config.get_www_server_port_number()}")
+                            f"http://{get_ip()}:{config.get_www_server_port_number()}")
         else:
             messages.append("Web server : idle")
 
@@ -740,7 +675,7 @@ class MainWindow(QMainWindow):
     def _start_www(self):
         """Starts web server"""
         self.web_dir = config.get_work_folder_path()
-        ip_address = MainWindow.get_ip()
+        ip_address = get_ip()
         port_number = config.get_www_server_port_number()
         try:
             self.thread = StoppableServerThread(self.web_dir)
@@ -802,26 +737,6 @@ class MainWindow(QMainWindow):
             STORE.stack_queue.get()
         _LOGGER.info("Stack queue purged")
 
-    @staticmethod
-    @log
-    def get_ip():
-        """
-        Retrieves machine's IP address.
-
-        :return: IP address
-        :rtype: str
-        """
-        import socket
-        test_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        try:
-            test_socket.connect(('10.255.255.255', 1))
-            ip_address = test_socket.getsockname()[0]
-        except OSError:
-            ip_address = '127.0.0.1'
-        finally:
-            test_socket.close()
-        return ip_address
-
 
 def _get_timestamp():
     timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now())))
@@ -863,8 +778,9 @@ def save_image(image: Image, file_extension: str, dest_folder_path: str, filenam
     :param filename_base: The name of the file to save to (without extension)
     :type filename_base: str
     """
-    image.destination = dest_folder_path + "/" + filename_base + '.' + file_extension
-    STORE.save_queue.put(image)
+    image_to_save = image.clone()
+    image_to_save.destination = dest_folder_path + "/" + filename_base + '.' + file_extension
+    STORE.save_queue.put(image_to_save)
 
 
 def main():
