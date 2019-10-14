@@ -33,7 +33,7 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMainWindow, QApplication, QGraphicsScene, QGraphicsPixmapItem
 from qimage2ndarray import array2qimage
 
-from als import preprocess as prepro, config, model
+from als import config, model
 from als.code_utilities import log, Timer
 from als.io.input import ScannerStartError, InputScanner
 from als.io.output import ImageSaver
@@ -116,17 +116,6 @@ class StoppableServerThread(threading.Thread):
         return self._stop_event.is_set()
 
 
-class ImageRefSave:
-    """TODO"""
-
-    # pylint: disable=R0903
-    @log
-    def __init__(self):
-        self.image = None
-        self.status = "stop"
-        self.stack_image = None
-
-
 class MainWindow(QMainWindow):
     """
     ALS main window.
@@ -152,7 +141,6 @@ class MainWindow(QMainWindow):
         self.counter = 0
         self.align = False
         self.pause = False
-        self.image_ref_save = ImageRefSave()
         self._ui.postprocess_widget.setCurrentIndex(0)
 
         self.setWindowTitle(_("Astro Live Stacker") + f" - v{VERSION}")
@@ -515,35 +503,34 @@ class MainWindow(QMainWindow):
         Adjusts stacked image according to GUU controls
 
         """
-
-        # test rgb or gray
-        if len(self.image_ref_save.image.shape) == 2:
-            mode = "gray"
-        elif len(self.image_ref_save.image.shape) == 3:
-            mode = "rgb"
-        else:
-            raise ValueError(_("fit format not supported"))
-
-        self.image_ref_save.stack_image = prepro.post_process_image(self.image_ref_save.image,
-                                                                    mode=mode,
-                                                                    scnr_on=self._ui.cbSCNR.isChecked(),
-                                                                    wavelets_on=self._ui.cbWavelets.isChecked(),
-                                                                    wavelets_type=str(self._ui.cBoxWaveType.currentText()),
-                                                                    wavelets_use_luminance=self._ui.cbLuminanceWavelet.isChecked(),
-                                                                    param=[self._ui.contrast_slider.value() / 10.,
-                                                                           self._ui.brightness_slider.value(),
-                                                                           self._ui.black_slider.value(),
-                                                                           self._ui.white_slider.value(),
-                                                                           self._ui.R_slider.value() / 100.,
-                                                                           self._ui.G_slider.value() / 100.,
-                                                                           self._ui.B_slider.value() / 100.,
-                                                                           self._ui.cmSCNR.currentText(),
-                                                                           self._ui.SCNR_Slider.value() / 100.,
-                                                                           {1: int(self._ui.wavelet_1_label.text()) / 100.,
-                                                                            2: int(self._ui.wavelet_2_label.text()) / 100.,
-                                                                            3: int(self._ui.wavelet_3_label.text()) / 100.,
-                                                                            4: int(self._ui.wavelet_4_label.text()) / 100.,
-                                                                            5: int(self._ui.wavelet_5_label.text()) / 100.}])
+        # # test rgb or gray
+        # if len(self.image_ref_save.image.shape) == 2:
+        #     mode = "gray"
+        # elif len(self.image_ref_save.image.shape) == 3:
+        #     mode = "rgb"
+        # else:
+        #     raise ValueError(_("fit format not supported"))
+        #
+        # self.image_ref_save.stack_image = prepro.post_process_image(self.image_ref_save.image,
+        #                                                             mode=mode,
+        #                                                             scnr_on=self._ui.cbSCNR.isChecked(),
+        #                                                             wavelets_on=self._ui.cbWavelets.isChecked(),
+        #                                                             wavelets_type=str(self._ui.cBoxWaveType.currentText()),
+        #                                                             wavelets_use_luminance=self._ui.cbLuminanceWavelet.isChecked(),
+        #                                                             param=[self._ui.contrast_slider.value() / 10.,
+        #                                                                    self._ui.brightness_slider.value(),
+        #                                                                    self._ui.black_slider.value(),
+        #                                                                    self._ui.white_slider.value(),
+        #                                                                    self._ui.R_slider.value() / 100.,
+        #                                                                    self._ui.G_slider.value() / 100.,
+        #                                                                    self._ui.B_slider.value() / 100.,
+        #                                                                    self._ui.cmSCNR.currentText(),
+        #                                                                    self._ui.SCNR_Slider.value() / 100.,
+        #                                                                    {1: int(self._ui.wavelet_1_label.text()) / 100.,
+        #                                                                     2: int(self._ui.wavelet_2_label.text()) / 100.,
+        #                                                                     3: int(self._ui.wavelet_3_label.text()) / 100.,
+        #                                                                     4: int(self._ui.wavelet_4_label.text()) / 100.,
+        #                                                                     5: int(self._ui.wavelet_5_label.text()) / 100.}])
 
     @log
     def update_image(self):
@@ -579,19 +566,18 @@ class MainWindow(QMainWindow):
             else:
                 return
 
-        if self.image_ref_save.status == "stop":
-            self._ui.white_slider.setEnabled(False)
-            self._ui.black_slider.setEnabled(False)
-            self._ui.contrast_slider.setEnabled(False)
-            self._ui.brightness_slider.setEnabled(False)
-            self._ui.R_slider.setEnabled(False)
-            self._ui.G_slider.setEnabled(False)
-            self._ui.B_slider.setEnabled(False)
-            self._ui.pb_apply_value.setEnabled(False)
-            self._ui.chk_align.setEnabled(False)
-            self._ui.cb_stacking_mode.setEnabled(False)
-            self.counter = 0
-            self._ui.cnt.setText(str(self.counter))
+        self._ui.white_slider.setEnabled(False)
+        self._ui.black_slider.setEnabled(False)
+        self._ui.contrast_slider.setEnabled(False)
+        self._ui.brightness_slider.setEnabled(False)
+        self._ui.R_slider.setEnabled(False)
+        self._ui.G_slider.setEnabled(False)
+        self._ui.B_slider.setEnabled(False)
+        self._ui.pb_apply_value.setEnabled(False)
+        self._ui.chk_align.setEnabled(False)
+        self._ui.cb_stacking_mode.setEnabled(False)
+        self.counter = 0
+        self._ui.cnt.setText(str(self.counter))
 
         # check align
         if self._ui.chk_align.isChecked():
@@ -612,10 +598,6 @@ class MainWindow(QMainWindow):
             _LOGGER.error(f"{title} : {os_error}")
             self.cb_stop()
             return
-
-        self.image_ref_save.status = "play"
-        self.image_ref_save.image = None
-        self.image_ref_save.stack_image = None
 
         _LOGGER.info(f"Work folder : '{config.get_work_folder_path()}'")
         _LOGGER.info(f"Scan folder : '{config.get_scan_folder_path()}'")
@@ -681,11 +663,9 @@ class MainWindow(QMainWindow):
     @log
     def cb_stop(self):
         """Qt slot for mouse clicks on the 'Stop' button"""
-        self.image_ref_save.status = "stop"
         self._ui.chk_align.setEnabled(True)
         self._ui.cb_stacking_mode.setEnabled(True)
         self._ui.action_prefs.setEnabled(not self._ui.cbWww.isChecked())
-        _LOGGER.info("Stop")
         self._input_scanner.stop()
         self._purge_input_queue()
         STORE.record_session_stop()
@@ -694,8 +674,6 @@ class MainWindow(QMainWindow):
     @log
     def cb_pause(self):
         """Qt slot for mouse clicks on the 'Pause' button"""
-        self.image_ref_save.status = "pause"
-        _LOGGER.info("Pause")
         self._input_scanner.stop()
         STORE.record_session_pause()
 
@@ -703,8 +681,6 @@ class MainWindow(QMainWindow):
     @log
     def cb_reset(self):
         """Qt slot for mouse clicks on the 'Reset' button"""
-        _LOGGER.info("Reset")
-        # reset slider, label, image, global value
 
         self._ui.contrast_slider.setValue(10)
         self._ui.brightness_slider.setValue(0)
@@ -713,8 +689,6 @@ class MainWindow(QMainWindow):
         self._ui.R_slider.setValue(100)
         self._ui.G_slider.setValue(100)
         self._ui.B_slider.setValue(100)
-        self.image_ref_save.image = None
-        self.image_ref_save.stack_image = None
         self._ui.contrast.setText(str(1))
         self._ui.brightness.setText(str(0))
         self._ui.black.setText(str(0))
