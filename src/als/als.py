@@ -195,6 +195,9 @@ class MainWindow(QMainWindow):
         STORE.process_queue.item_pushed_signal[int].connect(self.on_process_queue_pushed)
         STORE.process_queue.item_popped_signal[int].connect(self.on_process_queue_popped)
 
+        STORE.save_queue.item_pushed_signal[int].connect(self.on_save_queue_pushed)
+        STORE.save_queue.item_popped_signal[int].connect(self.on_save_queue_popped)
+
         self._scene = QGraphicsScene(self)
         self._ui.image_view.setScene(self._scene)
         self._image_item = None
@@ -442,6 +445,29 @@ class MainWindow(QMainWindow):
         """
         _LOGGER.debug(f"Image taken from process queue. Process queue size : {new_size}")
         self._ui.lbl_process_queue_size.setText(str(new_size))
+
+    @log
+    def on_save_queue_pushed(self, new_size):
+        """
+        Qt slot executed when an item has just been pushed to the save queue
+
+        :param new_size: new queue size
+        :type new_size: int
+        """
+        _LOGGER.debug(f"New image added to the save queue. Save queue size : {new_size}")
+        self._ui.lbl_save_queue_size.setText(str(new_size))
+
+    @log
+    def on_save_queue_popped(self, new_size):
+        """
+        Qt slot executed when an item has just been popped from the save queue
+
+        :param new_size: new queue size
+        :type new_size: int
+        """
+        _LOGGER.debug(f"Image taken from save queue. Save queue size : {new_size}")
+        self._ui.lbl_save_queue_size.setText(str(new_size))
+
 
     @log
     def on_stack_size_changed(self, new_size: int):
