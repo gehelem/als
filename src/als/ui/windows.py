@@ -529,13 +529,15 @@ class MainWindow(QMainWindow):
         messages = list()
 
         # update statusBar according to status of folder scanner and web server
-        messages.append(f"Scanning '{config.get_scan_folder_path()}'" if STORE.session_is_started else "Scanner : idle")
+        scanner_status_message = f"Scanner on {config.get_scan_folder_path()} : "
+        scanner_status_message += f"Running" if STORE.session_is_started else "Stopped"
+        messages.append(scanner_status_message)
 
         if STORE.web_server_is_running:
             messages.append(f"Web server reachable at "
                             f"http://{get_ip()}:{config.get_www_server_port_number()}")
         else:
-            messages.append("Web server : idle")
+            messages.append("Web server : Stopped")
 
         self._ui.statusBar.showMessage('   -   '.join(messages))
 
