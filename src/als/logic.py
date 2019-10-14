@@ -104,7 +104,8 @@ class Controller(QObject):
                    filename_base: str,
                    add_timestamp: bool = False):
         """
-        Save an image to disk
+        Save an image to disk.
+
         :param image: the image to save
         :type image: Image
         :param file_extension: The image save file format extension
