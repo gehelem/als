@@ -184,7 +184,7 @@ class MainWindow(QMainWindow):
         self._post_process_pipeline.start()
         self._post_process_pipeline.new_processing_result_signal.connect(self.on_new_process_result)
 
-        self.update_store_display()
+        self.update_according_to_app_state()
 
         STORE.input_queue.item_pushed_signal[int].connect(self.on_input_queue_pushed)
         STORE.input_queue.item_popped_signal[int].connect(self.on_input_queue_popped)
