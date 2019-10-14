@@ -494,7 +494,7 @@ class Image:
                           f'Data shape={self._data.shape}, '
                           f'Data type={self._data.dtype.name}, '
                           f'Origin={self.origin}, '
-                          f'Destination={self.destination}')
+                          f'Destination={self.destination}, ')
 
         if self.is_color():
             representation += f"Mean R: {int(np.mean(self._data[0]))}, "
