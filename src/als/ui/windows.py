@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QA
 from qimage2ndarray import array2qimage
 
 from als import model, config
-from als.logic import Controller, SessionManagementError
+from als.logic import Controller, SessionError
 from als.code_utilities import log
 from als.io.network import get_ip, StoppableServerThread
 from als.io.output import ImageSaver
@@ -444,7 +444,7 @@ class MainWindow(QMainWindow):
 
         try:
             self._controller.start_session()
-        except SessionManagementError as session_error:
+        except SessionError as session_error:
             error_box(session_error.message, str(session_error.error) + "\n\nSession start aborted")
 
     def on_log_message(self, message):

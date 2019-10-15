@@ -42,9 +42,9 @@ gettext.install('als', 'locale')
 _LOGGER = logging.getLogger(__name__)
 
 
-class SessionManagementError(Exception):
+class SessionError(Exception):
     """
-    Base class for all errors related to session management
+    Class for all errors related to session management
     """
     def __init__(self, message, error):
         Exception.__init__(self)
@@ -116,6 +116,9 @@ class Controller(QObject):
                 }
 
                 # checking presence of both scan & work folders
+                #
+                # for each of those, if folder is missing, ask user if she wants to access the preferences box
+                # if user refuses, we simply fail the session startup
                 for role, path in folders_dict.items():
                     if not Path(path).is_dir():
                         title = "Missing critical folder"
@@ -123,19 +126,20 @@ class Controller(QObject):
                         folder_now_exists = False
                         if question(title, message + "Do you want to review your preferences ?"):
                             dialog = PreferencesDialog(QApplication.activeWindow())
-                            # if prefs dialog is closed by "OK", a.k.a. Accepted, we are sure that folder now exists,
-                            # as it has been selected with OS folder selector.
+                            # if prefs dialog is closed by "OK", a.k.a. Accepted, we are sure the folder now exists,
+                            # as it has been selected with built-in folder selector dialog.
                             folder_now_exists = dialog.exec() == QDialog.Accepted
                         if not folder_now_exists:
-                            raise SessionManagementError(title, message)
+                            raise SessionError(title, message)
 
                 # setup work folder
                 try:
                     self.setup_work_folder()
                 except OSError as os_error:
-                    raise SessionManagementError("Work folder could not be prepared", os_error)
+                    raise SessionError("Work folder could not be prepared", os_error)
 
             else:
+                # session was paused when this start was ordered. No need for checks & setup
                 _LOGGER.info("Restarting input scanner ...")
 
             # start input scanner
@@ -143,14 +147,14 @@ class Controller(QObject):
                 self._input_scanner.start()
                 _LOGGER.info("Input scanner started")
             except ScannerStartError as scanner_start_error:
-                raise SessionManagementError("Input scanner could not start", scanner_start_error)
+                raise SessionError("Input scanner could not start", scanner_start_error)
 
             running_mode = f"{DYNAMIC_DATA.stacking_mode}"
             running_mode += " with alignment" if DYNAMIC_DATA.align_before_stacking else " without alignment"
             _LOGGER.info(f"Session running in mode {running_mode}")
             DYNAMIC_DATA.session.set_status(Session.running)
 
-        except SessionManagementError as session_error:
+        except SessionError as session_error:
             _LOGGER.error(f"Session error. {session_error.message} : {session_error.error}")
             raise
 
