@@ -29,10 +29,10 @@ from pathlib import Path
 from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QApplication, QDialog
 
-from als import config, model
+from als import config
 from als.code_utilities import log
 from als.io.input import InputScanner, ScannerStartError
-from als.model import STORE, Image, SignalingQueue, Session
+from als.model import DYNAMIC_DATA, Image, SignalingQueue, Session
 from als.ui.dialogs import question, PreferencesDialog
 
 gettext.install('als', 'locale')
@@ -57,10 +57,10 @@ class Controller(QObject):
     @log
     def __init__(self):
         QObject.__init__(self)
-        model.STORE.session.set_status(Session.stopped)
-        model.STORE.web_server_is_running = False
-        self._input_scanner: InputScanner = InputScanner.create_scanner(STORE.input_queue)
-        self._input_queue: SignalingQueue = STORE.input_queue
+        DYNAMIC_DATA.session.set_status(Session.stopped)
+        DYNAMIC_DATA.web_server_is_running = False
+        self._input_scanner: InputScanner = InputScanner.create_scanner(DYNAMIC_DATA.input_queue)
+        self._input_queue: SignalingQueue = DYNAMIC_DATA.input_queue
 
         self._input_scanner.new_image_signal[Image].connect(self.on_new_image_read)
 
@@ -80,7 +80,7 @@ class Controller(QObject):
         Starts session
         """
         try:
-            if STORE.session.is_stopped():
+            if DYNAMIC_DATA.session.is_stopped():
 
                 _LOGGER.info("Starting new session...")
 
@@ -97,8 +97,8 @@ class Controller(QObject):
                         folder_now_exists = False
                         if question(title, message + "Do you want to review your preferences ?"):
                             dialog = PreferencesDialog(QApplication.activeWindow())
-                            # if prefs dialog is closed by "OK", a.k.a. Accepted, we are sure that folder now exists, as it has
-                            # been selected with OS folder selector.
+                            # if prefs dialog is closed by "OK", a.k.a. Accepted, we are sure that folder now exists,
+                            # as it has been selected with OS folder selector.
                             folder_now_exists = dialog.exec() == QDialog.Accepted
                         if not folder_now_exists:
                             raise SessionManagementError(title, message)
@@ -119,10 +119,10 @@ class Controller(QObject):
             except ScannerStartError as scanner_start_error:
                 raise SessionManagementError("Input scanner could not start", scanner_start_error)
 
-            running_mode = f"{STORE.stacking_mode}"
-            running_mode += " with alignment" if STORE.align_before_stacking else " without alignment"
+            running_mode = f"{DYNAMIC_DATA.stacking_mode}"
+            running_mode += " with alignment" if DYNAMIC_DATA.align_before_stacking else " without alignment"
             _LOGGER.info(f"Session running in mode {running_mode}")
-            STORE.session.set_status(Session.running)
+            DYNAMIC_DATA.session.set_status(Session.running)
 
         except SessionManagementError as session_error:
             _LOGGER.error(f"Session error. {session_error.message} : {session_error.error}")
@@ -133,11 +133,11 @@ class Controller(QObject):
         """
         Stops session : stop input scanner and purge input queue
         """
-        if STORE.session.is_running():
+        if DYNAMIC_DATA.session.is_running():
             self._stop_input_scanner()
         self.purge_input_queue()
         _LOGGER.info("Session stopped")
-        STORE.session.set_status(Session.stopped)
+        DYNAMIC_DATA.session.set_status(Session.stopped)
 
     @log
     def pause_session(self):
@@ -146,7 +146,7 @@ class Controller(QObject):
         """
         self._stop_input_scanner()
         _LOGGER.info("Session paused")
-        STORE.session.set_status(Session.paused)
+        DYNAMIC_DATA.session.set_status(Session.paused)
 
     @log
     def purge_input_queue(self):
@@ -154,8 +154,8 @@ class Controller(QObject):
         Purge the input queue
 
         """
-        while not STORE.input_queue.empty():
-            STORE.input_queue.get()
+        while not DYNAMIC_DATA.input_queue.empty():
+            DYNAMIC_DATA.input_queue.get()
         _LOGGER.info("Input queue purged")
 
     @log
@@ -164,8 +164,8 @@ class Controller(QObject):
         Purge the stack queue
 
         """
-        while not STORE.stack_queue.empty():
-            STORE.stack_queue.get()
+        while not DYNAMIC_DATA.stack_queue.empty():
+            DYNAMIC_DATA.stack_queue.get()
         _LOGGER.info("Stack queue purged")
 
     @log
@@ -187,14 +187,14 @@ class Controller(QObject):
         """
 
         # we save the image no matter what, then save a jpg for the webserver if it is running
-        image = STORE.process_result
+        image = DYNAMIC_DATA.process_result
 
         self.save_image(image,
                         config.get_image_save_format(),
                         config.get_work_folder_path(),
                         config.STACKED_IMAGE_FILE_NAME_BASE)
 
-        if STORE.web_server_is_running:
+        if DYNAMIC_DATA.web_server_is_running:
             self.save_image(image,
                             config.IMAGE_SAVE_JPEG,
                             config.get_work_folder_path(),
@@ -227,14 +227,14 @@ class Controller(QObject):
 
         image_to_save = image.clone()
         image_to_save.destination = dest_folder_path + "/" + filename_base + '.' + file_extension
-        STORE.save_queue.put(image_to_save)
+        DYNAMIC_DATA.save_queue.put(image_to_save)
 
     @log
     def shutdown(self):
         """
         Proper shutdown of all app components
         """
-        if not STORE.session.is_stopped():
+        if not DYNAMIC_DATA.session.is_stopped():
             self.stop_session()
 
     @staticmethod

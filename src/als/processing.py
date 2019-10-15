@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal
 from als.code_utilities import log, Timer
-from als.model import Image, SignalingQueue, STORE
+from als.model import Image, SignalingQueue, DYNAMIC_DATA
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -234,7 +234,7 @@ class PostProcessPipeline(QThread):
                 _LOGGER.info(f"Done post-processing image : {image.origin}")
 
                 image.origin = "Post Processing Result"
-                STORE.process_result = image
+                DYNAMIC_DATA.process_result = image
                 self.new_processing_result_signal.emit()
 
             self.msleep(20)

@@ -13,7 +13,7 @@ from als.logic import Controller, SessionManagementError
 from als.code_utilities import log
 from als.io.network import get_ip, StoppableServerThread
 from als.io.output import ImageSaver
-from als.model import STACKING_MODE_SUM, STACKING_MODE_MEAN, VERSION, STORE
+from als.model import STACKING_MODE_SUM, STACKING_MODE_MEAN, VERSION, DYNAMIC_DATA
 from als.processing import PreProcessPipeline, PostProcessPipeline
 from als.stack import Stacker
 from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box
@@ -56,35 +56,35 @@ class MainWindow(QMainWindow):
         # prevent log dock to be too tall
         self.resizeDocks([self._ui.log_dock], [self._LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
 
-        model.STORE.add_observer(self)
+        model.DYNAMIC_DATA.add_observer(self)
 
-        self._image_saver = ImageSaver(STORE.save_queue)
+        self._image_saver = ImageSaver(DYNAMIC_DATA.save_queue)
         self._image_saver.start()
 
-        self._pre_process_pipeline = PreProcessPipeline(STORE.input_queue, STORE.stack_queue)
+        self._pre_process_pipeline = PreProcessPipeline(DYNAMIC_DATA.input_queue, DYNAMIC_DATA.stack_queue)
         self._pre_process_pipeline.start()
 
-        self._stacker = Stacker(STORE.stack_queue, STORE.process_queue)
+        self._stacker = Stacker(DYNAMIC_DATA.stack_queue, DYNAMIC_DATA.process_queue)
         self._stacker.start()
         self._stacker.stack_size_changed_signal[int].connect(self.on_stack_size_changed)
 
-        self._post_process_pipeline = PostProcessPipeline(STORE.process_queue)
+        self._post_process_pipeline = PostProcessPipeline(DYNAMIC_DATA.process_queue)
         self._post_process_pipeline.start()
         self._post_process_pipeline.new_processing_result_signal.connect(self.on_new_process_result)
 
         self.update_according_to_app_state()
 
-        STORE.input_queue.item_pushed_signal[int].connect(self.on_input_queue_pushed)
-        STORE.input_queue.item_popped_signal[int].connect(self.on_input_queue_popped)
+        DYNAMIC_DATA.input_queue.item_pushed_signal[int].connect(self.on_input_queue_pushed)
+        DYNAMIC_DATA.input_queue.item_popped_signal[int].connect(self.on_input_queue_popped)
 
-        STORE.stack_queue.item_pushed_signal[int].connect(self.on_stack_queue_pushed)
-        STORE.stack_queue.item_popped_signal[int].connect(self.on_stack_queue_popped)
+        DYNAMIC_DATA.stack_queue.item_pushed_signal[int].connect(self.on_stack_queue_pushed)
+        DYNAMIC_DATA.stack_queue.item_popped_signal[int].connect(self.on_stack_queue_popped)
 
-        STORE.process_queue.item_pushed_signal[int].connect(self.on_process_queue_pushed)
-        STORE.process_queue.item_popped_signal[int].connect(self.on_process_queue_popped)
+        DYNAMIC_DATA.process_queue.item_pushed_signal[int].connect(self.on_process_queue_pushed)
+        DYNAMIC_DATA.process_queue.item_popped_signal[int].connect(self.on_process_queue_popped)
 
-        STORE.save_queue.item_pushed_signal[int].connect(self.on_save_queue_pushed)
-        STORE.save_queue.item_popped_signal[int].connect(self.on_save_queue_popped)
+        DYNAMIC_DATA.save_queue.item_pushed_signal[int].connect(self.on_save_queue_pushed)
+        DYNAMIC_DATA.save_queue.item_popped_signal[int].connect(self.on_save_queue_popped)
 
         self._scene = QGraphicsScene(self)
         self._ui.image_view.setScene(self._scene)
@@ -108,7 +108,7 @@ class MainWindow(QMainWindow):
         """Handles window close events."""
         # pylint: disable=C0103
 
-        if STORE.web_server_is_running:
+        if DYNAMIC_DATA.web_server_is_running:
             self._stop_www()
 
         self._pre_process_pipeline.stop()
@@ -131,7 +131,7 @@ class MainWindow(QMainWindow):
             QApplication.setOverrideCursor(Qt.WaitCursor)
             self._image_saver.wait()
 
-        STORE.remove_observer(self)
+        DYNAMIC_DATA.remove_observer(self)
         super().closeEvent(event)
 
     @log
@@ -231,7 +231,7 @@ class MainWindow(QMainWindow):
         This saves the processed image using user chosen format
 
         """
-        image_to_save = STORE.process_result
+        image_to_save = DYNAMIC_DATA.process_result
         if image_to_save is not None:
             self._controller.save_image(image_to_save,
                                         config.get_image_save_format(),
@@ -376,7 +376,7 @@ class MainWindow(QMainWindow):
         :type text: str
         :return:
         """
-        STORE.stacking_mode = text
+        DYNAMIC_DATA.stacking_mode = text
 
     @log
     def on_chk_align_toggled(self, checked: bool):
@@ -386,7 +386,7 @@ class MainWindow(QMainWindow):
         :param checked: is checkbox checked ?
         :type checked: bool
         """
-        STORE.align_before_stacking = checked
+        DYNAMIC_DATA.align_before_stacking = checked
 
     @log
     def on_new_process_result(self):
@@ -436,7 +436,7 @@ class MainWindow(QMainWindow):
         """
         Update central image display.
         """
-        image_raw_data = STORE.process_result.data.copy()
+        image_raw_data = DYNAMIC_DATA.process_result.data.copy()
 
         image = array2qimage(image_raw_data, normalize=(2 ** 16 - 1))
         self._image_item.setPixmap(QPixmap.fromImage(image))
@@ -479,10 +479,10 @@ class MainWindow(QMainWindow):
         Updates all displays and controls depending on DataStore held data
         """
 
-        web_server_is_running = STORE.web_server_is_running
-        session_is_running = STORE.session.is_running()
-        session_is_stopped = STORE.session.is_stopped()
-        session_is_paused = STORE.session.is_paused()
+        web_server_is_running = DYNAMIC_DATA.web_server_is_running
+        session_is_running = DYNAMIC_DATA.session.is_running()
+        session_is_stopped = DYNAMIC_DATA.session.is_stopped()
+        session_is_paused = DYNAMIC_DATA.session.is_paused()
 
         # build status bar messages display
         messages = list()
@@ -610,7 +610,7 @@ class MainWindow(QMainWindow):
             log_function(f"Web server started. Reachable at {url}")
             self._ui.action_prefs.setEnabled(False)
             QApplication.clipboard().setText(url)
-            model.STORE.web_server_is_running = True
+            model.DYNAMIC_DATA.web_server_is_running = True
         except OSError:
             title = "Could not start web server"
             message = f"The web server needs to listen on port n°{port_number} but this port is already in use.\n\n"
@@ -628,4 +628,4 @@ class MainWindow(QMainWindow):
             self.thread.join()
             self.thread = None
             _LOGGER.info("Web server stopped")
-            model.STORE.web_server_is_running = False
+            model.DYNAMIC_DATA.web_server_is_running = False

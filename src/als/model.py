@@ -130,9 +130,10 @@ class Session(QObject):
 
 
 # pylint: disable=R0902
-class DataStore:
+class DynamicData:
     """
-    Holds and maintain application dynamic data
+    Holds and maintain application dynamic data and notify observers on significant changes
+
     """
     def __init__(self):
         self._observers = []
@@ -311,7 +312,7 @@ class DataStore:
             observer.update_according_to_app_state()
 
 
-STORE = DataStore()
+DYNAMIC_DATA = DynamicData()
 
 
 class Image:

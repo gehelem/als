@@ -25,7 +25,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from skimage.transform import SimilarityTransform
 
 from als.code_utilities import log, Timer
-from als.model import Image, SignalingQueue, STORE, STACKING_MODE_SUM, STACKING_MODE_MEAN
+from als.model import Image, SignalingQueue, DYNAMIC_DATA, STACKING_MODE_SUM, STACKING_MODE_MEAN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -117,7 +117,7 @@ class Stacker(QThread):
                             if not image.is_same_shape_as(self._last_stacking_result):
                                 raise StackingError(f"Image dimensions or color don't match stack content")
 
-                            if STORE.align_before_stacking:
+                            if DYNAMIC_DATA.align_before_stacking:
 
                                 # alignment is a memory greedy process, we take special care of such errors
                                 try:
@@ -125,7 +125,7 @@ class Stacker(QThread):
                                 except OSError as os_error:
                                     raise StackingError(os_error)
 
-                            self._stack_image(image, STORE.stacking_mode)
+                            self._stack_image(image, DYNAMIC_DATA.stacking_mode)
                             self._publish_stacking_result(image)
 
                         except StackingError as stacking_error:
