@@ -460,9 +460,10 @@ class MainWindow(QMainWindow):
         """
 
         web_server_is_running = DYNAMIC_DATA.web_server_is_running
-        session_is_running = DYNAMIC_DATA.session.is_running()
-        session_is_stopped = DYNAMIC_DATA.session.is_stopped()
-        session_is_paused = DYNAMIC_DATA.session.is_paused()
+        session = DYNAMIC_DATA.session
+        session_is_running = session.is_running()
+        session_is_stopped = session.is_stopped()
+        session_is_paused = session.is_paused()
 
         # update running statuses
         scanner_status_message = f"Scanner on {config.get_scan_folder_path()}: "
