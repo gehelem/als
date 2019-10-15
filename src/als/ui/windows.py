@@ -131,9 +131,8 @@ class MainWindow(QMainWindow):
             QApplication.setOverrideCursor(Qt.WaitCursor)
             self._image_saver.wait()
 
-        super().closeEvent(event)
-
         STORE.remove_observer(self)
+        super().closeEvent(event)
 
     @log
     def changeEvent(self, event):
