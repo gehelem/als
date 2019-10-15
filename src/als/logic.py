@@ -65,11 +65,11 @@ class Controller(QObject):
         self._input_scanner: InputScanner = InputScanner.create_scanner(DYNAMIC_DATA.input_queue)
         self._input_queue: SignalingQueue = DYNAMIC_DATA.input_queue
 
-        self._pre_process_pipeline = PreProcessPipeline(DYNAMIC_DATA.input_queue)
+        self._pre_process_pipeline: PreProcessPipeline = PreProcessPipeline(DYNAMIC_DATA.input_queue)
         self._pre_process_pipeline.start()
 
-        self._stacker = Stacker(DYNAMIC_DATA.stack_queue, DYNAMIC_DATA.process_queue)
-        self._stacker_queue = DYNAMIC_DATA.stack_queue
+        self._stacker: Stacker = Stacker(DYNAMIC_DATA.stack_queue, DYNAMIC_DATA.process_queue)
+        self._stacker_queue: SignalingQueue = DYNAMIC_DATA.stack_queue
         self._stacker.start()
 
         self._input_scanner.new_image_signal[Image].connect(self.on_new_image_read)
