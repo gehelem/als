@@ -109,13 +109,14 @@ class Stacker(QThread):
                 with Timer() as stacking_timer:
 
                     if self.size == 0:
+                        _LOGGER.debug("This is the first image for this stack. Publishing right away")
                         self._publish_stacking_result(image)
                         self._align_reference = image
 
                     else:
                         try:
                             if not image.is_same_shape_as(self._last_stacking_result):
-                                raise StackingError(f"Image dimensions or color don't match stack content")
+                                raise StackingError("Image dimensions or color don't match stack content")
 
                             if DYNAMIC_DATA.align_before_stacking:
 
@@ -146,15 +147,15 @@ class Stacker(QThread):
         :type image: Image
         """
 
-        with Timer() as transformation_find_timer:
+        with Timer() as find_timer:
             transformation = self._find_transformation(image)
         _LOGGER.info(f"Found transformation for alignment of {image.origin} in "
-                     f"{transformation_find_timer.elapsed_in_milli_as_str} ms")
+                     f"{find_timer.elapsed_in_milli_as_str} ms")
 
-        with Timer() as transformation_apply_timer:
+        with Timer() as apply_timer:
             self._apply_transformation(image, transformation)
         _LOGGER.info(f"Applied transformation for alignment of {image.origin} in "
-                     f"{transformation_apply_timer.elapsed_in_milli_as_str} ms")
+                     f"{apply_timer.elapsed_in_milli_as_str} ms")
 
     @log
     def _apply_transformation(self, image: Image, transformation: SimilarityTransform):
