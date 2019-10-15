@@ -79,45 +79,50 @@ class Controller(QObject):
         """
         Starts session
         """
-
-        _LOGGER.info("Starting new session...")
         try:
+            if STORE.session_is_stopped:
 
-            folders_dict = {
-                "scan": config.get_scan_folder_path(),
-                "work": config.get_work_folder_path()
-            }
+                _LOGGER.info("Starting new session...")
 
-            # checking presence of both scan & work folders
-            for role, path in folders_dict.items():
-                if not Path(path).is_dir():
-                    title = "Missing critical folder"
-                    message = f"Your currently configured {role} folder '{path}' is missing."
-                    folder_now_exists = False
-                    if question(title, message + "Do you want to review your preferences ?"):
-                        dialog = PreferencesDialog(QApplication.activeWindow())
-                        # if prefs dialog is closed by "OK", a.k.a. Accepted, we are sure that folder now exists, as it has been
-                        # selected with OS folder selector.
-                        folder_now_exists = dialog.exec() == QDialog.Accepted
-                    if not folder_now_exists:
-                        raise SessionManagementError(title, message)
+                folders_dict = {
+                    "scan": config.get_scan_folder_path(),
+                    "work": config.get_work_folder_path()
+                }
 
-            # setup work folder
-            try:
-                self.setup_work_folder()
-            except OSError as os_error:
-                raise SessionManagementError("Work folder could not be prepared", os_error)
+                # checking presence of both scan & work folders
+                for role, path in folders_dict.items():
+                    if not Path(path).is_dir():
+                        title = "Missing critical folder"
+                        message = f"Your currently configured {role} folder '{path}' is missing."
+                        folder_now_exists = False
+                        if question(title, message + "Do you want to review your preferences ?"):
+                            dialog = PreferencesDialog(QApplication.activeWindow())
+                            # if prefs dialog is closed by "OK", a.k.a. Accepted, we are sure that folder now exists, as it has
+                            # been selected with OS folder selector.
+                            folder_now_exists = dialog.exec() == QDialog.Accepted
+                        if not folder_now_exists:
+                            raise SessionManagementError(title, message)
+
+                # setup work folder
+                try:
+                    self.setup_work_folder()
+                except OSError as os_error:
+                    raise SessionManagementError("Work folder could not be prepared", os_error)
+
+            else:
+                _LOGGER.info("Restarting input scanner ...")
 
             # start input scanner
             try:
                 self._input_scanner.start()
+                _LOGGER.info("Input scanner started")
             except ScannerStartError as scanner_start_error:
                 raise SessionManagementError("Input scanner could not start", scanner_start_error)
 
             STORE.record_session_start()
             running_mode = f"{STORE.stacking_mode}"
             running_mode += " with alignment" if STORE.align_before_stacking else " without alignment"
-            _LOGGER.info(f"Started session in mode : {running_mode}")
+            _LOGGER.info(f"Session running in mode {running_mode}")
 
         except SessionManagementError as session_error:
             _LOGGER.error(f"Session start failed. {session_error.message} : {session_error.error}")
@@ -128,7 +133,8 @@ class Controller(QObject):
         """
         Stops session : stop input scanner and purge input queue
         """
-        self._input_scanner.stop()
+        if STORE.session_is_started:
+            self._stop_input_scanner()
         STORE.record_session_stop()
         self.purge_input_queue()
 
@@ -137,7 +143,7 @@ class Controller(QObject):
         """
         Pauses session : just sop input scanner
         """
-        self._input_scanner.stop()
+        self._stop_input_scanner()
         STORE.record_session_pause()
 
     @log
@@ -233,3 +239,8 @@ class Controller(QObject):
         timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now())))
         timestamp = timestamp.replace(' ', "-").replace(":", '-').replace('.', '-')
         return timestamp
+
+    @log
+    def _stop_input_scanner(self):
+        self._input_scanner.stop()
+        _LOGGER.info("Input scanner stopped")
