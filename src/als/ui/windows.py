@@ -26,7 +26,7 @@ class MainWindow(QMainWindow):
     ALS main window.
     """
 
-    _LOG_DOCK_INITIAL_HEIGHT = 80
+    _LOG_DOCK_INITIAL_HEIGHT = 150
 
     @log
     def __init__(self, controller: Controller, parent=None):
