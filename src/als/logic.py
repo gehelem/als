@@ -33,6 +33,7 @@ from als import config
 from als.code_utilities import log
 from als.io.input import InputScanner, ScannerStartError
 from als.model import DYNAMIC_DATA, Image, SignalingQueue, Session
+from als.processing import PreProcessPipeline
 from als.stack import Stacker
 from als.ui.dialogs import question, PreferencesDialog
 
@@ -60,12 +61,19 @@ class Controller(QObject):
         QObject.__init__(self)
         DYNAMIC_DATA.session.set_status(Session.stopped)
         DYNAMIC_DATA.web_server_is_running = False
+
         self._input_scanner: InputScanner = InputScanner.create_scanner(DYNAMIC_DATA.input_queue)
         self._input_queue: SignalingQueue = DYNAMIC_DATA.input_queue
+
+        self._pre_process_pipeline = PreProcessPipeline(DYNAMIC_DATA.input_queue)
+        self._pre_process_pipeline.start()
+
         self._stacker = Stacker(DYNAMIC_DATA.stack_queue, DYNAMIC_DATA.process_queue)
+        self._stacker_queue = DYNAMIC_DATA.stack_queue
         self._stacker.start()
 
         self._input_scanner.new_image_signal[Image].connect(self.on_new_image_read)
+        self._pre_process_pipeline.new_result_signal[Image].connect(self.on_new_pre_processed_image)
         self._stacker.stack_size_changed_signal[int].connect(DYNAMIC_DATA.set_stack_size)
 
     @log
@@ -77,6 +85,16 @@ class Controller(QObject):
         :type image: Image
         """
         self._input_queue.put(image)
+
+    @log
+    def on_new_pre_processed_image(self, image: Image):
+        """
+        A new image as been pre-processed
+
+        :param image: the image
+        :type image: Image
+        """
+        self._stacker_queue.put(image)
 
     @log
     def start_session(self):
@@ -256,6 +274,7 @@ class Controller(QObject):
         if not DYNAMIC_DATA.session.is_stopped():
             self.stop_session(ask_confirmation=False)
 
+        self._pre_process_pipeline.stop()
         self._stacker.stop()
 
     @staticmethod

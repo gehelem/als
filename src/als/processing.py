@@ -117,18 +117,19 @@ class ConvertForOutput(ImageProcessor):
 
 class PreProcessPipeline(QThread):
     """
-    Responsible of grabbing images from the input queue and applying a set of pre-processing units to each one, before
-    pushing it to the stacking queue.
+    Responsible of grabbing images from the input queue and applying a set of pre-processing units to each one
     """
 
+    new_result_signal = pyqtSignal(Image)
+    """Qt signal to emit when a new image has been pre-processed"""
+
     @log
-    def __init__(self, input_queue: SignalingQueue, stack_queue: SignalingQueue):
+    def __init__(self, input_queue: SignalingQueue):
         QThread.__init__(self)
         self._stop_asked = False
         self._input_queue = input_queue
-        self._stack_queue = stack_queue
-        self._calibration_processes = []
-        self._processes_done_last = [Debayer(), Standardize()]
+        self._pre_processes = []
+        self._pre_processes.extend([Debayer(), Standardize()])
 
     @log
     def run(self):
@@ -144,25 +145,28 @@ class PreProcessPipeline(QThread):
 
                 _LOGGER.info(f"Start pre-processing image : {image.origin}")
 
-                for processor in self._calibration_processes + self._processes_done_last:
+                try:
+                    with Timer() as image_timer:
 
-                    try:
-                        with Timer() as code_timer:
-                            image = processor.process_image(image)
+                        for processor in self._pre_processes:
 
-                        _LOGGER.info(
-                            f"Applied process '{processor.__class__.__name__}' to image {image.origin} : "
-                            f"in {code_timer.elapsed_in_milli_as_str} ms")
+                            with Timer() as process_timer:
+                                image = processor.process_image(image)
 
-                    except ProcessingError as processing_error:
-                        _LOGGER.warning(
-                            f"Error applying process '{processor.__class__.__name__}' to image {image} : "
-                            f"{processing_error} *** "
-                            f"Image will be ignored")
-                        break
+                            _LOGGER.info(
+                                f"Applied process '{processor.__class__.__name__}' to image {image.origin} : "
+                                f"in {process_timer.elapsed_in_milli_as_str} ms")
 
-                _LOGGER.info(f"Done pre-processing image {image.origin}")
-                self._stack_queue.put(image)
+                    _LOGGER.info(f"Done pre-processing image {image.origin}"
+                                 f"in {image_timer.elapsed_in_milli_as_str} ms")
+
+                    self.new_result_signal.emit(image)
+
+                except ProcessingError as processing_error:
+                    _LOGGER.warning(
+                        f"Error applying process '{processor.__class__.__name__}' to image {image} : "
+                        f"{processing_error} *** "
+                        f"Image will be ignored")
 
             self.msleep(20)
 
@@ -178,8 +182,8 @@ class PreProcessPipeline(QThread):
 
 class PostProcessPipeline(QThread):
     """
-    Responsible of grabbing images from the process queue and applying a set of post-processing units to each one, before
-    storing it into the dynamic data store
+    Responsible of grabbing images from the process queue and applying a set of post-processing units to each one,
+    before storing it into the dynamic data store
     """
 
     new_processing_result_signal = pyqtSignal()

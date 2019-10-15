@@ -14,7 +14,7 @@ from als.code_utilities import log
 from als.io.network import get_ip, StoppableServerThread
 from als.io.output import ImageSaver
 from als.model import STACKING_MODE_SUM, STACKING_MODE_MEAN, VERSION, DYNAMIC_DATA
-from als.processing import PreProcessPipeline, PostProcessPipeline
+from als.processing import PostProcessPipeline
 from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box
 from generated.als_ui import Ui_stack_window
 
@@ -57,9 +57,6 @@ class MainWindow(QMainWindow):
 
         self._image_saver = ImageSaver(DYNAMIC_DATA.save_queue)
         self._image_saver.start()
-
-        self._pre_process_pipeline = PreProcessPipeline(DYNAMIC_DATA.input_queue, DYNAMIC_DATA.stack_queue)
-        self._pre_process_pipeline.start()
 
         self._post_process_pipeline = PostProcessPipeline(DYNAMIC_DATA.process_queue)
         self._post_process_pipeline.start()
@@ -104,7 +101,6 @@ class MainWindow(QMainWindow):
         if DYNAMIC_DATA.web_server_is_running:
             self._stop_www()
 
-        self._pre_process_pipeline.stop()
         self._post_process_pipeline.stop()
 
         _LOGGER.debug(f"Window size : {self.size()}")
