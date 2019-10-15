@@ -33,6 +33,7 @@ from als import config
 from als.code_utilities import log
 from als.io.input import InputScanner, ScannerStartError
 from als.model import DYNAMIC_DATA, Image, SignalingQueue, Session
+from als.stack import Stacker
 from als.ui.dialogs import question, PreferencesDialog
 
 gettext.install('als', 'locale')
@@ -61,8 +62,11 @@ class Controller(QObject):
         DYNAMIC_DATA.web_server_is_running = False
         self._input_scanner: InputScanner = InputScanner.create_scanner(DYNAMIC_DATA.input_queue)
         self._input_queue: SignalingQueue = DYNAMIC_DATA.input_queue
+        self._stacker = Stacker(DYNAMIC_DATA.stack_queue, DYNAMIC_DATA.process_queue)
+        self._stacker.start()
 
         self._input_scanner.new_image_signal[Image].connect(self.on_new_image_read)
+        self._stacker.stack_size_changed_signal[int].connect(DYNAMIC_DATA.set_stack_size)
 
     @log
     def on_new_image_read(self, image: Image):
@@ -83,6 +87,8 @@ class Controller(QObject):
             if DYNAMIC_DATA.session.is_stopped():
 
                 _LOGGER.info("Starting new session...")
+
+                self._stacker.reset()
 
                 folders_dict = {
                     "scan": config.get_scan_folder_path(),
@@ -129,22 +135,35 @@ class Controller(QObject):
             raise
 
     @log
-    def stop_session(self):
+    def stop_session(self, ask_confirmation: bool = True):
         """
         Stops session : stop input scanner and purge input queue
+
+        :param ask_confirmation: Do we ask for user confirmation
+        :type ask_confirmation: bool
         """
-        if DYNAMIC_DATA.session.is_running():
-            self._stop_input_scanner()
-        self.purge_input_queue()
-        _LOGGER.info("Session stopped")
-        DYNAMIC_DATA.session.set_status(Session.stopped)
+
+        title = "Really stop session ?"
+        message = """Stopping the current session will reset the stack and all image enhancements.
+        
+        Are you sure you want to stop the current session ?
+        """
+        do_stop_session = True if not ask_confirmation else question(title, message)
+
+        if do_stop_session:
+            if DYNAMIC_DATA.session.is_running():
+                self._stop_input_scanner()
+            self.purge_input_queue()
+            _LOGGER.info("Session stopped")
+            DYNAMIC_DATA.session.set_status(Session.stopped)
 
     @log
     def pause_session(self):
         """
         Pauses session : just sop input scanner
         """
-        self._stop_input_scanner()
+        if DYNAMIC_DATA.session.is_running():
+            self._stop_input_scanner()
         _LOGGER.info("Session paused")
         DYNAMIC_DATA.session.set_status(Session.paused)
 
@@ -235,7 +254,9 @@ class Controller(QObject):
         Proper shutdown of all app components
         """
         if not DYNAMIC_DATA.session.is_stopped():
-            self.stop_session()
+            self.stop_session(ask_confirmation=False)
+
+        self._stacker.stop()
 
     @staticmethod
     @log

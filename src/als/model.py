@@ -141,6 +141,7 @@ class DynamicData:
         self._web_server_is_running = False
         self._stacking_mode = ""
         self._align_before_stacking = True
+        self._stack_size = 0
         self._process_result = None
         self._input_queue = SignalingQueue()
         self._stack_queue = SignalingQueue()
@@ -149,7 +150,29 @@ class DynamicData:
 
         self._session.status_changed_signal.connect(self._notify_observers)
 
+    @log
+    def set_stack_size(self, size):
+        """
+        Sets published stack size
+
+        :param size: the new published stack size
+        :type size: int
+        """
+        self._stack_size = size
+        self._notify_observers()
+
+    @log
+    def get_stack_size(self):
+        """
+        Retrieves the published stack size
+
+        :return: the published stack size
+        :rtype: int
+        """
+        return self._stack_size
+
     @property
+    @log
     def session(self):
         """
         Retrieves the session instance
@@ -160,6 +183,7 @@ class DynamicData:
         return self._session
 
     @property
+    @log
     def save_queue(self):
         """
         Retrieves save queue
@@ -170,6 +194,7 @@ class DynamicData:
         return self._save_queue
 
     @property
+    @log
     def process_result(self):
         """
         Retrieves latest published process result
@@ -180,6 +205,7 @@ class DynamicData:
         return self._process_result
 
     @process_result.setter
+    @log
     def process_result(self, image):
         """
         Record the latest process result
@@ -190,6 +216,7 @@ class DynamicData:
         self._process_result = image
 
     @property
+    @log
     def align_before_stacking(self):
         """
         Retrieves flag set if alignment is ON
@@ -200,10 +227,12 @@ class DynamicData:
         return self._align_before_stacking
 
     @align_before_stacking.setter
+    @log
     def align_before_stacking(self, align: bool):
         self._align_before_stacking = align
 
     @property
+    @log
     def stacking_mode(self):
         """
         Retrieves stacking mode.
@@ -214,6 +243,7 @@ class DynamicData:
         return self._stacking_mode
 
     @stacking_mode.setter
+    @log
     def stacking_mode(self, text: str):
         """
         Sets stacking mode.
@@ -231,6 +261,7 @@ class DynamicData:
             self._stacking_mode = STACKING_MODE_MEAN
 
     @property
+    @log
     def process_queue(self):
         """
         Retrieves the processing queue
@@ -241,6 +272,7 @@ class DynamicData:
         return self._process_queue
 
     @property
+    @log
     def stack_queue(self):
         """
         Retrieves the stack queue
@@ -251,6 +283,7 @@ class DynamicData:
         return self._stack_queue
 
     @property
+    @log
     def input_queue(self):
         """
         Retrieves the input queue.

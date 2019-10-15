@@ -15,7 +15,6 @@ from als.io.network import get_ip, StoppableServerThread
 from als.io.output import ImageSaver
 from als.model import STACKING_MODE_SUM, STACKING_MODE_MEAN, VERSION, DYNAMIC_DATA
 from als.processing import PreProcessPipeline, PostProcessPipeline
-from als.stack import Stacker
 from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box
 from generated.als_ui import Ui_stack_window
 
@@ -47,8 +46,6 @@ class MainWindow(QMainWindow):
         self.shown_log_dock = True
         self.show_session_dock = True
 
-        self.counter = 0
-
         # web stuff
         self.thread = None
         self.web_dir = None
@@ -63,10 +60,6 @@ class MainWindow(QMainWindow):
 
         self._pre_process_pipeline = PreProcessPipeline(DYNAMIC_DATA.input_queue, DYNAMIC_DATA.stack_queue)
         self._pre_process_pipeline.start()
-
-        self._stacker = Stacker(DYNAMIC_DATA.stack_queue, DYNAMIC_DATA.process_queue)
-        self._stacker.start()
-        self._stacker.stack_size_changed_signal[int].connect(self.on_stack_size_changed)
 
         self._post_process_pipeline = PostProcessPipeline(DYNAMIC_DATA.process_queue)
         self._post_process_pipeline.start()
@@ -112,7 +105,6 @@ class MainWindow(QMainWindow):
             self._stop_www()
 
         self._pre_process_pipeline.stop()
-        self._stacker.stop()
         self._post_process_pipeline.stop()
 
         _LOGGER.debug(f"Window size : {self.size()}")
@@ -243,10 +235,9 @@ class MainWindow(QMainWindow):
     @log
     def cb_apply_value(self):
         """Qt slot for clicks on the 'apply' button"""
-        if self.counter > 0:
-            self.adjust_value()
-            self.update_image()
-        _LOGGER.info("Define new display value")
+        #     self.adjust_value()
+        #     self.update_image()
+        #_LOGGER.info("Define new display value")
 
     @pyqtSlot(name="on_action_quit_triggered")
     @log
@@ -356,16 +347,6 @@ class MainWindow(QMainWindow):
         _LOGGER.debug(f"Image taken from save queue. Save queue size : {new_size}")
         self._ui.lbl_save_queue_size.setText(str(new_size))
 
-    @log
-    def on_stack_size_changed(self, new_size: int):
-        """
-        Qt slot executed when stack size changed
-
-        :param new_size: new stack size
-        :type new_size: int
-        """
-        self._ui.cnt.setText(str(new_size))
-
     # pylint: disable=C0103
     @log
     def on_cb_stacking_mode_currentTextChanged(self, text: str):
@@ -455,9 +436,6 @@ class MainWindow(QMainWindow):
         self._ui.B_slider.setEnabled(False)
         self._ui.pb_apply_value.setEnabled(False)
 
-        self.counter = 0
-        self._ui.cnt.setText(str(self.counter))
-
         try:
             self._controller.start_session()
         except SessionManagementError as session_error:
@@ -501,17 +479,19 @@ class MainWindow(QMainWindow):
         self._ui.statusBar.showMessage('   -   '.join(messages))
 
         # update preferences accessibility according to scanner and web server status
-        self._ui.action_prefs.setEnabled(not web_server_is_running and not session_is_running)
+        self._ui.action_prefs.setEnabled(not web_server_is_running and session_is_stopped)
 
-        # handle Start / Pause / Stop / Reset buttons
+        # handle Start / Pause / Stop  buttons
         self._ui.pbPlay.setEnabled(session_is_stopped or session_is_paused)
-        self._ui.pbReset.setEnabled(session_is_stopped)
         self._ui.pbStop.setEnabled(session_is_running or session_is_paused)
         self._ui.pbPause.setEnabled(session_is_running)
 
         # handle align + stack mode buttons
         self._ui.chk_align.setEnabled(session_is_stopped)
         self._ui.cb_stacking_mode.setEnabled(session_is_stopped)
+
+        # update stack size
+        self._ui.lbl_stack_size.setText(str(DYNAMIC_DATA.get_stack_size()))
 
     @pyqtSlot(name="on_pbStop_clicked")
     @log
@@ -541,8 +521,6 @@ class MainWindow(QMainWindow):
         self._ui.brightness.setText(str(0))
         self._ui.black.setText(str(0))
         self._ui.white.setText(str(65535))
-        self.counter = 0
-        self._ui.cnt.setText(str(self.counter))
         self._ui.white_slider.setEnabled(False)
         self._ui.black_slider.setEnabled(False)
         self._ui.contrast_slider.setEnabled(False)
