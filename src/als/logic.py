@@ -32,7 +32,7 @@ from PyQt5.QtWidgets import QApplication, QDialog
 from als import config
 from als.code_utilities import log
 from als.io.input import InputScanner, ScannerStartError
-from als.model import DYNAMIC_DATA, Image, SignalingQueue, Session
+from als.model import DYNAMIC_DATA, Image, SignalingQueue, Session, STACKING_MODE_MEAN
 from als.processing import PreProcessPipeline
 from als.stack import Stacker
 from als.ui.dialogs import question, PreferencesDialog
@@ -59,8 +59,10 @@ class Controller(QObject):
     @log
     def __init__(self):
         QObject.__init__(self)
+
         DYNAMIC_DATA.session.set_status(Session.stopped)
         DYNAMIC_DATA.web_server_is_running = False
+        DYNAMIC_DATA.stacking_mode = STACKING_MODE_MEAN
 
         self._input_scanner: InputScanner = InputScanner.create_scanner(DYNAMIC_DATA.input_queue)
         self._input_queue: SignalingQueue = DYNAMIC_DATA.input_queue

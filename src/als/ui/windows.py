@@ -32,14 +32,20 @@ class MainWindow(QMainWindow):
     def __init__(self, controller: Controller, parent=None):
 
         super().__init__(parent)
-        self._controller = controller
 
+        self._controller = controller
         self._ui = Ui_stack_window()
+
         self._ui.setupUi(self)
         self.setWindowTitle(_("Astro Live Stacker") + f" - v{VERSION}")
-        self._ui.cb_stacking_mode.addItem(STACKING_MODE_SUM)
-        self._ui.cb_stacking_mode.addItem(STACKING_MODE_MEAN)
-        self._ui.cb_stacking_mode.setCurrentIndex(0)
+
+        self._ui.cb_stacking_mode.blockSignals(True)
+        stacking_modes = [STACKING_MODE_SUM, STACKING_MODE_MEAN]
+        for stacking_mode in stacking_modes:
+            self._ui.cb_stacking_mode.addItem(stacking_mode)
+        self._ui.cb_stacking_mode.setCurrentIndex(stacking_modes.index(DYNAMIC_DATA.stacking_mode))
+        self._ui.cb_stacking_mode.blockSignals(False)
+
         self._ui.postprocess_widget.setCurrentIndex(0)
 
         # store if docks must be shown or not
