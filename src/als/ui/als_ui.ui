@@ -1009,7 +1009,7 @@
     <number>1</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
-    <layout class="QVBoxLayout" name="verticalLayout_17">
+    <layout class="QVBoxLayout" name="verticalLayout_16">
      <item>
       <widget class="QGroupBox" name="groupBox">
        <property name="title">
@@ -1030,6 +1030,12 @@
              <font>
               <pointsize>15</pointsize>
              </font>
+            </property>
+            <property name="toolTip">
+             <string>Start / Resume session</string>
+            </property>
+            <property name="statusTip">
+             <string>Start / Resume session</string>
             </property>
             <property name="styleSheet">
              <string notr="true">background-color: rgb(138, 226, 52)</string>
@@ -1054,6 +1060,12 @@
              <font>
               <pointsize>15</pointsize>
              </font>
+            </property>
+            <property name="toolTip">
+             <string>Pause session</string>
+            </property>
+            <property name="statusTip">
+             <string>Pause session</string>
             </property>
             <property name="styleSheet">
              <string notr="true">background-color: rgb(252, 233, 79)</string>
@@ -1083,7 +1095,10 @@
              </font>
             </property>
             <property name="toolTip">
-             <string/>
+             <string>Stop Session</string>
+            </property>
+            <property name="statusTip">
+             <string>Stop Session</string>
             </property>
             <property name="styleSheet">
              <string notr="true">background-color: rgb(255, 89, 89)</string>
@@ -1259,80 +1274,76 @@
      <item>
       <widget class="QGroupBox" name="groupBox_5">
        <property name="title">
-        <string>Queues</string>
+        <string>Queues sizes</string>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_16">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_17">
-          <item>
-           <widget class="QLabel" name="label_17">
-            <property name="text">
-             <string>Input queue size :</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="lbl_input_queue_size">
-            <property name="text">
-             <string>0</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_17">
+          <property name="text">
+           <string>Input</string>
+          </property>
+         </widget>
         </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_18">
-          <item>
-           <widget class="QLabel" name="label_19">
-            <property name="text">
-             <string>Stack queue size :</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="lbl_stack_queue_size">
-            <property name="text">
-             <string>0</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+        <item row="0" column="1">
+         <widget class="QLabel" name="lbl_input_queue_size">
+          <property name="text">
+           <string>0</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
         </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_19">
-          <item>
-           <widget class="QLabel" name="label_18">
-            <property name="text">
-             <string>Process queue size :</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="lbl_process_queue_size">
-            <property name="text">
-             <string>0</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_19">
+          <property name="text">
+           <string>Stack</string>
+          </property>
+         </widget>
         </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_20">
-          <item>
-           <widget class="QLabel" name="label_20">
-            <property name="text">
-             <string>Save queue size :</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="lbl_save_queue_size">
-            <property name="text">
-             <string>0</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+        <item row="1" column="1">
+         <widget class="QLabel" name="lbl_stack_queue_size">
+          <property name="text">
+           <string>0</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_18">
+          <property name="text">
+           <string>Process</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLabel" name="lbl_process_queue_size">
+          <property name="text">
+           <string>0</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_20">
+          <property name="text">
+           <string>Save</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLabel" name="lbl_save_queue_size">
+          <property name="text">
+           <string>0</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -1345,7 +1356,7 @@
        <property name="sizeHint" stdset="0">
         <size>
          <width>20</width>
-         <height>171</height>
+         <height>179</height>
         </size>
        </property>
       </spacer>
@@ -1426,6 +1437,9 @@
    <property name="toolTip">
     <string>Quit</string>
    </property>
+   <property name="statusTip">
+    <string>Quit ALS</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
    </property>
@@ -1433,6 +1447,9 @@
   <action name="action_prefs">
    <property name="text">
     <string>&amp;Preferences...</string>
+   </property>
+   <property name="statusTip">
+    <string>Open preferences box</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>
@@ -1454,7 +1471,10 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show session &amp;controls</string>
+    <string>Show main &amp;controls</string>
+   </property>
+   <property name="statusTip">
+    <string>Show / hide main controls</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+B</string>
@@ -1470,6 +1490,9 @@
    <property name="text">
     <string>Show session &amp;log</string>
    </property>
+   <property name="statusTip">
+    <string>Show / hide session log</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+L</string>
    </property>
@@ -1477,6 +1500,9 @@
   <action name="action_about_als">
    <property name="text">
     <string>&amp;About ALS...</string>
+   </property>
+   <property name="statusTip">
+    <string>About ALS</string>
    </property>
   </action>
  </widget>
