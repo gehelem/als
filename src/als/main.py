@@ -32,7 +32,7 @@ def main():
         window.show()
         window.reset_image_view()
 
-    _LOGGER.info(f"Astro Live Stacker version {VERSION} started in {startup.elapsed_in_milli} ms.")
+    _LOGGER.info(f"Astro Live Stacker version {VERSION} started in {startup.elapsed_in_milli_as_str} ms.")
 
     app_return_code = app.exec()
     controller.shutdown()
