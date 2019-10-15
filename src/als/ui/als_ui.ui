@@ -20,41 +20,241 @@
    <string>Astro Live Stacker</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout_3">
-    <item row="0" column="0">
-     <layout class="QVBoxLayout" name="verticalLayout_15">
+   <layout class="QVBoxLayout" name="verticalLayout_15">
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_14">
       <item>
-       <widget class="ImageView" name="image_view"/>
+       <widget class="QLabel" name="lbl_session_status">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="openExternalLinks">
+         <bool>false</bool>
+        </property>
+       </widget>
       </item>
       <item>
-       <widget class="QTabWidget" name="postprocess_widget">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>220</height>
-         </size>
+       <widget class="QLabel" name="lbl_scanner_status">
+        <property name="text">
+         <string/>
         </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>220</height>
-         </size>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
         </property>
-        <property name="tabPosition">
-         <enum>QTabWidget::West</enum>
+        <property name="openExternalLinks">
+         <bool>false</bool>
         </property>
-        <property name="currentIndex">
-         <number>2</number>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lbl_web_server_status">
+        <property name="text">
+         <string/>
         </property>
-        <widget class="QWidget" name="basic">
-         <attribute name="title">
-          <string>Basic</string>
-         </attribute>
-         <layout class="QVBoxLayout" name="verticalLayout_4">
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="openExternalLinks">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="ImageView" name="image_view"/>
+    </item>
+    <item>
+     <widget class="QTabWidget" name="postprocess_widget">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>220</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>220</height>
+       </size>
+      </property>
+      <property name="tabPosition">
+       <enum>QTabWidget::West</enum>
+      </property>
+      <property name="currentIndex">
+       <number>2</number>
+      </property>
+      <widget class="QWidget" name="basic">
+       <attribute name="title">
+        <string>Basic</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <widget class="QLabel" name="label_2">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Contrast :</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="contrast_slider">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>250</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>1000</number>
+            </property>
+            <property name="value">
+             <number>10</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="contrast">
+            <property name="minimumSize">
+             <size>
+              <width>21</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>1</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QLabel" name="label_3">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Brightness :</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="brightness_slider">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>250</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <number>-32000</number>
+            </property>
+            <property name="maximum">
+             <number>32000</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="brightness">
+            <property name="minimumSize">
+             <size>
+              <width>43</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="Niveaux">
+       <attribute name="title">
+        <string>Levels</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_10">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>RGB :</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
             <item>
-             <widget class="QLabel" name="label_2">
+             <widget class="QLabel" name="label_7">
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
@@ -62,12 +262,12 @@
                </size>
               </property>
               <property name="text">
-               <string>Contrast :</string>
+               <string>R :</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QSlider" name="contrast_slider">
+             <widget class="QSlider" name="R_slider">
               <property name="enabled">
                <bool>false</bool>
               </property>
@@ -87,10 +287,13 @@
                <number>1</number>
               </property>
               <property name="maximum">
-               <number>1000</number>
+               <number>200</number>
               </property>
               <property name="value">
-               <number>10</number>
+               <number>100</number>
+              </property>
+              <property name="sliderPosition">
+               <number>100</number>
               </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
@@ -98,10 +301,10 @@
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="contrast">
+             <widget class="QLabel" name="R_value">
               <property name="minimumSize">
                <size>
-                <width>21</width>
+                <width>30</width>
                 <height>0</height>
                </size>
               </property>
@@ -119,9 +322,9 @@
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <layout class="QHBoxLayout" name="horizontalLayout_8">
             <item>
-             <widget class="QLabel" name="label_3">
+             <widget class="QLabel" name="label_8">
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
@@ -129,12 +332,12 @@
                </size>
               </property>
               <property name="text">
-               <string>Brightness :</string>
+               <string>G :</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QSlider" name="brightness_slider">
+             <widget class="QSlider" name="G_slider">
               <property name="enabled">
                <bool>false</bool>
               </property>
@@ -151,10 +354,13 @@
                </size>
               </property>
               <property name="minimum">
-               <number>-32000</number>
+               <number>1</number>
               </property>
               <property name="maximum">
-               <number>32000</number>
+               <number>200</number>
+              </property>
+              <property name="value">
+               <number>100</number>
               </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
@@ -162,7 +368,158 @@
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="brightness">
+             <widget class="QLabel" name="G_value">
+              <property name="minimumSize">
+               <size>
+                <width>30</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>1</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_9">
+            <item>
+             <widget class="QLabel" name="label_11">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>B :</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="B_slider">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>250</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>200</number>
+              </property>
+              <property name="value">
+               <number>100</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="B_value">
+              <property name="minimumSize">
+               <size>
+                <width>30</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>1</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <item>
+           <widget class="QLabel" name="label_16">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Niveaux :</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <item>
+             <widget class="QLabel" name="label_5">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Black/Min :</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="black_slider">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>250</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="maximum">
+               <number>65535</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="black">
               <property name="minimumSize">
                <size>
                 <width>43</width>
@@ -182,447 +539,31 @@
             </item>
            </layout>
           </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="Niveaux">
-         <attribute name="title">
-          <string>Levels</string>
-         </attribute>
-         <layout class="QHBoxLayout" name="horizontalLayout_10">
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout_3">
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
             <item>
-             <widget class="QLabel" name="label">
+             <widget class="QLabel" name="label_6">
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
                 <height>20</height>
                </size>
               </property>
-              <property name="font">
-               <font>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
               <property name="text">
-               <string>RGB :</string>
+               <string>White/Max :</string>
               </property>
              </widget>
             </item>
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_7">
-              <item>
-               <widget class="QLabel" name="label_7">
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>R :</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSlider" name="R_slider">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>250</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>200</number>
-                </property>
-                <property name="value">
-                 <number>100</number>
-                </property>
-                <property name="sliderPosition">
-                 <number>100</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="R_value">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>1</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_8">
-              <item>
-               <widget class="QLabel" name="label_8">
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>G :</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSlider" name="G_slider">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>250</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>200</number>
-                </property>
-                <property name="value">
-                 <number>100</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="G_value">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>1</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_9">
-              <item>
-               <widget class="QLabel" name="label_11">
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>B :</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSlider" name="B_slider">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>250</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>200</number>
-                </property>
-                <property name="value">
-                 <number>100</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="B_value">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>1</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QVBoxLayout" name="verticalLayout_5">
-            <item>
-             <widget class="QLabel" name="label_16">
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>20</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>Niveaux :</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_5">
-              <item>
-               <widget class="QLabel" name="label_5">
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>Black/Min :</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSlider" name="black_slider">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>250</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="maximum">
-                 <number>65535</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="black">
-                <property name="minimumSize">
-                 <size>
-                  <width>43</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>0</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_6">
-              <item>
-               <widget class="QLabel" name="label_6">
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>White/Max :</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSlider" name="white_slider">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>250</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="maximum">
-                 <number>65535</number>
-                </property>
-                <property name="sliderPosition">
-                 <number>65535</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="white">
-                <property name="minimumSize">
-                 <size>
-                  <width>43</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>65535</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="Advance">
-         <attribute name="title">
-          <string>Advanced</string>
-         </attribute>
-         <layout class="QVBoxLayout" name="verticalLayout_6">
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_13">
-            <item>
-             <widget class="QCheckBox" name="cbSCNR">
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>SCNR</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="cmSCNR">
+             <widget class="QSlider" name="white_slider">
               <property name="enabled">
                <bool>false</bool>
               </property>
-              <property name="maximumSize">
+              <property name="minimumSize">
                <size>
-                <width>16777215</width>
-                <height>30</height>
+                <width>250</width>
+                <height>0</height>
                </size>
-              </property>
-              <item>
-               <property name="text">
-                <string>Av Neutral</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Max Neutral</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Add Mask</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Max Mask</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSlider" name="SCNR_Slider">
-              <property name="enabled">
-               <bool>false</bool>
               </property>
               <property name="maximumSize">
                <size>
@@ -631,10 +572,10 @@
                </size>
               </property>
               <property name="maximum">
-               <number>100</number>
+               <number>65535</number>
               </property>
-              <property name="value">
-               <number>50</number>
+              <property name="sliderPosition">
+               <number>65535</number>
               </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
@@ -642,10 +583,10 @@
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="SCNR_value">
+             <widget class="QLabel" name="white">
               <property name="minimumSize">
                <size>
-                <width>30</width>
+                <width>43</width>
                 <height>0</height>
                </size>
               </property>
@@ -656,267 +597,365 @@
                </size>
               </property>
               <property name="text">
-               <string>0.50</string>
+               <string>65535</string>
               </property>
              </widget>
             </item>
            </layout>
           </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="Advance">
+       <attribute name="title">
+        <string>Advanced</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_6">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_13">
           <item>
-           <widget class="Line" name="line_3">
+           <widget class="QCheckBox" name="cbSCNR">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>SCNR</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="cmSCNR">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>30</height>
+             </size>
+            </property>
+            <item>
+             <property name="text">
+              <string>Av Neutral</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Max Neutral</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Add Mask</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Max Mask</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="SCNR_Slider">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>50</number>
+            </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_15">
+           <widget class="QLabel" name="SCNR_value">
+            <property name="minimumSize">
+             <size>
+              <width>30</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>0.50</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="Line" name="line_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_15">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_10">
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_10">
+             <widget class="QCheckBox" name="cbWavelets">
+              <property name="text">
+               <string>Wavelets</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="cBoxWaveType">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="editable">
+               <bool>false</bool>
+              </property>
+              <property name="currentText">
+               <string>deep sky</string>
+              </property>
+              <property name="maxVisibleItems">
+               <number>2</number>
+              </property>
               <item>
-               <widget class="QCheckBox" name="cbWavelets">
-                <property name="text">
-                 <string>Wavelets</string>
-                </property>
-               </widget>
+               <property name="text">
+                <string>deep sky</string>
+               </property>
               </item>
               <item>
-               <widget class="QComboBox" name="cBoxWaveType">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="editable">
-                 <bool>false</bool>
-                </property>
-                <property name="currentText">
-                 <string>deep sky</string>
-                </property>
-                <property name="maxVisibleItems">
-                 <number>2</number>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>deep sky</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>planetary</string>
-                 </property>
-                </item>
-               </widget>
+               <property name="text">
+                <string>planetary</string>
+               </property>
               </item>
-              <item>
-               <widget class="QCheckBox" name="cbLuminanceWavelet">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>on luminance</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
+             </widget>
             </item>
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_2">
-              <item alignment="Qt::AlignHCenter">
-               <widget class="QLabel" name="label_9">
-                <property name="text">
-                 <string>Wavelet level 1</string>
-                </property>
-               </widget>
-              </item>
-              <item alignment="Qt::AlignHCenter">
-               <widget class="QSlider" name="verticalSlider">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="layoutDirection">
-                 <enum>Qt::LeftToRight</enum>
-                </property>
-                <property name="autoFillBackground">
-                 <bool>false</bool>
-                </property>
-                <property name="maximum">
-                 <number>500</number>
-                </property>
-                <property name="value">
-                 <number>100</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-               </widget>
-              </item>
-              <item alignment="Qt::AlignHCenter">
-               <widget class="QLabel" name="wavelet_1_label">
-                <property name="text">
-                 <string>100</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
+             <widget class="QCheckBox" name="cbLuminanceWavelet">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>on luminance</string>
+              </property>
+             </widget>
             </item>
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_7">
-              <item alignment="Qt::AlignHCenter">
-               <widget class="QLabel" name="label_12">
-                <property name="text">
-                 <string>Wavelet level 2</string>
-                </property>
-               </widget>
-              </item>
-              <item alignment="Qt::AlignHCenter">
-               <widget class="QSlider" name="verticalSlider_2">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="maximum">
-                 <number>500</number>
-                </property>
-                <property name="value">
-                 <number>100</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-               </widget>
-              </item>
-              <item alignment="Qt::AlignHCenter">
-               <widget class="QLabel" name="wavelet_2_label">
-                <property name="text">
-                 <string>100</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item alignment="Qt::AlignHCenter">
+             <widget class="QLabel" name="label_9">
+              <property name="text">
+               <string>Wavelet level 1</string>
+              </property>
+             </widget>
             </item>
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_8">
-              <item alignment="Qt::AlignHCenter">
-               <widget class="QLabel" name="label_13">
-                <property name="text">
-                 <string>Wavelet level 3</string>
-                </property>
-               </widget>
-              </item>
-              <item alignment="Qt::AlignHCenter">
-               <widget class="QSlider" name="verticalSlider_3">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="maximum">
-                 <number>500</number>
-                </property>
-                <property name="value">
-                 <number>100</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-               </widget>
-              </item>
-              <item alignment="Qt::AlignHCenter">
-               <widget class="QLabel" name="wavelet_3_label">
-                <property name="text">
-                 <string>100</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
+            <item alignment="Qt::AlignHCenter">
+             <widget class="QSlider" name="verticalSlider">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="autoFillBackground">
+               <bool>false</bool>
+              </property>
+              <property name="maximum">
+               <number>500</number>
+              </property>
+              <property name="value">
+               <number>100</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+             </widget>
             </item>
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_9">
-              <item alignment="Qt::AlignHCenter">
-               <widget class="QLabel" name="label_14">
-                <property name="text">
-                 <string>Wavelet level 4</string>
-                </property>
-               </widget>
-              </item>
-              <item alignment="Qt::AlignHCenter">
-               <widget class="QSlider" name="verticalSlider_4">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="maximum">
-                 <number>500</number>
-                </property>
-                <property name="value">
-                 <number>100</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-               </widget>
-              </item>
-              <item alignment="Qt::AlignHCenter">
-               <widget class="QLabel" name="wavelet_4_label">
-                <property name="text">
-                 <string>100</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
+            <item alignment="Qt::AlignHCenter">
+             <widget class="QLabel" name="wavelet_1_label">
+              <property name="text">
+               <string>100</string>
+              </property>
+             </widget>
             </item>
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_20">
-              <item alignment="Qt::AlignHCenter">
-               <widget class="QLabel" name="label_15">
-                <property name="text">
-                 <string>Wavelet level 5</string>
-                </property>
-               </widget>
-              </item>
-              <item alignment="Qt::AlignHCenter">
-               <widget class="QSlider" name="verticalSlider_5">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="maximum">
-                 <number>500</number>
-                </property>
-                <property name="value">
-                 <number>100</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-               </widget>
-              </item>
-              <item alignment="Qt::AlignHCenter">
-               <widget class="QLabel" name="wavelet_5_label">
-                <property name="text">
-                 <string>100</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_7">
+            <item alignment="Qt::AlignHCenter">
+             <widget class="QLabel" name="label_12">
+              <property name="text">
+               <string>Wavelet level 2</string>
+              </property>
+             </widget>
+            </item>
+            <item alignment="Qt::AlignHCenter">
+             <widget class="QSlider" name="verticalSlider_2">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="maximum">
+               <number>500</number>
+              </property>
+              <property name="value">
+               <number>100</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+             </widget>
+            </item>
+            <item alignment="Qt::AlignHCenter">
+             <widget class="QLabel" name="wavelet_2_label">
+              <property name="text">
+               <string>100</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_8">
+            <item alignment="Qt::AlignHCenter">
+             <widget class="QLabel" name="label_13">
+              <property name="text">
+               <string>Wavelet level 3</string>
+              </property>
+             </widget>
+            </item>
+            <item alignment="Qt::AlignHCenter">
+             <widget class="QSlider" name="verticalSlider_3">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="maximum">
+               <number>500</number>
+              </property>
+              <property name="value">
+               <number>100</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+             </widget>
+            </item>
+            <item alignment="Qt::AlignHCenter">
+             <widget class="QLabel" name="wavelet_3_label">
+              <property name="text">
+               <string>100</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_9">
+            <item alignment="Qt::AlignHCenter">
+             <widget class="QLabel" name="label_14">
+              <property name="text">
+               <string>Wavelet level 4</string>
+              </property>
+             </widget>
+            </item>
+            <item alignment="Qt::AlignHCenter">
+             <widget class="QSlider" name="verticalSlider_4">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="maximum">
+               <number>500</number>
+              </property>
+              <property name="value">
+               <number>100</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+             </widget>
+            </item>
+            <item alignment="Qt::AlignHCenter">
+             <widget class="QLabel" name="wavelet_4_label">
+              <property name="text">
+               <string>100</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_20">
+            <item alignment="Qt::AlignHCenter">
+             <widget class="QLabel" name="label_15">
+              <property name="text">
+               <string>Wavelet level 5</string>
+              </property>
+             </widget>
+            </item>
+            <item alignment="Qt::AlignHCenter">
+             <widget class="QSlider" name="verticalSlider_5">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="maximum">
+               <number>500</number>
+              </property>
+              <property name="value">
+               <number>100</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+             </widget>
+            </item>
+            <item alignment="Qt::AlignHCenter">
+             <widget class="QLabel" name="wavelet_5_label">
+              <property name="text">
+               <string>100</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
          </layout>
-        </widget>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pb_apply_value">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>30</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Apply</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pb_apply_value">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Apply</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

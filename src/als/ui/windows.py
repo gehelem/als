@@ -462,21 +462,27 @@ class MainWindow(QMainWindow):
         session_is_stopped = DYNAMIC_DATA.session.is_stopped()
         session_is_paused = DYNAMIC_DATA.session.is_paused()
 
-        # build status bar messages display
-        messages = list()
-
-        # update statusBar according to status of folder scanner and web server
-        scanner_status_message = f"Scanner on {config.get_scan_folder_path()} : "
+        # update running statuses
+        scanner_status_message = f"Scanner on {config.get_scan_folder_path()}: "
         scanner_status_message += f"Running" if session_is_running else "Stopped"
-        messages.append(scanner_status_message)
+        self._ui.lbl_scanner_status.setText(scanner_status_message)
 
         if web_server_is_running:
-            messages.append(f"Web server reachable at "
-                            f"http://{get_ip()}:{config.get_www_server_port_number()}")
+            url = f"http://{get_ip()}:{config.get_www_server_port_number()}"
+            self._ui.lbl_web_server_status.setText(f'Web server: Started, reachable at <a href="{url}">{url}</a>')
         else:
-            messages.append("Web server : Stopped")
+            self._ui.lbl_web_server_status.setText("Web server: Stopped")
 
-        self._ui.statusBar.showMessage('   -   '.join(messages))
+        if session_is_stopped:
+            session_status_string = "Stopped"
+        elif session_is_paused:
+            session_status_string = "Paused"
+        elif session_is_running:
+            session_status_string = "Running"
+        else:
+            # this should never happen, that's why we check ;)
+            session_status_string = "###BUG !"
+        self._ui.lbl_session_status.setText(f"Session: {session_status_string}")
 
         # update preferences accessibility according to scanner and web server status
         self._ui.action_prefs.setEnabled(not web_server_is_running and session_is_stopped)
