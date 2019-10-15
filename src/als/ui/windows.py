@@ -70,17 +70,21 @@ class MainWindow(QMainWindow):
 
         self.update_according_to_app_state()
 
-        DYNAMIC_DATA.input_queue.item_pushed_signal[int].connect(self.on_input_queue_pushed)
-        DYNAMIC_DATA.input_queue.item_popped_signal[int].connect(self.on_input_queue_popped)
+        input_queue = DYNAMIC_DATA.input_queue
+        input_queue.item_pushed_signal[int].connect(self.on_input_queue_pushed)
+        input_queue.item_popped_signal[int].connect(self.on_input_queue_popped)
 
-        DYNAMIC_DATA.stack_queue.item_pushed_signal[int].connect(self.on_stack_queue_pushed)
-        DYNAMIC_DATA.stack_queue.item_popped_signal[int].connect(self.on_stack_queue_popped)
+        stack_queue = DYNAMIC_DATA.stack_queue
+        stack_queue.item_pushed_signal[int].connect(self.on_stack_queue_pushed)
+        stack_queue.item_popped_signal[int].connect(self.on_stack_queue_popped)
 
-        DYNAMIC_DATA.process_queue.item_pushed_signal[int].connect(self.on_process_queue_pushed)
-        DYNAMIC_DATA.process_queue.item_popped_signal[int].connect(self.on_process_queue_popped)
+        process_queue = DYNAMIC_DATA.process_queue
+        process_queue.item_pushed_signal[int].connect(self.on_process_queue_pushed)
+        process_queue.item_popped_signal[int].connect(self.on_process_queue_popped)
 
-        DYNAMIC_DATA.save_queue.item_pushed_signal[int].connect(self.on_save_queue_pushed)
-        DYNAMIC_DATA.save_queue.item_popped_signal[int].connect(self.on_save_queue_popped)
+        save_queue = DYNAMIC_DATA.save_queue
+        save_queue.item_pushed_signal[int].connect(self.on_save_queue_pushed)
+        save_queue.item_popped_signal[int].connect(self.on_save_queue_popped)
 
         self._scene = QGraphicsScene(self)
         self._ui.image_view.setScene(self._scene)
