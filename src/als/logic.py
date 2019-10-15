@@ -32,7 +32,7 @@ from PyQt5.QtWidgets import QApplication, QDialog
 from als import config, model
 from als.code_utilities import log
 from als.io.input import InputScanner, ScannerStartError
-from als.model import STORE, Image, SignalingQueue
+from als.model import STORE, Image, SignalingQueue, Session
 from als.ui.dialogs import question, PreferencesDialog
 
 gettext.install('als', 'locale')
@@ -57,7 +57,7 @@ class Controller(QObject):
     @log
     def __init__(self):
         QObject.__init__(self)
-        model.STORE.record_session_stop()
+        model.STORE.session.set_status(Session.stopped)
         model.STORE.web_server_is_running = False
         self._input_scanner: InputScanner = InputScanner.create_scanner(STORE.input_queue)
         self._input_queue: SignalingQueue = STORE.input_queue
@@ -80,7 +80,7 @@ class Controller(QObject):
         Starts session
         """
         try:
-            if STORE.session_is_stopped:
+            if STORE.session.is_stopped():
 
                 _LOGGER.info("Starting new session...")
 
@@ -119,13 +119,13 @@ class Controller(QObject):
             except ScannerStartError as scanner_start_error:
                 raise SessionManagementError("Input scanner could not start", scanner_start_error)
 
-            STORE.record_session_start()
             running_mode = f"{STORE.stacking_mode}"
             running_mode += " with alignment" if STORE.align_before_stacking else " without alignment"
             _LOGGER.info(f"Session running in mode {running_mode}")
+            STORE.session.set_status(Session.running)
 
         except SessionManagementError as session_error:
-            _LOGGER.error(f"Session start failed. {session_error.message} : {session_error.error}")
+            _LOGGER.error(f"Session error. {session_error.message} : {session_error.error}")
             raise
 
     @log
@@ -133,10 +133,11 @@ class Controller(QObject):
         """
         Stops session : stop input scanner and purge input queue
         """
-        if STORE.session_is_started:
+        if STORE.session.is_running():
             self._stop_input_scanner()
-        STORE.record_session_stop()
         self.purge_input_queue()
+        _LOGGER.info("Session stopped")
+        STORE.session.set_status(Session.stopped)
 
     @log
     def pause_session(self):
@@ -144,7 +145,8 @@ class Controller(QObject):
         Pauses session : just sop input scanner
         """
         self._stop_input_scanner()
-        STORE.record_session_pause()
+        _LOGGER.info("Session paused")
+        STORE.session.set_status(Session.paused)
 
     @log
     def purge_input_queue(self):

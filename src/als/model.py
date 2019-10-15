@@ -86,6 +86,7 @@ class Session(QObject):
         if status in Session._ALLOWED_STATUSES:
             self._status = status
 
+    @log
     def is_running(self):
         """
         Is session running ?
@@ -95,6 +96,7 @@ class Session(QObject):
         """
         return self._status == Session.running
 
+    @log
     def is_stopped(self):
         """
         Is session stopped ?
@@ -104,6 +106,7 @@ class Session(QObject):
         """
         return self._status == Session.stopped
 
+    @log
     def is_paused(self):
         """
         Is session paused ?
@@ -113,6 +116,7 @@ class Session(QObject):
         """
         return self._status == Session.paused
 
+    @log
     def set_status(self, status: int):
         """
         Sets session status
@@ -122,7 +126,7 @@ class Session(QObject):
         """
         if status in Session._ALLOWED_STATUSES:
             self._status = status
-            Session.status_changed_signal.emit()
+            self.status_changed_signal.emit()
 
 
 # pylint: disable=R0902
@@ -132,9 +136,7 @@ class DataStore:
     """
     def __init__(self):
         self._observers = []
-        self._session_is_started = False
-        self._session_is_stopped = True
-        self._session_is_paused = False
+        self._session = Session()
         self._web_server_is_running = False
         self._stacking_mode = ""
         self._align_before_stacking = True
@@ -143,6 +145,18 @@ class DataStore:
         self._stack_queue = SignalingQueue()
         self._process_queue = SignalingQueue()
         self._save_queue = SignalingQueue()
+
+        self._session.status_changed_signal.connect(self._notify_observers)
+
+    @property
+    def session(self):
+        """
+        Retrieves the session instance
+
+        :return: the session
+        :rtype: Session
+        """
+        return self._session
 
     @property
     def save_queue(self):
@@ -266,69 +280,6 @@ class DataStore:
         :type running: bool
         """
         self._web_server_is_running = running
-        self._notify_observers()
-
-    @property
-    @log
-    def session_is_started(self):
-        """
-        Is session started.
-
-        :return: True if session is started, False otherwise
-        :rtype: bool
-        """
-        return self._session_is_started
-
-    @log
-    def record_session_start(self):
-        """
-        Sets flag for session started status.
-        """
-        self._session_is_started = True
-        self._session_is_stopped = False
-        self._session_is_paused = False
-        self._notify_observers()
-
-    @property
-    @log
-    def session_is_stopped(self):
-        """
-        Is session stopped.
-
-        :return: True if session is stopped, False otherwise
-        :rtype: bool
-        """
-        return self._session_is_stopped
-
-    @log
-    def record_session_stop(self):
-        """
-        Sets flag for session stopped status.
-        """
-        self._session_is_started = False
-        self._session_is_stopped = True
-        self._session_is_paused = False
-        self._notify_observers()
-
-    @property
-    @log
-    def session_is_paused(self):
-        """
-        Is session paused.
-
-        :return: True if session is paused, False otherwise
-        :rtype: bool
-        """
-        return self._session_is_paused
-
-    @log
-    def record_session_pause(self):
-        """
-        Sets flag for session paused status.
-        """
-        self._session_is_started = False
-        self._session_is_stopped = False
-        self._session_is_paused = True
         self._notify_observers()
 
     @log

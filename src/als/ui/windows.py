@@ -110,7 +110,7 @@ class MainWindow(QMainWindow):
 
         if STORE.web_server_is_running:
             self._stop_www()
-        if STORE.session_is_started:
+        if STORE.session.is_running():
             self._controller.stop_session()
 
         self._pre_process_pipeline.stop()
@@ -485,7 +485,7 @@ class MainWindow(QMainWindow):
 
         # update statusBar according to status of folder scanner and web server
         scanner_status_message = f"Scanner on {config.get_scan_folder_path()} : "
-        scanner_status_message += f"Running" if STORE.session_is_started else "Stopped"
+        scanner_status_message += f"Running" if STORE.session.is_running() else "Stopped"
         messages.append(scanner_status_message)
 
         if STORE.web_server_is_running:
@@ -497,17 +497,17 @@ class MainWindow(QMainWindow):
         self._ui.statusBar.showMessage('   -   '.join(messages))
 
         # update preferences accessibility according to scanner and webserver status
-        self._ui.action_prefs.setEnabled(not STORE.web_server_is_running and not STORE.session_is_started)
+        self._ui.action_prefs.setEnabled(not STORE.web_server_is_running and not STORE.session.is_running())
 
         # handle Start / Pause / Stop / Reset buttons
-        self._ui.pbPlay.setEnabled(STORE.session_is_stopped or STORE.session_is_paused)
-        self._ui.pbReset.setEnabled(STORE.session_is_stopped)
-        self._ui.pbStop.setEnabled(STORE.session_is_started or STORE.session_is_paused)
-        self._ui.pbPause.setEnabled(STORE.session_is_started)
+        self._ui.pbPlay.setEnabled(STORE.session.is_stopped() or STORE.session.is_paused())
+        self._ui.pbReset.setEnabled(STORE.session.is_stopped())
+        self._ui.pbStop.setEnabled(STORE.session.is_running() or STORE.session.is_paused())
+        self._ui.pbPause.setEnabled(STORE.session.is_running())
 
         # handle align + stack mode buttons
-        self._ui.chk_align.setEnabled(STORE.session_is_stopped)
-        self._ui.cb_stacking_mode.setEnabled(STORE.session_is_stopped)
+        self._ui.chk_align.setEnabled(STORE.session.is_stopped())
+        self._ui.cb_stacking_mode.setEnabled(STORE.session.is_stopped())
 
     @pyqtSlot(name="on_pbStop_clicked")
     @log
