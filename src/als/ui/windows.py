@@ -2,7 +2,6 @@
 Holds all windows used in the app
 """
 import logging
-import os
 
 from PyQt5.QtCore import QEvent, pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap
@@ -10,15 +9,14 @@ from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QA
 from qimage2ndarray import array2qimage
 
 from als import model, config
-from als.logic import Controller
+from als.logic import Controller, SessionManagementError
 from als.code_utilities import log
-from als.io.input import InputScanner, ScannerStartError
 from als.io.network import get_ip, StoppableServerThread
 from als.io.output import ImageSaver
 from als.model import STACKING_MODE_SUM, STACKING_MODE_MEAN, VERSION, STORE
 from als.processing import PreProcessPipeline, PostProcessPipeline
 from als.stack import Stacker
-from als.ui.dialogs import PreferencesDialog, AboutDialog, question, error_box, warning_box
+from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box
 from generated.als_ui import Ui_stack_window
 
 _LOGGER = logging.getLogger(__name__)
@@ -62,8 +60,6 @@ class MainWindow(QMainWindow):
 
         self._image_saver = ImageSaver(STORE.save_queue)
         self._image_saver.start()
-
-        self._input_scanner = InputScanner.create_scanner(STORE.input_queue)
 
         self._pre_process_pipeline = PreProcessPipeline(STORE.input_queue, STORE.stack_queue)
         self._pre_process_pipeline.start()
@@ -115,7 +111,7 @@ class MainWindow(QMainWindow):
         if STORE.web_server_is_running:
             self._stop_www()
         if STORE.session_is_started:
-            self.cb_stop()
+            self._controller.stop_session()
 
         self._pre_process_pipeline.stop()
         self._stacker.stop()
@@ -451,25 +447,6 @@ class MainWindow(QMainWindow):
     def cb_play(self):
         """Qt slot for mouse clicks on the 'play' button"""
 
-        # check existence of work and scan folders
-        scan_folder_path = config.get_scan_folder_path()
-        if not os.path.exists(scan_folder_path) or not os.path.isdir(scan_folder_path):
-            if question("Scan folder issue",
-                        f"Your configured scan folder '{scan_folder_path}' is missing.\n"
-                        f"Do you want to open preferences screen ?"):
-                self.cb_prefs()
-            else:
-                return
-
-        work_folder_path = config.get_work_folder_path()
-        if not os.path.exists(work_folder_path) or not os.path.isdir(work_folder_path):
-            if question("Work folder issue",
-                        f"Your configured work folder '{work_folder_path}' is missing.\n"
-                        f"Do you want to open preferences screen ?"):
-                self.cb_prefs()
-            else:
-                return
-
         self._ui.white_slider.setEnabled(False)
         self._ui.black_slider.setEnabled(False)
         self._ui.contrast_slider.setEnabled(False)
@@ -478,36 +455,14 @@ class MainWindow(QMainWindow):
         self._ui.G_slider.setEnabled(False)
         self._ui.B_slider.setEnabled(False)
         self._ui.pb_apply_value.setEnabled(False)
-        self._ui.chk_align.setEnabled(False)
-        self._ui.cb_stacking_mode.setEnabled(False)
+
         self.counter = 0
         self._ui.cnt.setText(str(self.counter))
 
-        running_mode = f"{STORE.stacking_mode}"
-        if STORE.align_before_stacking:
-            running_mode += " with alignment"
-        else:
-            running_mode += " without alignment"
-        _LOGGER.info(f"Starting session in mode : {running_mode}")
-
         try:
-            self._controller.setup_work_folder()
-        except OSError as os_error:
-            title = "Work folder could not be prepared"
-            message = f"Details : {os_error}"
-            error_box(title, message)
-            _LOGGER.error(f"{title} : {os_error}")
-            self.cb_stop()
-            return
-
-        _LOGGER.info(f"Work folder : '{config.get_work_folder_path()}'")
-        _LOGGER.info(f"Scan folder : '{config.get_scan_folder_path()}'")
-
-        try:
-            self._input_scanner.start()
-            STORE.record_session_start()
-        except ScannerStartError as start_error:
-            error_box("Could not start folder scanner", str(start_error))
+            self._controller.start_session()
+        except SessionManagementError as session_error:
+            error_box(session_error.message, str(session_error.error) + "\n\nSession start aborted")
 
     def on_log_message(self, message):
         """
@@ -544,29 +499,27 @@ class MainWindow(QMainWindow):
         # update preferences accessibility according to scanner and webserver status
         self._ui.action_prefs.setEnabled(not STORE.web_server_is_running and not STORE.session_is_started)
 
-        # handle Start / Pause / Stop buttons
+        # handle Start / Pause / Stop / Reset buttons
         self._ui.pbPlay.setEnabled(STORE.session_is_stopped or STORE.session_is_paused)
         self._ui.pbReset.setEnabled(STORE.session_is_stopped)
         self._ui.pbStop.setEnabled(STORE.session_is_started or STORE.session_is_paused)
         self._ui.pbPause.setEnabled(STORE.session_is_started)
 
+        # handle align + stack mode buttons
+        self._ui.chk_align.setEnabled(STORE.session_is_stopped)
+        self._ui.cb_stacking_mode.setEnabled(STORE.session_is_stopped)
+
     @pyqtSlot(name="on_pbStop_clicked")
     @log
     def cb_stop(self):
         """Qt slot for mouse clicks on the 'Stop' button"""
-        self._ui.chk_align.setEnabled(True)
-        self._ui.cb_stacking_mode.setEnabled(True)
-        self._ui.action_prefs.setEnabled(not self._ui.cbWww.isChecked())
-        self._input_scanner.stop()
-        self._controller.purge_input_queue()
-        STORE.record_session_stop()
+        self._controller.stop_session()
 
     @pyqtSlot(name="on_pbPause_clicked")
     @log
     def cb_pause(self):
         """Qt slot for mouse clicks on the 'Pause' button"""
-        self._input_scanner.stop()
-        STORE.record_session_pause()
+        self._controller.pause_session()
 
     @pyqtSlot(name="on_pbReset_clicked")
     @log

@@ -9,7 +9,7 @@ from abc import abstractmethod
 from pathlib import Path
 
 from astropy.io import fits
-from PyQt5.QtCore import QFileInfo
+from PyQt5.QtCore import QFileInfo, pyqtSignal, QObject
 from rawpy import imread
 from rawpy._rawpy import LibRawNonFatalError, LibRawFatalError
 from watchdog.events import FileSystemEventHandler
@@ -52,20 +52,23 @@ class InputScanner:
       - feeding the input queue as new images are "read"
     """
 
+    new_image_signal = pyqtSignal(Image)
+    """Qt signal emitted when a new image is read by scanner"""
+
     @log
     def __init__(self, input_queue: SignalingQueue):
         self._input_queue = input_queue
 
     @log
-    def enqueue_image(self, image: Image):
+    def broadcast_image(self, image: Image):
         """
-        Push an image to the input queue
+        Send a signal with newly read image to anyone who cares
 
-        :param image: the image to push
+        :param image: the new image
         :type image: Image
         """
         if image is not None:
-            self._input_queue.put(image)
+            self.new_image_signal.emit(image)
 
     @abstractmethod
     def start(self):
@@ -105,7 +108,7 @@ class InputScanner:
         raise ValueError(f"Unsupported scanner type : {scanner_type}")
 
 
-class FolderScanner(FileSystemEventHandler, InputScanner):
+class FolderScanner(FileSystemEventHandler, InputScanner, QObject):
     """
     Watches file changes (creation, move) in a specific filesystem folder
 
@@ -117,6 +120,7 @@ class FolderScanner(FileSystemEventHandler, InputScanner):
     def __init__(self, input_queue: SignalingQueue):
         FileSystemEventHandler.__init__(self)
         InputScanner.__init__(self, input_queue)
+        QObject.__init__(self)
         self._observer = None
 
     @log
@@ -129,9 +133,7 @@ class FolderScanner(FileSystemEventHandler, InputScanner):
             self._observer = PollingObserver()
             self._observer.schedule(self, scan_folder_path, recursive=False)
             self._observer.start()
-            _LOGGER.info(f"Folder scanner started scanning {scan_folder_path}")
         except OSError as os_error:
-            _LOGGER.error(f"Folder scan start failed : {os_error}")
             raise ScannerStartError(os_error)
 
     @log
@@ -140,10 +142,8 @@ class FolderScanner(FileSystemEventHandler, InputScanner):
         Stops scanning scan folder for new files
         """
         if self._observer is not None:
-            _LOGGER.info("Stopping folder scanner... Waiting for current operation to complete...")
             self._observer.stop()
             self._observer = None
-            _LOGGER.info("Folder scanner stopped")
 
     @log
     def on_moved(self, event):
@@ -151,7 +151,7 @@ class FolderScanner(FileSystemEventHandler, InputScanner):
             image_path = event.dest_path
             _LOGGER.debug(f"File move detected : {image_path}")
 
-            self.enqueue_image(read_disk_image(Path(image_path)))
+            self.broadcast_image(read_disk_image(Path(image_path)))
 
     @log
     def on_created(self, event):
@@ -171,7 +171,7 @@ class FolderScanner(FileSystemEventHandler, InputScanner):
                 last_file_size = size
                 time.sleep(_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC)
 
-            self.enqueue_image(read_disk_image(Path(image_path)))
+            self.broadcast_image(read_disk_image(Path(image_path)))
 
 
 @log

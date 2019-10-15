@@ -24,15 +24,30 @@ import logging
 import os
 import shutil
 from datetime import datetime
+from pathlib import Path
 
 from PyQt5.QtCore import QObject
+from PyQt5.QtWidgets import QApplication, QDialog
+
 from als import config, model
 from als.code_utilities import log
-from als.model import STORE, Image
+from als.io.input import InputScanner, ScannerStartError
+from als.model import STORE, Image, SignalingQueue
+from als.ui.dialogs import question, PreferencesDialog
 
 gettext.install('als', 'locale')
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class SessionManagementError(Exception):
+    """
+    Base class for all errors related to session management
+    """
+    def __init__(self, message, error):
+        Exception.__init__(self)
+        self.message = message
+        self.error = error
 
 
 class Controller(QObject):
@@ -42,8 +57,88 @@ class Controller(QObject):
     @log
     def __init__(self):
         QObject.__init__(self)
-        model.STORE.scan_in_progress = False
+        model.STORE.record_session_stop()
         model.STORE.web_server_is_running = False
+        self._input_scanner: InputScanner = InputScanner.create_scanner(STORE.input_queue)
+        self._input_queue: SignalingQueue = STORE.input_queue
+
+        self._input_scanner.new_image_signal[Image].connect(self.on_new_image_read)
+
+    @log
+    def on_new_image_read(self, image: Image):
+        """
+        A new image as been read by input scanner
+
+        :param image: the new image
+        :type image: Image
+        """
+        self._input_queue.put(image)
+
+    @log
+    def start_session(self):
+        """
+        Starts session
+        """
+
+        _LOGGER.info("Starting new session...")
+        try:
+
+            folders_dict = {
+                "scan": config.get_scan_folder_path(),
+                "work": config.get_work_folder_path()
+            }
+
+            # checking presence of both scan & work folders
+            for role, path in folders_dict.items():
+                if not Path(path).is_dir():
+                    title = "Missing critical folder"
+                    message = f"Your currently configured {role} folder '{path}' is missing."
+                    folder_now_exists = False
+                    if question(title, message + "Do you want to review your preferences ?"):
+                        dialog = PreferencesDialog(QApplication.activeWindow())
+                        # if prefs dialog is closed by "OK", a.k.a. Accepted, we are sure that folder now exists, as it has been
+                        # selected with OS folder selector.
+                        folder_now_exists = dialog.exec() == QDialog.Accepted
+                    if not folder_now_exists:
+                        raise SessionManagementError(title, message)
+
+            # setup work folder
+            try:
+                self.setup_work_folder()
+            except OSError as os_error:
+                raise SessionManagementError("Work folder could not be prepared", os_error)
+
+            # start input scanner
+            try:
+                self._input_scanner.start()
+            except ScannerStartError as scanner_start_error:
+                raise SessionManagementError("Input scanner could not start", scanner_start_error)
+
+            STORE.record_session_start()
+            running_mode = f"{STORE.stacking_mode}"
+            running_mode += " with alignment" if STORE.align_before_stacking else " without alignment"
+            _LOGGER.info(f"Started session in mode : {running_mode}")
+
+        except SessionManagementError as session_error:
+            _LOGGER.error(f"Session start failed. {session_error.message} : {session_error.error}")
+            raise
+
+    @log
+    def stop_session(self):
+        """
+        Stops session : stop input scanner and purge input queue
+        """
+        self._input_scanner.stop()
+        STORE.record_session_stop()
+        self.purge_input_queue()
+
+    @log
+    def pause_session(self):
+        """
+        Pauses session : just sop input scanner
+        """
+        self._input_scanner.stop()
+        STORE.record_session_pause()
 
     @log
     def purge_input_queue(self):

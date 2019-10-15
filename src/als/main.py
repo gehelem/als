@@ -25,10 +25,10 @@ def main():
         config.setup()
 
         _LOGGER.debug("Building and showing main window")
-        window = MainWindow(Controller())
+        controller = Controller()
+        window = MainWindow(controller)
         config.register_log_receiver(window)
-        (x, y, width, height) = config.get_window_geometry()
-        window.setGeometry(x, y, width, height)
+        window.setGeometry(*config.get_window_geometry())
         window.show()
         window.reset_image_view()
 
@@ -36,6 +36,7 @@ def main():
 
     app_return_code = app.exec()
     _LOGGER.info(f"Astro Live Stacker terminated with return code = {app_return_code}")
+
     sys.exit(app_return_code)
 
 
