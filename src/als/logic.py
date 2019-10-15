@@ -163,16 +163,14 @@ class Controller(QObject):
         """
         Stops session : stop input scanner and purge input queue
 
-        :param ask_confirmation: Do we ask for user confirmation
+        :param ask_confirmation: Do we ask user for confirmation ?
         :type ask_confirmation: bool
         """
-
-        title = "Really stop session ?"
         message = """Stopping the current session will reset the stack and all image enhancements.
         
         Are you sure you want to stop the current session ?
         """
-        do_stop_session = True if not ask_confirmation else question(title, message)
+        do_stop_session = True if not ask_confirmation else question("Really stop session ?", message)
 
         if do_stop_session:
             if DYNAMIC_DATA.session.is_running():
