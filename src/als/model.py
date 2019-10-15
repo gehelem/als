@@ -66,6 +66,65 @@ class SignalingQueue(Queue, QObject):
         self.item_pushed_signal.emit(self.qsize())
 
 
+class Session(QObject):
+    """
+    Represents an ALS session
+    """
+
+    stopped = 0
+    running = 1
+    paused = 2
+
+    _ALLOWED_STATUSES = [stopped, running, paused]
+
+    status_changed_signal = pyqtSignal()
+    """Qt signal to emit when status changes"""
+
+    @log
+    def __init__(self, status: int = stopped):
+        QObject.__init__(self)
+        if status in Session._ALLOWED_STATUSES:
+            self._status = status
+
+    def is_running(self):
+        """
+        Is session running ?
+
+        :return: True if session is running, False otherwise
+        :rtype: bool
+        """
+        return self._status == Session.running
+
+    def is_stopped(self):
+        """
+        Is session stopped ?
+
+        :return: True if session is stopped, False otherwise
+        :rtype: bool
+        """
+        return self._status == Session.stopped
+
+    def is_paused(self):
+        """
+        Is session paused ?
+
+        :return: True if session is paused, False otherwise
+        :rtype: bool
+        """
+        return self._status == Session.paused
+
+    def set_status(self, status: int):
+        """
+        Sets session status
+
+        :param status: the status to set
+        :type status: int
+        """
+        if status in Session._ALLOWED_STATUSES:
+            self._status = status
+            Session.status_changed_signal.emit()
+
+
 # pylint: disable=R0902
 class DataStore:
     """
