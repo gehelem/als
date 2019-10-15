@@ -229,6 +229,14 @@ class Controller(QObject):
         image_to_save.destination = dest_folder_path + "/" + filename_base + '.' + file_extension
         STORE.save_queue.put(image_to_save)
 
+    @log
+    def shutdown(self):
+        """
+        Proper shutdown of all app components
+        """
+        if not STORE.session.is_stopped():
+            self.stop_session()
+
     @staticmethod
     @log
     def get_timestamp():

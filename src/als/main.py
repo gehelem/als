@@ -35,6 +35,8 @@ def main():
     _LOGGER.info(f"Astro Live Stacker version {VERSION} started in {startup.elapsed_in_milli} ms.")
 
     app_return_code = app.exec()
+    controller.shutdown()
+
     _LOGGER.info(f"Astro Live Stacker terminated with return code = {app_return_code}")
 
     sys.exit(app_return_code)

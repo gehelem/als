@@ -110,8 +110,6 @@ class MainWindow(QMainWindow):
 
         if STORE.web_server_is_running:
             self._stop_www()
-        if STORE.session.is_running():
-            self._controller.stop_session()
 
         self._pre_process_pipeline.stop()
         self._stacker.stop()
@@ -134,6 +132,8 @@ class MainWindow(QMainWindow):
             self._image_saver.wait()
 
         super().closeEvent(event)
+
+        STORE.remove_observer(self)
 
     @log
     def changeEvent(self, event):
