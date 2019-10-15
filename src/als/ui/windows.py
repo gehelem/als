@@ -95,7 +95,7 @@ class MainWindow(QMainWindow):
     @log
     def reset_image_view(self):
         """
-        Reset image viewer to its inital state
+        Reset image viewer to its initial state
         """
         for item in self._scene.items():
             self._scene.removeItem(item)
