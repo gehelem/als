@@ -4,7 +4,7 @@ Provides all dialogs used in ALS GUI
 import logging
 
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QApplication
 
 from als import config, model
 from als.code_utilities import log
@@ -145,7 +145,7 @@ def question(title, message):
     :param message: Message displayed in the box
     :return: True if user replies "Yes", False otherwise
     """
-    return QMessageBox.Yes == QMessageBox.question(None, title, message, QMessageBox.Yes | QMessageBox.No)
+    return QMessageBox.Yes == QMessageBox.question(QApplication.activeWindow(), title, message, QMessageBox.Yes | QMessageBox.No)
 
 
 def warning_box(title, message):

@@ -285,18 +285,18 @@ class Controller(QObject):
         :param ask_confirmation: Do we ask user for confirmation ?
         :type ask_confirmation: bool
         """
-        message = """Stopping the current session will reset the stack and all image enhancements.
-        
-        Are you sure you want to stop the current session ?
-        """
-        do_stop_session = True if not ask_confirmation else question("Really stop session ?", message)
+        if not DYNAMIC_DATA.session.is_stopped():
+            message = """Stopping the current session will reset the stack and all image enhancements.
+            
+            Are you sure you want to stop the current session ?
+            """
+            do_stop_session = True if not ask_confirmation else question("Really stop session ?", message)
 
-        if do_stop_session:
-            if DYNAMIC_DATA.session.is_running():
+            if do_stop_session:
                 self._stop_input_scanner()
-            self.purge_pre_process_queue()
-            _LOGGER.info("Session stopped")
-            DYNAMIC_DATA.session.set_status(Session.stopped)
+                self.purge_pre_process_queue()
+                _LOGGER.info("Session stopped")
+                DYNAMIC_DATA.session.set_status(Session.stopped)
 
     @log
     def pause_session(self):
