@@ -83,21 +83,10 @@ class Controller(QObject):
         self._stacker.new_stack_result_signal[Image].connect(self.on_new_stack_result)
         self._post_process_pipeline.new_processing_result_signal[Image].connect(self.on_new_process_result)
 
-        pre_process_queue = DYNAMIC_DATA.pre_process_queue
-        pre_process_queue.item_pushed_signal[int].connect(self.on_pre_process_queue_pushed)
-        pre_process_queue.item_popped_signal[int].connect(self.on_pre_process_queue_popped)
-
-        stack_queue = DYNAMIC_DATA.stack_queue
-        stack_queue.item_pushed_signal[int].connect(self.on_stack_queue_pushed)
-        stack_queue.item_popped_signal[int].connect(self.on_stack_queue_popped)
-
-        process_queue = DYNAMIC_DATA.process_queue
-        process_queue.item_pushed_signal[int].connect(self.on_process_queue_pushed)
-        process_queue.item_popped_signal[int].connect(self.on_process_queue_popped)
-
-        save_queue = DYNAMIC_DATA.save_queue
-        save_queue.item_pushed_signal[int].connect(self.on_save_queue_pushed)
-        save_queue.item_popped_signal[int].connect(self.on_save_queue_popped)
+        DYNAMIC_DATA.pre_process_queue.size_changed_signal[int].connect(self.on_pre_process_queue_size_changed)
+        DYNAMIC_DATA.stack_queue.size_changed_signal[int].connect(self.on_stack_queue_size_changed)
+        DYNAMIC_DATA.process_queue.size_changed_signal[int].connect(self.on_process_queue_size_changed)
+        DYNAMIC_DATA.save_queue.size_changed_signal[int].connect(self.on_save_queue_size_changed)
 
     @log
     def on_new_process_result(self, image: Image):
@@ -141,7 +130,7 @@ class Controller(QObject):
         self._stacker_queue.put(image)
 
     @log
-    def on_pre_process_queue_pushed(self, new_size):
+    def on_pre_process_queue_size_changed(self, new_size):
         """
         Qt slot executed when an item has just been pushed to the pre-process queue
 
@@ -163,7 +152,7 @@ class Controller(QObject):
         DYNAMIC_DATA.pre_process_queue_size = new_size
 
     @log
-    def on_stack_queue_pushed(self, new_size):
+    def on_stack_queue_size_changed(self, new_size):
         """
         Qt slot executed when an item has just been pushed to the stack queue
 
@@ -185,7 +174,7 @@ class Controller(QObject):
         DYNAMIC_DATA.stack_queue_size = new_size
 
     @log
-    def on_process_queue_pushed(self, new_size):
+    def on_process_queue_size_changed(self, new_size):
         """
         Qt slot executed when an item has just been pushed to the process queue
 
@@ -207,7 +196,7 @@ class Controller(QObject):
         DYNAMIC_DATA.process_queue_size = new_size
 
     @log
-    def on_save_queue_pushed(self, new_size):
+    def on_save_queue_size_changed(self, new_size):
         """
         Qt slot executed when an item has just been pushed to the save queue
 
