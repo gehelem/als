@@ -97,7 +97,7 @@ class MainWindow(QMainWindow):
         config.set_window_geometry((window_rect.x(), window_rect.y(), window_rect.width(), window_rect.height()))
         config.save()
 
-        self._controller.stop_session(ask_confirmation=False)
+        self._controller.stop_session()
         self._image_saver.stop()
         if self._image_saver.isRunning() and DYNAMIC_DATA.save_queue_size > 0:
             SaveWaitDialog(self).exec()
