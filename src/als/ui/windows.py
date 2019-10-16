@@ -224,7 +224,7 @@ class MainWindow(QMainWindow):
     @log
     def cb_save(self):
         """
-        Qt slot for louse clicks on the 'save' button.
+        Qt slot for mouse clicks on the 'save' button.
 
         This saves the processed image using user chosen format
 
@@ -235,7 +235,7 @@ class MainWindow(QMainWindow):
                                         config.get_image_save_format(),
                                         config.get_work_folder_path(),
                                         config.STACKED_IMAGE_FILE_NAME_BASE,
-                                        True)
+                                        add_timestamp=True)
 
     @pyqtSlot(name="on_pb_apply_value_clicked")
     @log
@@ -374,6 +374,16 @@ class MainWindow(QMainWindow):
         :type checked: bool
         """
         DYNAMIC_DATA.align_before_stacking = checked
+
+    @log
+    def on_chk_save_every_image_toggled(self, checked: bool):
+        """
+        Qt slot executed when 'save ever image' check box is changed
+
+        :param checked: is checkbox checked ?
+        :type checked: bool
+        """
+        DYNAMIC_DATA.save_every_image = checked
 
     @log
     def on_new_process_result(self):

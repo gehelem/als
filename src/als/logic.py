@@ -238,7 +238,7 @@ class Controller(QObject):
         Saves stacking result image to disk
         """
 
-        # we save the image no matter what, then save a jpg for the webserver if it is running
+        # we save the image no matter what, then save a jpg for the web server if it is running
         image = DYNAMIC_DATA.process_result
 
         self.save_image(image,
@@ -251,6 +251,13 @@ class Controller(QObject):
                             config.IMAGE_SAVE_JPEG,
                             config.get_work_folder_path(),
                             config.WEB_SERVED_IMAGE_FILE_NAME_BASE)
+
+        if DYNAMIC_DATA.save_every_image:
+            self.save_image(image,
+                            config.get_image_save_format(),
+                            config.get_work_folder_path(),
+                            config.STACKED_IMAGE_FILE_NAME_BASE,
+                            add_timestamp=True)
 
     @log
     def save_image(self, image: Image,

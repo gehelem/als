@@ -1254,7 +1254,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="cbKeep">
+           <widget class="QCheckBox" name="chk_save_every_image">
             <property name="maximumSize">
              <size>
               <width>16777215</width>

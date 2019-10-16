@@ -142,6 +142,7 @@ class DynamicData:
         self._stacking_mode = ""
         self._align_before_stacking = True
         self._stack_size = 0
+        self._save_every_image: bool = False
         self._process_result = None
         self._pre_process_queue = SignalingQueue()
         self._stack_queue = SignalingQueue()
@@ -149,6 +150,28 @@ class DynamicData:
         self._save_queue = SignalingQueue()
 
         self._session.status_changed_signal.connect(self._notify_observers)
+
+    @property
+    @log
+    def save_every_image(self):
+        """
+        Retrieves the flag that tells if we need to save every process result image
+
+        :return: the flag that tells if we need to save every process result image
+        :rtype: bool
+        """
+        return self._save_every_image
+
+    @save_every_image.setter
+    @log
+    def save_every_image(self, save_every_image):
+        """
+        Sets the flag that tells if we need to save every process result image
+
+        :param save_every_image: flag that tells if we need to save every process result image
+        :type save_every_image: bool
+        """
+        self._save_every_image = save_every_image
 
     @log
     def set_stack_size(self, size):
