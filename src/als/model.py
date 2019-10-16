@@ -133,7 +133,6 @@ class Session(QObject):
 class DynamicData:
     """
     Holds and maintain application dynamic data and notify observers on significant changes
-
     """
     def __init__(self):
         self._observers = []
@@ -142,6 +141,10 @@ class DynamicData:
         self._stacking_mode = ""
         self._align_before_stacking = True
         self._stack_size = 0
+        self._pre_process_queue_size = 0
+        self._stack_queue_size = 0
+        self._process_queue_size = 0
+        self._save_queue_size = 0
         self._save_every_image: bool = False
         self._process_result = None
         self._pre_process_queue = SignalingQueue()
@@ -150,6 +153,98 @@ class DynamicData:
         self._save_queue = SignalingQueue()
 
         self._session.status_changed_signal.connect(self._notify_observers)
+
+    @property
+    @log
+    def pre_process_queue_size(self):
+        """
+        Retrieves the pre-process queue size
+
+        :return: the pre-process queue size
+        :rtype: int
+        """
+        return self._pre_process_queue_size
+
+    @pre_process_queue_size.setter
+    @log
+    def pre_process_queue_size(self, size):
+        """
+        Sets the pre-process queue size
+
+        :param size: the pre-process queue size
+        :type size: int
+        """
+        self._pre_process_queue_size = size
+        self._notify_observers()
+
+    @property
+    @log
+    def stack_queue_size(self):
+        """
+        Retrieves the stack queue size
+
+        :return: the stack queue size
+        :rtype: int
+        """
+        return self._stack_queue_size
+
+    @stack_queue_size.setter
+    @log
+    def stack_queue_size(self, size):
+        """
+        Sets the stack queue size
+
+        :param size: the stack queue size
+        :type size: int
+        """
+        self._stack_queue_size = size
+        self._notify_observers()
+
+    @property
+    @log
+    def process_queue_size(self):
+        """
+        Retrieves the process queue size
+
+        :return: the process queue size
+        :rtype: int
+        """
+        return self._process_queue_size
+
+    @process_queue_size.setter
+    @log
+    def process_queue_size(self, size):
+        """
+        Sets the process queue size
+
+        :param size: the process queue size
+        :type size: int
+        """
+        self._process_queue_size = size
+        self._notify_observers()
+
+    @property
+    @log
+    def save_queue_size(self):
+        """
+        Retrieves the save queue size
+
+        :return: the save queue size
+        :rtype: int
+        """
+        return self._save_queue_size
+
+    @save_queue_size.setter
+    @log
+    def save_queue_size(self, size):
+        """
+        Sets the save queue size
+
+        :param size: the save queue size
+        :type size: int
+        """
+        self._save_queue_size = size
+        self._notify_observers()
 
     @property
     @log

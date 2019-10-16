@@ -83,6 +83,22 @@ class Controller(QObject):
         self._stacker.new_stack_result_signal[Image].connect(self.on_new_stack_result)
         self._post_process_pipeline.new_processing_result_signal[Image].connect(self.on_new_process_result)
 
+        pre_process_queue = DYNAMIC_DATA.pre_process_queue
+        pre_process_queue.item_pushed_signal[int].connect(self.on_pre_process_queue_pushed)
+        pre_process_queue.item_popped_signal[int].connect(self.on_pre_process_queue_popped)
+
+        stack_queue = DYNAMIC_DATA.stack_queue
+        stack_queue.item_pushed_signal[int].connect(self.on_stack_queue_pushed)
+        stack_queue.item_popped_signal[int].connect(self.on_stack_queue_popped)
+
+        process_queue = DYNAMIC_DATA.process_queue
+        process_queue.item_pushed_signal[int].connect(self.on_process_queue_pushed)
+        process_queue.item_popped_signal[int].connect(self.on_process_queue_popped)
+
+        save_queue = DYNAMIC_DATA.save_queue
+        save_queue.item_pushed_signal[int].connect(self.on_save_queue_pushed)
+        save_queue.item_popped_signal[int].connect(self.on_save_queue_popped)
+
     @log
     def on_new_process_result(self, image: Image):
         """
@@ -123,6 +139,94 @@ class Controller(QObject):
         :type image: Image
         """
         self._stacker_queue.put(image)
+
+    @log
+    def on_pre_process_queue_pushed(self, new_size):
+        """
+        Qt slot executed when an item has just been pushed to the pre-process queue
+
+        :param new_size: new queue size
+        :type new_size: int
+        """
+        _LOGGER.debug(f"New image added to the pre-process queue. Pre-process queue size : {new_size}")
+        DYNAMIC_DATA.pre_process_queue_size = new_size
+
+    @log
+    def on_pre_process_queue_popped(self, new_size):
+        """
+        Qt slot executed when an item has just been popped from the pre-process queue
+
+        :param new_size: new queue size
+        :type new_size: int
+        """
+        _LOGGER.debug(f"Image taken from input queue. Input queue size : {new_size}")
+        DYNAMIC_DATA.pre_process_queue_size = new_size
+
+    @log
+    def on_stack_queue_pushed(self, new_size):
+        """
+        Qt slot executed when an item has just been pushed to the stack queue
+
+        :param new_size: new queue size
+        :type new_size: int
+        """
+        _LOGGER.debug(f"New image added to the stack queue. Stack queue size : {new_size}")
+        DYNAMIC_DATA.stack_queue_size = new_size
+
+    @log
+    def on_stack_queue_popped(self, new_size):
+        """
+        Qt slot executed when an item has just been popped from the stack queue
+
+        :param new_size: new queue size
+        :type new_size: int
+        """
+        _LOGGER.debug(f"Image taken from stack queue. Stack queue size : {new_size}")
+        DYNAMIC_DATA.stack_queue_size = new_size
+
+    @log
+    def on_process_queue_pushed(self, new_size):
+        """
+        Qt slot executed when an item has just been pushed to the process queue
+
+        :param new_size: new queue size
+        :type new_size: int
+        """
+        _LOGGER.debug(f"New image added to the process queue. Process queue size : {new_size}")
+        DYNAMIC_DATA.process_queue_size = new_size
+
+    @log
+    def on_process_queue_popped(self, new_size):
+        """
+        Qt slot executed when an item has just been popped from the process queue
+
+        :param new_size: new queue size
+        :type new_size: int
+        """
+        _LOGGER.debug(f"Image taken from process queue. Process queue size : {new_size}")
+        DYNAMIC_DATA.process_queue_size = new_size
+
+    @log
+    def on_save_queue_pushed(self, new_size):
+        """
+        Qt slot executed when an item has just been pushed to the save queue
+
+        :param new_size: new queue size
+        :type new_size: int
+        """
+        _LOGGER.debug(f"New image added to the save queue. Save queue size : {new_size}")
+        DYNAMIC_DATA.save_queue_size = new_size
+
+    @log
+    def on_save_queue_popped(self, new_size):
+        """
+        Qt slot executed when an item has just been popped from the save queue
+
+        :param new_size: new queue size
+        :type new_size: int
+        """
+        _LOGGER.debug(f"Image taken from save queue. Save queue size : {new_size}")
+        DYNAMIC_DATA.save_queue_size = new_size
 
     @log
     def start_session(self):

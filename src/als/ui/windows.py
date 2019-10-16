@@ -65,22 +65,6 @@ class MainWindow(QMainWindow):
 
         self.update_all()
 
-        pre_process_queue = DYNAMIC_DATA.pre_process_queue
-        pre_process_queue.item_pushed_signal[int].connect(self.on_pre_process_queue_pushed)
-        pre_process_queue.item_popped_signal[int].connect(self.on_pre_process_queue_popped)
-
-        stack_queue = DYNAMIC_DATA.stack_queue
-        stack_queue.item_pushed_signal[int].connect(self.on_stack_queue_pushed)
-        stack_queue.item_popped_signal[int].connect(self.on_stack_queue_popped)
-
-        process_queue = DYNAMIC_DATA.process_queue
-        process_queue.item_pushed_signal[int].connect(self.on_process_queue_pushed)
-        process_queue.item_popped_signal[int].connect(self.on_process_queue_popped)
-
-        save_queue = DYNAMIC_DATA.save_queue
-        save_queue.item_pushed_signal[int].connect(self.on_save_queue_pushed)
-        save_queue.item_popped_signal[int].connect(self.on_save_queue_popped)
-
         self._scene = QGraphicsScene(self)
         self._ui.image_view.setScene(self._scene)
         self._image_item = None
@@ -258,94 +242,6 @@ class MainWindow(QMainWindow):
         dialog = AboutDialog(self)
         dialog.exec()
 
-    @log
-    def on_pre_process_queue_pushed(self, new_size):
-        """
-        Qt slot executed when an item has just been pushed to the pre-process queue
-
-        :param new_size: new queue size
-        :type new_size: int
-        """
-        _LOGGER.debug(f"New image added to the pre-process queue. Pre-process queue size : {new_size}")
-        self._ui.lbl_pre_process_queue_size.setText(str(new_size))
-
-    @log
-    def on_pre_process_queue_popped(self, new_size):
-        """
-        Qt slot executed when an item has just been popped from the pre-process queue
-
-        :param new_size: new queue size
-        :type new_size: int
-        """
-        _LOGGER.debug(f"Image taken from input queue. Input queue size : {new_size}")
-        self._ui.lbl_pre_process_queue_size.setText(str(new_size))
-
-    @log
-    def on_stack_queue_pushed(self, new_size):
-        """
-        Qt slot executed when an item has just been pushed to the stack queue
-
-        :param new_size: new queue size
-        :type new_size: int
-        """
-        _LOGGER.debug(f"New image added to the stack queue. Stack queue size : {new_size}")
-        self._ui.lbl_stack_queue_size.setText(str(new_size))
-
-    @log
-    def on_stack_queue_popped(self, new_size):
-        """
-        Qt slot executed when an item has just been popped from the stack queue
-
-        :param new_size: new queue size
-        :type new_size: int
-        """
-        _LOGGER.debug(f"Image taken from stack queue. Stack queue size : {new_size}")
-        self._ui.lbl_stack_queue_size.setText(str(new_size))
-
-    @log
-    def on_process_queue_pushed(self, new_size):
-        """
-        Qt slot executed when an item has just been pushed to the process queue
-
-        :param new_size: new queue size
-        :type new_size: int
-        """
-        _LOGGER.debug(f"New image added to the process queue. Process queue size : {new_size}")
-        self._ui.lbl_process_queue_size.setText(str(new_size))
-
-    @log
-    def on_process_queue_popped(self, new_size):
-        """
-        Qt slot executed when an item has just been popped from the process queue
-
-        :param new_size: new queue size
-        :type new_size: int
-        """
-        _LOGGER.debug(f"Image taken from process queue. Process queue size : {new_size}")
-        self._ui.lbl_process_queue_size.setText(str(new_size))
-
-    @log
-    def on_save_queue_pushed(self, new_size):
-        """
-        Qt slot executed when an item has just been pushed to the save queue
-
-        :param new_size: new queue size
-        :type new_size: int
-        """
-        _LOGGER.debug(f"New image added to the save queue. Save queue size : {new_size}")
-        self._ui.lbl_save_queue_size.setText(str(new_size))
-
-    @log
-    def on_save_queue_popped(self, new_size):
-        """
-        Qt slot executed when an item has just been popped from the save queue
-
-        :param new_size: new queue size
-        :type new_size: int
-        """
-        _LOGGER.debug(f"Image taken from save queue. Save queue size : {new_size}")
-        self._ui.lbl_save_queue_size.setText(str(new_size))
-
     # pylint: disable=C0103
     @log
     def on_cb_stacking_mode_currentTextChanged(self, text: str):
@@ -483,7 +379,7 @@ class MainWindow(QMainWindow):
             session_status_string = "Running"
         else:
             # this should never happen, that's why we check ;)
-            session_status_string = "###BUG !"
+            session_status_string = "### BUG !"
         self._ui.lbl_session_status.setText(f"Session: {session_status_string}")
 
         # update preferences accessibility according to scanner and web server status
@@ -500,6 +396,12 @@ class MainWindow(QMainWindow):
 
         # update stack size
         self._ui.lbl_stack_size.setText(str(DYNAMIC_DATA.get_stack_size()))
+
+        # update queues sizes
+        self._ui.lbl_pre_process_queue_size.setText(str(DYNAMIC_DATA.pre_process_queue_size))
+        self._ui.lbl_stack_queue_size.setText(str(DYNAMIC_DATA.stack_queue_size))
+        self._ui.lbl_process_queue_size.setText(str(DYNAMIC_DATA.process_queue_size))
+        self._ui.lbl_save_queue_size.setText(str(DYNAMIC_DATA.save_queue_size))
 
     @pyqtSlot(name="on_pbStop_clicked")
     @log
