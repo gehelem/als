@@ -71,12 +71,23 @@ class Controller(QObject):
         self._pre_process_pipeline.start()
 
         self._stacker_queue: SignalingQueue = DYNAMIC_DATA.stack_queue
-        self._stacker: Stacker = Stacker(DYNAMIC_DATA.stack_queue, DYNAMIC_DATA.process_queue)
+        self._stacker: Stacker = Stacker(DYNAMIC_DATA.stack_queue)
         self._stacker.start()
 
         self._input_scanner.new_image_signal[Image].connect(self.on_new_image_read)
         self._pre_process_pipeline.new_result_signal[Image].connect(self.on_new_pre_processed_image)
         self._stacker.stack_size_changed_signal[int].connect(DYNAMIC_DATA.set_stack_size)
+        self._stacker.new_stack_result_signal[Image].connect(self.on_new_stack_result)
+
+    @log
+    def on_new_stack_result(self, image: Image):
+        """
+        A new image has been stacked
+
+        :param image: the result of the stack
+        :type image: Image
+        """
+        DYNAMIC_DATA.process_queue.put(image)
 
     @log
     def on_new_image_read(self, image: Image):

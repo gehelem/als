@@ -44,12 +44,14 @@ class Stacker(QThread):
     stack_size_changed_signal = pyqtSignal(int)
     """Qt signal emitted when stack size changed"""
 
+    new_stack_result_signal = pyqtSignal(Image)
+    """Qt signal emitted when new stack result is ready"""
+
     @log
-    def __init__(self, stack_queue, process_queue):
+    def __init__(self, stack_queue):
         QThread.__init__(self)
         self._stack_queue: SignalingQueue = stack_queue
-        self._process_queue: SignalingQueue = process_queue
-        self._counter: int = 0
+        self._size: int = 0
         self._stop_asked: bool = False
         self._last_stacking_result: Image = None
         self._align_reference: Image = None
@@ -59,10 +61,9 @@ class Stacker(QThread):
         """
         Reset stacker to its starting state : No reference, no result and counter = 0.
         """
-        self._counter = 0
+        self.size = 0
         self._last_stacking_result = None
         self._align_reference = None
-        self.stack_size_changed_signal.emit(self.size)
 
     @log
     def _publish_stacking_result(self, image: Image):
@@ -74,9 +75,8 @@ class Stacker(QThread):
         """
         self._last_stacking_result = image
         self._last_stacking_result.origin = "Stacking result"
-        self._counter += 1
-        self.stack_size_changed_signal.emit(self.size)
-        self._process_queue.put(self._last_stacking_result)
+        self.size += 1
+        self.new_stack_result_signal.emit(image)
 
     @property
     def size(self):
@@ -86,7 +86,18 @@ class Stacker(QThread):
         :return: how many images did we stack
         :rtype: int
         """
-        return self._counter
+        return self._size
+
+    @size.setter
+    def size(self, size):
+        """
+        Sets stack size
+
+        :param size: the size
+        :type size: int
+        """
+        self._size = size
+        self.stack_size_changed_signal.emit(self.size)
 
     @log
     def run(self):
