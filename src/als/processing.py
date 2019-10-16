@@ -59,8 +59,7 @@ class Standardize(ImageProcessor):
     def process_image(self, image: Image):
 
         if image.is_color():
-            color_axis_index = image.data.shape.index(min(image.data.shape))
-            image.data = np.moveaxis(image.data, color_axis_index, 0)
+            image.set_color_axis_as(0)
 
         image.data = np.float32(image.data)
 
