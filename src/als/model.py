@@ -143,7 +143,7 @@ class DynamicData:
         self._align_before_stacking = True
         self._stack_size = 0
         self._process_result = None
-        self._input_queue = SignalingQueue()
+        self._pre_process_queue = SignalingQueue()
         self._stack_queue = SignalingQueue()
         self._process_queue = SignalingQueue()
         self._save_queue = SignalingQueue()
@@ -284,14 +284,14 @@ class DynamicData:
 
     @property
     @log
-    def input_queue(self):
+    def pre_process_queue(self):
         """
-        Retrieves the input queue.
+        Retrieves the pre_process queue.
 
-        :return: the main input queue
+        :return: the pre-process queue
         :rtype: SignalingQueue
         """
-        return self._input_queue
+        return self._pre_process_queue
 
     @property
     @log

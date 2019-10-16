@@ -17,7 +17,7 @@ from watchdog.observers.polling import PollingObserver
 
 from als import config
 from als.code_utilities import log
-from als.model import Image, SignalingQueue
+from als.model import Image
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -49,15 +49,11 @@ class InputScanner:
       - replying to start & stop commands
       - reading images from actual source
       - creating Image objects
-      - feeding the input queue as new images are "read"
+      - broadcasting every new image
     """
 
     new_image_signal = pyqtSignal(Image)
     """Qt signal emitted when a new image is read by scanner"""
-
-    @log
-    def __init__(self, input_queue: SignalingQueue):
-        self._input_queue = input_queue
 
     @log
     def broadcast_image(self, image: Image):
@@ -85,12 +81,9 @@ class InputScanner:
         """
 
     @staticmethod
-    def create_scanner(input_queue: SignalingQueue, scanner_type: str = SCANNER_TYPE_FILESYSTEM):
+    def create_scanner(scanner_type: str = SCANNER_TYPE_FILESYSTEM):
         """
         Factory for image scanners.
-
-        :param input_queue: the input queue the created scanner will push to
-        :type input_queue: SignalingQueue
 
         :param scanner_type: the type of scanner to create. Accepted values are :
 
@@ -103,7 +96,7 @@ class InputScanner:
         """
 
         if scanner_type == SCANNER_TYPE_FILESYSTEM:
-            return FolderScanner(input_queue)
+            return FolderScanner()
 
         raise ValueError(f"Unsupported scanner type : {scanner_type}")
 
@@ -113,13 +106,11 @@ class FolderScanner(FileSystemEventHandler, InputScanner, QObject):
     Watches file changes (creation, move) in a specific filesystem folder
 
     the watched directory is retrieved from user config on scanner startup
-
-    Each time an image is read from file, it is pushed to the main input queue
     """
     @log
-    def __init__(self, input_queue: SignalingQueue):
+    def __init__(self):
         FileSystemEventHandler.__init__(self)
-        InputScanner.__init__(self, input_queue)
+        InputScanner.__init__(self)
         QObject.__init__(self)
         self._observer = None
 

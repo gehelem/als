@@ -64,14 +64,14 @@ class Controller(QObject):
         DYNAMIC_DATA.web_server_is_running = False
         DYNAMIC_DATA.stacking_mode = STACKING_MODE_MEAN
 
-        self._input_scanner: InputScanner = InputScanner.create_scanner(DYNAMIC_DATA.input_queue)
-        self._input_queue: SignalingQueue = DYNAMIC_DATA.input_queue
+        self._input_scanner: InputScanner = InputScanner.create_scanner()
 
-        self._pre_process_pipeline: PreProcessPipeline = PreProcessPipeline(DYNAMIC_DATA.input_queue)
+        self._pre_process_queue: SignalingQueue = DYNAMIC_DATA.pre_process_queue
+        self._pre_process_pipeline: PreProcessPipeline = PreProcessPipeline(DYNAMIC_DATA.pre_process_queue)
         self._pre_process_pipeline.start()
 
-        self._stacker: Stacker = Stacker(DYNAMIC_DATA.stack_queue, DYNAMIC_DATA.process_queue)
         self._stacker_queue: SignalingQueue = DYNAMIC_DATA.stack_queue
+        self._stacker: Stacker = Stacker(DYNAMIC_DATA.stack_queue, DYNAMIC_DATA.process_queue)
         self._stacker.start()
 
         self._input_scanner.new_image_signal[Image].connect(self.on_new_image_read)
@@ -86,7 +86,7 @@ class Controller(QObject):
         :param image: the new image
         :type image: Image
         """
-        self._input_queue.put(image)
+        self._pre_process_queue.put(image)
 
     @log
     def on_new_pre_processed_image(self, image: Image):
@@ -175,14 +175,14 @@ class Controller(QObject):
         if do_stop_session:
             if DYNAMIC_DATA.session.is_running():
                 self._stop_input_scanner()
-            self.purge_input_queue()
+            self.purge_pre_process_queue()
             _LOGGER.info("Session stopped")
             DYNAMIC_DATA.session.set_status(Session.stopped)
 
     @log
     def pause_session(self):
         """
-        Pauses session : just sop input scanner
+        Pauses session : just stop input scanner
         """
         if DYNAMIC_DATA.session.is_running():
             self._stop_input_scanner()
@@ -190,14 +190,14 @@ class Controller(QObject):
         DYNAMIC_DATA.session.set_status(Session.paused)
 
     @log
-    def purge_input_queue(self):
+    def purge_pre_process_queue(self):
         """
-        Purge the input queue
+        Purge the pre-process queue
 
         """
-        while not DYNAMIC_DATA.input_queue.empty():
-            DYNAMIC_DATA.input_queue.get()
-        _LOGGER.info("Input queue purged")
+        while not DYNAMIC_DATA.pre_process_queue.empty():
+            DYNAMIC_DATA.pre_process_queue.get()
+        _LOGGER.info("Pre-process queue purged")
 
     @log
     def purge_stack_queue(self):

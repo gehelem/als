@@ -117,31 +117,31 @@ class ConvertForOutput(ImageProcessor):
 
 class PreProcessPipeline(QThread):
     """
-    Responsible of grabbing images from the input queue and applying a set of pre-processing units to each one
+    Responsible of grabbing images from the pre-process queue and applying a set of pre-processing units to each one
     """
 
     new_result_signal = pyqtSignal(Image)
     """Qt signal to emit when a new image has been pre-processed"""
 
     @log
-    def __init__(self, input_queue: SignalingQueue):
+    def __init__(self, pre_process_queue: SignalingQueue):
         QThread.__init__(self)
         self._stop_asked = False
-        self._input_queue = input_queue
+        self._pre_process_queue = pre_process_queue
         self._pre_processes = []
         self._pre_processes.extend([Debayer(), Standardize()])
 
     @log
     def run(self):
         """
-        Starts polling the input queue and perform pre-processing units to each image popped from the input queue
+        Starts polling the pre-process queue and perform pre-processing units to each image
 
         If any processing error occurs, the current image is dropped
         """
         while not self._stop_asked:
 
-            if self._input_queue.qsize() > 0:
-                image = self._input_queue.get()
+            if self._pre_process_queue.qsize() > 0:
+                image = self._pre_process_queue.get()
 
                 _LOGGER.info(f"Start pre-processing image : {image.origin}")
 

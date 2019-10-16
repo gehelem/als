@@ -70,9 +70,9 @@ class MainWindow(QMainWindow):
 
         self.update_according_to_app_state()
 
-        input_queue = DYNAMIC_DATA.input_queue
-        input_queue.item_pushed_signal[int].connect(self.on_input_queue_pushed)
-        input_queue.item_popped_signal[int].connect(self.on_input_queue_popped)
+        pre_process_queue = DYNAMIC_DATA.pre_process_queue
+        pre_process_queue.item_pushed_signal[int].connect(self.on_pre_process_queue_pushed)
+        pre_process_queue.item_popped_signal[int].connect(self.on_pre_process_queue_popped)
 
         stack_queue = DYNAMIC_DATA.stack_queue
         stack_queue.item_pushed_signal[int].connect(self.on_stack_queue_pushed)
@@ -266,26 +266,26 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     @log
-    def on_input_queue_pushed(self, new_size):
+    def on_pre_process_queue_pushed(self, new_size):
         """
-        Qt slot executed when an item has just been pushed to the input queue
+        Qt slot executed when an item has just been pushed to the pre-process queue
 
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.debug(f"New image added to the input queue. Input queue size : {new_size}")
-        self._ui.lbl_input_queue_size.setText(str(new_size))
+        _LOGGER.debug(f"New image added to the pre-process queue. Pre-process queue size : {new_size}")
+        self._ui.lbl_pre_process_queue_size.setText(str(new_size))
 
     @log
-    def on_input_queue_popped(self, new_size):
+    def on_pre_process_queue_popped(self, new_size):
         """
-        Qt slot executed when an item has just been popped from the input queue
+        Qt slot executed when an item has just been popped from the pre-process queue
 
         :param new_size: new queue size
         :type new_size: int
         """
         _LOGGER.debug(f"Image taken from input queue. Input queue size : {new_size}")
-        self._ui.lbl_input_queue_size.setText(str(new_size))
+        self._ui.lbl_pre_process_queue_size.setText(str(new_size))
 
     @log
     def on_stack_queue_pushed(self, new_size):
