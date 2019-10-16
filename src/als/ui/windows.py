@@ -14,7 +14,7 @@ from als.code_utilities import log
 from als.io.network import get_ip, StoppableServerThread
 from als.io.output import ImageSaver
 from als.model import STACKING_MODE_SUM, STACKING_MODE_MEAN, VERSION, DYNAMIC_DATA
-from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box
+from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box, SaveWaitDialog
 from generated.als_ui import Ui_stack_window
 
 _LOGGER = logging.getLogger(__name__)
@@ -97,14 +97,10 @@ class MainWindow(QMainWindow):
         config.set_window_geometry((window_rect.x(), window_rect.y(), window_rect.width(), window_rect.height()))
         config.save()
 
+        self._controller.stop_session(ask_confirmation=False)
         self._image_saver.stop()
-
-        if self._image_saver.isRunning():
-            message = "Making sure all images are saved..."
-            _LOGGER.info(message)
-            self._ui.statusBar.showMessage(message)
-            QApplication.setOverrideCursor(Qt.WaitCursor)
-            self._image_saver.wait()
+        if self._image_saver.isRunning() and DYNAMIC_DATA.save_queue_size > 0:
+            SaveWaitDialog(self).exec()
 
         DYNAMIC_DATA.remove_observer(self)
         super().closeEvent(event)

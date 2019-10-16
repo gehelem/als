@@ -8,8 +8,10 @@ from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox
 
 from als import config, model
 from als.code_utilities import log
+from als.model import DYNAMIC_DATA
 from generated.about_ui import Ui_AboutDialog
 from generated.prefs_ui import Ui_PrefsDialog
+from generated.save_wait_ui import Ui_SaveWaitDialog
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -108,6 +110,31 @@ class AboutDialog(QDialog):
         self._ui = Ui_AboutDialog()
         self._ui.setupUi(self)
         self._ui.lblVersionValue.setText(model.VERSION)
+
+
+class SaveWaitDialog(QDialog):
+    """
+    Dialog shown while waiting for all pending image saves to complete
+    """
+    @log
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._ui = Ui_SaveWaitDialog()
+        self._ui.setupUi(self)
+        self._ui.lbl_save_queue_size.setText(str(DYNAMIC_DATA.save_queue_size))
+        DYNAMIC_DATA.save_queue.size_changed_signal[int].connect(self.on_save_queue_size_changed)
+
+    @log
+    def on_save_queue_size_changed(self, size):
+        """
+        Save queue size just changed
+
+        :param size: the size of the save queue
+        :type size: int
+        """
+        self._ui.lbl_save_queue_size.setText(str(size))
+        if size == 0:
+            self.close()
 
 
 def question(title, message):
