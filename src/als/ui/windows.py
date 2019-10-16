@@ -14,7 +14,6 @@ from als.code_utilities import log
 from als.io.network import get_ip, StoppableServerThread
 from als.io.output import ImageSaver
 from als.model import STACKING_MODE_SUM, STACKING_MODE_MEAN, VERSION, DYNAMIC_DATA
-from als.processing import PostProcessPipeline
 from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box
 from generated.als_ui import Ui_stack_window
 
@@ -64,11 +63,7 @@ class MainWindow(QMainWindow):
         self._image_saver = ImageSaver(DYNAMIC_DATA.save_queue)
         self._image_saver.start()
 
-        self._post_process_pipeline = PostProcessPipeline(DYNAMIC_DATA.process_queue)
-        self._post_process_pipeline.start()
-        self._post_process_pipeline.new_processing_result_signal.connect(self.on_new_process_result)
-
-        self.update_according_to_app_state()
+        self.update_all()
 
         pre_process_queue = DYNAMIC_DATA.pre_process_queue
         pre_process_queue.item_pushed_signal[int].connect(self.on_pre_process_queue_pushed)
@@ -110,8 +105,6 @@ class MainWindow(QMainWindow):
 
         if DYNAMIC_DATA.web_server_is_running:
             self._stop_www()
-
-        self._post_process_pipeline.stop()
 
         _LOGGER.debug(f"Window size : {self.size()}")
         _LOGGER.debug(f"Window position : {self.pos()}")
@@ -386,14 +379,6 @@ class MainWindow(QMainWindow):
         DYNAMIC_DATA.save_every_image = checked
 
     @log
-    def on_new_process_result(self):
-        """
-        Qt slot executed when a new stacking result is available
-        """
-        self.update_image()
-        self._controller.save_process_result()
-
-    @log
     def adjust_value(self):
         """
         Adjusts stacked image according to GUU controls
@@ -468,7 +453,7 @@ class MainWindow(QMainWindow):
         self._ui.log.scrollToBottom()
 
     @log
-    def update_according_to_app_state(self):
+    def update_all(self):
         """
         Updates all displays and controls depending on DataStore held data
         """

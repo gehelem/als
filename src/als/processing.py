@@ -7,8 +7,9 @@ from abc import abstractmethod
 import cv2
 import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal
+
 from als.code_utilities import log, Timer
-from als.model import Image, SignalingQueue, DYNAMIC_DATA
+from als.model import Image, SignalingQueue
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -185,8 +186,8 @@ class PostProcessPipeline(QThread):
     before storing it into the dynamic data store
     """
 
-    new_processing_result_signal = pyqtSignal()
-    """Qt signal emited when an new processing result is ready"""
+    new_processing_result_signal = pyqtSignal(Image)
+    """Qt signal emitted when an new processing result is ready"""
 
     @log
     def __init__(self, process_queue: SignalingQueue):
@@ -237,8 +238,7 @@ class PostProcessPipeline(QThread):
                 _LOGGER.info(f"Done post-processing image : {image.origin}")
 
                 image.origin = "Post Processing Result"
-                DYNAMIC_DATA.process_result = image
-                self.new_processing_result_signal.emit()
+                self.new_processing_result_signal.emit(image)
 
             self.msleep(20)
 

@@ -237,6 +237,7 @@ class DynamicData:
         :type: Image
         """
         self._process_result = image
+        self._notify_observers(image_only=True)
 
     @property
     @log
@@ -360,12 +361,13 @@ class DynamicData:
         self._observers.remove(observer)
 
     @log
-    def _notify_observers(self):
+    def _notify_observers(self, image_only=False):
         """
         Tells all registered observers to update their display
         """
         for observer in self._observers:
-            observer.update_according_to_app_state()
+            target_function = observer.update_image if image_only else observer.update_all
+            target_function()
 
 
 DYNAMIC_DATA = DynamicData()
