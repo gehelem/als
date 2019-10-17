@@ -1118,7 +1118,26 @@
        <property name="title">
         <string>Stack</string>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_13">
+       <layout class="QVBoxLayout" name="verticalLayout_11">
+        <item>
+         <widget class="QCheckBox" name="chk_align">
+          <property name="maximumSize">
+           <size>
+            <width>150</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+          <property name="text">
+           <string>Align</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_11">
           <item>
@@ -1139,23 +1158,17 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="chk_align">
-            <property name="maximumSize">
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
              <size>
-              <width>150</width>
+              <width>40</width>
               <height>20</height>
              </size>
             </property>
-            <property name="layoutDirection">
-             <enum>Qt::LeftToRight</enum>
-            </property>
-            <property name="text">
-             <string>Align</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
+           </spacer>
           </item>
          </layout>
         </item>
@@ -1164,7 +1177,7 @@
           <item>
            <widget class="QLabel" name="label_4">
             <property name="text">
-             <string>Stack size :</string>
+             <string>Size :</string>
             </property>
            </widget>
           </item>
