@@ -12,7 +12,6 @@ from als import model, config
 from als.logic import Controller, SessionError, CriticalFolderMissing
 from als.code_utilities import log
 from als.io.network import get_ip, StoppableServerThread
-from als.io.output import ImageSaver
 from als.model import STACKING_MODE_SUM, STACKING_MODE_MEAN, VERSION, DYNAMIC_DATA
 from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box, SaveWaitDialog, question, message_box
 from generated.als_ui import Ui_stack_window
@@ -60,9 +59,6 @@ class MainWindow(QMainWindow):
 
         model.DYNAMIC_DATA.add_observer(self)
 
-        self._image_saver = ImageSaver(DYNAMIC_DATA.save_queue)
-        self._image_saver.start()
-
         self.update_all()
 
         self._scene = QGraphicsScene(self)
@@ -99,8 +95,7 @@ class MainWindow(QMainWindow):
 
         self._stop_session()
 
-        self._image_saver.stop()
-        if self._image_saver.isRunning() and DYNAMIC_DATA.save_queue_size > 0:
+        if DYNAMIC_DATA.save_queue_size > 0:
             SaveWaitDialog(self).exec()
 
         DYNAMIC_DATA.remove_observer(self)

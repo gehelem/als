@@ -29,6 +29,7 @@ from pathlib import Path
 from als import config
 from als.code_utilities import log
 from als.io.input import InputScanner, ScannerStartError
+from als.io.output import ImageSaver
 from als.model import DYNAMIC_DATA, Image, SignalingQueue, Session, STACKING_MODE_MEAN
 from als.processing import PreProcessPipeline, PostProcessPipeline
 from als.stack import Stacker
@@ -75,6 +76,9 @@ class Controller:
 
         self._post_process_pipeline = PostProcessPipeline(DYNAMIC_DATA.process_queue)
         self._post_process_pipeline.start()
+
+        self._image_saver = ImageSaver(DYNAMIC_DATA.save_queue)
+        self._image_saver.start()
 
         self._input_scanner.new_image_signal[Image].connect(self.on_new_image_read)
         self._pre_process_pipeline.new_result_signal[Image].connect(self.on_new_pre_processed_image)
@@ -389,6 +393,8 @@ class Controller:
         self._pre_process_pipeline.stop()
         self._stacker.stop()
         self._post_process_pipeline.stop()
+        self._image_saver.stop()
+        self._image_saver.wait()
 
     @staticmethod
     @log
