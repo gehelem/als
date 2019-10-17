@@ -115,49 +115,44 @@ class ConvertForOutput(ImageProcessor):
         return image
 
 
-class PreProcessPipeline(QThread):
+class Pipeline(QThread):
     """
-    Responsible of grabbing images from the pre-process queue and applying a set of pre-processing units to each one
+    Responsible of grabbing images from a queue and applying a set of processing units to each one
     """
 
     new_result_signal = pyqtSignal(Image)
-    """Qt signal to emit when a new image has been pre-processed"""
+    """Qt signal to emit when a new image has been processed"""
 
     @log
-    def __init__(self, pre_process_queue: SignalingQueue):
+    def __init__(self, name: str, queue: SignalingQueue, final_processes: list):
         QThread.__init__(self)
         self._stop_asked = False
-        self._pre_process_queue = pre_process_queue
-        self._pre_processes = []
-        self._pre_processes.extend([Debayer(), Standardize()])
+        self._name = name
+        self._queue = queue
+        self._processes = []
+        self._final_processes = final_processes
 
     @log
     def run(self):
         """
-        Starts polling the pre-process queue and perform pre-processing units to each image
+        Starts polling the queue and perform processing units to each image
 
         If any processing error occurs, the current image is dropped
         """
         while not self._stop_asked:
 
-            if self._pre_process_queue.qsize() > 0:
-                image = self._pre_process_queue.get()
+            if self._queue.qsize() > 0:
+                image = self._queue.get().clone()
 
-                _LOGGER.info(f"Start pre-processing image : {image.origin}")
+                _LOGGER.info(f"Start {self._name} on image {image.origin}")
 
                 try:
                     with Timer() as image_timer:
 
-                        for processor in self._pre_processes:
+                        for processor in self._processes + self._final_processes:
+                            image = processor.process_image(image)
 
-                            with Timer() as process_timer:
-                                image = processor.process_image(image)
-
-                            _LOGGER.info(
-                                f"Applied process '{processor.__class__.__name__}' to image {image.origin} : "
-                                f"in {process_timer.elapsed_in_milli_as_str} ms")
-
-                    _LOGGER.info(f"Done pre-processing image {image.origin} "
+                    _LOGGER.info(f"End {self._name} on image {image.origin} "
                                  f"in {image_timer.elapsed_in_milli_as_str} ms")
 
                     self.new_result_signal.emit(image)
@@ -179,74 +174,12 @@ class PreProcessPipeline(QThread):
         self.wait()
         _LOGGER.info("PreProcess pipeline stopped")
 
-
-class PostProcessPipeline(QThread):
-    """
-    Responsible of grabbing images from the process queue and applying a set of post-processing units to each one,
-    before storing it into the dynamic data store
-    """
-
-    new_processing_result_signal = pyqtSignal(Image)
-    """Qt signal emitted when an new processing result is ready"""
-
     @log
-    def __init__(self, process_queue: SignalingQueue):
-        QThread.__init__(self)
-        self._stop_asked = False
-        self._process_queue = process_queue
-        self._processes = []
-        self._processes_done_last = [ConvertForOutput()]
-
-    @log
-    def run(self):
+    def add_process(self, process: ImageProcessor):
         """
-        Starts polling the process queue and perform post-processing units to each image popped from the queue
+        Add an image processor to the list of processes to run on images
 
-        If any processing error occurs, the current image is dropped
+        :param process: the processor to add
+        :type process: ImageProcessor
         """
-        while not self._stop_asked:
-
-            if self._process_queue.qsize() > 0:
-
-                image = self._process_queue.get()
-
-                # we make sure we work on the latest stack result, dropping older images if needed
-                while self._process_queue.qsize() > 0:
-                    image = self._process_queue.get()
-
-                image = image.clone()
-
-                _LOGGER.info(f"Start post-processing image : {image.origin}")
-
-                for processor in self._processes + self._processes_done_last:
-
-                    try:
-                        with Timer() as code_timer:
-                            image = processor.process_image(image)
-
-                        _LOGGER.info(
-                            f"Applied process '{processor.__class__.__name__}' to image {image.origin} : "
-                            f"in {code_timer.elapsed_in_milli_as_str} ms")
-
-                    except ProcessingError as processing_error:
-                        _LOGGER.warning(
-                            f"Error applying process '{processor.__class__.__name__}' to image {image} : "
-                            f"{processing_error} *** "
-                            f"Image will be ignored")
-                        break
-
-                _LOGGER.info(f"Done post-processing image : {image.origin}")
-
-                image.origin = "Post Processing Result"
-                self.new_processing_result_signal.emit(image)
-
-            self.msleep(20)
-
-    @log
-    def stop(self):
-        """
-        Sets flag that will interrupt the main loop in run()
-        """
-        self._stop_asked = True
-        self.wait()
-        _LOGGER.info("PostProcess pipeline stopped")
+        self._processes.append(process)

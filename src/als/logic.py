@@ -32,7 +32,7 @@ from als.io.input import InputScanner, ScannerStartError
 from als.io.network import get_ip, WebServer
 from als.io.output import ImageSaver
 from als.model import DYNAMIC_DATA, Image, SignalingQueue, Session, STACKING_MODE_MEAN
-from als.processing import PreProcessPipeline, PostProcessPipeline
+from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput
 from als.stack import Stacker
 
 gettext.install('als', 'locale')
@@ -78,15 +78,19 @@ class Controller:
         self._input_scanner: InputScanner = InputScanner.create_scanner()
 
         self._pre_process_queue: SignalingQueue = DYNAMIC_DATA.pre_process_queue
-        self._pre_process_pipeline: PreProcessPipeline = PreProcessPipeline(DYNAMIC_DATA.pre_process_queue)
+        self._pre_process_pipeline: Pipeline = Pipeline(
+            'pre-process',
+            DYNAMIC_DATA.pre_process_queue,
+            [Debayer(), Standardize()])
         self._pre_process_pipeline.start()
 
         self._stacker_queue: SignalingQueue = DYNAMIC_DATA.stack_queue
         self._stacker: Stacker = Stacker(DYNAMIC_DATA.stack_queue)
         self._stacker.start()
 
-        self._post_process_pipeline = PostProcessPipeline(DYNAMIC_DATA.process_queue)
-        self._post_process_pipeline.start()
+        self._process_queue = DYNAMIC_DATA.process_queue
+        self._process_pipeline: Pipeline = Pipeline('post-process', self._process_queue, [ConvertForOutput()])
+        self._process_pipeline.start()
 
         self._image_saver = ImageSaver(DYNAMIC_DATA.save_queue)
         self._image_saver.start()
@@ -97,7 +101,7 @@ class Controller:
         self._pre_process_pipeline.new_result_signal[Image].connect(self.on_new_pre_processed_image)
         self._stacker.stack_size_changed_signal[int].connect(self.on_stack_size_changed)
         self._stacker.new_stack_result_signal[Image].connect(self.on_new_stack_result)
-        self._post_process_pipeline.new_processing_result_signal[Image].connect(self.on_new_process_result)
+        self._process_pipeline.new_result_signal[Image].connect(self.on_new_process_result)
 
         DYNAMIC_DATA.pre_process_queue.size_changed_signal[int].connect(self.on_pre_process_queue_size_changed)
         DYNAMIC_DATA.stack_queue.size_changed_signal[int].connect(self.on_stack_queue_size_changed)
@@ -133,7 +137,7 @@ class Controller:
         :param image: the result of the stack
         :type image: Image
         """
-        DYNAMIC_DATA.process_queue.put(image)
+        self._process_queue.put(image)
 
     @log
     def on_new_image_read(self, image: Image):
@@ -167,17 +171,6 @@ class Controller:
         DYNAMIC_DATA.pre_process_queue_size = new_size
 
     @log
-    def on_pre_process_queue_popped(self, new_size):
-        """
-        Qt slot executed when an item has just been popped from the pre-process queue
-
-        :param new_size: new queue size
-        :type new_size: int
-        """
-        _LOGGER.debug(f"Image taken from input queue. Input queue size : {new_size}")
-        DYNAMIC_DATA.pre_process_queue_size = new_size
-
-    @log
     def on_stack_queue_size_changed(self, new_size):
         """
         Qt slot executed when an item has just been pushed to the stack queue
@@ -186,17 +179,6 @@ class Controller:
         :type new_size: int
         """
         _LOGGER.debug(f"New image added to the stack queue. Stack queue size : {new_size}")
-        DYNAMIC_DATA.stack_queue_size = new_size
-
-    @log
-    def on_stack_queue_popped(self, new_size):
-        """
-        Qt slot executed when an item has just been popped from the stack queue
-
-        :param new_size: new queue size
-        :type new_size: int
-        """
-        _LOGGER.debug(f"Image taken from stack queue. Stack queue size : {new_size}")
         DYNAMIC_DATA.stack_queue_size = new_size
 
     @log
@@ -211,17 +193,6 @@ class Controller:
         DYNAMIC_DATA.process_queue_size = new_size
 
     @log
-    def on_process_queue_popped(self, new_size):
-        """
-        Qt slot executed when an item has just been popped from the process queue
-
-        :param new_size: new queue size
-        :type new_size: int
-        """
-        _LOGGER.debug(f"Image taken from process queue. Process queue size : {new_size}")
-        DYNAMIC_DATA.process_queue_size = new_size
-
-    @log
     def on_save_queue_size_changed(self, new_size):
         """
         Qt slot executed when an item has just been pushed to the save queue
@@ -230,17 +201,6 @@ class Controller:
         :type new_size: int
         """
         _LOGGER.debug(f"New image added to the save queue. Save queue size : {new_size}")
-        DYNAMIC_DATA.save_queue_size = new_size
-
-    @log
-    def on_save_queue_popped(self, new_size):
-        """
-        Qt slot executed when an item has just been popped from the save queue
-
-        :param new_size: new queue size
-        :type new_size: int
-        """
-        _LOGGER.debug(f"Image taken from save queue. Save queue size : {new_size}")
         DYNAMIC_DATA.save_queue_size = new_size
 
     @log
@@ -457,7 +417,7 @@ class Controller:
 
         self._pre_process_pipeline.stop()
         self._stacker.stop()
-        self._post_process_pipeline.stop()
+        self._process_pipeline.stop()
 
         self._image_saver.stop()
         self._image_saver.wait()
