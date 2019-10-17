@@ -129,6 +129,7 @@ class DynamicData:
         self._observers = []
         self._session = Session()
         self._web_server_is_running = False
+        self._web_server_ip = ""
         self._stacking_mode = ""
         self._align_before_stacking = True
         self._stack_size = 0
@@ -144,6 +145,26 @@ class DynamicData:
         self._save_queue = SignalingQueue()
 
         self._session.status_changed_signal.connect(self._notify_observers)
+
+    @property
+    def web_server_ip(self):
+        """
+        Retrieves web server ip
+
+        :return: web server ip
+        :rtype: str
+        """
+        return self._web_server_ip
+
+    @web_server_ip.setter
+    def web_server_ip(self, ip_address):
+        """
+        Sets web server ip
+
+        :param ip_address: ip address
+        :type ip_address: str
+        """
+        self._web_server_ip = ip_address
 
     @property
     @log

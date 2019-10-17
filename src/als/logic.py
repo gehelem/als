@@ -29,6 +29,7 @@ from pathlib import Path
 from als import config
 from als.code_utilities import log
 from als.io.input import InputScanner, ScannerStartError
+from als.io.network import get_ip, WebServer
 from als.io.output import ImageSaver
 from als.model import DYNAMIC_DATA, Image, SignalingQueue, Session, STACKING_MODE_MEAN
 from als.processing import PreProcessPipeline, PostProcessPipeline
@@ -39,18 +40,28 @@ gettext.install('als', 'locale')
 _LOGGER = logging.getLogger(__name__)
 
 
-class SessionError(Exception):
+class AlsException(Exception):
+    """
+    Base class for all custom errors
+    """
+    def __init__(self, message, details):
+        Exception.__init__(self)
+        self.message = message
+        self.details = details
+
+
+class SessionError(AlsException):
     """
     Class for all errors related to session management
     """
-    def __init__(self, message, error):
-        Exception.__init__(self)
-        self.message = message
-        self.error = error
 
 
 class CriticalFolderMissing(SessionError):
     """Raised when a critical folder is missing"""
+
+
+class WebServerStartFailure(AlsException):
+    """Raised when web server fails"""
 
 
 class Controller:
@@ -79,6 +90,8 @@ class Controller:
 
         self._image_saver = ImageSaver(DYNAMIC_DATA.save_queue)
         self._image_saver.start()
+
+        self._web_server = None
 
         self._input_scanner.new_image_signal[Image].connect(self.on_new_image_read)
         self._pre_process_pipeline.new_result_signal[Image].connect(self.on_new_pre_processed_image)
@@ -270,7 +283,7 @@ class Controller:
             DYNAMIC_DATA.session.set_status(Session.running)
 
         except SessionError as session_error:
-            _LOGGER.error(f"Session error. {session_error.message} : {session_error.error}")
+            _LOGGER.error(f"Session error. {session_error.message} : {session_error.details}")
             raise
 
     @log
@@ -293,6 +306,45 @@ class Controller:
             self._stop_input_scanner()
         _LOGGER.info("Session paused")
         DYNAMIC_DATA.session.set_status(Session.paused)
+
+    @log
+    def start_www(self):
+        """Starts web server"""
+
+        work_folder = config.get_work_folder_path()
+        ip_address = get_ip()
+        port_number = config.get_www_server_port_number()
+
+        try:
+            self._web_server = WebServer(work_folder)
+            self._web_server.start()
+
+            if ip_address == "127.0.0.1":
+                log_function = _LOGGER.warning
+            else:
+                log_function = _LOGGER.info
+
+            url = f"http://{ip_address}:{port_number}"
+            log_function(f"Web server started. Reachable at {url}")
+
+            DYNAMIC_DATA.web_server_ip = ip_address
+            DYNAMIC_DATA.web_server_is_running = True
+
+        except OSError as os_error:
+            title = "Could not start web server"
+            _LOGGER.error(title, os_error)
+            raise WebServerStartFailure(title, os_error)
+
+    @log
+    def stop_www(self):
+        """Stops web server"""
+
+        if self._web_server and DYNAMIC_DATA.web_server_is_running:
+            self._web_server.stop()
+            self._web_server.join()
+            self._web_server = None
+            _LOGGER.info("Web server stopped")
+            DYNAMIC_DATA.web_server_is_running = False
 
     @log
     def purge_pre_process_queue(self):
@@ -390,9 +442,13 @@ class Controller:
         if not DYNAMIC_DATA.session.is_stopped():
             self.stop_session()
 
+        if DYNAMIC_DATA.web_server_is_running:
+            self.stop_www()
+
         self._pre_process_pipeline.stop()
         self._stacker.stop()
         self._post_process_pipeline.stop()
+
         self._image_saver.stop()
         self._image_saver.wait()
 

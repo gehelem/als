@@ -5,13 +5,12 @@ import logging
 
 from PyQt5.QtCore import QEvent, pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QApplication, QDialog
+from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog
 from qimage2ndarray import array2qimage
 
-from als import model, config
-from als.logic import Controller, SessionError, CriticalFolderMissing
+from als import config
+from als.logic import Controller, SessionError, CriticalFolderMissing, WebServerStartFailure
 from als.code_utilities import log
-from als.io.network import get_ip, StoppableServerThread
 from als.model import STACKING_MODE_SUM, STACKING_MODE_MEAN, VERSION, DYNAMIC_DATA
 from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box, SaveWaitDialog, question, message_box
 from generated.als_ui import Ui_stack_window
@@ -50,14 +49,10 @@ class MainWindow(QMainWindow):
         self.shown_log_dock = True
         self.show_session_dock = True
 
-        # web stuff
-        self.thread = None
-        self.web_dir = None
-
         # prevent log dock to be too tall
         self.resizeDocks([self._ui.log_dock], [self._LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
 
-        model.DYNAMIC_DATA.add_observer(self)
+        DYNAMIC_DATA.add_observer(self)
 
         self.update_all()
 
@@ -82,12 +77,6 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         """Handles window close events."""
         # pylint: disable=C0103
-
-        if DYNAMIC_DATA.web_server_is_running:
-            self._stop_www()
-
-        _LOGGER.debug(f"Window size : {self.size()}")
-        _LOGGER.debug(f"Window position : {self.pos()}")
 
         window_rect = self.geometry()
         config.set_window_geometry((window_rect.x(), window_rect.y(), window_rect.width(), window_rect.height()))
@@ -356,7 +345,7 @@ class MainWindow(QMainWindow):
         self._ui.lbl_scanner_status.setText(scanner_status_message)
 
         if web_server_is_running:
-            url = f"http://{get_ip()}:{config.get_www_server_port_number()}"
+            url = f"http://{DYNAMIC_DATA.web_server_ip}:{config.get_www_server_port_number()}"
             self._ui.lbl_web_server_status.setText(f'Web server: Started, reachable at <a href="{url}">{url}</a>')
         else:
             self._ui.lbl_web_server_status.setText("Web server: Stopped")
@@ -438,44 +427,21 @@ class MainWindow(QMainWindow):
     @log
     def _start_www(self):
         """Starts web server"""
-        self.web_dir = config.get_work_folder_path()
-        ip_address = get_ip()
-        port_number = config.get_www_server_port_number()
-        try:
-            self.thread = StoppableServerThread(self.web_dir)
-            self.thread.start()
 
-            # Server is now started and listens on specified port on *all* available interfaces.
-            # We get the machine ip address and warn user if detected ip is loopback (127.0.0.1)
-            # since in this case, the web server won't be reachable by any other machine
-            if ip_address == "127.0.0.1":
-                log_function = _LOGGER.warning
+        try:
+            self._controller.start_www()
+            if DYNAMIC_DATA.web_server_ip == "127.0.0.1":
                 title = "Web server access is limited"
                 message = "Web server IP address is 127.0.0.1.\n\nServer won't be reachable by other " \
                           "machines. Please check your network connection"
                 warning_box(title, message)
-            else:
-                log_function = _LOGGER.info
-
-            url = f"http://{ip_address}:{port_number}"
-            log_function(f"Web server started. Reachable at {url}")
-            model.DYNAMIC_DATA.web_server_is_running = True
-        except OSError:
-            title = "Could not start web server"
-            message = f"The web server needs to listen on port n°{port_number} but this port is already in use.\n\n"
-            message += "Please change web server port number in your preferences "
-            _LOGGER.error(title)
-            error_box(title, message)
+        except WebServerStartFailure as start_failure:
+            error_box(start_failure.message, start_failure.message)
 
     @log
     def _stop_www(self):
         """Stops web server"""
-        if self.thread:
-            self.thread.stop()
-            self.thread.join()
-            self.thread = None
-            _LOGGER.info("Web server stopped")
-            model.DYNAMIC_DATA.web_server_is_running = False
+        self._controller.stop_www()
 
     @log
     def _start_session(self, is_retry: bool = False):
@@ -493,14 +459,14 @@ class MainWindow(QMainWindow):
 
         except CriticalFolderMissing as folder_missing:
 
-            text = folder_missing.error
+            text = folder_missing.details
             text += "\n\n Would you like to open the preferences box ?"
 
             if question(folder_missing.message, text) and self._open_preferences():
                 self._start_session(is_retry=True)
 
         except SessionError as session_error:
-            error_box(session_error.message, str(session_error.error) + "\n\nSession start aborted")
+            error_box(session_error.message, str(session_error.details) + "\n\nSession start aborted")
 
     @log
     def _stop_session(self, ask_confirmation: bool = True):

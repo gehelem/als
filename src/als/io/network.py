@@ -48,7 +48,7 @@ class HTTPServer(BaseHTTPServer):
         BaseHTTPServer.__init__(self, server_address, request_handler_class)
 
 
-class StoppableServerThread(threading.Thread):
+class WebServer(threading.Thread):
     """
     Thread class with a stop() method.
 
