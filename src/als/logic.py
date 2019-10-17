@@ -95,7 +95,7 @@ class Controller:
 
         self._input_scanner.new_image_signal[Image].connect(self.on_new_image_read)
         self._pre_process_pipeline.new_result_signal[Image].connect(self.on_new_pre_processed_image)
-        self._stacker.stack_size_changed_signal[int].connect(DYNAMIC_DATA.set_stack_size)
+        self._stacker.stack_size_changed_signal[int].connect(self.on_stack_size_changed)
         self._stacker.new_stack_result_signal[Image].connect(self.on_new_stack_result)
         self._post_process_pipeline.new_processing_result_signal[Image].connect(self.on_new_process_result)
 
@@ -103,6 +103,16 @@ class Controller:
         DYNAMIC_DATA.stack_queue.size_changed_signal[int].connect(self.on_stack_queue_size_changed)
         DYNAMIC_DATA.process_queue.size_changed_signal[int].connect(self.on_process_queue_size_changed)
         DYNAMIC_DATA.save_queue.size_changed_signal[int].connect(self.on_save_queue_size_changed)
+
+    @log
+    def on_stack_size_changed(self, size):
+        """
+        Stack size just changed
+
+        :param size: the stack size
+        :type size: int
+        """
+        DYNAMIC_DATA.stack_size = size
 
     @log
     def on_new_process_result(self, image: Image):

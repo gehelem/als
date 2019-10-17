@@ -280,8 +280,20 @@ class DynamicData:
         """
         self._save_every_image = save_every_image
 
+    @property
     @log
-    def set_stack_size(self, size):
+    def stack_size(self):
+        """
+        Retrieves the published stack size
+
+        :return: the published stack size
+        :rtype: int
+        """
+        return self._stack_size
+
+    @stack_size.setter
+    @log
+    def stack_size(self, size):
         """
         Sets published stack size
 
@@ -290,16 +302,6 @@ class DynamicData:
         """
         self._stack_size = size
         self._notify_observers()
-
-    @log
-    def get_stack_size(self):
-        """
-        Retrieves the published stack size
-
-        :return: the published stack size
-        :rtype: int
-        """
-        return self._stack_size
 
     @property
     @log

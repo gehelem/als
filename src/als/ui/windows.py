@@ -378,7 +378,7 @@ class MainWindow(QMainWindow):
         self._ui.btn_web_stop.setEnabled(web_server_is_running)
 
         # update stack size
-        self._ui.lbl_stack_size.setText(str(DYNAMIC_DATA.get_stack_size()))
+        self._ui.lbl_stack_size.setText(str(DYNAMIC_DATA.stack_size))
 
         # update queues sizes
         self._ui.lbl_pre_process_queue_size.setText(str(DYNAMIC_DATA.pre_process_queue_size))
