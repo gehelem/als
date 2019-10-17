@@ -22,6 +22,9 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_15">
     <item>
+     <widget class="ImageView" name="image_view"/>
+    </item>
+    <item>
      <layout class="QHBoxLayout" name="horizontalLayout_14">
       <item>
        <widget class="QLabel" name="lbl_session_status">
@@ -63,9 +66,6 @@
        </widget>
       </item>
      </layout>
-    </item>
-    <item>
-     <widget class="ImageView" name="image_view"/>
     </item>
     <item>
      <widget class="QTabWidget" name="postprocess_widget">
@@ -965,7 +965,7 @@
      <x>0</x>
      <y>0</y>
      <width>1094</width>
-     <height>25</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
