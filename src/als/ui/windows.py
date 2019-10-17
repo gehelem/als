@@ -5,7 +5,7 @@ import logging
 
 from PyQt5.QtCore import QEvent, pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QApplication
+from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QApplication, QDialog
 from qimage2ndarray import array2qimage
 
 from als import model, config
@@ -229,7 +229,8 @@ class MainWindow(QMainWindow):
     def cb_prefs(self):
         """ Qt slot for activation of the 'preferences' action"""
         dialog = PreferencesDialog(self)
-        dialog.exec()
+        if dialog.exec() == QDialog.Accepted:
+            self.update_all()
 
     @pyqtSlot(name="on_action_about_als_triggered")
     @log
