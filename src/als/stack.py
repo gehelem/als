@@ -160,13 +160,13 @@ class Stacker(QThread):
 
         with Timer() as find_timer:
             transformation = self._find_transformation(image)
-        _LOGGER.info(f"Found transformation for alignment of {image.origin} in "
-                     f"{find_timer.elapsed_in_milli_as_str} ms")
+        _LOGGER.debug(f"Found transformation for alignment of {image.origin} in "
+                      f"{find_timer.elapsed_in_milli_as_str} ms")
 
         with Timer() as apply_timer:
             self._apply_transformation(image, transformation)
-        _LOGGER.info(f"Applied transformation for alignment of {image.origin} in "
-                     f"{apply_timer.elapsed_in_milli_as_str} ms")
+        _LOGGER.debug(f"Applied transformation for alignment of {image.origin} in "
+                      f"{apply_timer.elapsed_in_milli_as_str} ms")
 
     @log
     def _apply_transformation(self, image: Image, transformation: SimilarityTransform):
@@ -360,7 +360,7 @@ class Stacker(QThread):
             else:
                 raise StackingError(f"Unsupported stacking mode : {stacking_mode}")
 
-        _LOGGER.info(f"Done {stacking_mode}-stacking {image.origin} in {registering_timer.elapsed_in_milli_as_str} ms")
+        _LOGGER.info(f"Done stacking {image.origin} in {registering_timer.elapsed_in_milli_as_str} ms")
 
     @log
     def stop(self):
