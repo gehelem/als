@@ -413,7 +413,7 @@ class MainWindow(QMainWindow):
                           "machines. Please check your network connection"
                 warning_box(title, message)
         except WebServerStartFailure as start_failure:
-            error_box(start_failure.message, start_failure.message)
+            error_box(start_failure.message, start_failure.details)
 
     @log
     def _stop_www(self):

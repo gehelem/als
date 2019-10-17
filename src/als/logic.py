@@ -230,12 +230,6 @@ class Controller:
                         message = f"Your currently configured {role} folder '{path}' is missing."
                         raise CriticalFolderMissing(title, message)
 
-                # setup work folder
-                try:
-                    self.setup_work_folder()
-                except OSError as os_error:
-                    raise SessionError("Work folder could not be prepared", os_error)
-
             else:
                 # session was paused when this start was ordered. No need for checks & setup
                 _LOGGER.info("Restarting input scanner ...")
@@ -285,6 +279,12 @@ class Controller:
         ip_address = get_ip()
         port_number = config.get_www_server_port_number()
 
+        # setup work folder
+        try:
+            self._setup_web_content()
+        except OSError as os_error:
+            raise WebServerStartFailure("Work folder could not be prepared", str(os_error))
+
         try:
             self._web_server = WebServer(work_folder)
             self._web_server.start()
@@ -302,8 +302,8 @@ class Controller:
 
         except OSError as os_error:
             title = "Could not start web server"
-            _LOGGER.error(title, os_error)
-            raise WebServerStartFailure(title, os_error)
+            _LOGGER.error(f"{title} : {os_error}")
+            raise WebServerStartFailure(title, str(os_error))
 
     @log
     def stop_www(self):
@@ -337,7 +337,7 @@ class Controller:
         _LOGGER.info("Stack queue purged")
 
     @log
-    def setup_work_folder(self):
+    def _setup_web_content(self):
         """Prepares the work folder."""
 
         work_dir_path = config.get_work_folder_path()
