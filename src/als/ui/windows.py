@@ -18,6 +18,7 @@ from generated.als_ui import Ui_stack_window
 _LOGGER = logging.getLogger(__name__)
 
 
+# pylint: disable=R0904
 class MainWindow(QMainWindow):
     """
     ALS main window.
@@ -209,8 +210,9 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     # pylint: disable=C0103
+    @staticmethod
     @log
-    def on_cb_stacking_mode_currentTextChanged(self, text: str):
+    def on_cb_stacking_mode_currentTextChanged(text: str):
         """
         Qt slot executed when stacking mode comb box changed
 
@@ -220,8 +222,9 @@ class MainWindow(QMainWindow):
         """
         DYNAMIC_DATA.stacking_mode = text
 
+    @staticmethod
     @log
-    def on_chk_align_toggled(self, checked: bool):
+    def on_chk_align_toggled(checked: bool):
         """
         Qt slot executed when 'align' check box is changed
 
@@ -230,8 +233,9 @@ class MainWindow(QMainWindow):
         """
         DYNAMIC_DATA.align_before_stacking = checked
 
+    @staticmethod
     @log
-    def on_chk_save_every_image_toggled(self, checked: bool):
+    def on_chk_save_every_image_toggled(checked: bool):
         """
         Qt slot executed when 'save ever image' check box is changed
 
@@ -262,34 +266,7 @@ class MainWindow(QMainWindow):
         Adjusts stacked image according to GUU controls
 
         """
-        # # test rgb or gray
-        # if len(self.image_ref_save.image.shape) == 2:
-        #     mode = "gray"
-        # elif len(self.image_ref_save.image.shape) == 3:
-        #     mode = "rgb"
-        # else:
-        #     raise ValueError(_("fit format not supported"))
-        #
-        # self.image_ref_save.stack_image = prepro.post_process_image(self.image_ref_save.image,
-        #                                                             mode=mode,
-        #                                                             scnr_on=self._ui.cbSCNR.isChecked(),
-        #                                                             wavelets_on=self._ui.cbWavelets.isChecked(),
-        #                                                             wavelets_type=str(self._ui.cBoxWaveType.currentText()),
-        #                                                             wavelets_use_luminance=self._ui.cbLuminanceWavelet.isChecked(),
-        #                                                             param=[self._ui.contrast_slider.value() / 10.,
-        #                                                                    self._ui.brightness_slider.value(),
-        #                                                                    self._ui.black_slider.value(),
-        #                                                                    self._ui.white_slider.value(),
-        #                                                                    self._ui.R_slider.value() / 100.,
-        #                                                                    self._ui.G_slider.value() / 100.,
-        #                                                                    self._ui.B_slider.value() / 100.,
-        #                                                                    self._ui.cmSCNR.currentText(),
-        #                                                                    self._ui.SCNR_Slider.value() / 100.,
-        #                                                                    {1: int(self._ui.wavelet_1_label.text()) / 100.,
-        #                                                                     2: int(self._ui.wavelet_2_label.text()) / 100.,
-        #                                                                     3: int(self._ui.wavelet_3_label.text()) / 100.,
-        #                                                                     4: int(self._ui.wavelet_4_label.text()) / 100.,
-        #                                                                     5: int(self._ui.wavelet_5_label.text()) / 100.}])
+        # TODO :)
 
     @log
     def update_image(self):
