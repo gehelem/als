@@ -370,7 +370,7 @@ class MainWindow(QMainWindow):
             session_status_string = "### BUG !"
         self._ui.lbl_session_status.setText(f"Session: {session_status_string}")
 
-        # update preferences accessibility according to scanner and web server status
+        # update preferences accessibility according to session and web server status
         self._ui.action_prefs.setEnabled(not web_server_is_running and session_is_stopped)
 
         # handle Start / Pause / Stop  buttons
@@ -402,37 +402,6 @@ class MainWindow(QMainWindow):
     def cb_pause(self):
         """Qt slot for mouse clicks on the 'Pause' button"""
         self._controller.pause_session()
-
-    @pyqtSlot(name="on_pbReset_clicked")
-    @log
-    def cb_reset(self):
-        """Qt slot for mouse clicks on the 'Reset' button"""
-
-        self._ui.contrast_slider.setValue(10)
-        self._ui.brightness_slider.setValue(0)
-        self._ui.black_slider.setValue(0)
-        self._ui.white_slider.setValue(65535)
-        self._ui.R_slider.setValue(100)
-        self._ui.G_slider.setValue(100)
-        self._ui.B_slider.setValue(100)
-        self._ui.contrast.setText(str(1))
-        self._ui.brightness.setText(str(0))
-        self._ui.black.setText(str(0))
-        self._ui.white.setText(str(65535))
-        self._ui.white_slider.setEnabled(False)
-        self._ui.black_slider.setEnabled(False)
-        self._ui.contrast_slider.setEnabled(False)
-        self._ui.brightness_slider.setEnabled(False)
-        self._ui.R_slider.setEnabled(False)
-        self._ui.G_slider.setEnabled(False)
-        self._ui.B_slider.setEnabled(False)
-        self._ui.pb_apply_value.setEnabled(False)
-        self._ui.cbSCNR.setChecked(False)
-        self._ui.cbWavelets.setChecked(False)
-        self._ui.cbLuminanceWavelet.setChecked(False)
-
-        self._stacker.reset()
-        self.reset_image_view()
 
     @pyqtSlot(bool, name="on_log_dock_visibilityChanged")
     @log
