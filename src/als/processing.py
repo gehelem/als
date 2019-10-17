@@ -157,7 +157,7 @@ class PreProcessPipeline(QThread):
                                 f"Applied process '{processor.__class__.__name__}' to image {image.origin} : "
                                 f"in {process_timer.elapsed_in_milli_as_str} ms")
 
-                    _LOGGER.info(f"Done pre-processing image {image.origin}"
+                    _LOGGER.info(f"Done pre-processing image {image.origin} "
                                  f"in {image_timer.elapsed_in_milli_as_str} ms")
 
                     self.new_result_signal.emit(image)
