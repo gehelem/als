@@ -9,12 +9,12 @@ from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QA
 from qimage2ndarray import array2qimage
 
 from als import model, config
-from als.logic import Controller, SessionError
+from als.logic import Controller, SessionError, CriticalFolderMissing
 from als.code_utilities import log
 from als.io.network import get_ip, StoppableServerThread
 from als.io.output import ImageSaver
 from als.model import STACKING_MODE_SUM, STACKING_MODE_MEAN, VERSION, DYNAMIC_DATA
-from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box, SaveWaitDialog
+from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box, SaveWaitDialog, question, message_box
 from generated.als_ui import Ui_stack_window
 
 _LOGGER = logging.getLogger(__name__)
@@ -97,7 +97,8 @@ class MainWindow(QMainWindow):
         config.set_window_geometry((window_rect.x(), window_rect.y(), window_rect.width(), window_rect.height()))
         config.save()
 
-        self._controller.stop_session()
+        self._stop_session()
+
         self._image_saver.stop()
         if self._image_saver.isRunning() and DYNAMIC_DATA.save_queue_size > 0:
             SaveWaitDialog(self).exec()
@@ -228,9 +229,7 @@ class MainWindow(QMainWindow):
     @log
     def cb_prefs(self):
         """ Qt slot for activation of the 'preferences' action"""
-        dialog = PreferencesDialog(self)
-        if dialog.exec() == QDialog.Accepted:
-            self.update_all()
+        self._open_preferences()
 
     @pyqtSlot(name="on_action_about_als_triggered")
     @log
@@ -330,10 +329,7 @@ class MainWindow(QMainWindow):
         self._ui.B_slider.setEnabled(False)
         self._ui.pb_apply_value.setEnabled(False)
 
-        try:
-            self._controller.start_session()
-        except SessionError as session_error:
-            error_box(session_error.message, str(session_error.error) + "\n\nSession start aborted")
+        self._start_session()
 
     def on_log_message(self, message):
         """
@@ -404,7 +400,7 @@ class MainWindow(QMainWindow):
     @log
     def cb_stop(self):
         """Qt slot for mouse clicks on the 'Stop' button"""
-        self._controller.stop_session()
+        self._stop_session()
 
     @pyqtSlot(name="on_pbPause_clicked")
     @log
@@ -514,3 +510,64 @@ class MainWindow(QMainWindow):
             self.thread = None
             _LOGGER.info("Web server stopped")
             model.DYNAMIC_DATA.web_server_is_running = False
+
+    @log
+    def _start_session(self, is_retry: bool = False):
+        """
+        Stars session
+
+        :param is_retry: is this a retry ?
+        :type is_retry: bool
+        """
+
+        try:
+            self._controller.start_session()
+            if is_retry:
+                message_box("Session started", "Session successfully started after retry")
+
+        except CriticalFolderMissing as folder_missing:
+
+            text = folder_missing.error
+            text += "\n\n Would you like to open the preferences box ?"
+
+            if question(folder_missing.message, text) and self._open_preferences():
+                self._start_session(is_retry=True)
+
+        except SessionError as session_error:
+            error_box(session_error.message, str(session_error.error) + "\n\nSession start aborted")
+
+    @log
+    def _stop_session(self, ask_confirmation: bool = True):
+        """
+        Stops sessions
+
+        :param ask_confirmation: do we ask user for confirmation ?
+        :type ask_confirmation: bool
+        """
+
+        if not DYNAMIC_DATA.session.is_stopped():
+            message = """Stopping the current session will reset the stack and all image enhancements.
+
+            Are you sure you want to stop the current session ?
+            """
+            do_stop_session = True if not ask_confirmation else question("Really stop session ?",
+                                                                         message,
+                                                                         default_yes=False)
+            if do_stop_session:
+                self._controller.stop_session()
+
+    @log
+    def _open_preferences(self):
+        """
+        Opens preferences dialog box and return True if dilaog was closed using "OK"
+
+        :return: Was the dilaog closed with "OK" ?
+        :rtype: bool
+        """
+
+        accepted = PreferencesDialog(self).exec() == QDialog.Accepted
+
+        if accepted:
+            self.update_all()
+
+        return accepted

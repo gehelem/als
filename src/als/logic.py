@@ -26,16 +26,12 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 
-from PyQt5.QtCore import QObject
-from PyQt5.QtWidgets import QApplication, QDialog
-
 from als import config
 from als.code_utilities import log
 from als.io.input import InputScanner, ScannerStartError
 from als.model import DYNAMIC_DATA, Image, SignalingQueue, Session, STACKING_MODE_MEAN
 from als.processing import PreProcessPipeline, PostProcessPipeline
 from als.stack import Stacker
-from als.ui.dialogs import question, PreferencesDialog
 
 gettext.install('als', 'locale')
 
@@ -52,13 +48,16 @@ class SessionError(Exception):
         self.error = error
 
 
-class Controller(QObject):
+class CriticalFolderMissing(SessionError):
+    """Raised when a critical folder is missing"""
+
+
+class Controller:
     """
     The application controller, in charge of implementing application logic
     """
     @log
     def __init__(self):
-        QObject.__init__(self)
 
         DYNAMIC_DATA.session.set_status(Session.stopped)
         DYNAMIC_DATA.web_server_is_running = False
@@ -242,14 +241,7 @@ class Controller(QObject):
                     if not Path(path).is_dir():
                         title = "Missing critical folder"
                         message = f"Your currently configured {role} folder '{path}' is missing."
-                        folder_now_exists = False
-                        if question(title, message + "Do you want to review your preferences ?"):
-                            dialog = PreferencesDialog(QApplication.activeWindow())
-                            # if prefs dialog is closed by "OK", a.k.a. Accepted, we are sure the folder now exists,
-                            # as it has been selected with built-in folder selector dialog.
-                            folder_now_exists = dialog.exec() == QDialog.Accepted
-                        if not folder_now_exists:
-                            raise SessionError(title, message)
+                        raise CriticalFolderMissing(title, message)
 
                 # setup work folder
                 try:
@@ -278,25 +270,15 @@ class Controller(QObject):
             raise
 
     @log
-    def stop_session(self, ask_confirmation: bool = True):
+    def stop_session(self):
         """
         Stops session : stop input scanner and purge input queue
-
-        :param ask_confirmation: Do we ask user for confirmation ?
-        :type ask_confirmation: bool
         """
         if not DYNAMIC_DATA.session.is_stopped():
-            message = """Stopping the current session will reset the stack and all image enhancements.
-            
-            Are you sure you want to stop the current session ?
-            """
-            do_stop_session = True if not ask_confirmation else question("Really stop session ?", message)
-
-            if do_stop_session:
-                self._stop_input_scanner()
-                self.purge_pre_process_queue()
-                _LOGGER.info("Session stopped")
-                DYNAMIC_DATA.session.set_status(Session.stopped)
+            self._stop_input_scanner()
+            self.purge_pre_process_queue()
+            _LOGGER.info("Session stopped")
+            DYNAMIC_DATA.session.set_status(Session.stopped)
 
     @log
     def pause_session(self):
@@ -402,7 +384,7 @@ class Controller(QObject):
         Proper shutdown of all app components
         """
         if not DYNAMIC_DATA.session.is_stopped():
-            self.stop_session(ask_confirmation=False)
+            self.stop_session()
 
         self._pre_process_pipeline.stop()
         self._stacker.stop()

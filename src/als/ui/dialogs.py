@@ -2,6 +2,7 @@
 Provides all dialogs used in ALS GUI
 """
 import logging
+from pathlib import Path
 
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QApplication
@@ -41,8 +42,22 @@ class PreferencesDialog(QDialog):
 
         config_to_image_save_type_mapping[config.get_image_save_format()].setChecked(True)
 
-    # FIXME : using @log on this causes
-    # TypeError: accept() takes 1 positional argument but 2 were given
+        self._show_missing_folders()
+
+    @log
+    def _show_missing_folders(self):
+        """
+        Draw a red border around text fields containing a path to a missing folder
+        """
+
+        for ui_field in [self._ui.ln_work_folder_path, self._ui.ln_scan_folder_path]:
+
+            if not Path(ui_field.text()).is_dir():
+                ui_field.setStyleSheet("border: 1px solid red")
+            else:
+                ui_field.setStyleSheet("border: 1px")
+
+    # FIXME : using @log on this causes TypeError: accept() takes 1 positional argument but 2 were given
     def accept(self):
         """checks and stores user settings"""
         config.set_scan_folder_path(self._ui.ln_scan_folder_path.text())
@@ -88,6 +103,8 @@ class PreferencesDialog(QDialog):
         if scan_folder_path:
             self._ui.ln_scan_folder_path.setText(scan_folder_path)
 
+        self._show_missing_folders()
+
     @pyqtSlot(name="on_btn_browse_work_clicked")
     @log
     def browse_work(self):
@@ -97,6 +114,8 @@ class PreferencesDialog(QDialog):
                                                             self._ui.ln_work_folder_path.text())
         if work_folder_path:
             self._ui.ln_work_folder_path.setText(work_folder_path)
+
+        self._show_missing_folders()
 
 
 class AboutDialog(QDialog):
@@ -137,15 +156,27 @@ class SaveWaitDialog(QDialog):
             self.close()
 
 
-def question(title, message):
+def question(title, message, default_yes: bool = True):
     """
     Asks a question to user in a Qt MessageBox and return True/False as Yes/No
 
     :param title: Title of the box
     :param message: Message displayed in the box
+
+    :param default_yes: set 'yes' button as the default button
+    :type default_yes: bool
+
     :return: True if user replies "Yes", False otherwise
     """
-    return QMessageBox.Yes == QMessageBox.question(QApplication.activeWindow(), title, message, QMessageBox.Yes | QMessageBox.No)
+
+    default_button = QMessageBox.Yes if default_yes else QMessageBox.No
+
+    return QMessageBox.Yes == QMessageBox.question(
+        QApplication.activeWindow(),
+        title,
+        message,
+        QMessageBox.Yes | QMessageBox.No,
+        default_button)
 
 
 def warning_box(title, message):
