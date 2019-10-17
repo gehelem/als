@@ -175,20 +175,6 @@ class MainWindow(QMainWindow):
         """
         self._ui.contrast.setNum(value / 10)
 
-    @pyqtSlot(bool, name="on_cbWww_clicked")
-    @log
-    def cb_www_check(self, checked):
-        """
-        Qt slot for mouse clicks on 'www' checkbox.
-
-        :param checked: True if the checkbox is checked, False otherwise
-        :type checked: bool
-        """
-        if checked:
-            self._start_www()
-        else:
-            self._stop_www()
-
     @pyqtSlot(name="on_pbSave_clicked")
     @log
     def cb_save(self):
@@ -264,6 +250,22 @@ class MainWindow(QMainWindow):
         :type checked: bool
         """
         DYNAMIC_DATA.save_every_image = checked
+
+    @pyqtSlot()
+    @log
+    def on_btn_web_start_clicked(self):
+        """
+        Qt slot executed when START web button is clicked
+        """
+        self._start_www()
+
+    @pyqtSlot()
+    @log
+    def on_btn_web_stop_clicked(self):
+        """
+        Qt slot executed when START web button is clicked
+        """
+        self._stop_www()
 
     @log
     def adjust_value(self):
@@ -382,6 +384,10 @@ class MainWindow(QMainWindow):
         self._ui.chk_align.setEnabled(session_is_stopped)
         self._ui.cb_stacking_mode.setEnabled(session_is_stopped)
 
+        # handle web stop start buttons
+        self._ui.btn_web_start.setEnabled(not web_server_is_running)
+        self._ui.btn_web_stop.setEnabled(web_server_is_running)
+
         # update stack size
         self._ui.lbl_stack_size.setText(str(DYNAMIC_DATA.get_stack_size()))
 
@@ -453,8 +459,6 @@ class MainWindow(QMainWindow):
 
             url = f"http://{ip_address}:{port_number}"
             log_function(f"Web server started. Reachable at {url}")
-            self._ui.action_prefs.setEnabled(False)
-            QApplication.clipboard().setText(url)
             model.DYNAMIC_DATA.web_server_is_running = True
         except OSError:
             title = "Could not start web server"
@@ -462,8 +466,6 @@ class MainWindow(QMainWindow):
             message += "Please change web server port number in your preferences "
             _LOGGER.error(title)
             error_box(title, message)
-            self._stop_www()
-            self._ui.cbWww.setChecked(False)
 
     @log
     def _stop_www(self):

@@ -1212,20 +1212,18 @@
        <property name="title">
         <string>Image server</string>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_11">
+       <layout class="QHBoxLayout" name="horizontalLayout_16">
         <item>
-         <widget class="QCheckBox" name="cbWww">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>20</height>
-           </size>
-          </property>
+         <widget class="QPushButton" name="btn_web_start">
           <property name="text">
-           <string>web server on</string>
+           <string>Start</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btn_web_stop">
+          <property name="text">
+           <string>Stop</string>
           </property>
          </widget>
         </item>
