@@ -186,8 +186,10 @@ class DynamicData:
         :param size: the pre-process queue size
         :type size: int
         """
+        old_size = self._pre_process_queue_size
         self._pre_process_queue_size = size
-        self._notify_observers()
+        if size != old_size:
+            self._notify_observers()
 
     @property
     @log
@@ -209,8 +211,10 @@ class DynamicData:
         :param size: the stack queue size
         :type size: int
         """
+        old_size = self._stack_queue_size
         self._stack_queue_size = size
-        self._notify_observers()
+        if size != old_size:
+            self._notify_observers()
 
     @property
     @log
@@ -232,8 +236,10 @@ class DynamicData:
         :param size: the process queue size
         :type size: int
         """
+        old_size = self._process_queue_size
         self._process_queue_size = size
-        self._notify_observers()
+        if size != old_size:
+            self._notify_observers()
 
     @property
     @log
@@ -255,8 +261,10 @@ class DynamicData:
         :param size: the save queue size
         :type size: int
         """
+        old_size = self._save_queue_size
         self._save_queue_size = size
-        self._notify_observers()
+        if size != old_size:
+            self._notify_observers()
 
     @property
     @log
@@ -300,8 +308,10 @@ class DynamicData:
         :param size: the new published stack size
         :type size: int
         """
+        old_size = self._stack_size
         self._stack_size = size
-        self._notify_observers()
+        if size != old_size:
+            self._notify_observers()
 
     @property
     @log
@@ -352,7 +362,7 @@ class DynamicData:
     @log
     def align_before_stacking(self):
         """
-        Retrieves flag set if alignment is ON
+        Retrieves alignment switch
 
         :return: is alignment ON ?
         :rtype: bool
@@ -362,6 +372,12 @@ class DynamicData:
     @align_before_stacking.setter
     @log
     def align_before_stacking(self, align: bool):
+        """
+        Sets alignment switch
+
+        :param align: is alignment ON ?
+        :type align: bool
+        """
         self._align_before_stacking = align
 
     @property
@@ -385,6 +401,8 @@ class DynamicData:
 
           - Sum : Stacking mode is sum
           - Mean : stacking mode is mean
+
+        If unknown value is received, fallback to Mean
 
         :type text: str
         """
