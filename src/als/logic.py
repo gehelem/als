@@ -39,6 +39,9 @@ gettext.install('als', 'locale')
 
 _LOGGER = logging.getLogger(__name__)
 
+_WORKER_STATUS_BUSY = "Busy"
+_WORKER_STATUS_IDLE = "Idle"
+
 
 class AlsException(Exception):
     """
@@ -73,6 +76,12 @@ class Controller:
 
         DYNAMIC_DATA.session.set_status(Session.stopped)
         DYNAMIC_DATA.web_server_is_running = False
+
+        DYNAMIC_DATA.pre_processor_status = _WORKER_STATUS_IDLE
+        DYNAMIC_DATA.stacker_status = _WORKER_STATUS_IDLE
+        DYNAMIC_DATA.post_processor_status = _WORKER_STATUS_IDLE
+        DYNAMIC_DATA.saver_status = _WORKER_STATUS_IDLE
+
         DYNAMIC_DATA.stacking_mode = STACKING_MODE_MEAN
 
         self._input_scanner: InputScanner = InputScanner.create_scanner()
@@ -89,11 +98,11 @@ class Controller:
         self._stacker.start()
 
         self._process_queue = DYNAMIC_DATA.process_queue
-        self._process_pipeline: Pipeline = Pipeline('post-process', self._process_queue, [ConvertForOutput()])
-        self._process_pipeline.start()
+        self._post_process_pipeline: Pipeline = Pipeline('post-process', self._process_queue, [ConvertForOutput()])
+        self._post_process_pipeline.start()
 
-        self._image_saver = ImageSaver(DYNAMIC_DATA.save_queue)
-        self._image_saver.start()
+        self._saver = ImageSaver(DYNAMIC_DATA.save_queue)
+        self._saver.start()
 
         self._web_server = None
 
@@ -101,12 +110,21 @@ class Controller:
         self._pre_process_pipeline.new_result_signal[Image].connect(self.on_new_pre_processed_image)
         self._stacker.stack_size_changed_signal[int].connect(self.on_stack_size_changed)
         self._stacker.new_result_signal[Image].connect(self.on_new_stack_result)
-        self._process_pipeline.new_result_signal[Image].connect(self.on_new_process_result)
+        self._post_process_pipeline.new_result_signal[Image].connect(self.on_new_process_result)
 
         DYNAMIC_DATA.pre_process_queue.size_changed_signal[int].connect(self.on_pre_process_queue_size_changed)
         DYNAMIC_DATA.stack_queue.size_changed_signal[int].connect(self.on_stack_queue_size_changed)
         DYNAMIC_DATA.process_queue.size_changed_signal[int].connect(self.on_process_queue_size_changed)
         DYNAMIC_DATA.save_queue.size_changed_signal[int].connect(self.on_save_queue_size_changed)
+
+        self._pre_process_pipeline.busy_signal.connect(self.on_pre_processor_busy)
+        self._pre_process_pipeline.waiting_signal.connect(self.on_pre_processor_waiting)
+        self._stacker.busy_signal.connect(self.on_stacker_busy)
+        self._stacker.waiting_signal.connect(self.on_stacker_waiting)
+        self._post_process_pipeline.busy_signal.connect(self.on_post_processor_busy)
+        self._post_process_pipeline.waiting_signal.connect(self.on_post_processor_waiting)
+        self._saver.busy_signal.connect(self.on_saver_busy)
+        self._saver.waiting_signal.connect(self.on_saver_waiting)
 
     @log
     def on_stack_size_changed(self, size):
@@ -205,6 +223,62 @@ class Controller:
         """
         _LOGGER.debug(f"New image added to the save queue. Save queue size : {new_size}")
         DYNAMIC_DATA.save_queue_size = new_size
+
+    @log
+    def on_pre_processor_busy(self):
+        """
+        pre-processor just started working on new image
+        """
+        DYNAMIC_DATA.pre_processor_status = _WORKER_STATUS_BUSY
+
+    @log
+    def on_pre_processor_waiting(self):
+        """
+        pre-processor just finished working on new image
+        """
+        DYNAMIC_DATA.pre_processor_status = _WORKER_STATUS_IDLE
+
+    @log
+    def on_stacker_busy(self):
+        """
+        stacker just started working on new image
+        """
+        DYNAMIC_DATA.stacker_status = _WORKER_STATUS_BUSY
+
+    @log
+    def on_stacker_waiting(self):
+        """
+        stacker just finished working on new image
+        """
+        DYNAMIC_DATA.stacker_status = _WORKER_STATUS_IDLE
+
+    @log
+    def on_post_processor_busy(self):
+        """
+        post-processor just started working on new image
+        """
+        DYNAMIC_DATA.post_processor_status = _WORKER_STATUS_BUSY
+
+    @log
+    def on_post_processor_waiting(self):
+        """
+        post-processor just finished working on new image
+        """
+        DYNAMIC_DATA.post_processor_status = _WORKER_STATUS_IDLE
+
+    @log
+    def on_saver_busy(self):
+        """
+        saver just started working on new image
+        """
+        DYNAMIC_DATA.saver_status = _WORKER_STATUS_BUSY
+
+    @log
+    def on_saver_waiting(self):
+        """
+        saver just finished working on new image
+        """
+        DYNAMIC_DATA.saver_status = _WORKER_STATUS_IDLE
 
     @log
     def start_session(self):
@@ -421,10 +495,10 @@ class Controller:
 
         self._pre_process_pipeline.stop()
         self._stacker.stop()
-        self._process_pipeline.stop()
+        self._post_process_pipeline.stop()
 
-        self._image_saver.stop()
-        self._image_saver.wait()
+        self._saver.stop()
+        self._saver.wait()
 
     @staticmethod
     @log

@@ -363,6 +363,12 @@ class MainWindow(QMainWindow):
         self._ui.lbl_process_queue_size.setText(str(DYNAMIC_DATA.process_queue_size))
         self._ui.lbl_save_queue_size.setText(str(DYNAMIC_DATA.save_queue_size))
 
+        # handle component statuses
+        self._ui.lbl_pre_processor_status.setText(DYNAMIC_DATA.pre_processor_status)
+        self._ui.lbl_stacker_status.setText(DYNAMIC_DATA.stacker_status)
+        self._ui.lbl_post_processor_status.setText(DYNAMIC_DATA.post_processor_status)
+        self._ui.lbl_saver_status.setText(DYNAMIC_DATA.saver_status)
+
     @pyqtSlot(name="on_pbStop_clicked")
     @log
     def cb_stop(self):

@@ -143,8 +143,84 @@ class DynamicData:
         self._stack_queue = SignalingQueue()
         self._process_queue = SignalingQueue()
         self._save_queue = SignalingQueue()
+        self._pre_processor_status = ""
+        self._stacker_status = ""
+        self._post_processor_status = ""
+        self._saver_status = ""
 
         self._session.status_changed_signal.connect(self._notify_observers)
+
+    @property
+    def pre_processor_status(self):
+        """
+        Retrieves pre-processor published status
+        """
+        return self._pre_processor_status
+
+    @pre_processor_status.setter
+    def pre_processor_status(self, status):
+        """
+        Sets new pre-processor published status and notify observers
+
+        :param status: new pre-processor published status
+        :type status: str
+        """
+        self._pre_processor_status = status
+        self._notify_observers()
+
+    @property
+    def stacker_status(self):
+        """
+        Retrieves stacker published status
+        """
+        return self._stacker_status
+
+    @stacker_status.setter
+    def stacker_status(self, status):
+        """
+        Sets new stacker published status and notify observers
+
+        :param status: new stacker published status
+        :type status: str
+        """
+        self._stacker_status = status
+        self._notify_observers()
+
+    @property
+    def post_processor_status(self):
+        """
+        Retrieves post-processor published status
+        """
+        return self._post_processor_status
+
+    @post_processor_status.setter
+    def post_processor_status(self, status):
+        """
+        Sets new post-processor published status and notify observers
+
+        :param status: new post-processor published status
+        :type status: str
+        """
+        self._post_processor_status = status
+        self._notify_observers()
+
+    @property
+    def saver_status(self):
+        """
+        Retrieves saver published status
+        """
+        return self._saver_status
+
+    @saver_status.setter
+    def saver_status(self, status):
+        """
+        Sets new saver published status and notify observers
+
+        :param status: new saver published status
+        :type status: str
+        """
+        self._saver_status = status
+        self._notify_observers()
 
     @property
     def web_server_ip(self):

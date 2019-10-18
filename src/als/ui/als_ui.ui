@@ -965,7 +965,7 @@
      <x>0</x>
      <y>0</y>
      <width>1094</width>
-     <height>23</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -1009,7 +1009,7 @@
     <number>1</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
-    <layout class="QVBoxLayout" name="verticalLayout_16">
+    <layout class="QVBoxLayout" name="verticalLayout_13">
      <item>
       <widget class="QGroupBox" name="groupBox">
        <property name="title">
@@ -1285,17 +1285,31 @@
      <item>
       <widget class="QGroupBox" name="groupBox_5">
        <property name="title">
-        <string>Queues sizes</string>
+        <string>Workers</string>
        </property>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="0">
+        <item row="0" column="1">
+         <widget class="QLabel" name="label_22">
+          <property name="text">
+           <string>Queue size</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLabel" name="label_23">
+          <property name="text">
+           <string>Status</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
          <widget class="QLabel" name="label_17">
           <property name="text">
            <string>Pre-process</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
+        <item row="1" column="1">
          <widget class="QLabel" name="lbl_pre_process_queue_size">
           <property name="text">
            <string>0</string>
@@ -1305,14 +1319,21 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
+        <item row="1" column="2">
+         <widget class="QLabel" name="lbl_pre_processor_status">
+          <property name="text">
+           <string>status</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
          <widget class="QLabel" name="label_19">
           <property name="text">
            <string>Stack</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
+        <item row="2" column="1">
          <widget class="QLabel" name="lbl_stack_queue_size">
           <property name="text">
            <string>0</string>
@@ -1322,14 +1343,21 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
+        <item row="2" column="2">
+         <widget class="QLabel" name="lbl_stacker_status">
+          <property name="text">
+           <string>status</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
          <widget class="QLabel" name="label_18">
           <property name="text">
            <string>Process</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="1">
+        <item row="3" column="1">
          <widget class="QLabel" name="lbl_process_queue_size">
           <property name="text">
            <string>0</string>
@@ -1339,20 +1367,34 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
+        <item row="3" column="2">
+         <widget class="QLabel" name="lbl_post_processor_status">
+          <property name="text">
+           <string>status</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
          <widget class="QLabel" name="label_20">
           <property name="text">
            <string>Save</string>
           </property>
          </widget>
         </item>
-        <item row="3" column="1">
+        <item row="4" column="1">
          <widget class="QLabel" name="lbl_save_queue_size">
           <property name="text">
            <string>0</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="2">
+         <widget class="QLabel" name="lbl_saver_status">
+          <property name="text">
+           <string>status</string>
           </property>
          </widget>
         </item>
