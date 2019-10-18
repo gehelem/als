@@ -6,52 +6,26 @@ For now, we only save some images to disk, but who knows...
 import logging
 
 import cv2
-from PyQt5.QtCore import QThread
 from als import config
 from als.code_utilities import log
 from als.model import Image, SignalingQueue
+from als.processing import QueueConsumer
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class ImageSaver(QThread):
+class ImageSaver(QueueConsumer):
     """
     Saves images according to commands posted to IMAGE_SAVE_QUEUE in its own thread
 
     """
     @log
     def __init__(self, save_queue: SignalingQueue):
-        super().__init__()
-        self._stop_asked = False
-        self._save_queue = save_queue
+        QueueConsumer.__init__(self, "save", save_queue)
 
-    @log
-    def run(self):
-        """
-        Performs usual duty : Saving images to disk
-        """
-        # we keep polling the queue in 2 cases :
-        #
-        # - we have not been asked to stop, regardless of queue content
-        # OR
-        # - we have been asked to stop, and queue is not empty yet
+    def _handle_image(self, image: Image):
 
-        while not self._stop_asked or not self._save_queue.empty():
-            if not self._save_queue.empty():
-                image = self._save_queue.get_nowait()
-                ImageSaver._save_image(image)
-            self.msleep(100)
-
-    @log
-    def stop(self):
-        """
-        Sets a flag that will interrupt the main loop in run()
-        """
-        _LOGGER.info("Stopping image saver")
-        queue_size = self._save_queue.qsize()
-        if queue_size > 0:
-            _LOGGER.warning(f"There are still {queue_size} images waiting to be saved. Saving them all...")
-        self._stop_asked = True
+        ImageSaver._save_image(image)
 
     @staticmethod
     @log

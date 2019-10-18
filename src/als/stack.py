@@ -21,11 +21,12 @@ from multiprocessing import Process, Manager
 
 import astroalign as al
 import numpy as np
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import pyqtSignal
 from skimage.transform import SimilarityTransform
 
 from als.code_utilities import log, Timer
-from als.model import Image, SignalingQueue, DYNAMIC_DATA, STACKING_MODE_SUM, STACKING_MODE_MEAN
+from als.model import Image, DYNAMIC_DATA, STACKING_MODE_SUM, STACKING_MODE_MEAN
+from als.processing import QueueConsumer
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ class StackingError(Exception):
     """
 
 
-class Stacker(QThread):
+class Stacker(QueueConsumer):
     """
     Responsible of image stacking : alignment and registration
     """
@@ -44,15 +45,10 @@ class Stacker(QThread):
     stack_size_changed_signal = pyqtSignal(int)
     """Qt signal emitted when stack size changed"""
 
-    new_stack_result_signal = pyqtSignal(Image)
-    """Qt signal emitted when new stack result is ready"""
-
     @log
     def __init__(self, stack_queue):
-        QThread.__init__(self)
-        self._stack_queue: SignalingQueue = stack_queue
+        QueueConsumer.__init__(self, "Stacker", stack_queue)
         self._size: int = 0
-        self._stop_asked: bool = False
         self._last_stacking_result: Image = None
         self._align_reference: Image = None
 
@@ -74,9 +70,8 @@ class Stacker(QThread):
         :type image: Image
         """
         self._last_stacking_result = image
-        self._last_stacking_result.origin = "Stacking result"
         self.size += 1
-        self.new_stack_result_signal.emit(image)
+        self.new_result_signal.emit(image)
 
     @property
     def size(self):
@@ -99,53 +94,31 @@ class Stacker(QThread):
         self._size = size
         self.stack_size_changed_signal.emit(self.size)
 
-    @log
-    def run(self):
-        """
-        Performs all stacking duties :
+    def _handle_image(self, image: Image):
 
-         - Get new image from queue
-         - Align image if asked for
-         - Stack image
-         - publish resulting image
-        """
-        while not self._stop_asked:
+        if self.size == 0:
+            _LOGGER.debug("This is the first image for this stack. Publishing right away")
+            self._publish_stacking_result(image)
+            self._align_reference = image
 
-            if self._stack_queue.qsize() > 0:
+        else:
+            try:
+                if not image.is_same_shape_as(self._last_stacking_result):
+                    raise StackingError("Image dimensions or color don't match stack content")
 
-                image = self._stack_queue.get()
+                if DYNAMIC_DATA.align_before_stacking:
 
-                _LOGGER.info(f"Start stacking image {image.origin}")
+                    # alignment is a memory greedy process, we take special care of such errors
+                    try:
+                        self._align_image(image)
+                    except OSError as os_error:
+                        raise StackingError(os_error)
 
-                with Timer() as stacking_timer:
+                self._stack_image(image, DYNAMIC_DATA.stacking_mode)
+                self._publish_stacking_result(image)
 
-                    if self.size == 0:
-                        _LOGGER.debug("This is the first image for this stack. Publishing right away")
-                        self._publish_stacking_result(image)
-                        self._align_reference = image
-
-                    else:
-                        try:
-                            if not image.is_same_shape_as(self._last_stacking_result):
-                                raise StackingError("Image dimensions or color don't match stack content")
-
-                            if DYNAMIC_DATA.align_before_stacking:
-
-                                # alignment is a memory greedy process, we take special care of such errors
-                                try:
-                                    self._align_image(image)
-                                except OSError as os_error:
-                                    raise StackingError(os_error)
-
-                            self._stack_image(image, DYNAMIC_DATA.stacking_mode)
-                            self._publish_stacking_result(image)
-
-                        except StackingError as stacking_error:
-                            _LOGGER.warning(f"Could not stack image {image.origin} : {stacking_error}. Image is DISCARDED")
-
-                _LOGGER.info(f"Done stacking image in {stacking_timer.elapsed_in_milli_as_str} ms")
-
-            self.msleep(20)
+            except StackingError as stacking_error:
+                _LOGGER.warning(f"Could not stack image {image.origin} : {stacking_error}. Image is DISCARDED")
 
     @log
     def _align_image(self, image):
@@ -361,12 +334,3 @@ class Stacker(QThread):
                 raise StackingError(f"Unsupported stacking mode : {stacking_mode}")
 
         _LOGGER.info(f"Done stacking {image.origin} in {registering_timer.elapsed_in_milli_as_str} ms")
-
-    @log
-    def stop(self):
-        """
-        Flips a flag used to end the main thread loop
-        """
-        self._stop_asked = True
-        self.wait()
-        _LOGGER.info("Stacker stopped")

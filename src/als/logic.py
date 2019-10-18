@@ -100,7 +100,7 @@ class Controller:
         self._input_scanner.new_image_signal[Image].connect(self.on_new_image_read)
         self._pre_process_pipeline.new_result_signal[Image].connect(self.on_new_pre_processed_image)
         self._stacker.stack_size_changed_signal[int].connect(self.on_stack_size_changed)
-        self._stacker.new_stack_result_signal[Image].connect(self.on_new_stack_result)
+        self._stacker.new_result_signal[Image].connect(self.on_new_stack_result)
         self._process_pipeline.new_result_signal[Image].connect(self.on_new_process_result)
 
         DYNAMIC_DATA.pre_process_queue.size_changed_signal[int].connect(self.on_pre_process_queue_size_changed)
@@ -126,6 +126,7 @@ class Controller:
         :param image: the new processing result
         :type image: Image
         """
+        image.origin = "Process result"
         DYNAMIC_DATA.process_result = image
         self.save_process_result()
 
@@ -137,7 +138,9 @@ class Controller:
         :param image: the result of the stack
         :type image: Image
         """
-        self._process_queue.put(image.clone())
+        image_to_process = image.clone()
+        image_to_process.origin = "Stacking result"
+        self._process_queue.put(image_to_process)
 
     @log
     def on_new_image_read(self, image: Image):
@@ -368,6 +371,7 @@ class Controller:
                             config.get_work_folder_path(),
                             config.WEB_SERVED_IMAGE_FILE_NAME_BASE)
 
+        # if user want to save every image, we save a timestamped version
         if DYNAMIC_DATA.save_every_image:
             self.save_image(image,
                             config.get_image_save_format(),

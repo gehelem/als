@@ -110,27 +110,46 @@ class ConvertForOutput(ImageProcessor):
         if image.is_color():
             image.set_color_axis_as(2)
 
+        # TODO : use numpy clip or imp, here
         image.data = np.uint16(np.where(image.data < 2 ** 16 - 1, image.data, 2 ** 16 - 1))
 
         return image
 
 
-class Pipeline(QThread):
+class QueueConsumer(QThread):
     """
-    Responsible of grabbing images from a queue and applying a set of processing units to each one
+    Abstract class for all our queue consumers.
+
+    Responsible of grabbing images from a queue
+
+    actual processing payload is to be implemented in the following abstract methods : _handle_image().
     """
 
     new_result_signal = pyqtSignal(Image)
     """Qt signal to emit when a new image has been processed"""
 
+    busy_signal = pyqtSignal()
+    """Qt signal to emit when an image has been retrieved and we are about to process it"""
+
+    waiting_signal = pyqtSignal()
+    """Qt signal to emit when image processing is complete"""
+
     @log
-    def __init__(self, name: str, queue: SignalingQueue, final_processes: list):
+    def __init__(self, name: str, queue: SignalingQueue):
         QThread.__init__(self)
         self._stop_asked = False
         self._name = name
         self._queue = queue
-        self._processes = []
-        self._final_processes = final_processes
+
+    @abstractmethod
+    @log
+    def _handle_image(self, image: Image):
+        """
+        Perform hopefully useful actions on image
+
+        :param image: the image to handle
+        :type image: Image
+        """
 
     @log
     def run(self):
@@ -142,26 +161,17 @@ class Pipeline(QThread):
         while not self._stop_asked:
 
             if self._queue.qsize() > 0:
+
                 image = self._queue.get()
 
+                self.busy_signal.emit()
                 _LOGGER.info(f"Start {self._name} on image {image.origin}")
 
-                try:
-                    with Timer() as image_timer:
+                with Timer() as timer:
+                    self._handle_image(image)
 
-                        for processor in self._processes + self._final_processes:
-                            image = processor.process_image(image)
-
-                    _LOGGER.info(f"End {self._name} on image {image.origin} "
-                                 f"in {image_timer.elapsed_in_milli_as_str} ms")
-
-                    self.new_result_signal.emit(image)
-
-                except ProcessingError as processing_error:
-                    _LOGGER.warning(
-                        f"Error applying process '{processor.__class__.__name__}' to image {image} : "
-                        f"{processing_error} *** "
-                        f"Image will be ignored")
+                _LOGGER.info(f"End {self._name} on image {image.origin} in {timer.elapsed_in_milli_as_str} ms")
+                self.waiting_signal.emit()
 
             self.msleep(20)
 
@@ -171,8 +181,33 @@ class Pipeline(QThread):
         Sets flag that will interrupt the main loop in run()
         """
         self._stop_asked = True
-        self.wait()
-        _LOGGER.info("PreProcess pipeline stopped")
+        _LOGGER.info(f"{self._name} stopped")
+
+
+class Pipeline(QueueConsumer):
+    """
+    Responsible of grabbing images from a queue and applying a set of processing units to each one
+    """
+
+    @log
+    def __init__(self, name: str, queue: SignalingQueue, final_processes: list):
+        QueueConsumer.__init__(self, name, queue)
+        self._processes = []
+        self._final_processes = final_processes
+
+    def _handle_image(self, image: Image):
+
+        try:
+            for processor in self._processes + self._final_processes:
+                image = processor.process_image(image)
+
+            self.new_result_signal.emit(image)
+
+        except ProcessingError as processing_error:
+            _LOGGER.warning(
+                f"Error applying process '{processor.__class__.__name__}' to image {image} : "
+                f"{processing_error} *** "
+                f"Image will be ignored")
 
     @log
     def add_process(self, process: ImageProcessor):
