@@ -122,7 +122,7 @@ class QueueConsumer(QThread):
 
     Responsible of grabbing images from a queue
 
-    actual processing payload is to be implemented in the following abstract methods : _handle_image().
+    actual processing payload is to be implemented in the following abstract method : _handle_image().
     """
 
     new_result_signal = pyqtSignal(Image)
@@ -186,7 +186,7 @@ class QueueConsumer(QThread):
 
 class Pipeline(QueueConsumer):
     """
-    Responsible of grabbing images from a queue and applying a set of processing units to each one
+    QueueConsumer specialization allowing to apply a list of image processors to each image
     """
 
     @log
