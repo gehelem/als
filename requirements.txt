@@ -3,6 +3,7 @@ astropy==3.2.1
 dtcwt==0.12.0
 numpy==1.16.4
 opencv-python==4.1.0.25
+pyindi-client==0.2.2
 PyQt5==5.13.0
 pywi==0.3.dev12
 qimage2ndarray==1.8

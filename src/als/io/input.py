@@ -19,6 +19,8 @@ from als import config
 from als.code_utilities import log
 from als.model import Image
 
+from als import IndiCamera
+from als import IndiClient
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -318,3 +320,61 @@ def _report_fs_error(path: Path, error: Exception):
 
 def _set_image_file_origin(image: Image, path: Path):
     image.origin = f"FILE : {str(path.resolve())}"
+
+
+class IndiScanner(InputScanner, QObject):
+    """
+    Connects to an indi server and watch for a specific device blob
+
+    the watched server/device is retrieved from user config on scanner startup
+    """
+    @log
+    def __init__(self):
+        InputScanner.__init__(self)
+        QObject.__init__(self)
+        self._observer = None
+
+    @log
+    def start(self):
+        """
+        Starts connect to server/device for new blobs
+        """
+        try:
+            remote_host = config.get_remote_host()
+            remote_port = config.get_remote_port()
+            device_name = config.get_device_name()
+            self._client = IndiClient(config=dict(indi_host="localhost",
+                                                  indi_port=7624))
+            self._device = IndiCamera(indi_client=self._client,
+                                      config=dict(camera_name='CCD Simulator'),
+                                      connect_on_create=True)
+        except Exception as e:
+            raise ScannerStartError(e)
+
+    @log
+    def stop(self):
+        """
+        Stops listening to server for new blobs
+        """
+        if self._device is not None:
+            self._device.disconnect()
+
+    @log
+    def on_received(self, event):
+        if event.event_type == 'created':
+            file_is_incomplete = True
+            last_file_size = -1
+            image_path = event.src_path
+            _LOGGER.debug(f"File creation detected : {image_path}. Waiting until file is complete and readable ...")
+
+            while file_is_incomplete:
+                info = QFileInfo(image_path)
+                size = info.size()
+                _LOGGER.debug(f"File {image_path}'s size = {size}")
+                if size == last_file_size:
+                    file_is_incomplete = False
+                    _LOGGER.debug(f"File {image_path} is ready to be read")
+                last_file_size = size
+                time.sleep(_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC)
+
+            self.broadcast_image(read_disk_image(Path(image_path)))
