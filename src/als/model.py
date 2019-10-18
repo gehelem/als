@@ -140,7 +140,7 @@ class DynamicData:
         self._save_every_image: bool = False
         self._process_result = None
         self._pre_process_queue = SignalingQueue()
-        self._stack_queue = SignalingQueue()
+        self._stacker_queue = SignalingQueue()
         self._process_queue = SignalingQueue()
         self._save_queue = SignalingQueue()
         self._pre_processor_status = ""
@@ -500,14 +500,14 @@ class DynamicData:
 
     @property
     @log
-    def stack_queue(self):
+    def stacker_queue(self):
         """
         Retrieves the stack queue
 
         :return: the stack queue
         :type: SignalingQueue
         """
-        return self._stack_queue
+        return self._stacker_queue
 
     @property
     @log

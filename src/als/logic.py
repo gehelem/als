@@ -89,19 +89,20 @@ class Controller:
         self._pre_process_queue: SignalingQueue = DYNAMIC_DATA.pre_process_queue
         self._pre_process_pipeline: Pipeline = Pipeline(
             'pre-process',
-            DYNAMIC_DATA.pre_process_queue,
+            self._pre_process_queue,
             [Debayer(), Standardize()])
         self._pre_process_pipeline.start()
 
-        self._stacker_queue: SignalingQueue = DYNAMIC_DATA.stack_queue
-        self._stacker: Stacker = Stacker(DYNAMIC_DATA.stack_queue)
+        self._stacker_queue: SignalingQueue = DYNAMIC_DATA.stacker_queue
+        self._stacker: Stacker = Stacker(self._stacker_queue)
         self._stacker.start()
 
-        self._process_queue = DYNAMIC_DATA.process_queue
-        self._post_process_pipeline: Pipeline = Pipeline('post-process', self._process_queue, [ConvertForOutput()])
+        self._post_process_queue = DYNAMIC_DATA.process_queue
+        self._post_process_pipeline: Pipeline = Pipeline('post-process', self._post_process_queue, [ConvertForOutput()])
         self._post_process_pipeline.start()
 
-        self._saver = ImageSaver(DYNAMIC_DATA.save_queue)
+        self._saver_queue = DYNAMIC_DATA.save_queue
+        self._saver = ImageSaver(self._saver_queue)
         self._saver.start()
 
         self._web_server = None
@@ -112,10 +113,10 @@ class Controller:
         self._stacker.new_result_signal[Image].connect(self.on_new_stack_result)
         self._post_process_pipeline.new_result_signal[Image].connect(self.on_new_process_result)
 
-        DYNAMIC_DATA.pre_process_queue.size_changed_signal[int].connect(self.on_pre_process_queue_size_changed)
-        DYNAMIC_DATA.stack_queue.size_changed_signal[int].connect(self.on_stack_queue_size_changed)
-        DYNAMIC_DATA.process_queue.size_changed_signal[int].connect(self.on_process_queue_size_changed)
-        DYNAMIC_DATA.save_queue.size_changed_signal[int].connect(self.on_save_queue_size_changed)
+        self._pre_process_queue.size_changed_signal[int].connect(self.on_pre_process_queue_size_changed)
+        self._stacker_queue.size_changed_signal[int].connect(self.on_stack_queue_size_changed)
+        self._post_process_queue.size_changed_signal[int].connect(self.on_process_queue_size_changed)
+        self._saver_queue.size_changed_signal[int].connect(self.on_save_queue_size_changed)
 
         self._pre_process_pipeline.busy_signal.connect(self.on_pre_processor_busy)
         self._pre_process_pipeline.waiting_signal.connect(self.on_pre_processor_waiting)
@@ -158,7 +159,7 @@ class Controller:
         """
         image_to_process = image.clone()
         image_to_process.origin = "Stacking result"
-        self._process_queue.put(image_to_process)
+        self._post_process_queue.put(image_to_process)
 
     @log
     def on_new_image_read(self, image: Image):
@@ -399,8 +400,8 @@ class Controller:
         Purge the pre-process queue
 
         """
-        while not DYNAMIC_DATA.pre_process_queue.empty():
-            DYNAMIC_DATA.pre_process_queue.get()
+        while not self._pre_process_queue.empty():
+            self._pre_process_queue.get()
         _LOGGER.info("Pre-process queue purged")
 
     @log
@@ -409,8 +410,8 @@ class Controller:
         Purge the stack queue
 
         """
-        while not DYNAMIC_DATA.stack_queue.empty():
-            DYNAMIC_DATA.stack_queue.get()
+        while not self._stacker_queue.empty():
+            self._stacker_queue.get()
         _LOGGER.info("Stack queue purged")
 
     @log
@@ -480,7 +481,7 @@ class Controller:
 
         image_to_save = image.clone()
         image_to_save.destination = dest_folder_path + "/" + filename_base + '.' + file_extension
-        DYNAMIC_DATA.save_queue.put(image_to_save)
+        self._saver_queue.put(image_to_save)
 
     @log
     def shutdown(self):
