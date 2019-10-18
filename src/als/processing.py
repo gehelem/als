@@ -142,7 +142,7 @@ class Pipeline(QThread):
         while not self._stop_asked:
 
             if self._queue.qsize() > 0:
-                image = self._queue.get().clone()
+                image = self._queue.get()
 
                 _LOGGER.info(f"Start {self._name} on image {image.origin}")
 

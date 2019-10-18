@@ -137,7 +137,7 @@ class Controller:
         :param image: the result of the stack
         :type image: Image
         """
-        self._process_queue.put(image)
+        self._process_queue.put(image.clone())
 
     @log
     def on_new_image_read(self, image: Image):
