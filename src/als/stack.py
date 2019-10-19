@@ -25,7 +25,8 @@ from PyQt5.QtCore import pyqtSignal
 from skimage.transform import SimilarityTransform
 
 from als.code_utilities import log, Timer
-from als.model import Image, DYNAMIC_DATA, STACKING_MODE_SUM, STACKING_MODE_MEAN
+from als.model.base import Image
+from als.model.data import STACKING_MODE_SUM, STACKING_MODE_MEAN, DYNAMIC_DATA
 from als.processing import QueueConsumer
 
 _LOGGER = logging.getLogger(__name__)

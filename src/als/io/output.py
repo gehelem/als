@@ -6,9 +6,10 @@ For now, we only save some images to disk, but who knows...
 import logging
 
 import cv2
-from als import config
-from als.code_utilities import log
-from als.model import Image, SignalingQueue
+
+import als.model.data
+from als.code_utilities import log, SignalingQueue
+from als.model.base import Image
 from als.processing import QueueConsumer
 
 _LOGGER = logging.getLogger(__name__)
@@ -38,13 +39,13 @@ class ImageSaver(QueueConsumer):
         """
         target_path = image.destination
 
-        if target_path.endswith('.' + config.IMAGE_SAVE_TIFF):
+        if target_path.endswith('.' + als.model.data.IMAGE_SAVE_TYPE_TIFF):
             save_is_successful, failure_details = ImageSaver._save_image_as_tiff(image, target_path)
 
-        elif target_path.endswith('.' + config.IMAGE_SAVE_PNG):
+        elif target_path.endswith('.' + als.model.data.IMAGE_SAVE_TYPE_PNG):
             save_is_successful, failure_details = ImageSaver._save_image_as_png(image, target_path)
 
-        elif target_path.endswith('.' + config.IMAGE_SAVE_JPEG):
+        elif target_path.endswith('.' + als.model.data.IMAGE_SAVE_TYPE_JPEG):
             save_is_successful, failure_details = ImageSaver._save_image_as_jpg(image, target_path)
 
         else:

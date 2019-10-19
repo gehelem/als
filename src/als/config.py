@@ -24,6 +24,7 @@ from configparser import ConfigParser, DuplicateOptionError, ParsingError
 from PyQt5.QtCore import pyqtSignal, QObject
 
 from als.code_utilities import AlsException
+from als.model.data import IMAGE_SAVE_TYPE_JPEG
 
 _CONFIG_FILE_PATH = os.path.expanduser("~/.als.cfg")
 
@@ -42,11 +43,6 @@ _LOG_LEVEL_WARNING = "WARNING"
 _LOG_LEVEL_ERROR = "ERROR"
 _LOG_LEVEL_CRITICAL = "CRITICAL"
 
-# keys used to describe file save formats
-IMAGE_SAVE_TIFF = "tiff"
-IMAGE_SAVE_PNG = "png"
-IMAGE_SAVE_JPEG = "jpg"
-
 # store of matches between human readable log levels and logging module constants
 _LOG_LEVELS = {
     _LOG_LEVEL_DEBUG:       logging.DEBUG,
@@ -63,13 +59,11 @@ _DEFAULTS = {
     _LOG_LEVEL:           _LOG_LEVEL_INFO,
     _WWW_SERVER_PORT:     "8000",
     _WINDOW_GEOMETRY:     "50,100,1024,800",
-    _IMAGE_SAVE_FORMAT:   IMAGE_SAVE_JPEG,
+    _IMAGE_SAVE_FORMAT:   IMAGE_SAVE_TYPE_JPEG,
 }
 _MAIN_SECTION_NAME = "main"
 
 # application constants
-STACKED_IMAGE_FILE_NAME_BASE = "stack_image"
-WEB_SERVED_IMAGE_FILE_NAME_BASE = "web_image"
 
 # module global data
 _CONFIG_PARSER = ConfigParser()

@@ -26,21 +26,20 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 
+import als.model.data
 from als import config
-from als.code_utilities import log, AlsException
+from als.code_utilities import log, AlsException, SignalingQueue
 from als.io.input import InputScanner, ScannerStartError
 from als.io.network import get_ip, WebServer
 from als.io.output import ImageSaver
-from als.model import DYNAMIC_DATA, Image, SignalingQueue, Session, STACKING_MODE_MEAN
+from als.model.base import Image, Session
+from als.model.data import STACKING_MODE_MEAN, DYNAMIC_DATA, WORKER_STATUS_BUSY, WORKER_STATUS_IDLE
 from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput
 from als.stack import Stacker
 
 gettext.install('als', 'locale')
 
 _LOGGER = logging.getLogger(__name__)
-
-WORKER_STATUS_BUSY = "Busy"
-WORKER_STATUS_IDLE = "Idle"
 
 
 class SessionError(AlsException):
@@ -67,6 +66,8 @@ class Controller:
 
         DYNAMIC_DATA.session.set_status(Session.stopped)
         DYNAMIC_DATA.web_server_is_running = False
+        DYNAMIC_DATA.align_before_stacking = True
+        DYNAMIC_DATA.save_every_image = False
 
         DYNAMIC_DATA.pre_processor_status = WORKER_STATUS_IDLE
         DYNAMIC_DATA.stacker_status = WORKER_STATUS_IDLE
@@ -420,7 +421,7 @@ class Controller:
 
         shutil.copy(resources_dir_path + "/index.html", work_dir_path)
 
-        standby_image_path = work_dir_path + "/" + config.WEB_SERVED_IMAGE_FILE_NAME_BASE + '.' + config.IMAGE_SAVE_JPEG
+        standby_image_path = work_dir_path + "/" + als.model.data.WEB_SERVED_IMAGE_FILE_NAME_BASE + '.' + als.model.data.IMAGE_SAVE_TYPE_JPEG
         shutil.copy(resources_dir_path + "/waiting.jpg", standby_image_path)
 
     @log
@@ -435,20 +436,20 @@ class Controller:
         self.save_image(image,
                         config.get_image_save_format(),
                         config.get_work_folder_path(),
-                        config.STACKED_IMAGE_FILE_NAME_BASE)
+                        als.model.data.STACKED_IMAGE_FILE_NAME_BASE)
 
         if DYNAMIC_DATA.web_server_is_running:
             self.save_image(image,
-                            config.IMAGE_SAVE_JPEG,
+                            als.model.data.IMAGE_SAVE_TYPE_JPEG,
                             config.get_work_folder_path(),
-                            config.WEB_SERVED_IMAGE_FILE_NAME_BASE)
+                            als.model.data.WEB_SERVED_IMAGE_FILE_NAME_BASE)
 
         # if user want to save every image, we save a timestamped version
         if DYNAMIC_DATA.save_every_image:
             self.save_image(image,
                             config.get_image_save_format(),
                             config.get_work_folder_path(),
-                            config.STACKED_IMAGE_FILE_NAME_BASE,
+                            als.model.data.STACKED_IMAGE_FILE_NAME_BASE,
                             add_timestamp=True)
 
     # pylint: disable=R0913

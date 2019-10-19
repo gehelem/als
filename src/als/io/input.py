@@ -17,8 +17,7 @@ from watchdog.observers.polling import PollingObserver
 
 from als import config
 from als.code_utilities import log
-from als.model import Image
-
+from als.model.base import Image
 
 _LOGGER = logging.getLogger(__name__)
 

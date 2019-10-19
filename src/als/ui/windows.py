@@ -8,11 +8,12 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog
 from qimage2ndarray import array2qimage
 
+import als.model.data
 from als import config
 from als.config import CouldNotSaveConfig
 from als.logic import Controller, SessionError, CriticalFolderMissing, WebServerStartFailure
 from als.code_utilities import log
-from als.model import STACKING_MODE_SUM, STACKING_MODE_MEAN, VERSION, DYNAMIC_DATA
+from als.model.data import VERSION, STACKING_MODE_SUM, STACKING_MODE_MEAN, DYNAMIC_DATA
 from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box, SaveWaitDialog, question, message_box
 from generated.als_ui import Ui_stack_window
 
@@ -119,7 +120,7 @@ class MainWindow(QMainWindow):
             self._controller.save_image(image_to_save,
                                         config.get_image_save_format(),
                                         config.get_work_folder_path(),
-                                        config.STACKED_IMAGE_FILE_NAME_BASE,
+                                        als.model.data.STACKED_IMAGE_FILE_NAME_BASE,
                                         add_timestamp=True)
 
     @pyqtSlot(name="on_action_quit_triggered")

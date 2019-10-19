@@ -8,8 +8,8 @@ import cv2
 import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal
 
-from als.code_utilities import log, Timer
-from als.model import Image, SignalingQueue
+from als.code_utilities import log, Timer, SignalingQueue
+from als.model.base import Image
 
 _LOGGER = logging.getLogger(__name__)
 

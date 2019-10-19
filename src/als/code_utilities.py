@@ -3,7 +3,10 @@ Provides a set of utilities aimed at app developpers
 """
 import logging
 from functools import wraps
+from queue import Queue
 from time import time
+
+from PyQt5.QtCore import QObject, pyqtSignal
 
 
 def log(func):
@@ -75,3 +78,45 @@ class AlsException(Exception):
         Exception.__init__(self)
         self.message = message
         self.details = details
+
+
+class SignalingQueue(Queue, QObject):
+    """
+    Queue subclass that emits a Qt signal when items are added or removed from the queue.
+
+    Signal is :
+
+      - size_changed_signal
+
+    and carries the new queue size
+    """
+
+    size_changed_signal = pyqtSignal(int)
+    """
+    Qt signal stating that a new item has just been pushed to the queue.
+
+    :param: the new size of the queue
+    :type: int
+    """
+
+    def __init__(self, maxsize=0):
+        Queue.__init__(self, maxsize)
+        QObject.__init__(self)
+
+    def get(self, block=True, timeout=None):
+        item = super().get(block, timeout)
+        self.size_changed_signal.emit(self.qsize())
+        return item
+
+    def get_nowait(self):
+        item = super().get_nowait()
+        self.size_changed_signal.emit(self.qsize())
+        return item
+
+    def put(self, item, block=True, timeout=None):
+        super().put(item, block, timeout)
+        self.size_changed_signal.emit(self.qsize())
+
+    def put_nowait(self, item):
+        super().put_nowait(item)
+        self.size_changed_signal.emit(self.qsize())

@@ -7,11 +7,10 @@ from pathlib import Path
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QApplication
 
-from als import config, model
+import als.model.data
+from als import config
 from als.code_utilities import log
-from als.config import CouldNotSaveConfig
-from als.logic import WORKER_STATUS_BUSY
-from als.model import DYNAMIC_DATA
+from als.model.data import VERSION, DYNAMIC_DATA, WORKER_STATUS_BUSY
 from generated.about_ui import Ui_AboutDialog
 from generated.prefs_ui import Ui_PrefsDialog
 from generated.save_wait_ui import Ui_SaveWaitDialog
@@ -37,9 +36,9 @@ class PreferencesDialog(QDialog):
 
         config_to_image_save_type_mapping = {
 
-            config.IMAGE_SAVE_JPEG: self._ui.radioSaveJpeg,
-            config.IMAGE_SAVE_PNG:  self._ui.radioSavePng,
-            config.IMAGE_SAVE_TIFF: self._ui.radioSaveTiff
+            als.model.data.IMAGE_SAVE_TYPE_JPEG: self._ui.radioSaveJpeg,
+            als.model.data.IMAGE_SAVE_TYPE_PNG:  self._ui.radioSavePng,
+            als.model.data.IMAGE_SAVE_TYPE_TIFF: self._ui.radioSaveTiff
         }
 
         config_to_image_save_type_mapping[config.get_image_save_format()].setChecked(True)
@@ -81,9 +80,9 @@ class PreferencesDialog(QDialog):
 
         image_save_type_to_config_mapping = {
 
-            self._ui.radioSaveJpeg: config.IMAGE_SAVE_JPEG,
-            self._ui.radioSavePng:  config.IMAGE_SAVE_PNG,
-            self._ui.radioSaveTiff: config.IMAGE_SAVE_TIFF
+            self._ui.radioSaveJpeg: als.model.data.IMAGE_SAVE_TYPE_JPEG,
+            self._ui.radioSavePng: als.model.data.IMAGE_SAVE_TYPE_PNG,
+            self._ui.radioSaveTiff: als.model.data.IMAGE_SAVE_TYPE_TIFF
         }
 
         for radio_button, image_save_type in image_save_type_to_config_mapping.items():
@@ -125,7 +124,7 @@ class PreferencesDialog(QDialog):
 
         try:
             config.save()
-        except CouldNotSaveConfig as save_error:
+        except config.CouldNotSaveConfig as save_error:
             error_box(save_error.message, f"Your settings could not be saved\n\nDetails : {save_error.details}")
 
 
@@ -139,7 +138,7 @@ class AboutDialog(QDialog):
         super().__init__(parent)
         self._ui = Ui_AboutDialog()
         self._ui.setupUi(self)
-        self._ui.lblVersionValue.setText(model.VERSION)
+        self._ui.lblVersionValue.setText(VERSION)
 
 
 class SaveWaitDialog(QDialog):
