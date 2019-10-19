@@ -184,7 +184,7 @@ class Controller:
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.debug(f"New image added to the pre-process queue. Pre-process queue size : {new_size}")
+        _LOGGER.debug(f"New pre-processor queue size : {new_size}")
         DYNAMIC_DATA.pre_processor_queue_size = new_size
 
     @staticmethod
@@ -196,7 +196,7 @@ class Controller:
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.debug(f"New image added to the stack queue. Stack queue size : {new_size}")
+        _LOGGER.debug(f"New stacker queue size : {new_size}")
         DYNAMIC_DATA.stacker_queue_size = new_size
 
     @staticmethod
@@ -208,7 +208,7 @@ class Controller:
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.debug(f"New image added to the process queue. Process queue size : {new_size}")
+        _LOGGER.debug(f"New post-processor queue size : {new_size}")
         DYNAMIC_DATA.post_processor_queue_size = new_size
 
     @staticmethod
@@ -220,7 +220,7 @@ class Controller:
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.debug(f"New image added to the save queue. Save queue size : {new_size}")
+        _LOGGER.debug(f"New saver queue size : {new_size}")
         DYNAMIC_DATA.saver_queue_size = new_size
 
     @staticmethod
@@ -422,7 +422,8 @@ class Controller:
 
         shutil.copy(resources_dir_path + "/index.html", work_dir_path)
 
-        standby_image_path = work_dir_path + "/" + als.model.data.WEB_SERVED_IMAGE_FILE_NAME_BASE + '.' + als.model.data.IMAGE_SAVE_TYPE_JPEG
+        standby_image_path = work_dir_path + "/" + als.model.data.WEB_SERVED_IMAGE_FILE_NAME_BASE
+        standby_image_path += '.' + als.model.data.IMAGE_SAVE_TYPE_JPEG
         shutil.copy(resources_dir_path + "/waiting.jpg", standby_image_path)
 
     @log
