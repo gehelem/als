@@ -32,7 +32,6 @@ class Session(QObject):
             self._status = status
 
     @property
-    @log
     def is_running(self):
         """
         Is session running ?
@@ -43,7 +42,6 @@ class Session(QObject):
         return self._status == Session.running
 
     @property
-    @log
     def is_stopped(self):
         """
         Is session stopped ?
@@ -54,7 +52,6 @@ class Session(QObject):
         return self._status == Session.stopped
 
     @property
-    @log
     def is_paused(self):
         """
         Is session paused ?

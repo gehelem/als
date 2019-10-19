@@ -56,7 +56,6 @@ class DynamicData:
         self._session.status_changed_signal.connect(self._notify_observers)
 
     @property
-    @log
     def pre_processor_status(self):
         """
         Retrieves pre-processor published status
@@ -64,7 +63,6 @@ class DynamicData:
         return self._pre_processor_status
 
     @pre_processor_status.setter
-    @log
     def pre_processor_status(self, status):
         """
         Sets new pre-processor published status and notify observers
@@ -76,7 +74,6 @@ class DynamicData:
         self._notify_observers()
 
     @property
-    @log
     def stacker_status(self):
         """
         Retrieves stacker published status
@@ -84,7 +81,6 @@ class DynamicData:
         return self._stacker_status
 
     @stacker_status.setter
-    @log
     def stacker_status(self, status):
         """
         Sets new stacker published status and notify observers
@@ -96,7 +92,6 @@ class DynamicData:
         self._notify_observers()
 
     @property
-    @log
     def post_processor_status(self):
         """
         Retrieves post-processor published status
@@ -104,7 +99,6 @@ class DynamicData:
         return self._post_processor_status
 
     @post_processor_status.setter
-    @log
     def post_processor_status(self, status):
         """
         Sets new post-processor published status and notify observers
@@ -116,7 +110,6 @@ class DynamicData:
         self._notify_observers()
 
     @property
-    @log
     def saver_status(self):
         """
         Retrieves saver published status
@@ -124,7 +117,6 @@ class DynamicData:
         return self._saver_status
 
     @saver_status.setter
-    @log
     def saver_status(self, status):
         """
         Sets new saver published status and notify observers
@@ -136,7 +128,6 @@ class DynamicData:
         self._notify_observers()
 
     @property
-    @log
     def web_server_ip(self):
         """
         Retrieves web server ip
@@ -147,7 +138,6 @@ class DynamicData:
         return self._web_server_ip
 
     @web_server_ip.setter
-    @log
     def web_server_ip(self, ip_address):
         """
         Sets web server ip
@@ -158,7 +148,6 @@ class DynamicData:
         self._web_server_ip = ip_address
 
     @property
-    @log
     def pre_processor_queue_size(self):
         """
         Retrieves the pre-process queue size
@@ -169,7 +158,6 @@ class DynamicData:
         return self._pre_processor_queue_size
 
     @pre_processor_queue_size.setter
-    @log
     def pre_processor_queue_size(self, size):
         """
         Sets the pre-process queue size
@@ -183,7 +171,6 @@ class DynamicData:
             self._notify_observers()
 
     @property
-    @log
     def stacker_queue_size(self):
         """
         Retrieves the stack queue size
@@ -194,7 +181,6 @@ class DynamicData:
         return self._stacker_queue_size
 
     @stacker_queue_size.setter
-    @log
     def stacker_queue_size(self, size):
         """
         Sets the stack queue size
@@ -208,7 +194,6 @@ class DynamicData:
             self._notify_observers()
 
     @property
-    @log
     def post_processor_queue_size(self):
         """
         Retrieves the process queue size
@@ -219,7 +204,6 @@ class DynamicData:
         return self._post_processor_queue_size
 
     @post_processor_queue_size.setter
-    @log
     def post_processor_queue_size(self, size):
         """
         Sets the process queue size
@@ -233,7 +217,6 @@ class DynamicData:
             self._notify_observers()
 
     @property
-    @log
     def saver_queue_size(self):
         """
         Retrieves the save queue size
@@ -244,7 +227,6 @@ class DynamicData:
         return self._saver_queue_size
 
     @saver_queue_size.setter
-    @log
     def saver_queue_size(self, size):
         """
         Sets the save queue size
@@ -258,7 +240,6 @@ class DynamicData:
             self._notify_observers()
 
     @property
-    @log
     def save_every_image(self):
         """
         Retrieves the flag that tells if we need to save every process result image
@@ -269,7 +250,6 @@ class DynamicData:
         return self._save_every_image
 
     @save_every_image.setter
-    @log
     def save_every_image(self, save_every_image):
         """
         Sets the flag that tells if we need to save every process result image
@@ -280,7 +260,6 @@ class DynamicData:
         self._save_every_image = save_every_image
 
     @property
-    @log
     def stack_size(self):
         """
         Retrieves the published stack size
@@ -291,7 +270,6 @@ class DynamicData:
         return self._stack_size
 
     @stack_size.setter
-    @log
     def stack_size(self, size):
         """
         Sets published stack size
@@ -305,7 +283,6 @@ class DynamicData:
             self._notify_observers()
 
     @property
-    @log
     def session(self):
         """
         Retrieves the session instance
@@ -316,7 +293,6 @@ class DynamicData:
         return self._session
 
     @property
-    @log
     def save_queue(self):
         """
         Retrieves save queue
@@ -327,7 +303,6 @@ class DynamicData:
         return self._save_queue
 
     @property
-    @log
     def process_result(self):
         """
         Retrieves latest published process result
@@ -338,7 +313,6 @@ class DynamicData:
         return self._process_result
 
     @process_result.setter
-    @log
     def process_result(self, image):
         """
         Record the latest process result
@@ -350,7 +324,6 @@ class DynamicData:
         self._notify_observers(image_only=True)
 
     @property
-    @log
     def align_before_stacking(self):
         """
         Retrieves alignment switch
@@ -361,7 +334,6 @@ class DynamicData:
         return self._align_before_stacking
 
     @align_before_stacking.setter
-    @log
     def align_before_stacking(self, align: bool):
         """
         Sets alignment switch
@@ -372,7 +344,6 @@ class DynamicData:
         self._align_before_stacking = align
 
     @property
-    @log
     def stacking_mode(self):
         """
         Retrieves stacking mode.
@@ -383,7 +354,6 @@ class DynamicData:
         return self._stacking_mode
 
     @stacking_mode.setter
-    @log
     def stacking_mode(self, text: str):
         """
         Sets stacking mode.
@@ -403,7 +373,6 @@ class DynamicData:
             self._stacking_mode = STACKING_MODE_MEAN
 
     @property
-    @log
     def process_queue(self):
         """
         Retrieves the processing queue
@@ -414,7 +383,6 @@ class DynamicData:
         return self._process_queue
 
     @property
-    @log
     def stacker_queue(self):
         """
         Retrieves the stack queue
@@ -425,7 +393,6 @@ class DynamicData:
         return self._stacker_queue
 
     @property
-    @log
     def pre_process_queue(self):
         """
         Retrieves the pre_process queue.
@@ -436,7 +403,6 @@ class DynamicData:
         return self._pre_process_queue
 
     @property
-    @log
     def web_server_is_running(self):
         """
         Is web server running.
@@ -447,7 +413,6 @@ class DynamicData:
         return self._web_server_is_running
 
     @web_server_is_running.setter
-    @log
     def web_server_is_running(self, running):
         """
         Sets flag for webserver running status.
