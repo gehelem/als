@@ -33,18 +33,16 @@ class MainWindow(QMainWindow):
 
         self._controller = controller
         self._ui = Ui_stack_window()
-
         self._ui.setupUi(self)
         self.setWindowTitle(_("Astro Live Stacker") + f" - v{VERSION}")
 
+        # populate stacking mode combo box
         self._ui.cb_stacking_mode.blockSignals(True)
         stacking_modes = [STACKING_MODE_SUM, STACKING_MODE_MEAN]
         for stacking_mode in stacking_modes:
             self._ui.cb_stacking_mode.addItem(stacking_mode)
         self._ui.cb_stacking_mode.setCurrentIndex(stacking_modes.index(DYNAMIC_DATA.stacking_mode))
         self._ui.cb_stacking_mode.blockSignals(False)
-
-        self._ui.postprocess_widget.setCurrentIndex(0)
 
         # store if docks must be shown or not
         self.shown_log_dock = True
@@ -54,13 +52,12 @@ class MainWindow(QMainWindow):
         self.resizeDocks([self._ui.log_dock], [self._LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
 
         DYNAMIC_DATA.add_observer(self)
-
         self.update_display()
 
+        # setup image display
         self._scene = QGraphicsScene(self)
         self._ui.image_view.setScene(self._scene)
         self._image_item = None
-
         self.reset_image_view()
 
     @log
@@ -107,61 +104,6 @@ class MainWindow(QMainWindow):
                 if self.show_session_dock:
                     self._ui.session_dock.show()
 
-    @pyqtSlot(int, name="on_SCNR_Slider_valueChanged")
-    @log
-    def cb_scnr_slider_changed(self, value):
-        """
-        Qt slot for SCNR slider changes.
-
-        :param value: SCNR slider new value
-        :type value: int
-        """
-        self._ui.SCNR_value.setNum(value / 100.)
-
-    @pyqtSlot(int, name="on_R_slider_valueChanged")
-    @log
-    def cb_r_slider_changed(self, value):
-        """
-        Qt slot for R slider changes.
-
-        :param value: R slider new value
-        :type value: int
-        """
-        self._ui.R_value.setNum(value / 100.)
-
-    @pyqtSlot(int, name="on_G_slider_valueChanged")
-    @log
-    def cb_g_slider_changed(self, value):
-        """
-        Qt slot for G slider changes.
-
-        :param value: G slider new value
-        :type value: int
-        """
-        self._ui.G_value.setNum(value / 100.)
-
-    @pyqtSlot(int, name="on_B_slider_valueChanged")
-    @log
-    def cb_b_slider_changed(self, value):
-        """
-        Qt slot for B slider changes.
-
-        :param value: B slider new value
-        :type value: int
-        """
-        self._ui.B_value.setNum(value / 100.)
-
-    @pyqtSlot(int, name="on_contrast_slider_valueChanged")
-    @log
-    def cb_contrast_changed(self, value):
-        """
-        Qt slot for contrast slider changes.
-
-        :param value: contrast slider new value
-        :type value: int
-        """
-        self._ui.contrast.setNum(value / 10)
-
     @pyqtSlot(name="on_pbSave_clicked")
     @log
     def cb_save(self):
@@ -178,14 +120,6 @@ class MainWindow(QMainWindow):
                                         config.get_work_folder_path(),
                                         config.STACKED_IMAGE_FILE_NAME_BASE,
                                         add_timestamp=True)
-
-    @pyqtSlot(name="on_pb_apply_value_clicked")
-    @log
-    def cb_apply_value(self):
-        """Qt slot for clicks on the 'apply' button"""
-        #     self.adjust_value()
-        #     self.update_image()
-        #_LOGGER.info("Define new display value")
 
     @pyqtSlot(name="on_action_quit_triggered")
     @log
@@ -279,15 +213,6 @@ class MainWindow(QMainWindow):
     @log
     def cb_play(self):
         """Qt slot for mouse clicks on the 'play' button"""
-
-        self._ui.white_slider.setEnabled(False)
-        self._ui.black_slider.setEnabled(False)
-        self._ui.contrast_slider.setEnabled(False)
-        self._ui.brightness_slider.setEnabled(False)
-        self._ui.R_slider.setEnabled(False)
-        self._ui.G_slider.setEnabled(False)
-        self._ui.B_slider.setEnabled(False)
-        self._ui.pb_apply_value.setEnabled(False)
 
         self._start_session()
 
