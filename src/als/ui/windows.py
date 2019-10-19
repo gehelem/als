@@ -84,11 +84,14 @@ class MainWindow(QMainWindow):
 
         self._stop_session()
 
-        if DYNAMIC_DATA.saver_queue_size > 0:
-            SaveWaitDialog(self).exec()
+        if DYNAMIC_DATA.session.is_stopped:
 
-        DYNAMIC_DATA.remove_observer(self)
-        super().closeEvent(event)
+            if DYNAMIC_DATA.saver_queue_size > 0:
+                SaveWaitDialog(self).exec()
+
+            event.accept()
+        else:
+            event.ignore()
 
     @log
     def changeEvent(self, event):
