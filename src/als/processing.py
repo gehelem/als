@@ -3,6 +3,7 @@ Provides all means of image processing
 """
 import logging
 from abc import abstractmethod
+from typing import List
 
 import cv2
 import numpy as np
@@ -10,6 +11,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 from als.code_utilities import log, Timer, SignalingQueue
 from als.model.base import Image
+from als.model.params import ProcessingParameter, RangeParameter
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,6 +30,14 @@ class ImageProcessor:
     Subclasses must implement a single method : process_image(image: Image)
     """
 
+    @log
+    def __init__(self):
+        self._params = list()
+
+    @log
+    def get_parameters(self) -> List[ProcessingParameter]:
+        return self._params
+
     @abstractmethod
     def process_image(self, image: Image):
         """
@@ -41,6 +51,36 @@ class ImageProcessor:
         :return: the processed image
         :rtype: Image
         """
+
+
+class Levels(ImageProcessor):
+    """Implements levels processing"""
+
+    _UPPER_LIMIT = 2**16 + 1
+
+    @log
+    def __init__(self):
+        super().__init__()
+
+        super()._params.append(RangeParameter("black", "black level",
+                                              0, 0, 0, Levels._UPPER_LIMIT))
+
+        super()._params.append(RangeParameter("white", "while level",
+                                              Levels._UPPER_LIMIT, Levels._UPPER_LIMIT, 0, Levels._UPPER_LIMIT))
+
+    @log
+    def process_image(self, image: Image):
+
+        black_level = super().get_parameters[0].value
+        white_level = super().get_parameters[1].value
+
+        clipped_data = np.clip(image.data, black_level, white_level)
+
+        image.data = np.interp(clipped_data,
+                               (image.data.min(), image.data.max()),
+                               (0, Levels._UPPER_LIMIT))
+
+        return image
 
 
 # pylint: disable=R0903

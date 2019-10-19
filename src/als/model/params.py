@@ -13,17 +13,20 @@ _LOGGER = logging.getLogger(__name__)
 class ProcessingParameter:
 
     @log
-    def __init__(self, name: str, description: str, default: Any):
+    def __init__(self, name: str, description: str, default: Any, value: Any):
 
         self.name = name
         self.description = description
         self.default = default
+        self._value = value
 
 
 class RangeParameter(ProcessingParameter):
     @log
-    def __init__(self, name: str, description: str, default: int, minimum: int, maximum: int, steps: int = 255):
-        super().__init__(name, description, default)
+    def __init__(self, name: str, description: str, default: Any, value: Any,
+                 minimum: int, maximum: int, steps: int = 255):
+
+        super().__init__(name, description, default, value)
         self.min = minimum
         self.max = maximum
         self.steps = steps
