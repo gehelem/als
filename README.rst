@@ -2,7 +2,7 @@
 ALS - Astro Live Stacker
 ========================
 
-.. image:: https://img.shields.io/travis/com/gehelem/als
+.. image:: https://img.shields.io/travis/com/gehelem/als/develop
 .. image:: https://img.shields.io/github/license/gehelem/als
 
 
