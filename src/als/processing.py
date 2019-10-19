@@ -62,22 +62,22 @@ class Levels(ImageProcessor):
     def __init__(self):
         super().__init__()
 
-        super()._params.append(RangeParameter("black", "black level",
-                                              0, 0, 0, Levels._UPPER_LIMIT))
+        self.get_parameters().append(RangeParameter("black", "black level",
+                                                    0, 0, 0, Levels._UPPER_LIMIT))
 
-        super()._params.append(RangeParameter("white", "while level",
-                                              Levels._UPPER_LIMIT, Levels._UPPER_LIMIT, 0, Levels._UPPER_LIMIT))
+        self.get_parameters().append(RangeParameter("white", "while level",
+                                                    Levels._UPPER_LIMIT, Levels._UPPER_LIMIT, 0, Levels._UPPER_LIMIT))
 
     @log
     def process_image(self, image: Image):
 
-        black_level = super().get_parameters[0].value
-        white_level = super().get_parameters[1].value
+        black_level = self.get_parameters()[0].value
+        white_level = self.get_parameters()[1].value
 
         clipped_data = np.clip(image.data, black_level, white_level)
 
         image.data = np.interp(clipped_data,
-                               (image.data.min(), image.data.max()),
+                               (clipped_data.min(), clipped_data.max()),
                                (0, Levels._UPPER_LIMIT))
 
         return image

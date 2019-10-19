@@ -39,3 +39,7 @@ class ImageView(QGraphicsView):
             self.scale(self._ZOOM_SCALE_RATIO, self._ZOOM_SCALE_RATIO)
         elif event.angleDelta().y() < 0:
             self.scale(1 / self._ZOOM_SCALE_RATIO, 1 / self._ZOOM_SCALE_RATIO)
+
+
+class ProcessingParamView(QWidget):
+    pass

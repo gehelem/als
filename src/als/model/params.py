@@ -18,7 +18,7 @@ class ProcessingParameter:
         self.name = name
         self.description = description
         self.default = default
-        self._value = value
+        self.value = value
 
 
 class RangeParameter(ProcessingParameter):

@@ -34,7 +34,7 @@ from als.io.network import get_ip, WebServer
 from als.io.output import ImageSaver
 from als.model.base import Image, Session
 from als.model.data import STACKING_MODE_MEAN, DYNAMIC_DATA, WORKER_STATUS_BUSY, WORKER_STATUS_IDLE
-from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput
+from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput, Levels
 from als.stack import Stacker
 
 gettext.install('als', 'locale')
@@ -91,6 +91,7 @@ class Controller:
 
         self._post_process_queue = DYNAMIC_DATA.process_queue
         self._post_process_pipeline: Pipeline = Pipeline('post-process', self._post_process_queue, [ConvertForOutput()])
+        self._post_process_pipeline.add_process(Levels())
         self._post_process_pipeline.start()
 
         self._saver_queue = DYNAMIC_DATA.save_queue
