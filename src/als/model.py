@@ -136,10 +136,10 @@ class DynamicData:
         self._stacking_mode = ""
         self._align_before_stacking = True
         self._stack_size = 0
-        self._pre_process_queue_size = 0
-        self._stack_queue_size = 0
-        self._process_queue_size = 0
-        self._save_queue_size = 0
+        self._pre_processor_queue_size = 0
+        self._stacker_queue_size = 0
+        self._post_processor_queue_size = 0
+        self._saver_queue_size = 0
         self._save_every_image: bool = False
         self._process_result = None
         self._pre_process_queue = SignalingQueue()
@@ -154,6 +154,7 @@ class DynamicData:
         self._session.status_changed_signal.connect(self._notify_observers)
 
     @property
+    @log
     def pre_processor_status(self):
         """
         Retrieves pre-processor published status
@@ -161,6 +162,7 @@ class DynamicData:
         return self._pre_processor_status
 
     @pre_processor_status.setter
+    @log
     def pre_processor_status(self, status):
         """
         Sets new pre-processor published status and notify observers
@@ -172,6 +174,7 @@ class DynamicData:
         self._notify_observers()
 
     @property
+    @log
     def stacker_status(self):
         """
         Retrieves stacker published status
@@ -179,6 +182,7 @@ class DynamicData:
         return self._stacker_status
 
     @stacker_status.setter
+    @log
     def stacker_status(self, status):
         """
         Sets new stacker published status and notify observers
@@ -190,6 +194,7 @@ class DynamicData:
         self._notify_observers()
 
     @property
+    @log
     def post_processor_status(self):
         """
         Retrieves post-processor published status
@@ -197,6 +202,7 @@ class DynamicData:
         return self._post_processor_status
 
     @post_processor_status.setter
+    @log
     def post_processor_status(self, status):
         """
         Sets new post-processor published status and notify observers
@@ -208,6 +214,7 @@ class DynamicData:
         self._notify_observers()
 
     @property
+    @log
     def saver_status(self):
         """
         Retrieves saver published status
@@ -215,6 +222,7 @@ class DynamicData:
         return self._saver_status
 
     @saver_status.setter
+    @log
     def saver_status(self, status):
         """
         Sets new saver published status and notify observers
@@ -226,6 +234,7 @@ class DynamicData:
         self._notify_observers()
 
     @property
+    @log
     def web_server_ip(self):
         """
         Retrieves web server ip
@@ -236,6 +245,7 @@ class DynamicData:
         return self._web_server_ip
 
     @web_server_ip.setter
+    @log
     def web_server_ip(self, ip_address):
         """
         Sets web server ip
@@ -247,101 +257,101 @@ class DynamicData:
 
     @property
     @log
-    def pre_process_queue_size(self):
+    def pre_processor_queue_size(self):
         """
         Retrieves the pre-process queue size
 
         :return: the pre-process queue size
         :rtype: int
         """
-        return self._pre_process_queue_size
+        return self._pre_processor_queue_size
 
-    @pre_process_queue_size.setter
+    @pre_processor_queue_size.setter
     @log
-    def pre_process_queue_size(self, size):
+    def pre_processor_queue_size(self, size):
         """
         Sets the pre-process queue size
 
         :param size: the pre-process queue size
         :type size: int
         """
-        old_size = self._pre_process_queue_size
-        self._pre_process_queue_size = size
+        old_size = self._pre_processor_queue_size
+        self._pre_processor_queue_size = size
         if size != old_size:
             self._notify_observers()
 
     @property
     @log
-    def stack_queue_size(self):
+    def stacker_queue_size(self):
         """
         Retrieves the stack queue size
 
         :return: the stack queue size
         :rtype: int
         """
-        return self._stack_queue_size
+        return self._stacker_queue_size
 
-    @stack_queue_size.setter
+    @stacker_queue_size.setter
     @log
-    def stack_queue_size(self, size):
+    def stacker_queue_size(self, size):
         """
         Sets the stack queue size
 
         :param size: the stack queue size
         :type size: int
         """
-        old_size = self._stack_queue_size
-        self._stack_queue_size = size
+        old_size = self._stacker_queue_size
+        self._stacker_queue_size = size
         if size != old_size:
             self._notify_observers()
 
     @property
     @log
-    def process_queue_size(self):
+    def post_processor_queue_size(self):
         """
         Retrieves the process queue size
 
         :return: the process queue size
         :rtype: int
         """
-        return self._process_queue_size
+        return self._post_processor_queue_size
 
-    @process_queue_size.setter
+    @post_processor_queue_size.setter
     @log
-    def process_queue_size(self, size):
+    def post_processor_queue_size(self, size):
         """
         Sets the process queue size
 
         :param size: the process queue size
         :type size: int
         """
-        old_size = self._process_queue_size
-        self._process_queue_size = size
+        old_size = self._post_processor_queue_size
+        self._post_processor_queue_size = size
         if size != old_size:
             self._notify_observers()
 
     @property
     @log
-    def save_queue_size(self):
+    def saver_queue_size(self):
         """
         Retrieves the save queue size
 
         :return: the save queue size
         :rtype: int
         """
-        return self._save_queue_size
+        return self._saver_queue_size
 
-    @save_queue_size.setter
+    @saver_queue_size.setter
     @log
-    def save_queue_size(self, size):
+    def saver_queue_size(self, size):
         """
         Sets the save queue size
 
         :param size: the save queue size
         :type size: int
         """
-        old_size = self._save_queue_size
-        self._save_queue_size = size
+        old_size = self._saver_queue_size
+        self._saver_queue_size = size
         if size != old_size:
             self._notify_observers()
 
@@ -564,7 +574,8 @@ class DynamicData:
         :param observer: the observer to remove
         :type observer: any
         """
-        self._observers.remove(observer)
+        if observer in self._observers:
+            self._observers.remove(observer)
 
     @log
     def _notify_observers(self, image_only=False):
@@ -572,8 +583,7 @@ class DynamicData:
         Tells all registered observers to update their display
         """
         for observer in self._observers:
-            target_function = observer.update_image if image_only else observer.update_all
-            target_function()
+            observer.update_display(image_only)
 
 
 DYNAMIC_DATA = DynamicData()

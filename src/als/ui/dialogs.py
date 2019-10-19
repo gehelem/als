@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QApplication
 
 from als import config, model
 from als.code_utilities import log
+from als.logic import WORKER_STATUS_BUSY
 from als.model import DYNAMIC_DATA
 from generated.about_ui import Ui_AboutDialog
 from generated.prefs_ui import Ui_PrefsDialog
@@ -140,20 +141,56 @@ class SaveWaitDialog(QDialog):
         super().__init__(parent)
         self._ui = Ui_SaveWaitDialog()
         self._ui.setupUi(self)
-        self._ui.lbl_save_queue_size.setText(str(DYNAMIC_DATA.save_queue_size))
-        DYNAMIC_DATA.save_queue.size_changed_signal[int].connect(self.on_save_queue_size_changed)
+
+        self.update_display(_)
+        DYNAMIC_DATA.add_observer(self)
 
     @log
-    def on_save_queue_size_changed(self, size):
+    def update_display(self, _):
         """
-        Save queue size just changed
+        Update display
+        """
 
-        :param size: the size of the save queue
-        :type size: int
-        """
-        self._ui.lbl_save_queue_size.setText(str(size))
-        if size == 0:
+        remaining_image_count = SaveWaitDialog._count_remaining_images()
+        self._ui.lbl_remaining_saves.setText(str(remaining_image_count))
+
+        if remaining_image_count == 0:
+            DYNAMIC_DATA.remove_observer(self)
             self.close()
+
+    @staticmethod
+    @log
+    def _count_remaining_images():
+
+        # we count 1 image to save for each image in the queues and each worker still Busy
+        # and take 'save every image' into account
+
+        remaining_image_count = 0
+
+        for status in [
+
+                DYNAMIC_DATA.pre_processor_status,
+                DYNAMIC_DATA.stacker_status,
+                DYNAMIC_DATA.post_processor_status,
+        ]:
+            if status == WORKER_STATUS_BUSY:
+                remaining_image_count += 1
+
+        for queue_size in [
+
+                DYNAMIC_DATA.pre_processor_queue_size,
+                DYNAMIC_DATA.stacker_queue_size,
+                DYNAMIC_DATA.post_processor_queue_size,
+        ]:
+            remaining_image_count += queue_size
+
+        if DYNAMIC_DATA.save_every_image:
+            remaining_image_count *= 2
+
+        remaining_image_count += 1 if DYNAMIC_DATA.saver_status == WORKER_STATUS_BUSY else 0
+        remaining_image_count += DYNAMIC_DATA.saver_queue_size
+
+        return remaining_image_count
 
 
 def question(title, message, default_yes: bool = True):

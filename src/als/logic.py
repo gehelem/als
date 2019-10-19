@@ -39,8 +39,8 @@ gettext.install('als', 'locale')
 
 _LOGGER = logging.getLogger(__name__)
 
-_WORKER_STATUS_BUSY = "Busy"
-_WORKER_STATUS_IDLE = "Idle"
+WORKER_STATUS_BUSY = "Busy"
+WORKER_STATUS_IDLE = "Idle"
 
 
 class AlsException(Exception):
@@ -77,10 +77,10 @@ class Controller:
         DYNAMIC_DATA.session.set_status(Session.stopped)
         DYNAMIC_DATA.web_server_is_running = False
 
-        DYNAMIC_DATA.pre_processor_status = _WORKER_STATUS_IDLE
-        DYNAMIC_DATA.stacker_status = _WORKER_STATUS_IDLE
-        DYNAMIC_DATA.post_processor_status = _WORKER_STATUS_IDLE
-        DYNAMIC_DATA.saver_status = _WORKER_STATUS_IDLE
+        DYNAMIC_DATA.pre_processor_status = WORKER_STATUS_IDLE
+        DYNAMIC_DATA.stacker_status = WORKER_STATUS_IDLE
+        DYNAMIC_DATA.post_processor_status = WORKER_STATUS_IDLE
+        DYNAMIC_DATA.saver_status = WORKER_STATUS_IDLE
 
         DYNAMIC_DATA.stacking_mode = STACKING_MODE_MEAN
 
@@ -190,7 +190,7 @@ class Controller:
         :type new_size: int
         """
         _LOGGER.debug(f"New image added to the pre-process queue. Pre-process queue size : {new_size}")
-        DYNAMIC_DATA.pre_process_queue_size = new_size
+        DYNAMIC_DATA.pre_processor_queue_size = new_size
 
     @log
     def on_stack_queue_size_changed(self, new_size):
@@ -201,7 +201,7 @@ class Controller:
         :type new_size: int
         """
         _LOGGER.debug(f"New image added to the stack queue. Stack queue size : {new_size}")
-        DYNAMIC_DATA.stack_queue_size = new_size
+        DYNAMIC_DATA.stacker_queue_size = new_size
 
     @log
     def on_process_queue_size_changed(self, new_size):
@@ -212,7 +212,7 @@ class Controller:
         :type new_size: int
         """
         _LOGGER.debug(f"New image added to the process queue. Process queue size : {new_size}")
-        DYNAMIC_DATA.process_queue_size = new_size
+        DYNAMIC_DATA.post_processor_queue_size = new_size
 
     @log
     def on_save_queue_size_changed(self, new_size):
@@ -223,63 +223,63 @@ class Controller:
         :type new_size: int
         """
         _LOGGER.debug(f"New image added to the save queue. Save queue size : {new_size}")
-        DYNAMIC_DATA.save_queue_size = new_size
+        DYNAMIC_DATA.saver_queue_size = new_size
 
     @log
     def on_pre_processor_busy(self):
         """
         pre-processor just started working on new image
         """
-        DYNAMIC_DATA.pre_processor_status = _WORKER_STATUS_BUSY
+        DYNAMIC_DATA.pre_processor_status = WORKER_STATUS_BUSY
 
     @log
     def on_pre_processor_waiting(self):
         """
         pre-processor just finished working on new image
         """
-        DYNAMIC_DATA.pre_processor_status = _WORKER_STATUS_IDLE
+        DYNAMIC_DATA.pre_processor_status = WORKER_STATUS_IDLE
 
     @log
     def on_stacker_busy(self):
         """
         stacker just started working on new image
         """
-        DYNAMIC_DATA.stacker_status = _WORKER_STATUS_BUSY
+        DYNAMIC_DATA.stacker_status = WORKER_STATUS_BUSY
 
     @log
     def on_stacker_waiting(self):
         """
         stacker just finished working on new image
         """
-        DYNAMIC_DATA.stacker_status = _WORKER_STATUS_IDLE
+        DYNAMIC_DATA.stacker_status = WORKER_STATUS_IDLE
 
     @log
     def on_post_processor_busy(self):
         """
         post-processor just started working on new image
         """
-        DYNAMIC_DATA.post_processor_status = _WORKER_STATUS_BUSY
+        DYNAMIC_DATA.post_processor_status = WORKER_STATUS_BUSY
 
     @log
     def on_post_processor_waiting(self):
         """
         post-processor just finished working on new image
         """
-        DYNAMIC_DATA.post_processor_status = _WORKER_STATUS_IDLE
+        DYNAMIC_DATA.post_processor_status = WORKER_STATUS_IDLE
 
     @log
     def on_saver_busy(self):
         """
         saver just started working on new image
         """
-        DYNAMIC_DATA.saver_status = _WORKER_STATUS_BUSY
+        DYNAMIC_DATA.saver_status = WORKER_STATUS_BUSY
 
     @log
     def on_saver_waiting(self):
         """
         saver just finished working on new image
         """
-        DYNAMIC_DATA.saver_status = _WORKER_STATUS_IDLE
+        DYNAMIC_DATA.saver_status = WORKER_STATUS_IDLE
 
     @log
     def start_session(self):

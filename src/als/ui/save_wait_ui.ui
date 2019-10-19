@@ -37,7 +37,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="lbl_save_queue_size">
+      <widget class="QLabel" name="lbl_remaining_saves">
        <property name="text">
         <string>0</string>
        </property>

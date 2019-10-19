@@ -55,7 +55,7 @@ class MainWindow(QMainWindow):
 
         DYNAMIC_DATA.add_observer(self)
 
-        self.update_all()
+        self.update_display()
 
         self._scene = QGraphicsScene(self)
         self._ui.image_view.setScene(self._scene)
@@ -85,7 +85,7 @@ class MainWindow(QMainWindow):
 
         self._stop_session()
 
-        if DYNAMIC_DATA.save_queue_size > 0:
+        if DYNAMIC_DATA.saver_queue_size > 0:
             SaveWaitDialog(self).exec()
 
         DYNAMIC_DATA.remove_observer(self)
@@ -312,7 +312,7 @@ class MainWindow(QMainWindow):
         # TODO :)
 
     @log
-    def update_image(self):
+    def _update_image(self):
         """
         Update central image display.
         """
@@ -348,69 +348,73 @@ class MainWindow(QMainWindow):
         self._ui.log.scrollToBottom()
 
     @log
-    def update_all(self):
+    def update_display(self, image_only: bool = False):
         """
         Updates all displays and controls depending on DataStore held data
         """
 
-        web_server_is_running = DYNAMIC_DATA.web_server_is_running
-        session = DYNAMIC_DATA.session
-        session_is_running = session.is_running
-        session_is_stopped = session.is_stopped
-        session_is_paused = session.is_paused
+        if image_only:
+            self._update_image()
 
-        # update running statuses
-        scanner_status_message = f"Scanner on {config.get_scan_folder_path()}: "
-        scanner_status_message += f"Running" if session_is_running else "Stopped"
-        self._ui.lbl_scanner_status.setText(scanner_status_message)
-
-        if web_server_is_running:
-            url = f"http://{DYNAMIC_DATA.web_server_ip}:{config.get_www_server_port_number()}"
-            self._ui.lbl_web_server_status.setText(f'Web server: Started, reachable at <a href="{url}">{url}</a>')
         else:
-            self._ui.lbl_web_server_status.setText("Web server: Stopped")
+            web_server_is_running = DYNAMIC_DATA.web_server_is_running
+            session = DYNAMIC_DATA.session
+            session_is_running = session.is_running
+            session_is_stopped = session.is_stopped
+            session_is_paused = session.is_paused
 
-        if session_is_stopped:
-            session_status_string = "Stopped"
-        elif session_is_paused:
-            session_status_string = "Paused"
-        elif session_is_running:
-            session_status_string = "Running"
-        else:
-            # this should never happen, that's why we check ;)
-            session_status_string = "### BUG !"
-        self._ui.lbl_session_status.setText(f"Session: {session_status_string}")
+            # update running statuses
+            scanner_status_message = f"Scanner on {config.get_scan_folder_path()}: "
+            scanner_status_message += f"Running" if session_is_running else "Stopped"
+            self._ui.lbl_scanner_status.setText(scanner_status_message)
 
-        # update preferences accessibility according to session and web server status
-        self._ui.action_prefs.setEnabled(not web_server_is_running and session_is_stopped)
+            if web_server_is_running:
+                url = f"http://{DYNAMIC_DATA.web_server_ip}:{config.get_www_server_port_number()}"
+                self._ui.lbl_web_server_status.setText(f'Web server: Started, reachable at <a href="{url}">{url}</a>')
+            else:
+                self._ui.lbl_web_server_status.setText("Web server: Stopped")
 
-        # handle Start / Pause / Stop  buttons
-        self._ui.pbPlay.setEnabled(session_is_stopped or session_is_paused)
-        self._ui.pbStop.setEnabled(session_is_running or session_is_paused)
-        self._ui.pbPause.setEnabled(session_is_running)
+            if session_is_stopped:
+                session_status_string = "Stopped"
+            elif session_is_paused:
+                session_status_string = "Paused"
+            elif session_is_running:
+                session_status_string = "Running"
+            else:
+                # this should never happen, that's why we check ;)
+                session_status_string = "### BUG !"
+            self._ui.lbl_session_status.setText(f"Session: {session_status_string}")
 
-        # handle align + stack mode buttons
-        self._ui.chk_align.setEnabled(session_is_stopped)
-        self._ui.cb_stacking_mode.setEnabled(session_is_stopped)
+            # update preferences accessibility according to session and web server status
+            self._ui.action_prefs.setEnabled(not web_server_is_running and session_is_stopped)
 
-        # handle web stop start buttons
-        self._ui.btn_web_start.setEnabled(not web_server_is_running)
-        self._ui.btn_web_stop.setEnabled(web_server_is_running)
+            # handle Start / Pause / Stop  buttons
+            self._ui.pbPlay.setEnabled(session_is_stopped or session_is_paused)
+            self._ui.pbStop.setEnabled(session_is_running or session_is_paused)
+            self._ui.pbPause.setEnabled(session_is_running)
 
-        # update stack size
-        self._ui.lbl_stack_size.setText(str(DYNAMIC_DATA.stack_size))
+            # handle align + stack mode buttons
+            self._ui.chk_align.setEnabled(session_is_stopped)
+            self._ui.cb_stacking_mode.setEnabled(session_is_stopped)
 
-        # update queues sizes
-        self._ui.lbl_pre_process_queue_size.setText(str(DYNAMIC_DATA.pre_process_queue_size))
-        self._ui.lbl_stack_queue_size.setText(str(DYNAMIC_DATA.stack_queue_size))
-        self._ui.lbl_process_queue_size.setText(str(DYNAMIC_DATA.process_queue_size))
-        self._ui.lbl_save_queue_size.setText(str(DYNAMIC_DATA.save_queue_size))
+            # handle web stop start buttons
+            self._ui.btn_web_start.setEnabled(not web_server_is_running)
+            self._ui.btn_web_stop.setEnabled(web_server_is_running)
 
-        # handle component statuses
-        self._ui.lbl_pre_processor_status.setText(DYNAMIC_DATA.pre_processor_status)
-        self._ui.lbl_stacker_status.setText(DYNAMIC_DATA.stacker_status)
-        self._ui.lbl_post_processor_status.setText(DYNAMIC_DATA.post_processor_status)
-        self._ui.lbl_saver_status.setText(DYNAMIC_DATA.saver_status)
+            # update stack size
+            self._ui.lbl_stack_size.setText(str(DYNAMIC_DATA.stack_size))
+
+            # update queues sizes
+            self._ui.lbl_pre_process_queue_size.setText(str(DYNAMIC_DATA.pre_processor_queue_size))
+            self._ui.lbl_stack_queue_size.setText(str(DYNAMIC_DATA.stacker_queue_size))
+            self._ui.lbl_process_queue_size.setText(str(DYNAMIC_DATA.post_processor_queue_size))
+            self._ui.lbl_save_queue_size.setText(str(DYNAMIC_DATA.saver_queue_size))
+
+            # handle component statuses
+            self._ui.lbl_pre_processor_status.setText(DYNAMIC_DATA.pre_processor_status)
+            self._ui.lbl_stacker_status.setText(DYNAMIC_DATA.stacker_status)
+            self._ui.lbl_post_processor_status.setText(DYNAMIC_DATA.post_processor_status)
+            self._ui.lbl_saver_status.setText(DYNAMIC_DATA.saver_status)
 
     @pyqtSlot(name="on_pbStop_clicked")
     @log
@@ -531,6 +535,6 @@ class MainWindow(QMainWindow):
         accepted = PreferencesDialog(self).exec() == QDialog.Accepted
 
         if accepted:
-            self.update_all()
+            self.update_display()
 
         return accepted
