@@ -202,7 +202,6 @@ class Stacker(QueueConsumer):
             _LOGGER.debug(f"Aligning b&w image : DONE")
 
     @staticmethod
-    @log
     def _apply_single_channel_transformation(image, reference, transformation, results_dict, channel=None):
         """
         apply a transformation on a specific channel (RGB) of a color image, or whole data of a b&w image.
