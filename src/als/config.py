@@ -346,8 +346,7 @@ def _setup_logging():
     Sets up logging system.
     """
     logging.basicConfig(level=_LOG_LEVELS[_get(_LOG_LEVEL)],
-                        format='%(asctime)-15s %(processName)+15s:%(process)-8d/%(threadName)-12s '
-                               '%(name)-15s %(levelname)-8s %(message)s',
+                        format='%(asctime)-15s %(threadName)-12s %(name)-15s %(levelname)-8s %(message)s',
                         stream=sys.stdout)
     # pylint: disable=W0603
     global _SIGNAL_LOG_HANDLER
