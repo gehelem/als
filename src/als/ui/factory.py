@@ -14,7 +14,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class UnsupportedParameter(AlsException):
-    """Raised when try to create widget for an unknown parameter type"""
+    """Raised when trying to create widget for an unknown parameter type"""
 
 
 class ProcessingControlFactory:
@@ -42,5 +42,4 @@ class ProcessingControlFactory:
 
             return box
 
-        else:
-            raise UnsupportedParameter("Unhandled param type", f"{type(param)} is unknown")
+        raise UnsupportedParameter("Unhandled param type", f"{type(param)} is unknown")
