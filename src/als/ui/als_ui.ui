@@ -1534,7 +1534,7 @@
     <string>Show / hide main controls</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+B</string>
+    <string>B</string>
    </property>
   </action>
   <action name="action_show_session_log">
@@ -1551,7 +1551,7 @@
     <string>Show / hide session log</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+L</string>
+    <string>L</string>
    </property>
   </action>
   <action name="action_about_als">
