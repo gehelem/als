@@ -299,9 +299,6 @@ class Controller:
                 }
 
                 # checking presence of both scan & work folders
-                #
-                # for each of those, if folder is missing, ask user if she wants to access the preferences box
-                # if user refuses, we simply fail the session startup
                 for role, path in folders_dict.items():
                     if not Path(path).is_dir():
                         title = "Missing critical folder"
