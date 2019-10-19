@@ -27,7 +27,7 @@ from datetime import datetime
 from pathlib import Path
 
 from als import config
-from als.code_utilities import log
+from als.code_utilities import log, AlsException
 from als.io.input import InputScanner, ScannerStartError
 from als.io.network import get_ip, WebServer
 from als.io.output import ImageSaver
@@ -41,16 +41,6 @@ _LOGGER = logging.getLogger(__name__)
 
 WORKER_STATUS_BUSY = "Busy"
 WORKER_STATUS_IDLE = "Idle"
-
-
-class AlsException(Exception):
-    """
-    Base class for all custom errors
-    """
-    def __init__(self, message, details):
-        Exception.__init__(self)
-        self.message = message
-        self.details = details
 
 
 class SessionError(AlsException):
@@ -67,6 +57,7 @@ class WebServerStartFailure(AlsException):
     """Raised when web server fails"""
 
 
+# pylint: disable=R0902, R0904
 class Controller:
     """
     The application controller, in charge of implementing application logic
@@ -109,26 +100,27 @@ class Controller:
 
         self._input_scanner.new_image_signal[Image].connect(self.on_new_image_read)
         self._pre_process_pipeline.new_result_signal[Image].connect(self.on_new_pre_processed_image)
-        self._stacker.stack_size_changed_signal[int].connect(self.on_stack_size_changed)
+        self._stacker.stack_size_changed_signal[int].connect(Controller.on_stack_size_changed)
         self._stacker.new_result_signal[Image].connect(self.on_new_stack_result)
         self._post_process_pipeline.new_result_signal[Image].connect(self.on_new_process_result)
 
-        self._pre_process_queue.size_changed_signal[int].connect(self.on_pre_process_queue_size_changed)
-        self._stacker_queue.size_changed_signal[int].connect(self.on_stack_queue_size_changed)
-        self._post_process_queue.size_changed_signal[int].connect(self.on_process_queue_size_changed)
-        self._saver_queue.size_changed_signal[int].connect(self.on_save_queue_size_changed)
+        self._pre_process_queue.size_changed_signal[int].connect(Controller.on_pre_process_queue_size_changed)
+        self._stacker_queue.size_changed_signal[int].connect(Controller.on_stack_queue_size_changed)
+        self._post_process_queue.size_changed_signal[int].connect(Controller.on_process_queue_size_changed)
+        self._saver_queue.size_changed_signal[int].connect(Controller.on_save_queue_size_changed)
 
-        self._pre_process_pipeline.busy_signal.connect(self.on_pre_processor_busy)
-        self._pre_process_pipeline.waiting_signal.connect(self.on_pre_processor_waiting)
-        self._stacker.busy_signal.connect(self.on_stacker_busy)
-        self._stacker.waiting_signal.connect(self.on_stacker_waiting)
-        self._post_process_pipeline.busy_signal.connect(self.on_post_processor_busy)
-        self._post_process_pipeline.waiting_signal.connect(self.on_post_processor_waiting)
-        self._saver.busy_signal.connect(self.on_saver_busy)
-        self._saver.waiting_signal.connect(self.on_saver_waiting)
+        self._pre_process_pipeline.busy_signal.connect(Controller.on_pre_processor_busy)
+        self._pre_process_pipeline.waiting_signal.connect(Controller.on_pre_processor_waiting)
+        self._stacker.busy_signal.connect(Controller.on_stacker_busy)
+        self._stacker.waiting_signal.connect(Controller.on_stacker_waiting)
+        self._post_process_pipeline.busy_signal.connect(Controller.on_post_processor_busy)
+        self._post_process_pipeline.waiting_signal.connect(Controller.on_post_processor_waiting)
+        self._saver.busy_signal.connect(Controller.on_saver_busy)
+        self._saver.waiting_signal.connect(Controller.on_saver_waiting)
 
+    @staticmethod
     @log
-    def on_stack_size_changed(self, size):
+    def on_stack_size_changed(size):
         """
         Stack size just changed
 
@@ -181,8 +173,9 @@ class Controller:
         """
         self._stacker_queue.put(image)
 
+    @staticmethod
     @log
-    def on_pre_process_queue_size_changed(self, new_size):
+    def on_pre_process_queue_size_changed(new_size):
         """
         Qt slot executed when an item has just been pushed to the pre-process queue
 
@@ -192,8 +185,9 @@ class Controller:
         _LOGGER.debug(f"New image added to the pre-process queue. Pre-process queue size : {new_size}")
         DYNAMIC_DATA.pre_processor_queue_size = new_size
 
+    @staticmethod
     @log
-    def on_stack_queue_size_changed(self, new_size):
+    def on_stack_queue_size_changed(new_size):
         """
         Qt slot executed when an item has just been pushed to the stack queue
 
@@ -203,8 +197,9 @@ class Controller:
         _LOGGER.debug(f"New image added to the stack queue. Stack queue size : {new_size}")
         DYNAMIC_DATA.stacker_queue_size = new_size
 
+    @staticmethod
     @log
-    def on_process_queue_size_changed(self, new_size):
+    def on_process_queue_size_changed(new_size):
         """
         Qt slot executed when an item has just been pushed to the process queue
 
@@ -214,8 +209,9 @@ class Controller:
         _LOGGER.debug(f"New image added to the process queue. Process queue size : {new_size}")
         DYNAMIC_DATA.post_processor_queue_size = new_size
 
+    @staticmethod
     @log
-    def on_save_queue_size_changed(self, new_size):
+    def on_save_queue_size_changed(new_size):
         """
         Qt slot executed when an item has just been pushed to the save queue
 
@@ -225,57 +221,65 @@ class Controller:
         _LOGGER.debug(f"New image added to the save queue. Save queue size : {new_size}")
         DYNAMIC_DATA.saver_queue_size = new_size
 
+    @staticmethod
     @log
-    def on_pre_processor_busy(self):
+    def on_pre_processor_busy():
         """
         pre-processor just started working on new image
         """
         DYNAMIC_DATA.pre_processor_status = WORKER_STATUS_BUSY
 
+    @staticmethod
     @log
-    def on_pre_processor_waiting(self):
+    def on_pre_processor_waiting():
         """
         pre-processor just finished working on new image
         """
         DYNAMIC_DATA.pre_processor_status = WORKER_STATUS_IDLE
 
+    @staticmethod
     @log
-    def on_stacker_busy(self):
+    def on_stacker_busy():
         """
         stacker just started working on new image
         """
         DYNAMIC_DATA.stacker_status = WORKER_STATUS_BUSY
 
+    @staticmethod
     @log
-    def on_stacker_waiting(self):
+    def on_stacker_waiting():
         """
         stacker just finished working on new image
         """
         DYNAMIC_DATA.stacker_status = WORKER_STATUS_IDLE
 
+    @staticmethod
     @log
-    def on_post_processor_busy(self):
+    def on_post_processor_busy():
         """
         post-processor just started working on new image
         """
         DYNAMIC_DATA.post_processor_status = WORKER_STATUS_BUSY
 
+    @staticmethod
     @log
-    def on_post_processor_waiting(self):
+    def on_post_processor_waiting():
         """
         post-processor just finished working on new image
         """
         DYNAMIC_DATA.post_processor_status = WORKER_STATUS_IDLE
 
+    @staticmethod
     @log
-    def on_saver_busy(self):
+    def on_saver_busy():
         """
         saver just started working on new image
         """
         DYNAMIC_DATA.saver_status = WORKER_STATUS_BUSY
 
+    @staticmethod
     @log
-    def on_saver_waiting(self):
+    def on_saver_waiting():
         """
         saver just finished working on new image
         """
@@ -332,9 +336,9 @@ class Controller:
         """
         if not DYNAMIC_DATA.session.is_stopped:
             self._stop_input_scanner()
-            self.purge_queue(self._pre_process_queue)
-            self.purge_queue(self._stacker_queue)
-            self.purge_queue(self._post_process_queue)
+            Controller.purge_queue(self._pre_process_queue)
+            Controller.purge_queue(self._stacker_queue)
+            Controller.purge_queue(self._post_process_queue)
             _LOGGER.info("Session stopped")
             DYNAMIC_DATA.session.set_status(Session.stopped)
 
@@ -358,7 +362,7 @@ class Controller:
 
         # setup work folder
         try:
-            self._setup_web_content()
+            Controller._setup_web_content()
         except OSError as os_error:
             raise WebServerStartFailure("Work folder could not be prepared", str(os_error))
 
@@ -393,8 +397,9 @@ class Controller:
             _LOGGER.info("Web server stopped")
             DYNAMIC_DATA.web_server_is_running = False
 
+    @staticmethod
     @log
-    def purge_queue(self, queue: SignalingQueue):
+    def purge_queue(queue: SignalingQueue):
         """
         Purge a queue
 
@@ -405,8 +410,9 @@ class Controller:
         while not queue.empty():
             queue.get()
 
+    @staticmethod
     @log
-    def _setup_web_content(self):
+    def _setup_web_content():
         """Prepares the work folder."""
 
         work_dir_path = config.get_work_folder_path()
@@ -445,6 +451,7 @@ class Controller:
                             config.STACKED_IMAGE_FILE_NAME_BASE,
                             add_timestamp=True)
 
+    # pylint: disable=R0913
     @log
     def save_image(self, image: Image,
                    file_extension: str,

@@ -22,7 +22,8 @@ import sys
 from configparser import ConfigParser, DuplicateOptionError, ParsingError
 
 from PyQt5.QtCore import pyqtSignal, QObject
-from als.ui import dialogs
+
+from als.code_utilities import AlsException
 
 _CONFIG_FILE_PATH = os.path.expanduser("~/.als.cfg")
 
@@ -73,6 +74,10 @@ WEB_SERVED_IMAGE_FILE_NAME_BASE = "web_image"
 # module global data
 _CONFIG_PARSER = ConfigParser()
 _SIGNAL_LOG_HANDLER = None
+
+
+class CouldNotSaveConfig(AlsException):
+    """Raised when config could not be saved"""
 
 
 def get_image_save_format():
@@ -228,12 +233,16 @@ def save():
     :except os_error: Saving could not be done
     """
     try:
+
         with open(_CONFIG_FILE_PATH, "w") as config_file:
             _CONFIG_PARSER.write(config_file)
         _get_logger().info("User configuration saved")
+
     except OSError as os_error:
-        _get_logger().error(f"Could not save settings. Error : {os_error}")
-        dialogs.error_box("Settings not saved", f"Your settings could not be saved\n\nDetails : {os_error}")
+        message = "Could not save settings"
+        details = str(os_error)
+        _get_logger().error(f"{message} : {details}")
+        raise CouldNotSaveConfig(message, details)
 
 
 def _get(key):

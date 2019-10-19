@@ -65,3 +65,13 @@ class Timer:
         self.end = time()
         self.elapsed_in_milli = (self.end - self.start) * 1000
         self.elapsed_in_milli_as_str = "%0.3f" % self.elapsed_in_milli
+
+
+class AlsException(Exception):
+    """
+    Base class for all custom errors
+    """
+    def __init__(self, message, details):
+        Exception.__init__(self)
+        self.message = message
+        self.details = details

@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QD
 from qimage2ndarray import array2qimage
 
 from als import config
+from als.config import CouldNotSaveConfig
 from als.logic import Controller, SessionError, CriticalFolderMissing, WebServerStartFailure
 from als.code_utilities import log
 from als.model import STACKING_MODE_SUM, STACKING_MODE_MEAN, VERSION, DYNAMIC_DATA
@@ -78,7 +79,7 @@ class MainWindow(QMainWindow):
 
         window_rect = self.geometry()
         config.set_window_geometry((window_rect.x(), window_rect.y(), window_rect.width(), window_rect.height()))
-        config.save()
+        MainWindow._save_config()
 
         self._stop_session()
 
@@ -417,3 +418,12 @@ class MainWindow(QMainWindow):
             self.update_display()
 
         return accepted
+
+    @staticmethod
+    @log
+    def _save_config():
+
+        try:
+            config.save()
+        except CouldNotSaveConfig as save_error:
+            error_box(save_error.message, f"Your settings could not be saved\n\nDetails : {save_error.details}")

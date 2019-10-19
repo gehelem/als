@@ -123,7 +123,7 @@ class Session(QObject):
             self.status_changed_signal.emit()
 
 
-# pylint: disable=R0902
+# pylint: disable=R0902, R0904
 class DynamicData:
     """
     Holds and maintain application dynamic data and notify observers on significant changes

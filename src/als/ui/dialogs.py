@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QApplication
 
 from als import config, model
 from als.code_utilities import log
+from als.config import CouldNotSaveConfig
 from als.logic import WORKER_STATUS_BUSY
 from als.model import DYNAMIC_DATA
 from generated.about_ui import Ui_AboutDialog
@@ -90,7 +91,7 @@ class PreferencesDialog(QDialog):
                 config.set_image_save_format(image_save_type)
                 break
 
-        config.save()
+        PreferencesDialog._save_config()
 
         super().accept()
 
@@ -117,6 +118,15 @@ class PreferencesDialog(QDialog):
             self._ui.ln_work_folder_path.setText(work_folder_path)
 
         self._show_missing_folders()
+
+    @staticmethod
+    @log
+    def _save_config():
+
+        try:
+            config.save()
+        except CouldNotSaveConfig as save_error:
+            error_box(save_error.message, f"Your settings could not be saved\n\nDetails : {save_error.details}")
 
 
 class AboutDialog(QDialog):
