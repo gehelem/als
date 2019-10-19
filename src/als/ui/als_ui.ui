@@ -1255,12 +1255,18 @@
           <property name="text">
            <string>Queue size</string>
           </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
          </widget>
         </item>
         <item row="0" column="2">
          <widget class="QLabel" name="label_23">
           <property name="text">
            <string>Status</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -1286,6 +1292,9 @@
           <property name="text">
            <string>status</string>
           </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
          </widget>
         </item>
         <item row="2" column="0">
@@ -1309,6 +1318,9 @@
          <widget class="QLabel" name="lbl_stacker_status">
           <property name="text">
            <string>status</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -1334,6 +1346,9 @@
           <property name="text">
            <string>status</string>
           </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
          </widget>
         </item>
         <item row="4" column="0">
@@ -1357,6 +1372,9 @@
          <widget class="QLabel" name="lbl_saver_status">
           <property name="text">
            <string>status</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>
