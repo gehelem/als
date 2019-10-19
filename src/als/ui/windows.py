@@ -4,7 +4,7 @@ Holds all windows used in the app
 import logging
 
 from PyQt5.QtCore import QEvent, pyqtSlot, Qt
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QKeyEvent
 from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog
 from qimage2ndarray import array2qimage
 
@@ -106,6 +106,47 @@ class MainWindow(QMainWindow):
                     self._ui.log_dock.show()
                 if self.show_session_dock:
                     self._ui.session_dock.show()
+
+    @log
+    def keyPressEvent(self, event: QKeyEvent):
+        """
+        Reacts to key press events.
+
+        :param event: the event
+        :type event: QKeyEvent
+
+        So far, the following keys are used :
+
+          - **P** : play/pause session
+          - **X** : stop session
+          - **W** : start/stop web server
+
+        """
+        # pylint: disable=C0103
+
+        session = DYNAMIC_DATA.session
+
+        if event.key() == Qt.Key_P:
+
+            if session.is_stopped() or session.is_paused():
+                self._start_session()
+            else:
+                self._controller.pause_session()
+
+        elif event.key() == Qt.Key_X:
+
+            if not session.is_stopped():
+                self._stop_session()
+
+        elif event.key() == Qt.Key_W:
+
+            if DYNAMIC_DATA.web_server_is_running:
+                self._stop_www()
+            else:
+                self._start_www()
+
+        else:
+            super().keyPressEvent(event)
 
     # ------------------------------------------------------------------------------
     # Callbacks
@@ -461,13 +502,18 @@ class MainWindow(QMainWindow):
         """
 
         if not DYNAMIC_DATA.session.is_stopped():
-            message = """Stopping the current session will reset the stack and all image enhancements.
 
-            Are you sure you want to stop the current session ?
-            """
-            do_stop_session = True if not ask_confirmation else question("Really stop session ?",
-                                                                         message,
-                                                                         default_yes=False)
+            do_stop_session = True
+
+            if ask_confirmation and DYNAMIC_DATA.stack_size > 0:
+                message = """Stopping the current session will reset the stack and all image enhancements.
+    
+                Are you sure you want to stop the current session ?
+                """
+                do_stop_session = question("Really stop session ?",
+                                           message,
+                                           default_yes=False)
+
             if do_stop_session:
                 self._controller.stop_session()
 
