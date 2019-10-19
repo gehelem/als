@@ -4,7 +4,7 @@ Holds all windows used in the app
 import logging
 
 from PyQt5.QtCore import QEvent, pyqtSlot, Qt
-from PyQt5.QtGui import QPixmap, QKeyEvent
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog
 from qimage2ndarray import array2qimage
 
@@ -106,52 +106,6 @@ class MainWindow(QMainWindow):
                     self._ui.log_dock.show()
                 if self.show_session_dock:
                     self._ui.session_dock.show()
-
-    @log
-    def keyPressEvent(self, event: QKeyEvent):
-        """
-        Reacts to key press events.
-
-        :param event: the event
-        :type event: QKeyEvent
-
-        So far, the following keys are used :
-
-          - **P** : play/pause session
-          - **X** : stop session
-          - **W** : start/stop web server
-
-        """
-        # pylint: disable=C0103
-
-        session = DYNAMIC_DATA.session
-
-        if event.modifiers() == Qt.NoModifier:
-
-            if event.key() == Qt.Key_P:
-
-                if session.is_stopped or session.is_paused:
-                    self._start_session()
-                else:
-                    self._controller.pause_session()
-
-            elif event.key() == Qt.Key_X:
-
-                if not session.is_stopped:
-                    self._stop_session()
-
-            elif event.key() == Qt.Key_W:
-
-                if DYNAMIC_DATA.web_server_is_running:
-                    self._stop_www()
-                else:
-                    self._start_www()
-
-        else:
-            super().keyPressEvent(event)
-
-    # ------------------------------------------------------------------------------
-    # Callbacks
 
     @pyqtSlot(int, name="on_SCNR_Slider_valueChanged")
     @log

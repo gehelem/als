@@ -1043,6 +1043,9 @@
             <property name="text">
              <string>Play</string>
             </property>
+            <property name="shortcut">
+             <string>P</string>
+            </property>
            </widget>
           </item>
           <item>
@@ -1072,6 +1075,9 @@
             </property>
             <property name="text">
              <string>Pause</string>
+            </property>
+            <property name="shortcut">
+             <string>P</string>
             </property>
            </widget>
           </item>
@@ -1106,6 +1112,9 @@
             <property name="text">
              <string>Stop</string>
             </property>
+            <property name="shortcut">
+             <string>X</string>
+            </property>
            </widget>
           </item>
          </layout>
@@ -1134,6 +1143,9 @@
             </property>
             <property name="text">
              <string>Align</string>
+            </property>
+            <property name="shortcut">
+             <string>A</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -1193,12 +1205,18 @@
           <property name="text">
            <string>Start</string>
           </property>
+          <property name="shortcut">
+           <string>W</string>
+          </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="btn_web_stop">
           <property name="text">
            <string>Stop</string>
+          </property>
+          <property name="shortcut">
+           <string>W</string>
           </property>
          </widget>
         </item>
@@ -1208,7 +1226,7 @@
      <item>
       <widget class="QGroupBox" name="groupBox_3">
        <property name="title">
-        <string>Images</string>
+        <string>Image saver</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_12">
         <item>
@@ -1224,6 +1242,9 @@
             <property name="text">
              <string>Save current</string>
             </property>
+            <property name="shortcut">
+             <string>S</string>
+            </property>
            </widget>
           </item>
           <item>
@@ -1235,7 +1256,10 @@
              </size>
             </property>
             <property name="text">
-             <string>Save every new image</string>
+             <string>Save every frame</string>
+            </property>
+            <property name="shortcut">
+             <string>F</string>
             </property>
            </widget>
           </item>
