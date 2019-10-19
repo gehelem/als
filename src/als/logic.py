@@ -287,7 +287,7 @@ class Controller:
         Starts session
         """
         try:
-            if DYNAMIC_DATA.session.is_stopped():
+            if DYNAMIC_DATA.session.is_stopped:
 
                 _LOGGER.info("Starting new session...")
 
@@ -333,7 +333,7 @@ class Controller:
         """
         Stops session : stop input scanner and purge input queue
         """
-        if not DYNAMIC_DATA.session.is_stopped():
+        if not DYNAMIC_DATA.session.is_stopped:
             self._stop_input_scanner()
             self.purge_pre_process_queue()
             _LOGGER.info("Session stopped")
@@ -344,7 +344,7 @@ class Controller:
         """
         Pauses session : just stop input scanner
         """
-        if DYNAMIC_DATA.session.is_running():
+        if DYNAMIC_DATA.session.is_running:
             self._stop_input_scanner()
         _LOGGER.info("Session paused")
         DYNAMIC_DATA.session.set_status(Session.paused)
@@ -488,7 +488,7 @@ class Controller:
         """
         Proper shutdown of all app components
         """
-        if not DYNAMIC_DATA.session.is_stopped():
+        if not DYNAMIC_DATA.session.is_stopped:
             self.stop_session()
 
         if DYNAMIC_DATA.web_server_is_running:

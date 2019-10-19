@@ -128,14 +128,14 @@ class MainWindow(QMainWindow):
 
         if event.key() == Qt.Key_P:
 
-            if session.is_stopped() or session.is_paused():
+            if session.is_stopped or session.is_paused:
                 self._start_session()
             else:
                 self._controller.pause_session()
 
         elif event.key() == Qt.Key_X:
 
-            if not session.is_stopped():
+            if not session.is_stopped:
                 self._stop_session()
 
         elif event.key() == Qt.Key_W:
@@ -353,9 +353,9 @@ class MainWindow(QMainWindow):
 
         web_server_is_running = DYNAMIC_DATA.web_server_is_running
         session = DYNAMIC_DATA.session
-        session_is_running = session.is_running()
-        session_is_stopped = session.is_stopped()
-        session_is_paused = session.is_paused()
+        session_is_running = session.is_running
+        session_is_stopped = session.is_stopped
+        session_is_paused = session.is_paused
 
         # update running statuses
         scanner_status_message = f"Scanner on {config.get_scan_folder_path()}: "
@@ -501,7 +501,7 @@ class MainWindow(QMainWindow):
         :type ask_confirmation: bool
         """
 
-        if not DYNAMIC_DATA.session.is_stopped():
+        if not DYNAMIC_DATA.session.is_stopped:
 
             do_stop_session = True
 
