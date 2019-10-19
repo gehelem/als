@@ -202,9 +202,8 @@ class QueueConsumer(QThread):
 
             if self._queue.qsize() > 0:
 
-                image = self._queue.get()
-
                 self.busy_signal.emit()
+                image = self._queue.get()
                 _LOGGER.info(f"Start {self._name} on image {image.origin}")
 
                 with Timer() as timer:
