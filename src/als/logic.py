@@ -335,7 +335,9 @@ class Controller:
         """
         if not DYNAMIC_DATA.session.is_stopped:
             self._stop_input_scanner()
-            self.purge_pre_process_queue()
+            self.purge_queue(self._pre_process_queue)
+            self.purge_queue(self._stacker_queue)
+            self.purge_queue(self._post_process_queue)
             _LOGGER.info("Session stopped")
             DYNAMIC_DATA.session.set_status(Session.stopped)
 
@@ -395,24 +397,16 @@ class Controller:
             DYNAMIC_DATA.web_server_is_running = False
 
     @log
-    def purge_pre_process_queue(self):
+    def purge_queue(self, queue: SignalingQueue):
         """
-        Purge the pre-process queue
+        Purge a queue
 
+        :param queue: the queue to purge
+        :type queue: SignalingQueue
         """
-        while not self._pre_process_queue.empty():
-            self._pre_process_queue.get()
-        _LOGGER.info("Pre-process queue purged")
 
-    @log
-    def purge_stack_queue(self):
-        """
-        Purge the stack queue
-
-        """
-        while not self._stacker_queue.empty():
-            self._stacker_queue.get()
-        _LOGGER.info("Stack queue purged")
+        while not queue.empty():
+            queue.get()
 
     @log
     def _setup_web_content(self):
