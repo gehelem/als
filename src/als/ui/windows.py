@@ -126,24 +126,26 @@ class MainWindow(QMainWindow):
 
         session = DYNAMIC_DATA.session
 
-        if event.key() == Qt.Key_P:
+        if event.modifiers() == Qt.NoModifier:
 
-            if session.is_stopped or session.is_paused:
-                self._start_session()
-            else:
-                self._controller.pause_session()
+            if event.key() == Qt.Key_P:
 
-        elif event.key() == Qt.Key_X:
+                if session.is_stopped or session.is_paused:
+                    self._start_session()
+                else:
+                    self._controller.pause_session()
 
-            if not session.is_stopped:
-                self._stop_session()
+            elif event.key() == Qt.Key_X:
 
-        elif event.key() == Qt.Key_W:
+                if not session.is_stopped:
+                    self._stop_session()
 
-            if DYNAMIC_DATA.web_server_is_running:
-                self._stop_www()
-            else:
-                self._start_www()
+            elif event.key() == Qt.Key_W:
+
+                if DYNAMIC_DATA.web_server_is_running:
+                    self._stop_www()
+                else:
+                    self._start_www()
 
         else:
             super().keyPressEvent(event)
