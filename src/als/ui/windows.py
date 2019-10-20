@@ -5,8 +5,7 @@ import logging
 
 from PyQt5.QtCore import QEvent, pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog, QVBoxLayout, QSpacerItem, \
-    QSizePolicy, QLabel, QHBoxLayout, QPushButton
+from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog
 from qimage2ndarray import array2qimage
 
 import als.model.data
@@ -16,7 +15,6 @@ from als.logic import Controller, SessionError, CriticalFolderMissing, WebServer
 from als.code_utilities import log
 from als.model.data import VERSION, STACKING_MODE_SUM, STACKING_MODE_MEAN, DYNAMIC_DATA
 from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box, SaveWaitDialog, question, message_box
-from als.ui.factory import ProcessingControlFactory
 from generated.als_ui import Ui_stack_window
 
 _LOGGER = logging.getLogger(__name__)
