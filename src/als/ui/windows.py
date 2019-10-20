@@ -382,11 +382,6 @@ class MainWindow(QMainWindow):
         :type is_retry: bool
         """
 
-        # detect if this is a fresh session start, and reset controls
-        if DYNAMIC_DATA.session.is_stopped:
-            self._reset_levels()
-            self._apply_levels()
-
         try:
             self._controller.start_session()
             if is_retry:
