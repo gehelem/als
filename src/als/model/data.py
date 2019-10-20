@@ -52,8 +52,17 @@ class DynamicData:
         self._stacker_status = ""
         self._post_processor_status = ""
         self._saver_status = ""
+        self._levels_parameters = None
 
         self._session.status_changed_signal.connect(self._notify_observers)
+
+    @property
+    def levels_parameters(self):
+        return self._levels_parameters
+
+    @levels_parameters.setter
+    def levels_parameters(self, parameters):
+        self._levels_parameters = parameters
 
     @property
     def pre_processor_status(self):

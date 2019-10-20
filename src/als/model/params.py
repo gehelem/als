@@ -27,6 +27,6 @@ class RangeParameter(ProcessingParameter):
                  minimum: int, maximum: int, steps: int = 255):
 
         super().__init__(name, description, default, value)
-        self.min = minimum
-        self.max = maximum
+        self.minimum = minimum
+        self.maximum = maximum
         self.steps = steps

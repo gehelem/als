@@ -32,11 +32,11 @@ class ImageProcessor:
 
     @log
     def __init__(self):
-        self._params = list()
+        self._parameters = list()
 
     @log
     def get_parameters(self) -> List[ProcessingParameter]:
-        return self._params
+        return self._parameters
 
     @abstractmethod
     def process_image(self, image: Image):
@@ -56,23 +56,23 @@ class ImageProcessor:
 class Levels(ImageProcessor):
     """Implements levels processing"""
 
-    _UPPER_LIMIT = 2**16 + 1
+    _UPPER_LIMIT = 2**16 - 1
 
     @log
     def __init__(self):
         super().__init__()
 
-        self.get_parameters().append(RangeParameter("black", "black level",
-                                                    0, 0, 0, Levels._UPPER_LIMIT))
+        self._parameters.append(RangeParameter("black", "black level",
+                                               0, 0, 0, Levels._UPPER_LIMIT))
 
-        self.get_parameters().append(RangeParameter("white", "while level",
-                                                    Levels._UPPER_LIMIT, Levels._UPPER_LIMIT, 0, Levels._UPPER_LIMIT))
+        self._parameters.append(RangeParameter("white", "while level",
+                                               Levels._UPPER_LIMIT, Levels._UPPER_LIMIT, 0, Levels._UPPER_LIMIT))
 
     @log
     def process_image(self, image: Image):
 
-        black_level = self.get_parameters()[0].value
-        white_level = self.get_parameters()[1].value
+        black_level = self._parameters[0].value
+        white_level = self._parameters[1].value
 
         clipped_data = np.clip(image.data, black_level, white_level)
 

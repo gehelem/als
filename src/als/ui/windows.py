@@ -5,7 +5,8 @@ import logging
 
 from PyQt5.QtCore import QEvent, pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog
+from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog, QVBoxLayout, QSpacerItem, \
+    QSizePolicy, QLabel, QHBoxLayout, QPushButton
 from qimage2ndarray import array2qimage
 
 import als.model.data
@@ -15,6 +16,7 @@ from als.logic import Controller, SessionError, CriticalFolderMissing, WebServer
 from als.code_utilities import log
 from als.model.data import VERSION, STACKING_MODE_SUM, STACKING_MODE_MEAN, DYNAMIC_DATA
 from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box, SaveWaitDialog, question, message_box
+from als.ui.factory import ProcessingControlFactory
 from generated.als_ui import Ui_stack_window
 
 _LOGGER = logging.getLogger(__name__)
@@ -53,6 +55,11 @@ class MainWindow(QMainWindow):
         # prevent log dock to be too tall
         self.resizeDocks([self._ui.log_dock], [self._LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
 
+        # setup controls
+        self._reset_levels()
+        self._ui.btn_levels_apply.clicked.connect(self._apply_levels)
+        self._ui.btn_levels_reset.clicked.connect(self._reset_levels)
+
         DYNAMIC_DATA.add_observer(self)
         self.update_display()
 
@@ -61,6 +68,17 @@ class MainWindow(QMainWindow):
         self._ui.image_view.setScene(self._scene)
         self._image_item = None
         self.reset_image_view()
+
+    def _apply_levels(self):
+
+        for param, widget in zip(DYNAMIC_DATA.levels_parameters, [self._ui.sld_black, self._ui.sld_white]):
+            param.value = widget.value() / 255 * param.maximum
+            _LOGGER.debug(f"Param {param.name} value = {param.value}")
+            self._controller.apply_processing()
+
+    def _reset_levels(self):
+        self._ui.sld_black.setValue(0)
+        self._ui.sld_white.setValue(255)
 
     @log
     def reset_image_view(self):
@@ -365,6 +383,10 @@ class MainWindow(QMainWindow):
         :param is_retry: is this a retry ?
         :type is_retry: bool
         """
+
+        # detect if this is a fresh session start, and reset controls
+        if DYNAMIC_DATA.session.is_stopped:
+            self._reset_levels()
 
         try:
             self._controller.start_session()

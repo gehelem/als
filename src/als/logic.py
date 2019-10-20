@@ -91,13 +91,16 @@ class Controller:
 
         self._post_process_queue = DYNAMIC_DATA.process_queue
         self._post_process_pipeline: Pipeline = Pipeline('post-process', self._post_process_queue, [ConvertForOutput()])
-        self._post_process_pipeline.add_process(Levels())
+        levels_post_process = Levels()
+        self._post_process_pipeline.add_process(levels_post_process)
+        DYNAMIC_DATA.levels_parameters = levels_post_process.get_parameters()
         self._post_process_pipeline.start()
 
         self._saver_queue = DYNAMIC_DATA.save_queue
         self._saver = ImageSaver(self._saver_queue)
         self._saver.start()
 
+        self._last_stacking_result = None
         self._web_server = None
 
         self._input_scanner.new_image_signal[Image].connect(self.on_new_image_read)
@@ -119,6 +122,14 @@ class Controller:
         self._post_process_pipeline.waiting_signal.connect(Controller.on_post_processor_waiting)
         self._saver.busy_signal.connect(Controller.on_saver_busy)
         self._saver.waiting_signal.connect(Controller.on_saver_waiting)
+
+
+    @log
+    def apply_processing(self):
+
+        if self._stacker.size > 0 and DYNAMIC_DATA.post_processor_queue_size == 0:
+
+            DYNAMIC_DATA.process_queue.put(self._last_stacking_result.clone())
 
     @staticmethod
     @log
@@ -151,9 +162,9 @@ class Controller:
         :param image: the result of the stack
         :type image: Image
         """
-        image_to_process = image.clone()
-        image_to_process.origin = "Stacking result"
-        self._post_process_queue.put(image_to_process)
+        image.origin = "Stacking result"
+        self._last_stacking_result = image.clone()
+        self._post_process_queue.put(image.clone())
 
     @log
     def on_new_image_read(self, image: Image):
