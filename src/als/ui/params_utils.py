@@ -11,7 +11,7 @@ from als.model.params import ProcessingParameter, RangeParameter
 
 _LOGGER = logging.getLogger(__name__)
 
-_DEFAULT_SLIDER_MAX = 255
+_DEFAULT_SLIDER_MAX = 4096
 
 
 class UnsupportedParamMapping(AlsException):

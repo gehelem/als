@@ -164,6 +164,8 @@ class Controller:
         """
         image.origin = "Stacking result"
         self._last_stacking_result = image.clone()
+
+        self.purge_queue(self._post_process_queue)
         self._post_process_queue.put(image.clone())
 
     @log

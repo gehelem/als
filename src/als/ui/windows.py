@@ -55,7 +55,7 @@ class MainWindow(QMainWindow):
         self.resizeDocks([self._ui.log_dock], [self._LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
 
         # setup levels controls
-        self._levels_controls = [self._ui.sld_black, self._ui.sld_white]
+        self._levels_controls = [self._ui.sld_black, self._ui.sld_white, self._ui.sld_stretch]
         self._reset_levels()
         self._ui.btn_levels_apply.clicked.connect(self._apply_levels)
         self._ui.btn_levels_reset.clicked.connect(self._reset_levels)
