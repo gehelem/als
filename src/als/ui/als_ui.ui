@@ -593,7 +593,7 @@
   <widget class="QDockWidget" name="processing_dock">
    <property name="minimumSize">
     <size>
-     <width>300</width>
+     <width>321</width>
      <height>194</height>
     </size>
    </property>
@@ -668,17 +668,11 @@
            </widget>
           </item>
           <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+           <widget class="QPushButton" name="btn_levels_reload">
+            <property name="text">
+             <string>Reload</string>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
+           </widget>
           </item>
           <item>
            <widget class="QPushButton" name="btn_levels_apply">

@@ -11,7 +11,9 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class ProcessingParameter:
-
+    """
+    Base class for all processing parameters
+    """
     @log
     def __init__(self, name: str, description: str, default: Any, value: Any):
 
@@ -20,13 +22,22 @@ class ProcessingParameter:
         self.default = default
         self.value = value
 
+    @log
+    def reset(self):
+        """
+        Reset parameter value to parameter default
+        """
+        self.value = self.default
+
 
 class RangeParameter(ProcessingParameter):
+    """
+    Represents a parameter of type range
+    """
     @log
     def __init__(self, name: str, description: str, default: Any, value: Any,
-                 minimum: int, maximum: int, steps: int = 255):
+                 minimum: int, maximum: int):
 
         super().__init__(name, description, default, value)
         self.minimum = minimum
         self.maximum = maximum
-        self.steps = steps

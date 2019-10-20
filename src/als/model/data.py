@@ -58,11 +58,22 @@ class DynamicData:
         self._session.status_changed_signal.connect(self._notify_observers)
 
     @property
-    def levels_parameters(self):
+    def levels_parameters(self) -> ProcessingParameter:
+        """
+        Get levels processing parameter list
+
+        :return the levels processing parameter list
+        :rtype: List[ProcessingParameter]
+        """
         return self._levels_parameters
 
     @levels_parameters.setter
     def levels_parameters(self, parameters):
+        """
+        Get levels processing parameter list
+
+        :param parameters: the parameter list
+        """
         self._levels_parameters = parameters
 
     @property

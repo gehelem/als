@@ -5,7 +5,7 @@ import logging
 
 from PyQt5.QtCore import QEvent, pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog
+from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog, QWidget
 from qimage2ndarray import array2qimage
 
 import als.model.data
@@ -15,6 +15,7 @@ from als.logic import Controller, SessionError, CriticalFolderMissing, WebServer
 from als.code_utilities import log
 from als.model.data import VERSION, STACKING_MODE_SUM, STACKING_MODE_MEAN, DYNAMIC_DATA
 from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box, SaveWaitDialog, question, message_box
+from als.ui.params_utils import update_controls_from_params, update_params_from_controls, reset_params
 from generated.als_ui import Ui_stack_window
 
 _LOGGER = logging.getLogger(__name__)
@@ -53,10 +54,12 @@ class MainWindow(QMainWindow):
         # prevent log dock to be too tall
         self.resizeDocks([self._ui.log_dock], [self._LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
 
-        # setup controls
+        # setup levels controls
+        self._levels_controls = [self._ui.sld_black, self._ui.sld_white]
         self._reset_levels()
         self._ui.btn_levels_apply.clicked.connect(self._apply_levels)
         self._ui.btn_levels_reset.clicked.connect(self._reset_levels)
+        self._ui.btn_levels_reload.clicked.connect(self._reload_levels)
 
         DYNAMIC_DATA.add_observer(self)
         self.update_display()
@@ -68,21 +71,24 @@ class MainWindow(QMainWindow):
         self.reset_image_view()
 
     def _apply_levels(self):
+        """
+        Apply levels processing
+        """
+        update_params_from_controls(DYNAMIC_DATA.levels_parameters, self._levels_controls)
 
-        for param, widget in zip(DYNAMIC_DATA.levels_parameters, [self._ui.sld_black, self._ui.sld_white]):
-            param.value = widget.value() / 255 * param.maximum
-            _LOGGER.debug(f"Param {param.name} value = {param.value}")
-            self._controller.apply_processing()
+        self._controller.apply_processing()
 
     def _reset_levels(self):
-        black = DYNAMIC_DATA.levels_parameters[0]
-        white = DYNAMIC_DATA.levels_parameters[1]
+        """
+        Resets levels processing controls to their defaults
+        """
+        reset_params(DYNAMIC_DATA.levels_parameters, self._levels_controls)
 
-        black.value = black.default
-        white.value = white.default
-
-        self._ui.sld_black.setValue(black.value / black.maximum * 255)
-        self._ui.sld_white.setValue(white.value / white.maximum * 255)
+    def _reload_levels(self):
+        """
+        Sets levels processing controls to their previously recorded values (last apply)
+        """
+        update_controls_from_params(DYNAMIC_DATA.levels_parameters, self._levels_controls)
 
     @log
     def reset_image_view(self):
