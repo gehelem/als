@@ -15,14 +15,14 @@ _DEFAULT_SLIDER_MAX = 255
 
 
 class UnsupportedParamMapping(AlsException):
-    """Raised when trying to work on incompatible couple param / type"""
+    """Raised when trying to work on incompatible couple param / control"""
 
 
 @log
 def _check_param_control_pairing(param: ProcessingParameter, control: QWidget):
     """
 
-    Raise an exception if we cannot match this pair param / control
+    Raise an exception if we cannot match this param / control pair
 
     :param param: The parameter to check
     :type param: ProcessingParameter
@@ -30,7 +30,7 @@ def _check_param_control_pairing(param: ProcessingParameter, control: QWidget):
     :param control: the control to check
     :type control: QWidget
 
-    :raises UnsupportedParamMapping: pram /control pair is not supported
+    :raises UnsupportedParamMapping: param/control pair is not supported
     """
 
     if not (isinstance(param, RangeParameter) and isinstance(control, QSlider)):
@@ -65,7 +65,10 @@ def _update_control_from_param(param: ProcessingParameter, control: QWidget):
     }
 
     # set control value according to param value
-    setters_dict[type(control)](getters_dict[type(param)](param))
+    control_value_setter_function = setters_dict[type(control)]
+    param_value_transformation_function = getters_dict[type(param)]
+
+    control_value_setter_function(param_value_transformation_function(param))
 
     # set control tooltip as param description
     control.setToolTip(param.description)
@@ -96,8 +99,11 @@ def _update_param_from_control(param: ProcessingParameter, control: QWidget):
         RangeParameter: lambda p, v: v / _DEFAULT_SLIDER_MAX * p.maximum
     }
 
-    # set param valur according to control value
-    param.value = value_transformations_dict[type(param)](param, getters_dict[type(control)]())
+    # set param value according to control value
+    control_value_getter_function = getters_dict[type(control)]
+    param_value_transformation_function = value_transformations_dict[type(param)]
+
+    param.value = param_value_transformation_function(param, control_value_getter_function())
 
     _LOGGER.debug(f"New value for {param.name} : {param.value}")
 
@@ -121,7 +127,7 @@ def update_params_from_controls(params: List[ProcessingParameter], controls: Lis
 @log
 def update_controls_from_params(params: List[ProcessingParameter], controls: List[QWidget]):
     """
-    Update a list of GUI controls from a list of processing parameters
+    Update a list of GUI controls from a matched list of processing parameters
 
     :param params: the param list
     :type params: List[ProcessingParameter]
