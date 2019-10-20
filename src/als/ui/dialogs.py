@@ -201,6 +201,11 @@ class SaveWaitDialog(QDialog):
 
         return remaining_image_count
 
+    @log
+    @pyqtSlot()
+    def on_btn_quit_clicked(self):
+        self.close()
+
 
 def question(title, message, default_yes: bool = True):
     """
