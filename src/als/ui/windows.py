@@ -75,8 +75,14 @@ class MainWindow(QMainWindow):
             self._controller.apply_processing()
 
     def _reset_levels(self):
-        self._ui.sld_black.setValue(0)
-        self._ui.sld_white.setValue(255)
+        black = DYNAMIC_DATA.levels_parameters[0]
+        white = DYNAMIC_DATA.levels_parameters[1]
+
+        black.value = black.default
+        white.value = white.default
+
+        self._ui.sld_black.setValue(black.value / black.maximum * 255)
+        self._ui.sld_white.setValue(white.value / white.maximum * 255)
 
     @log
     def reset_image_view(self):
