@@ -6,6 +6,7 @@ import logging
 import als
 from als.code_utilities import SignalingQueue, log
 from als.model.base import Session
+from als.model.params import ProcessingParameter
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -52,7 +53,7 @@ class DynamicData:
         self._stacker_status = ""
         self._post_processor_status = ""
         self._saver_status = ""
-        self._levels_parameters = None
+        self._levels_parameters: ProcessingParameter = None
 
         self._session.status_changed_signal.connect(self._notify_observers)
 
