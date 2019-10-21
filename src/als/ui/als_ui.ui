@@ -149,7 +149,7 @@
              <string>Start / Resume session</string>
             </property>
             <property name="styleSheet">
-             <string notr="true">background-color: rgb(138, 226, 52)</string>
+             <string notr="true"/>
             </property>
             <property name="text">
              <string>Play</string>
@@ -182,7 +182,7 @@
              <string>Pause session</string>
             </property>
             <property name="styleSheet">
-             <string notr="true">background-color: rgb(252, 233, 79)</string>
+             <string notr="true"/>
             </property>
             <property name="text">
              <string>Pause</string>
@@ -218,7 +218,7 @@
              <string>Stop Session</string>
             </property>
             <property name="styleSheet">
-             <string notr="true">background-color: rgb(255, 89, 89)</string>
+             <string notr="true"/>
             </property>
             <property name="text">
              <string>Stop</string>

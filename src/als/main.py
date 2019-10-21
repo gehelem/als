@@ -4,6 +4,8 @@ Main module, basically in charge of application init / start
 import logging
 import sys
 
+from pathlib import Path
+
 from PyQt5.QtWidgets import QApplication
 
 from als import config
@@ -29,6 +31,12 @@ def main():
         window = MainWindow(controller)
         config.register_log_receiver(window)
         window.setGeometry(*config.get_window_geometry())
+
+        with open(Path(__file__).parent / "main.css", "r") as styleFile:
+
+            style = styleFile.read()
+            app.setStyleSheet(style)
+
         window.show()
         window.reset_image_view()
 

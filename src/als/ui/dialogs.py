@@ -54,7 +54,7 @@ class PreferencesDialog(QDialog):
         for ui_field in [self._ui.ln_work_folder_path, self._ui.ln_scan_folder_path]:
 
             if not Path(ui_field.text()).is_dir():
-                ui_field.setStyleSheet("border: 1px solid red")
+                ui_field.setStyleSheet("border: 1px solid orange")
             else:
                 ui_field.setStyleSheet("border: 1px")
 
