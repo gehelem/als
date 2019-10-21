@@ -107,7 +107,6 @@ class MainWindow(QMainWindow):
         self._image_item = QGraphicsPixmapItem(QPixmap(":/icons/dslr-camera.svg"))
         self._ui.image_view.setBackgroundBrush(QBrush(QColor("#222222"), Qt.SolidPattern))
         self._scene.addItem(self._image_item)
-        self._ui.image_view.fitInView(self._image_item, Qt.KeepAspectRatio)
 
     @log
     def closeEvent(self, event):
