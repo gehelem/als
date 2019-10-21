@@ -31,6 +31,8 @@ from als.processing import QueueConsumer
 
 _LOGGER = logging.getLogger(__name__)
 
+_MINIMUM_MATCHES_FOR_VALID_TRANSFORM = 25
+
 
 class StackingError(Exception):
     """
@@ -270,7 +272,14 @@ class Stacker(QueueConsumer):
                 _LOGGER.debug(f"rotation : {transformation.rotation}")
                 _LOGGER.debug(f"translation : {transformation.translation}")
                 _LOGGER.debug(f"scale : {transformation.scale}")
-                _LOGGER.debug(f"image matched features count : {len(matches[0])}")
+                matches_count = len(matches[0])
+                _LOGGER.debug(f"image matched features count : {matches_count}")
+
+                if matches_count < _MINIMUM_MATCHES_FOR_VALID_TRANSFORM:
+                    _LOGGER.debug(f"Found valid transformation but matches count is too low : "
+                                  f"{matches_count} < {_MINIMUM_MATCHES_FOR_VALID_TRANSFORM}. "
+                                  "Discarding transformation")
+                    raise StackingError("Too few matches")
 
                 return transformation
 
