@@ -47,10 +47,6 @@ class MainWindow(QMainWindow):
         self._ui.cb_stacking_mode.setCurrentIndex(stacking_modes.index(DYNAMIC_DATA.stacking_mode))
         self._ui.cb_stacking_mode.blockSignals(False)
 
-        # store if docks must be shown or not
-        self.shown_log_dock = True
-        self.show_session_dock = True
-
         # prevent log dock to be too tall
         self.resizeDocks([self._ui.log_dock], [self._LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
 
@@ -120,22 +116,6 @@ class MainWindow(QMainWindow):
             event.accept()
         else:
             event.ignore()
-
-    @log
-    def changeEvent(self, event):
-        """Handles window change events."""
-        # pylint: disable=C0103
-
-        event.accept()
-
-        # if window is going out of minimized state, we restore docks if needed
-        if event.type() == QEvent.WindowStateChange:
-            if not self.windowState() & Qt.WindowMinimized:
-                _LOGGER.debug("Restoring docks visibility")
-                if self.shown_log_dock:
-                    self._ui.log_dock.show()
-                if self.show_session_dock:
-                    self._ui.session_dock.show()
 
     @pyqtSlot(name="on_pbSave_clicked")
     @log
@@ -339,32 +319,6 @@ class MainWindow(QMainWindow):
     def cb_pause(self):
         """Qt slot for mouse clicks on the 'Pause' button"""
         self._controller.pause_session()
-
-    @pyqtSlot(bool, name="on_log_dock_visibilityChanged")
-    @log
-    def cb_log_dock_changed_visibility(self, visible):
-        """
-        Qt slot for changes of log dock visibility.
-
-        :param visible: True if log dock is visible
-        :type visible: bool
-        """
-
-        if not self.windowState() & Qt.WindowMinimized:
-            self.shown_log_dock = visible
-
-    @pyqtSlot(bool, name="on_session_dock_visibilityChanged")
-    @log
-    def cb_session_dock_changed_visibility(self, visible):
-        """
-        Qt slot for changes of session dock visibility.
-
-        :param visible: True if session dock is visible
-        :type visible: bool
-        """
-
-        if not self.windowState() & Qt.WindowMinimized:
-            self.show_session_dock = visible
 
     @log
     def _start_www(self):

@@ -709,11 +709,6 @@
     </layout>
    </widget>
   </widget>
-  <action name="actionQuit">
-   <property name="text">
-    <string>&amp;Quit</string>
-   </property>
-  </action>
   <action name="action_quit">
    <property name="text">
     <string>&amp;Quit</string>
@@ -740,14 +735,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>
-   </property>
-  </action>
-  <action name="action_about">
-   <property name="text">
-    <string>A&amp;bout ALS...</string>
-   </property>
-   <property name="shortcut">
-    <string>?</string>
    </property>
   </action>
   <action name="action_show_session_controls">
@@ -819,24 +806,8 @@
  </resources>
  <connections>
   <connection>
-   <sender>actionQuit</sender>
-   <signal>triggered()</signal>
-   <receiver>stack_window</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>146</x>
-     <y>66</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>action_show_session_controls</sender>
-   <signal>toggled(bool)</signal>
+   <signal>triggered(bool)</signal>
    <receiver>session_dock</receiver>
    <slot>setVisible(bool)</slot>
    <hints>
@@ -868,7 +839,7 @@
   </connection>
   <connection>
    <sender>action_show_session_log</sender>
-   <signal>toggled(bool)</signal>
+   <signal>triggered(bool)</signal>
    <receiver>log_dock</receiver>
    <slot>setVisible(bool)</slot>
    <hints>
