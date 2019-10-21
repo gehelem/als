@@ -97,6 +97,8 @@
     <addaction name="action_show_session_controls"/>
     <addaction name="action_show_processing_panel"/>
     <addaction name="action_show_session_log"/>
+    <addaction name="separator"/>
+    <addaction name="action_full_screen"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
@@ -791,6 +793,20 @@
    </property>
    <property name="shortcut">
     <string>M</string>
+   </property>
+  </action>
+  <action name="action_full_screen">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Full screen</string>
+   </property>
+   <property name="statusTip">
+    <string>Full Screen</string>
+   </property>
+   <property name="shortcut">
+    <string>F11</string>
    </property>
   </action>
  </widget>

@@ -106,9 +106,11 @@ class MainWindow(QMainWindow):
         """Handles window close events."""
         # pylint: disable=C0103
 
-        window_rect = self.geometry()
-        config.set_window_geometry((window_rect.x(), window_rect.y(), window_rect.width(), window_rect.height()))
-        MainWindow._save_config()
+        if not self.isFullScreen():
+            window_rect = self.geometry()
+            config.set_window_geometry((window_rect.x(), window_rect.y(), window_rect.width(), window_rect.height()))
+
+            MainWindow._save_config()
 
         self._stop_session()
 
@@ -207,6 +209,20 @@ class MainWindow(QMainWindow):
         Qt slot executed when START web button is clicked
         """
         self._stop_www()
+
+    @log
+    def on_action_full_screen_toggled(self, checked):
+        """
+        Qt slot executed when action 'Full screen' is toggled
+
+        :param checked: is the action active ?
+        :type checked: bool
+        """
+
+        if checked:
+            self.showFullScreen()
+        else:
+            self.showNormal()
 
     @log
     def adjust_value(self):
