@@ -161,7 +161,7 @@
            <string>START</string>
           </property>
           <property name="shortcut">
-           <string>P</string>
+           <string>R</string>
           </property>
          </widget>
         </item>
@@ -200,7 +200,7 @@
            <string>PAUSE</string>
           </property>
           <property name="shortcut">
-           <string>P</string>
+           <string>R</string>
           </property>
          </widget>
         </item>
@@ -839,7 +839,7 @@
     <string>Show processing panel</string>
    </property>
    <property name="shortcut">
-    <string>M</string>
+    <string>P</string>
    </property>
   </action>
   <action name="action_full_screen">
