@@ -25,3 +25,8 @@ QMenu::item {
     padding: 2px
 }
 
+#lbl_stack_size {
+
+    font-size: 32px;
+}
+

@@ -66,6 +66,9 @@ class MainWindow(QMainWindow):
         self._image_item = None
         self.reset_image_view()
 
+        # styleheet id for stack size label
+        self._ui.lbl_stack_size.setObjectName("lbl_stack_size")
+
     def _apply_levels(self):
         """
         Apply levels processing

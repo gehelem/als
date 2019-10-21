@@ -26,17 +26,16 @@ def main():
         app = QApplication(sys.argv)
         config.setup()
 
-        _LOGGER.debug("Building and showing main window")
-        controller = Controller()
-        window = MainWindow(controller)
-        config.register_log_receiver(window)
-        window.setGeometry(*config.get_window_geometry())
-
         with open(Path(__file__).parent / "main.css", "r") as styleFile:
 
             style = styleFile.read()
             app.setStyleSheet(style)
 
+        _LOGGER.debug("Building and showing main window")
+        controller = Controller()
+        window = MainWindow(controller)
+        config.register_log_receiver(window)
+        window.setGeometry(*config.get_window_geometry())
         window.show()
         window.reset_image_view()
 
