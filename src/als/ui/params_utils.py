@@ -11,11 +11,15 @@ from als.model.params import ProcessingParameter, RangeParameter, SwitchParamete
 
 _LOGGER = logging.getLogger(__name__)
 
-_DEFAULT_SLIDER_MAX = 4096
+_DEFAULT_SLIDER_MAX = 255
 
 
 class UnsupportedParamMapping(AlsException):
     """Raised when trying to work on incompatible couple param / control"""
+
+
+class UnknownWidget(AlsException):
+    """Raised when trying to get a control's value getter / setters functions"""
 
 
 @log
@@ -41,6 +45,44 @@ def _check_param_control_pairing(param: ProcessingParameter, control: QWidget):
 
     raise UnsupportedParamMapping("Unsupported parameter / control pair",
                                   f"No recipe for couple {type(param)}/{type(control)}")
+
+
+@log
+def _get_control_setter_function(control):
+    """
+    Gets the function used to set a GUI control's value
+
+    :param control: the control
+    :type control: QWidget
+
+    :return: the function used to set the control's value
+    """
+    if isinstance(control, QSlider):
+        return control.setValue
+
+    if isinstance(control, QCheckBox):
+        return control.setChecked
+
+    raise UnknownWidget("Could not get setter function", f"We don't know anything about {type(control)}")
+
+
+@log
+def _get_control_getter_function(control):
+    """
+    Gets the function used to get a GUI control's value
+
+    :param control: the control
+    :type control: QWidget
+
+    :return: the function used to get the control's value
+    """
+    if isinstance(control, QSlider):
+        return control.value
+
+    if isinstance(control, QCheckBox):
+        return control.isChecked
+
+    raise UnknownWidget("Could not get getter function", f"We don't know anything about {type(control)}")
 
 
 @log
@@ -73,23 +115,6 @@ def _update_control_from_param(param: ProcessingParameter, control: QWidget):
     # set control tooltip as param description
     control.setToolTip(param.description)
 
-
-@log
-def _get_control_setter_function(control):
-
-    if type(control) == QSlider:
-        return control.setValue
-
-    if type(control) == QCheckBox:
-        return control.setChecked
-
-@log
-def _get_control_getter_function(control):
-    if type(control) == QSlider:
-        return control.value
-
-    if type(control) == QCheckBox:
-        return control.isChecked
 
 @log
 def _update_param_from_control(param: ProcessingParameter, control: QWidget):

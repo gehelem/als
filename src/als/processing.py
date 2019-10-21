@@ -98,9 +98,14 @@ class Levels(ImageProcessor):
                     nbins=Levels._UPPER_LIMIT+1,
                     clip_limit=.01)
 
-            image.data = np.interp(image.data,
-                                   (image.data.min(), image.data.max()),
-                                   (0, Levels._UPPER_LIMIT))
+            # autostretch outputs an image with value range = [0, 1]
+            image.data *= Levels._UPPER_LIMIT
+
+        image.data = np.clip(image.data, black_level.value, white_level.value)
+
+        image.data = np.interp(image.data,
+                               (image.data.min(), image.data.max()),
+                               (0, Levels._UPPER_LIMIT))
 
         return image
 

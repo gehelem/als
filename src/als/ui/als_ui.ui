@@ -639,7 +639,7 @@
           <item row="0" column="1">
            <widget class="QSlider" name="sld_black">
             <property name="maximum">
-             <number>4096</number>
+             <number>255</number>
             </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -656,7 +656,7 @@
           <item row="1" column="1">
            <widget class="QSlider" name="sld_white">
             <property name="maximum">
-             <number>4096</number>
+             <number>255</number>
             </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
