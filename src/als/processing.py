@@ -173,8 +173,7 @@ class ConvertForOutput(ImageProcessor):
         if image.is_color():
             image.set_color_axis_as(2)
 
-        # TODO : use numpy clip or imp, here
-        image.data = np.uint16(np.where(image.data < 2 ** 16 - 1, image.data, 2 ** 16 - 1))
+        image.data = np.uint16(np.clip(image.data, 0, 2 ** 16 - 1))
 
         return image
 
