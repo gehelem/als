@@ -99,9 +99,9 @@ class Levels(ImageProcessor):
 
         image.data = np.clip(image.data, black_level.value, white_level.value)
 
-        image.data = np.interp(image.data,
-                               (image.data.min(), image.data.max()),
-                               (0, Levels._UPPER_LIMIT))
+        image.data = np.float32(np.interp(image.data,
+                                          (image.data.min(), image.data.max()),
+                                          (0, Levels._UPPER_LIMIT)))
 
         return image
 
