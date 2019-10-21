@@ -3,8 +3,8 @@ Holds all windows used in the app
 """
 import logging
 
-from PyQt5.QtCore import QEvent, pyqtSlot, Qt
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import pyqtSlot, Qt
+from PyQt5.QtGui import QPixmap, QBrush
 from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog
 from qimage2ndarray import array2qimage
 
@@ -94,6 +94,7 @@ class MainWindow(QMainWindow):
         for item in self._scene.items():
             self._scene.removeItem(item)
         self._image_item = QGraphicsPixmapItem(QPixmap(":/icons/dslr-camera.svg"))
+        self._ui.image_view.setBackgroundBrush(QBrush(Qt.black, Qt.SolidPattern))
         self._scene.addItem(self._image_item)
         self._ui.image_view.fitInView(self._image_item, Qt.KeepAspectRatio)
 
