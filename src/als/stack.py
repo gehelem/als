@@ -276,7 +276,7 @@ class Stacker(QueueConsumer):
                 _LOGGER.debug(f"image matched features count : {matches_count}")
 
                 if matches_count < _MINIMUM_MATCHES_FOR_VALID_TRANSFORM:
-                    _LOGGER.debug(f"Found valid transformation but matches count is too low : "
+                    _LOGGER.debug(f"Found transformation but matches count is too low : "
                                   f"{matches_count} < {_MINIMUM_MATCHES_FOR_VALID_TRANSFORM}. "
                                   "Discarding transformation")
                     raise StackingError("Too few matches")
@@ -290,7 +290,7 @@ class Stacker(QueueConsumer):
                 if ratio == 1.:
                     raise StackingError(alignment_error)
 
-                _LOGGER.debug(f"Could not find transformation on subset with ratio = {ratio}.")
+                _LOGGER.debug(f"Could not find valid transformation on subset with ratio = {ratio}.")
                 continue
 
     @log
