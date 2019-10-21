@@ -26,10 +26,10 @@ def main():
         app = QApplication(sys.argv)
         config.setup()
 
-        with open(Path(__file__).parent / "main.css", "r") as styleFile:
+        with open(Path(__file__).parent / "main.css", "r") as style_file:
 
-            style = styleFile.read()
-            app.setStyleSheet(style)
+            sheet = style_file.read()
+            app.setStyleSheet(sheet)
 
         _LOGGER.debug("Building and showing main window")
         controller = Controller()
