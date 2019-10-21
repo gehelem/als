@@ -11,8 +11,10 @@ QPushButton:disabled {
 
 QScrollBar:handle, QScrollBar::add-line, QScrollBar::sub-line {
 
-    border: 1px solid #444444
+    background-color: #1E1E1E
 }
+
+
 
 QMenu::item:selected {
 
