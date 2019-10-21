@@ -77,14 +77,26 @@ class CouldNotSaveConfig(AlsException):
 
 
 def set_full_screen_active(full: bool):
+    """
+    Set full screen indicator
+
+    :param full: should app be launched in fullscreen mode ?
+    :type full: bool
+    """
 
     _set(_FULL_SCREEN, "1" if full else "0")
 
 
 def get_full_screen_active():
+    """
+    Get full screen indicator
+
+    :return: True if app should be launched in fullscreen mode, False otherwise
+    :rtype: bool
+    """
 
     try:
-        return True if int(_get(_FULL_SCREEN)) == 1 else False
+        return int(_get(_FULL_SCREEN)) == 1
     except ValueError:
         return _DEFAULTS[_FULL_SCREEN]
 
