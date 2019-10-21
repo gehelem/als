@@ -27,7 +27,13 @@ QMenuBar::item:selected {
 QMenu::item {
 
     border: 2px solid transparent;
-    padding: 4px
+    padding: 4px;
+    margin:  0 0 0 15px
+}
+
+QMenu::indicator {
+
+    left: -15px;
 }
 
 #lbl_stack_size {
