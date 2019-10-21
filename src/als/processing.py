@@ -237,12 +237,12 @@ class QueueConsumer(QThread):
 
                 self.busy_signal.emit()
                 image = self._queue.get()
-                _LOGGER.info(f"Start {self._name} on image {image.origin}")
+                _LOGGER.info(f"Start {self._name} on {image.origin}")
 
                 with Timer() as timer:
                     self._handle_image(image)
 
-                _LOGGER.info(f"End {self._name} on image {image.origin} in {timer.elapsed_in_milli_as_str} ms")
+                _LOGGER.info(f"End {self._name} on {image.origin} in {timer.elapsed_in_milli_as_str} ms")
                 self.waiting_signal.emit()
 
             self.msleep(20)

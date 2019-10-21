@@ -50,7 +50,7 @@ class Stacker(QueueConsumer):
 
     @log
     def __init__(self, stack_queue):
-        QueueConsumer.__init__(self, "Stacker", stack_queue)
+        QueueConsumer.__init__(self, "stack", stack_queue)
         self._size: int = 0
         self._last_stacking_result: Image = None
         self._align_reference: Image = None
@@ -337,13 +337,9 @@ class Stacker(QueueConsumer):
         :type stacking_mode: str
         """
 
-        with Timer() as registering_timer:
-
-            if stacking_mode == STACKING_MODE_SUM:
-                image.data = image.data + self._last_stacking_result.data
-            elif stacking_mode == STACKING_MODE_MEAN:
-                image.data = (self.size * self._last_stacking_result.data + image.data) / (self.size + 1)
-            else:
-                raise StackingError(f"Unsupported stacking mode : {stacking_mode}")
-
-        _LOGGER.info(f"Done stacking {image.origin} in {registering_timer.elapsed_in_milli_as_str} ms")
+        if stacking_mode == STACKING_MODE_SUM:
+            image.data = image.data + self._last_stacking_result.data
+        elif stacking_mode == STACKING_MODE_MEAN:
+            image.data = (self.size * self._last_stacking_result.data + image.data) / (self.size + 1)
+        else:
+            raise StackingError(f"Unsupported stacking mode : {stacking_mode}")
