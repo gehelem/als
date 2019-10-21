@@ -110,7 +110,8 @@ class MainWindow(QMainWindow):
             window_rect = self.geometry()
             config.set_window_geometry((window_rect.x(), window_rect.y(), window_rect.width(), window_rect.height()))
 
-            MainWindow._save_config()
+        config.set_full_screen_active(self.isFullScreen())
+        MainWindow._save_config()
 
         self._stop_session()
 

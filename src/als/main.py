@@ -36,7 +36,12 @@ def main():
         window = MainWindow(controller)
         config.register_log_receiver(window)
         window.setGeometry(*config.get_window_geometry())
-        window.show()
+
+        if config.get_full_screen_active():
+            window.showFullScreen()
+        else:
+            window.show()
+
         window.reset_image_view()
 
     _LOGGER.info(f"Astro Live Stacker version {VERSION} started in {startup.elapsed_in_milli_as_str} ms.")

@@ -35,6 +35,7 @@ _LOG_LEVEL = "log_level"
 _WWW_SERVER_PORT = "www_server_port"
 _WINDOW_GEOMETRY = "window_geometry"
 _IMAGE_SAVE_FORMAT = "image_save_format"
+_FULL_SCREEN = "full_screen"
 
 # keys used to describe logging level
 _LOG_LEVEL_DEBUG = "DEBUG"
@@ -60,6 +61,7 @@ _DEFAULTS = {
     _WWW_SERVER_PORT:     "8000",
     _WINDOW_GEOMETRY:     "50,100,1024,800",
     _IMAGE_SAVE_FORMAT:   IMAGE_SAVE_TYPE_JPEG,
+    _FULL_SCREEN:         0
 }
 _MAIN_SECTION_NAME = "main"
 
@@ -72,6 +74,19 @@ _SIGNAL_LOG_HANDLER = None
 
 class CouldNotSaveConfig(AlsException):
     """Raised when config could not be saved"""
+
+
+def set_full_screen_active(full: bool):
+
+    _set(_FULL_SCREEN, "1" if full else "0")
+
+
+def get_full_screen_active():
+
+    try:
+        return True if int(_get(_FULL_SCREEN)) == 1 else False
+    except ValueError:
+        return _DEFAULTS[_FULL_SCREEN]
 
 
 def get_image_save_format():
