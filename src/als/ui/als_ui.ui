@@ -639,7 +639,7 @@
   <widget class="QDockWidget" name="processing_dock">
    <property name="minimumSize">
     <size>
-     <width>321</width>
+     <width>313</width>
      <height>194</height>
     </size>
    </property>
@@ -791,7 +791,10 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show main &amp;controls</string>
+    <string>Main &amp;controls</string>
+   </property>
+   <property name="toolTip">
+    <string>Show / hide main controls</string>
    </property>
    <property name="statusTip">
     <string>Show / hide main controls</string>
@@ -808,7 +811,10 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show session &amp;log</string>
+    <string>Session &amp;log</string>
+   </property>
+   <property name="toolTip">
+    <string>Show / hide session log</string>
    </property>
    <property name="statusTip">
     <string>Show / hide session log</string>
@@ -833,10 +839,13 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show processing panel</string>
+    <string>&amp;Processing panel</string>
+   </property>
+   <property name="toolTip">
+    <string>Show / hide processing panel</string>
    </property>
    <property name="statusTip">
-    <string>Show processing panel</string>
+    <string>Show / hide processing panel</string>
    </property>
    <property name="shortcut">
     <string>P</string>
