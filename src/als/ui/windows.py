@@ -5,7 +5,7 @@ import logging
 
 from PyQt5.QtCore import QEvent, pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog, QWidget
+from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog
 from qimage2ndarray import array2qimage
 
 import als.model.data

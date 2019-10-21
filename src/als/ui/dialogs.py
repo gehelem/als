@@ -170,9 +170,15 @@ class SaveWaitDialog(QDialog):
     @staticmethod
     @log
     def count_remaining_images():
+        """
+        Count images that still need to be saved.
 
-        # we count 1 image to save for each image in the queues and each worker still Busy
-        # and take 'save every image' into account
+        We count 1 image to save for each image in the queues and each worker still Busy and also
+        take 'save every image' setting into account
+
+        :return: the number of images remaining to be saved
+        :rtype: int
+        """
 
         remaining_image_count = 0
 
@@ -204,6 +210,9 @@ class SaveWaitDialog(QDialog):
     @log
     @pyqtSlot()
     def on_btn_quit_clicked(self):
+        """
+        Qt slot called when user clicks 'Discard unsaved images and quit'
+        """
         self.close()
 
 

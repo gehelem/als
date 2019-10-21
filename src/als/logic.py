@@ -126,7 +126,9 @@ class Controller:
 
     @log
     def apply_processing(self):
-
+        """
+        Apply processing on last stacking result
+        """
         if self._stacker.size > 0 and DYNAMIC_DATA.post_processor_queue_size == 0:
 
             DYNAMIC_DATA.process_queue.put(self._last_stacking_result.clone())

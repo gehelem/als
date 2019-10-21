@@ -37,6 +37,12 @@ class ImageProcessor:
 
     @log
     def get_parameters(self) -> List[ProcessingParameter]:
+        """
+        Gets processes parameters
+
+        :return: the parameters
+        :rtype: List[ProcessingParameter]
+        """
         return self._parameters
 
     @abstractmethod

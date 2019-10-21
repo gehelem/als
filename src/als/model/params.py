@@ -10,10 +10,12 @@ from als.code_utilities import log
 _LOGGER = logging.getLogger(__name__)
 
 
+# pylint: disable=R0903
 class ProcessingParameter:
     """
     Base class for all processing parameters
     """
+
     @log
     def __init__(self, name: str, description: str, default: Any, value: Any):
 
@@ -30,10 +32,13 @@ class ProcessingParameter:
         self.value = self.default
 
 
+# pylint: disable=R0903
 class RangeParameter(ProcessingParameter):
     """
     Represents a parameter of type range
     """
+
+    # pylint: disable=R0913
     @log
     def __init__(self, name: str, description: str, default: Any, value: Any,
                  minimum: int, maximum: int):
@@ -43,6 +48,7 @@ class RangeParameter(ProcessingParameter):
         self.maximum = maximum
 
 
+# pylint: disable=R0903
 class SwitchParameter(ProcessingParameter):
     """
     Represents an ON / OFF switch
