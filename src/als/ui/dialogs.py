@@ -160,7 +160,7 @@ class SaveWaitDialog(QDialog):
         Update display
         """
 
-        remaining_image_count = SaveWaitDialog._count_remaining_images()
+        remaining_image_count = SaveWaitDialog.count_remaining_images()
         self._ui.lbl_remaining_saves.setText(str(remaining_image_count))
 
         if remaining_image_count == 0:
@@ -169,7 +169,7 @@ class SaveWaitDialog(QDialog):
 
     @staticmethod
     @log
-    def _count_remaining_images():
+    def count_remaining_images():
 
         # we count 1 image to save for each image in the queues and each worker still Busy
         # and take 'save every image' into account

@@ -114,7 +114,7 @@ class MainWindow(QMainWindow):
 
         if DYNAMIC_DATA.session.is_stopped:
 
-            if DYNAMIC_DATA.saver_queue_size > 0:
+            if SaveWaitDialog.count_remaining_images() > 0:
                 SaveWaitDialog(self).exec()
 
             event.accept()
