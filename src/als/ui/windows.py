@@ -266,7 +266,9 @@ class MainWindow(QMainWindow):
 
             if web_server_is_running:
                 url = f"http://{DYNAMIC_DATA.web_server_ip}:{config.get_www_server_port_number()}"
-                self._ui.lbl_web_server_status.setText(f'Web server: Started, reachable at <a href="{url}">{url}</a>')
+                self._ui.lbl_web_server_status.setText(
+                    f'Web server: Started, reachable at '
+                    f'<a href="{url}" style="color: #CC0000">{url}</a>')
             else:
                 self._ui.lbl_web_server_status.setText("Web server: Stopped")
 

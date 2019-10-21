@@ -16,17 +16,21 @@ QScrollBar:handle, QScrollBar::add-line, QScrollBar::sub-line {
 
 QMenu::item:selected {
 
-    border: 2px solid #444444
+    border: 2px solid #444444;
 }
+
+QMenuBar::item:selected {
+    background: #444444;
+}
+
 
 QMenu::item {
 
     border: 2px solid transparent;
-    padding: 2px
+    padding: 4px
 }
 
 #lbl_stack_size {
 
     font-size: 32px;
 }
-
