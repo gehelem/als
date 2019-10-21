@@ -37,7 +37,7 @@ class MainWindow(QMainWindow):
         self._controller = controller
         self._ui = Ui_stack_window()
         self._ui.setupUi(self)
-        self.setWindowTitle(_("Astro Live Stacker") + f" - v{VERSION}")
+        self.setWindowTitle("Astro Live Stacker")
 
         # populate stacking mode combo box
         self._ui.cb_stacking_mode.blockSignals(True)
