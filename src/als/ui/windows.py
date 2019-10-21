@@ -384,10 +384,10 @@ class MainWindow(QMainWindow):
             do_stop_session = True
 
             if ask_confirmation and DYNAMIC_DATA.stack_size > 0:
-                message = """Stopping the current session will reset the stack and all image enhancements.
-    
-                Are you sure you want to stop the current session ?
-                """
+                message = (
+                    "Stopping the current session will reset the stack and all image enhancements.\n\n"
+                    "Are you sure you want to stop the current session ?")
+
                 do_stop_session = question("Really stop session ?",
                                            message,
                                            default_yes=False)
