@@ -12,7 +12,7 @@ from skimage import exposure
 
 from als.code_utilities import log, Timer, SignalingQueue
 from als.model.base import Image
-from als.model.params import ProcessingParameter, RangeParameter
+from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -69,24 +69,37 @@ class Levels(ImageProcessor):
         self._parameters.append(RangeParameter("white", "while level",
                                                Levels._UPPER_LIMIT, Levels._UPPER_LIMIT, 0, Levels._UPPER_LIMIT))
 
-        self._parameters.append(RangeParameter("stretch", "histogram stretch", 1, 1, 1, 15))
+        self._parameters.append(SwitchParameter("autostretch",
+                                                "automatic histogram stretch", True, True))
 
     @log
     def process_image(self, image: Image):
 
         black_level = self._parameters[0]
         white_level = self._parameters[1]
-        stretch = self._parameters[2]
+        auto_stretch = self._parameters[2]
 
-        for index in range(3):
+        if auto_stretch.value:
 
-            image.data[index] = exposure.equalize_adapthist(np.uint32(image.data[index]), nbins=Levels._UPPER_LIMIT+1)
+            image.data = np.interp(image.data,
+                                   (image.data.min(), image.data.max()),
+                                   (0, Levels._UPPER_LIMIT))
 
-            image.data[index] = np.clip(image.data[index], black_level.value, Levels._UPPER_LIMIT)
-            image.data[index] = np.clip(image.data[index], 0, white_level.value)
+            if image.is_color():
+                for index in range(3):
 
-            image.data[index] = np.interp(image.data[index],
-                                   (image.data[index].min(), image.data[index].max()),
+                    image.data[index] = exposure.equalize_adapthist(
+                        np.uint16(image.data[index]),
+                        nbins=Levels._UPPER_LIMIT+1,
+                        clip_limit=.01)
+            else:
+                image.data = exposure.equalize_adapthist(
+                    np.uint16(image.data),
+                    nbins=Levels._UPPER_LIMIT+1,
+                    clip_limit=.01)
+
+            image.data = np.interp(image.data,
+                                   (image.data.min(), image.data.max()),
                                    (0, Levels._UPPER_LIMIT))
 
         return image

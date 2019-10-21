@@ -41,3 +41,9 @@ class RangeParameter(ProcessingParameter):
         super().__init__(name, description, default, value)
         self.minimum = minimum
         self.maximum = maximum
+
+
+class SwitchParameter(ProcessingParameter):
+    """
+    Represents an ON / OFF switch
+    """

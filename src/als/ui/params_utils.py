@@ -4,10 +4,10 @@ Provide logic for mapping processing params < = > GUI controls
 import logging
 from typing import List
 
-from PyQt5.QtWidgets import QWidget, QSlider
+from PyQt5.QtWidgets import QWidget, QSlider, QCheckBox
 
 from als.code_utilities import AlsException, log
-from als.model.params import ProcessingParameter, RangeParameter
+from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,10 +33,14 @@ def _check_param_control_pairing(param: ProcessingParameter, control: QWidget):
     :raises UnsupportedParamMapping: param/control pair is not supported
     """
 
-    if not (isinstance(param, RangeParameter) and isinstance(control, QSlider)):
+    if isinstance(param, RangeParameter) and isinstance(control, QSlider):
+        return
 
-        raise UnsupportedParamMapping("Unsupported parameter / control pair",
-                                      f"No recipe for couple {type(param)}/{type(control)}")
+    if isinstance(param, SwitchParameter) and isinstance(control, QCheckBox):
+        return
+
+    raise UnsupportedParamMapping("Unsupported parameter / control pair",
+                                  f"No recipe for couple {type(param)}/{type(control)}")
 
 
 @log
@@ -54,18 +58,14 @@ def _update_control_from_param(param: ProcessingParameter, control: QWidget):
 
     _check_param_control_pairing(param, control)
 
-    setters_dict = {
-
-        QSlider: control.setValue
-    }
-
     getters_dict = {
 
-        RangeParameter: lambda p: p.value / p.maximum * _DEFAULT_SLIDER_MAX
+        RangeParameter: lambda p: p.value / p.maximum * _DEFAULT_SLIDER_MAX,
+        SwitchParameter: lambda p: p.value
     }
 
     # set control value according to param value
-    control_value_setter_function = setters_dict[type(control)]
+    control_value_setter_function = _get_control_setter_function(control)
     param_value_transformation_function = getters_dict[type(param)]
 
     control_value_setter_function(param_value_transformation_function(param))
@@ -73,6 +73,23 @@ def _update_control_from_param(param: ProcessingParameter, control: QWidget):
     # set control tooltip as param description
     control.setToolTip(param.description)
 
+
+@log
+def _get_control_setter_function(control):
+
+    if type(control) == QSlider:
+        return control.setValue
+
+    if type(control) == QCheckBox:
+        return control.setChecked
+
+@log
+def _get_control_getter_function(control):
+    if type(control) == QSlider:
+        return control.value
+
+    if type(control) == QCheckBox:
+        return control.isChecked
 
 @log
 def _update_param_from_control(param: ProcessingParameter, control: QWidget):
@@ -89,18 +106,14 @@ def _update_param_from_control(param: ProcessingParameter, control: QWidget):
 
     _check_param_control_pairing(param, control)
 
-    getters_dict = {
-
-        QSlider: control.value
-    }
-
     value_transformations_dict = {
 
-        RangeParameter: lambda p, v: v / _DEFAULT_SLIDER_MAX * p.maximum
+        RangeParameter: lambda p, v: v / _DEFAULT_SLIDER_MAX * p.maximum,
+        SwitchParameter: lambda p, v: v
     }
 
     # set param value according to control value
-    control_value_getter_function = getters_dict[type(control)]
+    control_value_getter_function = _get_control_getter_function(control)
     param_value_transformation_function = value_transformations_dict[type(param)]
 
     param.value = param_value_transformation_function(param, control_value_getter_function())
