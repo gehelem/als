@@ -31,6 +31,16 @@ class ProcessingParameter:
         """
         self.value = self.default
 
+    @log
+    def is_default(self):
+        """
+        Is this param's value equal to its default ?
+
+        :return: True if this param's value is equal to its default value, False otherwise
+        :rtype: bool
+        """
+        return self.value == self.default
+
 
 # pylint: disable=R0903
 class RangeParameter(ProcessingParameter):

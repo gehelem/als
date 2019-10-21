@@ -86,7 +86,7 @@ class Levels(ImageProcessor):
         auto_stretch = self._parameters[2]
 
         if auto_stretch.value:
-
+            _LOGGER.debug("Performing Autostretch...")
             image.data = np.interp(image.data,
                                    (image.data.min(), image.data.max()),
                                    (0, Levels._UPPER_LIMIT))
@@ -99,11 +99,16 @@ class Levels(ImageProcessor):
                     image.data[index] = single_layer_histo_equalize(image.data[index])
             else:
                 image.data = single_layer_histo_equalize(image.data)
+            _LOGGER.debug("Autostretch Done")
 
             # autostretch outputs an image with value range = [0, 1]
             image.data *= Levels._UPPER_LIMIT
 
-        image.data = np.clip(image.data, black_level.value, white_level.value)
+        if not black_level.is_default() or not white_level.is_default():
+            _LOGGER.debug("Performing black / white level adjustments...")
+            image.data = np.clip(image.data, black_level.value, white_level.value)
+            _LOGGER.debug("Black / white level adjustments Done")
+
 
         image.data = np.float32(np.interp(image.data,
                                           (image.data.min(), image.data.max()),
