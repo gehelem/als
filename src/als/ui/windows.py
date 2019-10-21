@@ -60,6 +60,9 @@ class MainWindow(QMainWindow):
         DYNAMIC_DATA.add_observer(self)
         self.update_display()
 
+        config.register_log_receiver(self)
+        self.setGeometry(*config.get_window_geometry())
+
         # setup image display
         self._scene = QGraphicsScene(self)
         self._ui.image_view.setScene(self._scene)
@@ -68,6 +71,11 @@ class MainWindow(QMainWindow):
 
         # styleheet id for stack size label
         self._ui.lbl_stack_size.setObjectName("lbl_stack_size")
+
+        if config.get_full_screen_active():
+            self._ui.action_full_screen.setChecked(True)
+        else:
+            self.show()
 
     def _apply_levels(self):
         """

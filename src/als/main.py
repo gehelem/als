@@ -34,13 +34,6 @@ def main():
         _LOGGER.debug("Building and showing main window")
         controller = Controller()
         window = MainWindow(controller)
-        config.register_log_receiver(window)
-        window.setGeometry(*config.get_window_geometry())
-
-        if config.get_full_screen_active():
-            window.showFullScreen()
-        else:
-            window.show()
 
         window.reset_image_view()
 
