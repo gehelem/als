@@ -113,15 +113,20 @@ class Stacker(QueueConsumer):
                         f"Reference shape : {self._last_stacking_result.data.shape}"
                     )
 
-                if DYNAMIC_DATA.align_before_stacking:
+                try:
+                    if DYNAMIC_DATA.align_before_stacking:
 
-                    # alignment is a memory greedy process, we take special care of such errors
-                    try:
-                        self._align_image(image)
-                    except OSError as os_error:
-                        raise StackingError(os_error)
+                        # alignment is a memory greedy process, we take special care of such errors
+                        try:
+                            self._align_image(image)
+                        except OSError as os_error:
+                            raise StackingError(os_error)
 
-                self._stack_image(image, DYNAMIC_DATA.stacking_mode)
+                    self._stack_image(image, DYNAMIC_DATA.stacking_mode)
+
+                except AttributeError:
+                    raise StackingError("Our reference images are gone.")
+
                 self._publish_stacking_result(image)
 
             except StackingError as stacking_error:
