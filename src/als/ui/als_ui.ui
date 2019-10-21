@@ -835,6 +835,9 @@
    <property name="text">
     <string>Show processing panel</string>
    </property>
+   <property name="statusTip">
+    <string>Show processing panel</string>
+   </property>
    <property name="shortcut">
     <string>M</string>
    </property>
