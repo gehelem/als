@@ -13,7 +13,7 @@ from als import config
 from als.config import CouldNotSaveConfig
 from als.logic import Controller, SessionError, CriticalFolderMissing, WebServerStartFailure
 from als.code_utilities import log
-from als.model.data import VERSION, STACKING_MODE_SUM, STACKING_MODE_MEAN, DYNAMIC_DATA
+from als.model.data import STACKING_MODE_SUM, STACKING_MODE_MEAN, DYNAMIC_DATA
 from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box, SaveWaitDialog, question, message_box
 from als.ui.params_utils import update_controls_from_params, update_params_from_controls, reset_params
 from generated.als_ui import Ui_stack_window
