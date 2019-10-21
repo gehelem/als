@@ -107,7 +107,11 @@ class Stacker(QueueConsumer):
         else:
             try:
                 if not image.is_same_shape_as(self._last_stacking_result):
-                    raise StackingError("Image dimensions or color don't match stack content")
+                    raise StackingError(
+                        "Image dimensions or color don't match stack content. "
+                        f"New image shape : {image.data.shape} <=> "
+                        f"Reference shape : {self._last_stacking_result.data.shape}"
+                    )
 
                 if DYNAMIC_DATA.align_before_stacking:
 
