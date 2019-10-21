@@ -174,7 +174,7 @@ class SaveWaitDialog(QDialog):
         Count images that still need to be saved.
 
         We count 1 image to save for each image in the queues and each worker still Busy and also
-        take 'save every image' setting into account
+        take 'save every image' setting and web server status into account
 
         :return: the number of images remaining to be saved
         :rtype: int
@@ -199,8 +199,8 @@ class SaveWaitDialog(QDialog):
         ]:
             remaining_image_count += queue_size
 
-        if DYNAMIC_DATA.save_every_image:
-            remaining_image_count *= 2
+        additional_saves = [DYNAMIC_DATA.save_every_image, DYNAMIC_DATA.web_server_is_running]
+        remaining_image_count *= 1 + additional_saves.count(True)
 
         remaining_image_count += 1 if DYNAMIC_DATA.saver_status == WORKER_STATUS_BUSY else 0
         remaining_image_count += DYNAMIC_DATA.saver_queue_size
