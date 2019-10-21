@@ -282,13 +282,6 @@ class Image:
                           f'Data shape={self._data.shape}, '
                           f'Data type={self._data.dtype.name}, '
                           f'Origin={self.origin}, '
-                          f'Destination={self.destination}, ')
-
-        if self.is_color():
-            representation += f"Mean R: {int(np.mean(self._data[0]))}, "
-            representation += f"Mean G: {int(np.mean(self._data[1]))}, "
-            representation += f"Mean B: {int(np.mean(self._data[2]))})"
-        else:
-            representation += f"Mean: {int(np.mean(self._data))})"
+                          f'Destination={self.destination}')
 
         return representation
