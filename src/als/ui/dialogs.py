@@ -180,7 +180,7 @@ class SaveWaitDialog(QDialog):
         :rtype: int
         """
 
-        remaining_image_count = 0
+        remaining_image_save_count = 0
 
         for status in [
 
@@ -189,7 +189,7 @@ class SaveWaitDialog(QDialog):
                 DYNAMIC_DATA.post_processor_status,
         ]:
             if status == WORKER_STATUS_BUSY:
-                remaining_image_count += 1
+                remaining_image_save_count += 1
 
         for queue_size in [
 
@@ -197,15 +197,15 @@ class SaveWaitDialog(QDialog):
                 DYNAMIC_DATA.stacker_queue_size,
                 DYNAMIC_DATA.post_processor_queue_size,
         ]:
-            remaining_image_count += queue_size
+            remaining_image_save_count += queue_size
 
-        additional_saves = [DYNAMIC_DATA.save_every_image, DYNAMIC_DATA.web_server_is_running]
-        remaining_image_count *= 1 + additional_saves.count(True)
+        additional_saves_per_image = [DYNAMIC_DATA.save_every_image, DYNAMIC_DATA.web_server_is_running].count(True)
+        remaining_image_save_count *= 1 + additional_saves_per_image
 
-        remaining_image_count += 1 if DYNAMIC_DATA.saver_status == WORKER_STATUS_BUSY else 0
-        remaining_image_count += DYNAMIC_DATA.saver_queue_size
+        remaining_image_save_count += 1 if DYNAMIC_DATA.saver_status == WORKER_STATUS_BUSY else 0
+        remaining_image_save_count += DYNAMIC_DATA.saver_queue_size
 
-        return remaining_image_count
+        return remaining_image_save_count
 
     @log
     @pyqtSlot()
