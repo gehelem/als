@@ -8,6 +8,7 @@ from typing import List
 import cv2
 import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal
+from skimage import exposure
 
 from als.code_utilities import log, Timer, SignalingQueue
 from als.model.base import Image
@@ -79,53 +80,14 @@ class Levels(ImageProcessor):
 
         for index in range(3):
 
-            layer = image.data[index].astype('uint16')
-            flat = layer.flatten()
+            image.data[index] = exposure.equalize_adapthist(np.uint32(image.data[index]), nbins=Levels._UPPER_LIMIT+1)
 
-            # create our own histogram function
-            def get_histogram(image, bins):
-                # array with size of bins, set to zeros
-                histogram = np.zeros(bins)
+            image.data[index] = np.clip(image.data[index], black_level.value, Levels._UPPER_LIMIT)
+            image.data[index] = np.clip(image.data[index], 0, white_level.value)
 
-                # loop through pixels and sum up counts of pixels
-                for pixel in image:
-                    histogram[pixel] += 1
-
-                # return our final result
-                return histogram
-
-            hist = get_histogram(flat, Levels._UPPER_LIMIT + 1)
-
-            def cumsum(a):
-                a = iter(a)
-                b = [next(a)]
-                for i in a:
-                    b.append(b[-1] + i)
-                return np.array(b)
-
-            cs = cumsum(hist)
-
-            # re-normalize cumsum values to be between 0-255
-
-            # numerator & denomenator
-            nj = (cs - cs.min()) * Levels._UPPER_LIMIT
-            N = cs.max() - cs.min()
-
-            # re-normalize the cdf
-            cs = nj / N
-
-            cs = cs.astype('uint32')
-
-            new_data = cs[layer]
-
-            image.data[index] = new_data
-
-        image.data = np.clip(image.data, black_level.value, Levels._UPPER_LIMIT)
-        image.data = np.clip(image.data, 0, white_level.value)
-
-        image.data = np.interp(image.data,
-                               (image.data.min(), image.data.max()),
-                               (0, Levels._UPPER_LIMIT))
+            image.data[index] = np.interp(image.data[index],
+                                   (image.data[index].min(), image.data[index].max()),
+                                   (0, Levels._UPPER_LIMIT))
 
         return image
 
