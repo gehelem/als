@@ -85,18 +85,14 @@ class Levels(ImageProcessor):
                                    (image.data.min(), image.data.max()),
                                    (0, Levels._UPPER_LIMIT))
 
+            def single_layer_histo_equalize(layer):
+                return exposure.equalize_adapthist(np.uint16(layer), nbins=Levels._UPPER_LIMIT+1, clip_limit=.01)
+
             if image.is_color():
                 for index in range(3):
-
-                    image.data[index] = exposure.equalize_adapthist(
-                        np.uint16(image.data[index]),
-                        nbins=Levels._UPPER_LIMIT+1,
-                        clip_limit=.01)
+                    image.data[index] = single_layer_histo_equalize(image.data[index])
             else:
-                image.data = exposure.equalize_adapthist(
-                    np.uint16(image.data),
-                    nbins=Levels._UPPER_LIMIT+1,
-                    clip_limit=.01)
+                image.data = single_layer_histo_equalize(image.data)
 
             # autostretch outputs an image with value range = [0, 1]
             image.data *= Levels._UPPER_LIMIT
