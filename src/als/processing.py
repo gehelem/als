@@ -79,7 +79,7 @@ class Levels(ImageProcessor):
 
         for index in range(3):
 
-            layer = image.data[index].astype('uint8')
+            layer = image.data[index].astype('uint16')
             flat = layer.flatten()
 
             # create our own histogram function
@@ -119,10 +119,6 @@ class Levels(ImageProcessor):
             new_data = cs[layer]
 
             image.data[index] = new_data
-
-
-
-
 
         image.data = np.clip(image.data, black_level.value, Levels._UPPER_LIMIT)
         image.data = np.clip(image.data, 0, white_level.value)
