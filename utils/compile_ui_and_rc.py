@@ -14,7 +14,7 @@ def main():
         target_file_path = generated_src_path / ui_file.name.replace('.ui', ".py")
         args = f"{ui_file} -o {target_file_path} --import-from={generated_src_path.stem}"
         print(f"Executing command : {command} {args}")
-        completed_process = subprocess.run(f"{command} {args}")
+        completed_process = subprocess.run([command, ] + args.split(" "))
         if completed_process.returncode != 0:
             raise RuntimeError(f"UI compilation failed for {ui_file}")
 
@@ -26,7 +26,7 @@ def main():
         target_file_path = generated_src_path / rc_file.name.replace('.qrc', "_rc.py")
         args = f"{rc_file} -o {target_file_path}"
         print(f"Executing command : {command} {args}")
-        completed_process = subprocess.run(f"{command} {args}")
+        completed_process = subprocess.run([command, ] + args.split(" "))
         if completed_process.returncode != 0:
             raise RuntimeError(f"RC compilation failed for {rc_file}")
 
