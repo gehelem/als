@@ -51,16 +51,27 @@ class MainWindow(QMainWindow):
         self.resizeDocks([self._ui.log_dock], [self._LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
 
         # setup levels controls
-        self._levels_controls = [self._ui.sld_black, self._ui.sld_white, self._ui.chk_autostretch]
+        self._levels_controls = [
+            self._ui.sld_black,
+            self._ui.sld_white,
+            self._ui.chk_autostretch,
+            self._ui.cb_levels_stretch_method
+        ]
+
+        for label in DYNAMIC_DATA.levels_parameters[3].choices:
+            self._ui.cb_levels_stretch_method.addItem(label)
+
         self._reset_levels()
         self._ui.btn_levels_apply.clicked.connect(self._apply_levels)
         self._ui.btn_levels_reset.clicked.connect(self._reset_levels)
         self._ui.btn_levels_reload.clicked.connect(self._reload_levels)
 
+        # setup exchanges with dynamic data
         DYNAMIC_DATA.add_observer(self)
         self.update_display()
 
         config.register_log_receiver(self)
+
         self.setGeometry(*config.get_window_geometry())
 
         # setup image display
@@ -68,9 +79,6 @@ class MainWindow(QMainWindow):
         self._ui.image_view.setScene(self._scene)
         self._image_item = None
         self.reset_image_view()
-
-        # styleheet id for stack size label
-        self._ui.lbl_stack_size.setObjectName("lbl_stack_size")
 
         if config.get_full_screen_active():
             self._ui.action_full_screen.setChecked(True)

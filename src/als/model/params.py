@@ -58,6 +58,17 @@ class RangeParameter(ProcessingParameter):
         self.maximum = maximum
 
 
+class ListParameter(ProcessingParameter):
+    """
+    represents a list of choices of type text
+    """
+    def __init__(self, name: str, description: str, default: Any, value: Any,
+                 choices: list):
+
+        super().__init__(name, description, default, value)
+        self.choices = choices
+
+
 # pylint: disable=R0903
 class SwitchParameter(ProcessingParameter):
     """

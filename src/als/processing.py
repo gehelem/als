@@ -12,7 +12,7 @@ from skimage import exposure
 
 from als.code_utilities import log, Timer, SignalingQueue
 from als.model.base import Image
-from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter
+from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter, ListParameter
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -78,12 +78,16 @@ class Levels(ImageProcessor):
         self._parameters.append(SwitchParameter("autostretch",
                                                 "automatic histogram stretch", True, True))
 
+        self._parameters.append(ListParameter("stretch method", "autostretch method",
+                                              'Adaptive', 'Adaptive', ['Adaptive', 'Contrast']))
+
     @log
     def process_image(self, image: Image):
 
         black_level = self._parameters[0]
         white_level = self._parameters[1]
         auto_stretch = self._parameters[2]
+        stretch_method = self._parameters[3]
 
         _LOGGER.debug(f"Levels processing with params : "
                       f"black={black_level.value}, white={white_level.value}, auto-stretch={auto_stretch.value}")
@@ -94,14 +98,22 @@ class Levels(ImageProcessor):
                                    (image.data.min(), image.data.max()),
                                    (0, Levels._UPPER_LIMIT))
 
-            def single_layer_histo_equalize(layer):
-                return exposure.equalize_adapthist(np.uint16(layer), nbins=Levels._UPPER_LIMIT+1, clip_limit=.01)
+            def histo_adpative_equalization(data):
+                return exposure.equalize_adapthist(np.uint16(data), nbins=Levels._UPPER_LIMIT + 1, clip_limit=.01)
+
+            def contrast_stretching(data):
+                low, high = np.percentile(data, (2, 98))
+                return exposure.rescale_intensity(data, in_range=(low, high))
+
+            available_stretches = [histo_adpative_equalization, contrast_stretching]
+
+            chosen_stretch = available_stretches[stretch_method.choices.index(stretch_method.value)]
 
             if image.is_color():
                 for channel in range(3):
-                    image.data[channel] = single_layer_histo_equalize(image.data[channel])
+                    image.data[channel] = chosen_stretch(image.data[channel])
             else:
-                image.data = single_layer_histo_equalize(image.data)
+                image.data = chosen_stretch(image.data)
             _LOGGER.debug("Autostretch Done")
 
             # autostretch outputs an image with value range = [0, 1]

@@ -4,10 +4,10 @@ Provide logic for mapping processing params < = > GUI controls
 import logging
 from typing import List
 
-from PyQt5.QtWidgets import QWidget, QSlider, QCheckBox
+from PyQt5.QtWidgets import QWidget, QSlider, QCheckBox, QComboBox
 
 from als.code_utilities import AlsException, log
-from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter
+from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter, ListParameter
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -43,6 +43,9 @@ def _check_param_control_pairing(param: ProcessingParameter, control: QWidget):
     if isinstance(param, SwitchParameter) and isinstance(control, QCheckBox):
         return
 
+    if isinstance(param, ListParameter) and isinstance(control, QComboBox):
+        return
+
     raise UnsupportedParamMapping("Unsupported parameter / control pair",
                                   f"No recipe for couple {type(param)}/{type(control)}")
 
@@ -63,6 +66,9 @@ def _get_control_setter_function(control):
     if isinstance(control, QCheckBox):
         return control.setChecked
 
+    if isinstance(control, QComboBox):
+        return control.setCurrentText
+
     raise UnknownWidget("Could not get setter function", f"We don't know anything about {type(control)}")
 
 
@@ -81,6 +87,9 @@ def _get_control_getter_function(control):
 
     if isinstance(control, QCheckBox):
         return control.isChecked
+
+    if isinstance(control, QComboBox):
+        return control.currentText
 
     raise UnknownWidget("Could not get getter function", f"We don't know anything about {type(control)}")
 
@@ -103,7 +112,8 @@ def _update_control_from_param(param: ProcessingParameter, control: QWidget):
     getters_dict = {
 
         RangeParameter: lambda p: p.value / p.maximum * _DEFAULT_SLIDER_MAX,
-        SwitchParameter: lambda p: p.value
+        SwitchParameter: lambda p: p.value,
+        ListParameter: lambda p: p.value,
     }
 
     # set control value according to param value
@@ -134,7 +144,8 @@ def _update_param_from_control(param: ProcessingParameter, control: QWidget):
     value_transformations_dict = {
 
         RangeParameter: lambda p, v: v / _DEFAULT_SLIDER_MAX * p.maximum,
-        SwitchParameter: lambda p, v: v
+        SwitchParameter: lambda p, v: v,
+        ListParameter: lambda p, v: v,
     }
 
     # set param value according to control value

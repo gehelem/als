@@ -45,3 +45,8 @@ QMenu::indicator {
 
     font-size: 32px;
 }
+
+QComboBox {
+
+    selection-background-color: #444444;
+}
