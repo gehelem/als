@@ -14,9 +14,9 @@ def main():
         target_file_path = generated_src_path / ui_file.name.replace('.ui', ".py")
         args = f"{ui_file} -o {target_file_path} --import-from={generated_src_path.stem}"
         print(f"Executing command : {command} {args}")
-        completed_process = subprocess.run(f"{command} {args}", capture_output=True)
+        completed_process = subprocess.run(f"{command} {args}")
         if completed_process.returncode != 0:
-            raise RuntimeError(f"UI compilation failed for {ui_file} : {completed_process.stderr.decode()}")
+            raise RuntimeError(f"UI compilation failed for {ui_file}")
 
     print("\nCompiling RC files\n" + "=" * 18)
     command = "pyrcc5"
@@ -26,9 +26,9 @@ def main():
         target_file_path = generated_src_path / rc_file.name.replace('.qrc', "_rc.py")
         args = f"{rc_file} -o {target_file_path}"
         print(f"Executing command : {command} {args}")
-        completed_process = subprocess.run(f"{command} {args}", capture_output=True)
+        completed_process = subprocess.run(f"{command} {args}")
         if completed_process.returncode != 0:
-            raise RuntimeError(f"RC compilation failed for {rc_file} : {completed_process.stderr.decode()}")
+            raise RuntimeError(f"RC compilation failed for {rc_file}")
 
 
 if __name__ == '__main__':
