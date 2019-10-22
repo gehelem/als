@@ -85,6 +85,9 @@ class Levels(ImageProcessor):
         white_level = self._parameters[1]
         auto_stretch = self._parameters[2]
 
+        _LOGGER.debug(f"Levels processing with params : "
+                      f"black={black_level.value}, white={white_level.value}, auto-stretch={auto_stretch.value}")
+
         if auto_stretch.value:
             _LOGGER.debug("Performing Autostretch...")
             image.data = np.interp(image.data,
@@ -95,8 +98,8 @@ class Levels(ImageProcessor):
                 return exposure.equalize_adapthist(np.uint16(layer), nbins=Levels._UPPER_LIMIT+1, clip_limit=.01)
 
             if image.is_color():
-                for index in range(3):
-                    image.data[index] = single_layer_histo_equalize(image.data[index])
+                for channel in range(3):
+                    image.data[channel] = single_layer_histo_equalize(image.data[channel])
             else:
                 image.data = single_layer_histo_equalize(image.data)
             _LOGGER.debug("Autostretch Done")
@@ -104,11 +107,12 @@ class Levels(ImageProcessor):
             # autostretch outputs an image with value range = [0, 1]
             image.data *= Levels._UPPER_LIMIT
 
-        if not black_level.is_default() or not white_level.is_default():
+        do_levels = not black_level.is_default() or not white_level.is_default()
+        _LOGGER.debug(f"Levels : do_levels = {do_levels}")
+        if do_levels:
             _LOGGER.debug("Performing black / white level adjustments...")
             image.data = np.clip(image.data, black_level.value, white_level.value)
             _LOGGER.debug("Black / white level adjustments Done")
-
 
         image.data = np.float32(np.interp(image.data,
                                           (image.data.min(), image.data.max()),
