@@ -1,12 +1,18 @@
 """
 Our custom widgets
 """
+import math
 import typing
 
+import numpy as np
+
 from PyQt5 import QtGui
+from PyQt5.QtCore import QPoint, QRect, Qt
+from PyQt5.QtGui import QPainter, QColor, QPen
 from PyQt5.QtWidgets import QSlider, QGraphicsView, QWidget
 
 from als.code_utilities import log
+from als.model.data import DYNAMIC_DATA
 
 DEFAULT_SLIDER_MAX = 255
 
@@ -70,3 +76,61 @@ class ImageView(QGraphicsView):
             self.scale(self._ZOOM_SCALE_RATIO, self._ZOOM_SCALE_RATIO)
         elif event.angleDelta().y() < 0:
             self.scale(1 / self._ZOOM_SCALE_RATIO, 1 / self._ZOOM_SCALE_RATIO)
+
+
+class HistogramView(QWidget):
+
+    _BIN_COUNT = 512
+
+    def __init__(self, parent=None):
+        QWidget.__init__(self, parent)
+        self._image = None
+        self._histogram = None
+        self._painter = QPainter()
+        DYNAMIC_DATA.add_observer(self)
+
+    @log
+    def update_display(self, image_only: bool = False):
+
+        if image_only:
+
+            image = DYNAMIC_DATA.process_result
+
+            if image is not None:
+                self._image = image
+                self._histogram = self._compute_histogram()
+                self.update()
+
+    def paintEvent(self, event):
+
+        if self.isVisible() and self._histogram is not None:
+
+            self._painter.begin(self)
+            self._painter.setRenderHint(QPainter.Antialiasing, True)
+            self._painter.translate(QPoint(0, 0))
+
+            # remove first and last items of the histogram
+            # so we don't end up with a vertically squashed display
+            # when histogram is clipping on black or white
+            tweaked_histogram = np.delete(self._histogram, [0, self._BIN_COUNT - 1])
+
+            max_value = tweaked_histogram.max()
+
+            for i, value in enumerate(tweaked_histogram):
+
+                x = round(i / self._BIN_COUNT * self.width())
+                bar_height = round(value / max_value * self.height())
+
+                self._painter.save()
+                self._painter.setPen(QPen(Qt.white))
+                self._painter.drawLine(x,
+                                       self.height(),
+                                       x,
+                                       self.height() - bar_height)
+                self._painter.restore()
+
+            self._painter.end()
+
+    def _compute_histogram(self):
+
+        return np.histogram(self._image.data, self._BIN_COUNT)[0]

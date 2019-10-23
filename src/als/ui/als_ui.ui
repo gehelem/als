@@ -640,7 +640,7 @@
    <property name="minimumSize">
     <size>
      <width>330</width>
-     <height>222</height>
+     <height>478</height>
     </size>
    </property>
    <property name="allowedAreas">
@@ -654,6 +654,16 @@
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_3">
     <layout class="QVBoxLayout" name="verticalLayout_5">
+     <item>
+      <widget class="HistogramView" name="histogram_view" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>150</height>
+        </size>
+       </property>
+      </widget>
+     </item>
      <item>
       <widget class="QGroupBox" name="groupBox_6">
        <property name="font">
@@ -935,12 +945,18 @@
   <customwidget>
    <class>ImageView</class>
    <extends>QGraphicsView</extends>
-   <header>als.ui.views</header>
+   <header>als.ui.widgets</header>
   </customwidget>
   <customwidget>
    <class>Slider</class>
    <extends>QSlider</extends>
    <header>als.ui.widgets</header>
+  </customwidget>
+  <customwidget>
+   <class>HistogramView</class>
+   <extends>QWidget</extends>
+   <header>als.ui.widgets</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>
