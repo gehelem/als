@@ -131,14 +131,20 @@ class HistogramView(QWidget):
             self._painter.translate(QPoint(0, 0))
 
             if self._histogram is not None:
-                # remove first and last items of the histogram
+                # remove first and last items of a copy of the histogram before getting max value
                 # so we don't end up with a vertically squashed display
                 # when histogram is clipping on black or white
                 tweaked_histogram = np.delete(self._histogram, [0, self._BIN_COUNT - 1])
-
                 max_value = tweaked_histogram.max()
 
-                for i, value in enumerate(tweaked_histogram):
+                # in some very rare cases (like playing with an image of pure single primary color)
+                # max_value will be 0 after removing the 2 extreme bins of the original histogram
+                #
+                # in that case, we replace this 0 with the original histogram's max value
+                if max_value == 0:
+                    max_value = self._histogram.max()
+
+                for i, value in enumerate(self._histogram):
 
                     x = round(i / self._BIN_COUNT * self.width())
                     bar_height = round(value / max_value * self.height())
