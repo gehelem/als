@@ -150,7 +150,9 @@ class HistogramView(QWidget):
                     bar_height = round(value / max_value * self.height())
 
                     self._painter.save()
-                    self._painter.setPen(QPen(Qt.white))
+                    pen = QPen(Qt.white)
+                    pen.setWidth(2)
+                    self._painter.setPen(pen)
                     self._painter.drawLine(x,
                                            self.height(),
                                            x,
