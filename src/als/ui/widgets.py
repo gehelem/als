@@ -1,6 +1,7 @@
 """
 Our custom widgets
 """
+import logging
 import typing
 
 import numpy as np
@@ -12,6 +13,8 @@ from PyQt5.QtWidgets import QSlider, QGraphicsView, QWidget
 from als.code_utilities import log
 from als.model.data import DYNAMIC_DATA
 
+_LOGGER = logging.getLogger(__name__)
+
 DEFAULT_SLIDER_MAX = 255
 
 
@@ -20,11 +23,13 @@ class Slider(QSlider):
     A slider that has a default value and resets to it when double-clicked
     """
 
+    @log
     def __init__(self, parent=None):
 
         super().__init__(parent)
         self._default_value = 0
 
+    @log
     def set_default_value(self, default_value):
         """
         Sets the slider default value
@@ -36,6 +41,7 @@ class Slider(QSlider):
         self._default_value = default_value
 
     # pylint: disable=C0103
+    @log
     def mouseDoubleClickEvent(self, _):
         """
         User double-clicked the slider
@@ -83,6 +89,7 @@ class HistogramView(QWidget):
 
     _BIN_COUNT = 512
 
+    @log
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self._image = None
@@ -109,6 +116,7 @@ class HistogramView(QWidget):
                 self.update()
 
     # pylint: disable=C0103
+    @log
     def paintEvent(self, _):
         """
         Do the painting, Leonardo !
@@ -116,34 +124,47 @@ class HistogramView(QWidget):
         :param _: ignored Qt event
         """
 
-        if self.isVisible() and self._histogram is not None:
+        if self.isVisible():
 
             self._painter.begin(self)
             self._painter.setRenderHint(QPainter.Antialiasing, True)
             self._painter.translate(QPoint(0, 0))
 
-            # remove first and last items of the histogram
-            # so we don't end up with a vertically squashed display
-            # when histogram is clipping on black or white
-            tweaked_histogram = np.delete(self._histogram, [0, self._BIN_COUNT - 1])
+            if self._histogram is not None:
+                # remove first and last items of the histogram
+                # so we don't end up with a vertically squashed display
+                # when histogram is clipping on black or white
+                tweaked_histogram = np.delete(self._histogram, [0, self._BIN_COUNT - 1])
 
-            max_value = tweaked_histogram.max()
+                max_value = tweaked_histogram.max()
 
-            for i, value in enumerate(tweaked_histogram):
+                for i, value in enumerate(tweaked_histogram):
 
-                x = round(i / self._BIN_COUNT * self.width())
-                bar_height = round(value / max_value * self.height())
+                    x = round(i / self._BIN_COUNT * self.width())
+                    bar_height = round(value / max_value * self.height())
 
-                self._painter.save()
-                self._painter.setPen(QPen(Qt.white))
-                self._painter.drawLine(x,
-                                       self.height(),
-                                       x,
-                                       self.height() - bar_height)
-                self._painter.restore()
+                    self._painter.save()
+                    self._painter.setPen(QPen(Qt.white))
+                    self._painter.drawLine(x,
+                                           self.height(),
+                                           x,
+                                           self.height() - bar_height)
+                    self._painter.restore()
+
+            else:
+                font_inspector = self._painter.fontMetrics()
+                message = "No data"
+                message_height = font_inspector.height()
+                message_width = font_inspector.width(message)
+
+                self._painter.drawText(
+                    (self.width() - message_width) / 2,
+                    ((self.height() - message_height) / 2) + message_height,
+                    "No data")
 
             self._painter.end()
 
+    @log
     def _compute_histogram(self):
         """
         Compute histogram
