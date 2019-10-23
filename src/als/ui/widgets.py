@@ -81,6 +81,16 @@ class ImageView(QGraphicsView):
         elif event.angleDelta().y() < 0:
             self.scale(1 / self._ZOOM_SCALE_RATIO, 1 / self._ZOOM_SCALE_RATIO)
 
+    # pylint: disable=C0103
+    def mouseDoubleClickEvent(self, _):
+        """
+        Reacts to a double-click in image view : Fit image in view
+
+        :param _: ignored Qt event
+        """
+
+        self.fitInView(self.scene().items()[0], Qt.KeepAspectRatio)
+
 
 class HistogramView(QWidget):
     """
