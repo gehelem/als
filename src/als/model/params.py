@@ -3,6 +3,7 @@ Holds types used for processing parameters
 """
 
 import logging
+import math
 from typing import Any
 
 from als.code_utilities import log
@@ -39,6 +40,10 @@ class ProcessingParameter:
         :return: True if this param's value is equal to its default value, False otherwise
         :rtype: bool
         """
+
+        if isinstance(self.value, float):
+            return math.isclose(self.value, self.default, abs_tol=0.01)
+
         return self.value == self.default
 
 

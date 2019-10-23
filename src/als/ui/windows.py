@@ -15,7 +15,8 @@ from als.logic import Controller, SessionError, CriticalFolderMissing, WebServer
 from als.code_utilities import log
 from als.model.data import STACKING_MODE_SUM, STACKING_MODE_MEAN, DYNAMIC_DATA
 from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box, SaveWaitDialog, question, message_box
-from als.ui.params_utils import update_controls_from_params, update_params_from_controls, reset_params
+from als.ui.params_utils import update_controls_from_params, update_params_from_controls, reset_params, \
+    set_sliders_defaults
 from generated.als_ui import Ui_stack_window
 
 _LOGGER = logging.getLogger(__name__)
@@ -59,13 +60,19 @@ class MainWindow(QMainWindow):
             self._ui.sld_white,
         ]
 
-        for label in DYNAMIC_DATA.levels_parameters[1].choices:
-            self._ui.cb_levels_stretch_method.addItem(label)
-
         self._reset_levels()
+
+        set_sliders_defaults(
+            [DYNAMIC_DATA.levels_parameters[2], DYNAMIC_DATA.levels_parameters[3], DYNAMIC_DATA.levels_parameters[4]],
+            [self._ui.sld_black, self._ui.sld_midtones, self._ui.sld_white]
+        )
+
         self._ui.btn_levels_apply.clicked.connect(self._apply_levels)
         self._ui.btn_levels_reset.clicked.connect(self._reset_levels)
         self._ui.btn_levels_reload.clicked.connect(self._reload_levels)
+
+        for label in DYNAMIC_DATA.levels_parameters[1].choices:
+            self._ui.cb_levels_stretch_method.addItem(label)
 
         # setup exchanges with dynamic data
         DYNAMIC_DATA.add_observer(self)

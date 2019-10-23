@@ -2,16 +2,15 @@
 Provide logic for mapping processing params < = > GUI controls
 """
 import logging
-from typing import List
+from typing import List, Any
 
 from PyQt5.QtWidgets import QWidget, QSlider, QCheckBox, QComboBox
 
 from als.code_utilities import AlsException, log
 from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter, ListParameter
+from als.ui.widgets import Slider, DEFAULT_SLIDER_MAX
 
 _LOGGER = logging.getLogger(__name__)
-
-_DEFAULT_SLIDER_MAX = 255
 
 
 class UnsupportedParamMapping(AlsException):
@@ -111,7 +110,7 @@ def _update_control_from_param(param: ProcessingParameter, control: QWidget):
 
     getters_dict = {
 
-        RangeParameter: lambda p: p.value / p.maximum * _DEFAULT_SLIDER_MAX,
+        RangeParameter: lambda p: _compute_slider_value_from_param_value(p.value, p.maximum - p.minimum),
         SwitchParameter: lambda p: p.value,
         ListParameter: lambda p: p.value,
     }
@@ -143,7 +142,8 @@ def _update_param_from_control(param: ProcessingParameter, control: QWidget):
 
     value_transformations_dict = {
 
-        RangeParameter: lambda p, v: v / _DEFAULT_SLIDER_MAX * p.maximum,
+        # pylint: disable=W0108
+        RangeParameter: lambda p, v: _compute_param_value_from_slider_value(p, v),
         SwitchParameter: lambda p, v: v,
         ListParameter: lambda p, v: v,
     }
@@ -203,3 +203,54 @@ def reset_params(params: List[ProcessingParameter], controls: List[QWidget]):
     for param in params:
         param.reset()
         update_controls_from_params(params, controls)
+
+
+@log
+def set_sliders_defaults(params: List[RangeParameter], sliders: List[Slider]):
+    """
+    Works on matched lists : sets each slider's default value according to matched param default value
+
+    :param params: the parameters
+    :type params: List[RangeParameter]
+
+    :param sliders: the sliders
+    :type sliders: List[Slider]
+    """
+
+    for param, slider in zip(params, sliders):
+        slider.set_default_value(_compute_slider_value_from_param_value(param.default, param.maximum - param.minimum))
+
+
+@log
+def _compute_slider_value_from_param_value(value: Any, amplitude: Any):
+    """
+    Performs mapping from param value space to slider value space
+
+    :param value: the value from param space
+    :type value: numeric
+
+    :param amplitude: the param value amplitude, typically p.max - p.min
+    :type amplitude: numeric
+
+    :return: mapped value
+    :rtype: muneric
+    """
+
+    return value / amplitude * DEFAULT_SLIDER_MAX
+
+@log
+def _compute_param_value_from_slider_value(param: RangeParameter, slider_value):
+    """
+    Performs mapping from slider value space to param value space
+
+    :param param: the parameter matched to the slider we got slider_value from
+    :type param: RangeParameter
+
+    :param slider_value: the slider value
+    :type slider_value: numeric
+
+    :return: mapped value
+    :rtype: muneric
+    """
+
+    return slider_value / DEFAULT_SLIDER_MAX * (param.maximum - param.minimum)

@@ -743,7 +743,7 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
-             <widget class="QSlider" name="sld_black">
+             <widget class="Slider" name="sld_black">
               <property name="maximum">
                <number>255</number>
               </property>
@@ -753,7 +753,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QSlider" name="sld_midtones">
+             <widget class="Slider" name="sld_midtones">
               <property name="maximum">
                <number>255</number>
               </property>
@@ -763,7 +763,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QSlider" name="sld_white">
+             <widget class="Slider" name="sld_white">
               <property name="maximum">
                <number>255</number>
               </property>
@@ -936,6 +936,11 @@
    <class>ImageView</class>
    <extends>QGraphicsView</extends>
    <header>als.ui.views</header>
+  </customwidget>
+  <customwidget>
+   <class>Slider</class>
+   <extends>QSlider</extends>
+   <header>als.ui.widgets</header>
   </customwidget>
  </customwidgets>
  <resources>
