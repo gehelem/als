@@ -1,14 +1,12 @@
 """
 Our custom widgets
 """
-import math
 import typing
 
 import numpy as np
-
 from PyQt5 import QtGui
-from PyQt5.QtCore import QPoint, QRect, Qt
-from PyQt5.QtGui import QPainter, QColor, QPen
+from PyQt5.QtCore import QPoint, Qt
+from PyQt5.QtGui import QPainter, QPen
 from PyQt5.QtWidgets import QSlider, QGraphicsView, QWidget
 
 from als.code_utilities import log
@@ -79,6 +77,9 @@ class ImageView(QGraphicsView):
 
 
 class HistogramView(QWidget):
+    """
+    Our main histogram display
+    """
 
     _BIN_COUNT = 512
 
@@ -91,6 +92,12 @@ class HistogramView(QWidget):
 
     @log
     def update_display(self, image_only: bool = False):
+        """
+        Update display, duh !
+
+        :param image_only: are we receiving a notification that a new processing result is ready ?
+        :type image_only: bool
+        """
 
         if image_only:
 
@@ -101,7 +108,13 @@ class HistogramView(QWidget):
                 self._histogram = self._compute_histogram()
                 self.update()
 
-    def paintEvent(self, event):
+    # pylint: disable=C0103
+    def paintEvent(self, _):
+        """
+        Do the painting, Leonardo !
+
+        :param _: ignored Qt event
+        """
 
         if self.isVisible() and self._histogram is not None:
 
@@ -132,5 +145,8 @@ class HistogramView(QWidget):
             self._painter.end()
 
     def _compute_histogram(self):
+        """
+        Compute histogram
+        """
 
         return np.histogram(self._image.data, self._BIN_COUNT)[0]
