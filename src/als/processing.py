@@ -69,29 +69,62 @@ class Levels(ImageProcessor):
     def __init__(self):
         super().__init__()
 
-        self._parameters.append(RangeParameter("black", "black level",
-                                               0, 0, 0, Levels._UPPER_LIMIT))
+        self._parameters.append(
+            SwitchParameter(
+                "autostretch",
+                "automatic histogram stretch",
+                True,
+                True))
 
-        self._parameters.append(RangeParameter("white", "while level",
-                                               Levels._UPPER_LIMIT, Levels._UPPER_LIMIT, 0, Levels._UPPER_LIMIT))
+        self._parameters.append(
+            ListParameter(
+                "stretch method",
+                "autostretch method",
+                'Adaptive',
+                'Adaptive',
+                ['Adaptive', 'Contrast']))
 
-        self._parameters.append(SwitchParameter("autostretch",
-                                                "automatic histogram stretch", True, True))
+        self._parameters.append(
+            RangeParameter(
+                "black",
+                "black level",
+                0,
+                0,
+                0,
+                Levels._UPPER_LIMIT))
 
-        self._parameters.append(ListParameter("stretch method", "autostretch method",
-                                              'Adaptive', 'Adaptive', ['Adaptive', 'Contrast']))
+        self._parameters.append(
+            RangeParameter(
+                "mids",
+                "midtones level",
+                1,
+                1,
+                0,
+                2))
+
+        self._parameters.append(
+            RangeParameter(
+                "white",
+                "while level",
+                Levels._UPPER_LIMIT,
+                Levels._UPPER_LIMIT,
+                0,
+                Levels._UPPER_LIMIT))
 
     @log
     def process_image(self, image: Image):
+        # pylint: disable=R0914
 
-        black_level = self._parameters[0]
-        white_level = self._parameters[1]
-        auto_stretch = self._parameters[2]
-        stretch_method = self._parameters[3]
+        auto_stretch = self._parameters[0]
+        stretch_method = self._parameters[1]
+        black = self._parameters[2]
+        midtones = self._parameters[3]
+        white = self._parameters[4]
 
-        _LOGGER.debug(f"Levels processing with params : "
-                      f"black={black_level.value}, white={white_level.value}, auto-stretch={auto_stretch.value}")
+        for param in self._parameters:
+            _LOGGER.debug(f"Levels param {param.name} = {param.value}")
 
+        # autostretch
         if auto_stretch.value:
             _LOGGER.debug("Performing Autostretch...")
             image.data = np.interp(image.data,
@@ -116,21 +149,73 @@ class Levels(ImageProcessor):
                 image.data = chosen_stretch(image.data)
             _LOGGER.debug("Autostretch Done")
 
-            # autostretch outputs an image with value range = [0, 1]
+            # autostretch output range is [0, 1]
+            # so we remap values to our range [0, Levels._UPPER_LIMIT]
             image.data *= Levels._UPPER_LIMIT
 
-        do_levels = not black_level.is_default() or not white_level.is_default()
-        _LOGGER.debug(f"Levels : do_levels = {do_levels}")
-        if do_levels:
+        # midtones correction
+        do_midtones = not midtones.is_default()
+        _LOGGER.debug(f"Levels : do midtones adjustments : {do_midtones}")
+
+        if do_midtones:
+            _LOGGER.debug("Performing midtones adjustments...")
+            corrected_midtones_value = self._compute_midtones_value()
+            image.data = Levels._UPPER_LIMIT * image.data ** (1 / corrected_midtones_value) / Levels._UPPER_LIMIT ** (
+                1 / corrected_midtones_value)
+            _LOGGER.debug("Midtones level adjustments Done")
+
+        # black / white levels
+        do_black_white_levels = not black.is_default() or not white.is_default()
+        _LOGGER.debug(f"Levels : do black and white adjustments : {do_black_white_levels}")
+
+        if do_black_white_levels:
             _LOGGER.debug("Performing black / white level adjustments...")
-            image.data = np.clip(image.data, black_level.value, white_level.value)
+            image.data = np.clip(image.data, black.value, white.value)
             _LOGGER.debug("Black / white level adjustments Done")
 
+        # final interpolation
         image.data = np.float32(np.interp(image.data,
                                           (image.data.min(), image.data.max()),
                                           (0, Levels._UPPER_LIMIT)))
 
         return image
+
+    def _compute_midtones_value(self):
+        """
+        Modify midtone param value using a custom transfer function.
+
+        actual midtone param (input) has a range of [0, 2]
+
+        transfer function has the following properties :
+
+          - f(0) = 0.1
+          - for x in ]0, 1] : f(x) = x
+          - for x in ]1, 2] :
+            - if autostretch is off : f(x) = 10x
+            - if autostretch is on  : f(x) = 2x
+
+        :return: the computed midtones param value
+        :rtype: float
+        """
+
+        auto_stretch_on = self._parameters[0].value
+        mids_level = self._parameters[3].value
+
+        if auto_stretch_on:
+            slope = 2
+        else:
+            slope = 10
+
+        if mids_level < 0 or mids_level > 2:
+            raise ProcessingError(f"Invalid value for midtones input value : {mids_level}")
+
+        if mids_level == 0:
+            return 0.1
+
+        if mids_level <= 1:
+            return mids_level
+
+        return slope * mids_level
 
 
 # pylint: disable=R0903

@@ -52,13 +52,14 @@ class MainWindow(QMainWindow):
 
         # setup levels controls
         self._levels_controls = [
-            self._ui.sld_black,
-            self._ui.sld_white,
             self._ui.chk_autostretch,
-            self._ui.cb_levels_stretch_method
+            self._ui.cb_levels_stretch_method,
+            self._ui.sld_black,
+            self._ui.sld_midtones,
+            self._ui.sld_white,
         ]
 
-        for label in DYNAMIC_DATA.levels_parameters[3].choices:
+        for label in DYNAMIC_DATA.levels_parameters[1].choices:
             self._ui.cb_levels_stretch_method.addItem(label)
 
         self._reset_levels()
