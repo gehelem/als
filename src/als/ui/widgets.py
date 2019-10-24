@@ -59,7 +59,7 @@ class ImageView(QGraphicsView):
     Subclasses QGraphicsView to add mousewheel zoom features
     """
 
-    _ZOOM_SCALE_RATIO = 1.1
+    _ZOOM_FACTOR = 1.1
 
     @log
     def __init__(self, parent: typing.Optional[QWidget] = ...):
@@ -77,9 +77,9 @@ class ImageView(QGraphicsView):
         :type event: QtGui.QWheelEvent
         """
         if event.angleDelta().y() > 0:
-            self.scale(self._ZOOM_SCALE_RATIO, self._ZOOM_SCALE_RATIO)
+            self.scale(ImageView._ZOOM_FACTOR, ImageView._ZOOM_FACTOR)
         elif event.angleDelta().y() < 0:
-            self.scale(1 / self._ZOOM_SCALE_RATIO, 1 / self._ZOOM_SCALE_RATIO)
+            self.scale(1 / ImageView._ZOOM_FACTOR, 1 / ImageView._ZOOM_FACTOR)
 
     # pylint: disable=C0103
     def mouseDoubleClickEvent(self, _):
@@ -98,7 +98,7 @@ class HistogramView(QWidget):
     """
 
     _BIN_COUNT = 512
-    _DISPLAY_TOP_MARGIN_IN_PX = 5
+    _TOP_MARGIN_IN_PX = 5
 
     @log
     def __init__(self, parent=None):
@@ -153,7 +153,7 @@ class HistogramView(QWidget):
                 # We remove first and last item of a copy of each histogram before getting its max value
                 # so we don't end up with a vertically squashed display if histogram is clipping on black or white
                 global_maximum = max([tweaked_histogram.max() for tweaked_histogram in [
-                    np.delete(histogram, [0, self._BIN_COUNT - 1]) for histogram in self._histograms
+                    np.delete(histogram, [0, HistogramView._BIN_COUNT - 1]) for histogram in self._histograms
                 ]])
 
                 if global_maximum == 0:
@@ -180,14 +180,14 @@ class HistogramView(QWidget):
 
                     for i, value in enumerate(histogram):
 
-                        x = round(i / self._BIN_COUNT * self.width())
+                        x = round(i / HistogramView._BIN_COUNT * self.width())
                         bar_height = round(value / global_maximum * self.height())
 
                         self._painter.drawLine(
                             x,
                             self.height(),
                             x,
-                            self.height() - (bar_height - self._DISPLAY_TOP_MARGIN_IN_PX))
+                            self.height() - (bar_height - HistogramView._TOP_MARGIN_IN_PX))
 
                     self._painter.restore()
 
@@ -213,7 +213,7 @@ class HistogramView(QWidget):
 
             histograms = list()
             for channel in range(3):
-                histograms.append(np.histogram(image.data[:, :, channel], self._BIN_COUNT)[0])
+                histograms.append(np.histogram(image.data[:, :, channel], HistogramView._BIN_COUNT)[0])
                 self._histograms = histograms
         else:
-            self._histograms = [np.histogram(image.data, self._BIN_COUNT)[0]]
+            self._histograms = [np.histogram(image.data, HistogramView._BIN_COUNT)[0]]

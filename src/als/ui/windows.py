@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
         self._ui.cb_stacking_mode.blockSignals(False)
 
         # prevent log dock to be too tall
-        self.resizeDocks([self._ui.log_dock], [self._LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
+        self.resizeDocks([self._ui.log_dock], [MainWindow._LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
 
         # setup levels controls
         self._levels_controls = [
