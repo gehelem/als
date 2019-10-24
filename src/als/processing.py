@@ -79,7 +79,7 @@ class Levels(ImageProcessor):
             ListParameter(
                 "stretch method",
                 "autostretch method",
-                'Adaptive',
+                'Contrast',
                 ['Adaptive', 'Contrast']))
 
         self._parameters.append(
