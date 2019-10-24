@@ -154,20 +154,22 @@ class HistogramView(QWidget):
                 if max_value == 0:
                     max_value = self._histogram.max()
 
+                self._painter.save()
+                pen = QPen(Qt.white)
+                pen.setWidth(2)
+                self._painter.setPen(pen)
+
                 for i, value in enumerate(self._histogram):
 
                     x = round(i / self._BIN_COUNT * self.width())
                     bar_height = round(value / max_value * self.height())
 
-                    self._painter.save()
-                    pen = QPen(Qt.white)
-                    pen.setWidth(2)
-                    self._painter.setPen(pen)
                     self._painter.drawLine(x,
                                            self.height(),
                                            x,
                                            self.height() - bar_height)
-                    self._painter.restore()
+
+                self._painter.restore()
 
             else:
                 font_inspector = self._painter.fontMetrics()
