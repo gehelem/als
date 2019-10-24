@@ -105,7 +105,6 @@ class HistogramView(QWidget):
         QWidget.__init__(self, parent)
         self._histograms = None
         self._painter = QPainter()
-        self._painter.setRenderHint(QPainter.Antialiasing, True)
 
         self._color_pens = [QPen(Qt.red), QPen(Qt.green), QPen(Qt.blue)]
         for pen in self._color_pens:
