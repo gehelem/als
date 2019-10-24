@@ -68,6 +68,7 @@ class ListParameter(ProcessingParameter):
     represents a list of choices of type text
     """
     # pylint: disable=R0913
+    @log
     def __init__(self, name: str, description: str, default: Any,
                  choices: list):
 
