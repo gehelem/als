@@ -300,28 +300,27 @@ class MainWindow(QMainWindow):
             session_is_paused = session.is_paused
 
             # update running statuses
-            scanner_status_message = f"Scanner on {config.get_scan_folder_path()}: "
+            scanner_status_message = f"Scanner on {config.get_scan_folder_path()} : "
             scanner_status_message += f"Running" if session_is_running else "Stopped"
             self._ui.lbl_scanner_status.setText(scanner_status_message)
 
             if web_server_is_running:
                 url = f"http://{DYNAMIC_DATA.web_server_ip}:{config.get_www_server_port_number()}"
-                self._ui.lbl_web_server_status.setText(
-                    f'Web server: Started, reachable at '
-                    f'<a href="{url}" style="color: #CC0000">{url}</a>')
+                webserver_status = f'Started, reachable at <a href="{url}" style="color: #CC0000">{url}</a>'
             else:
-                self._ui.lbl_web_server_status.setText("Web server: Stopped")
+                webserver_status = "Stopped"
+            self._ui.lbl_web_server_status.setText(f"Web server : {webserver_status}")
 
             if session_is_stopped:
-                session_status_string = "Stopped"
+                session_status = "Stopped"
             elif session_is_paused:
-                session_status_string = "Paused"
+                session_status = "Paused"
             elif session_is_running:
-                session_status_string = "Running"
+                session_status = "Running"
             else:
                 # this should never happen, that's why we check ;)
-                session_status_string = "### BUG !"
-            self._ui.lbl_session_status.setText(f"Session: {session_status_string}")
+                session_status = "### BUG !"
+            self._ui.lbl_session_status.setText(f"{session_status}")
 
             # update preferences accessibility according to session and web server status
             self._ui.action_prefs.setEnabled(not web_server_is_running and session_is_stopped)
