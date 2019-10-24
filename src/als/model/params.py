@@ -18,12 +18,12 @@ class ProcessingParameter:
     """
 
     @log
-    def __init__(self, name: str, description: str, default: Any, value: Any):
+    def __init__(self, name: str, description: str, default: Any):
 
         self.name = name
         self.description = description
         self.default = default
-        self.value = value
+        self.value = self.default
 
     @log
     def reset(self):
@@ -55,10 +55,10 @@ class RangeParameter(ProcessingParameter):
 
     # pylint: disable=R0913
     @log
-    def __init__(self, name: str, description: str, default: Any, value: Any,
+    def __init__(self, name: str, description: str, default: Any,
                  minimum: int, maximum: int):
 
-        super().__init__(name, description, default, value)
+        super().__init__(name, description, default)
         self.minimum = minimum
         self.maximum = maximum
 
@@ -68,10 +68,10 @@ class ListParameter(ProcessingParameter):
     represents a list of choices of type text
     """
     # pylint: disable=R0913
-    def __init__(self, name: str, description: str, default: Any, value: Any,
+    def __init__(self, name: str, description: str, default: Any,
                  choices: list):
 
-        super().__init__(name, description, default, value)
+        super().__init__(name, description, default)
         self.choices = choices
 
 
