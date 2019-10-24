@@ -60,6 +60,9 @@ class MainWindow(QMainWindow):
             self._ui.sld_white,
         ]
 
+        for label in DYNAMIC_DATA.levels_parameters[1].choices:
+            self._ui.cb_levels_stretch_method.addItem(label)
+
         self._reset_levels()
 
         set_sliders_defaults(
@@ -70,9 +73,6 @@ class MainWindow(QMainWindow):
         self._ui.btn_levels_apply.clicked.connect(self._apply_levels)
         self._ui.btn_levels_reset.clicked.connect(self._reset_levels)
         self._ui.btn_levels_reload.clicked.connect(self._reload_levels)
-
-        for label in DYNAMIC_DATA.levels_parameters[1].choices:
-            self._ui.cb_levels_stretch_method.addItem(label)
 
         # setup exchanges with dynamic data
         DYNAMIC_DATA.add_observer(self)
