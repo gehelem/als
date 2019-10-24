@@ -133,7 +133,7 @@ class Levels(ImageProcessor):
                 low, high = np.percentile(data, (2, 98))
                 return exposure.rescale_intensity(data, in_range=(low, high))
 
-            available_stretches = [histo_adpative_equalization, contrast_stretching]
+            available_stretches = [contrast_stretching, histo_adpative_equalization]
 
             chosen_stretch = available_stretches[stretch_method.choices.index(stretch_method.value)]
 
