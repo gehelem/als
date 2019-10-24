@@ -15,13 +15,13 @@ from als.model.data import DYNAMIC_DATA
 
 _LOGGER = logging.getLogger(__name__)
 
-DEFAULT_SLIDER_MAX = 255
-
 
 class Slider(QSlider):
     """
     A slider that has a default value and resets to it when double-clicked
     """
+
+    MAX_VALUE = 255
 
     @log
     def __init__(self, parent=None):

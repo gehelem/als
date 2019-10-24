@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QWidget, QSlider, QCheckBox, QComboBox
 
 from als.code_utilities import AlsException, log
 from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter, ListParameter
-from als.ui.widgets import Slider, DEFAULT_SLIDER_MAX
+from als.ui.widgets import Slider
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -237,7 +237,7 @@ def _compute_slider_value_from_param_value(value: Any, amplitude: Any):
     :rtype: muneric
     """
 
-    return value / amplitude * DEFAULT_SLIDER_MAX
+    return value / amplitude * Slider.MAX_VALUE
 
 @log
 def _compute_param_value_from_slider_value(param: RangeParameter, slider_value):
@@ -254,4 +254,4 @@ def _compute_param_value_from_slider_value(param: RangeParameter, slider_value):
     :rtype: muneric
     """
 
-    return slider_value / DEFAULT_SLIDER_MAX * (param.maximum - param.minimum)
+    return slider_value / Slider.MAX_VALUE * (param.maximum - param.minimum)
