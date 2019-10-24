@@ -98,6 +98,7 @@ class HistogramView(QWidget):
     """
 
     _BIN_COUNT = 512
+    _DISPLAY_TOP_MARGIN_IN_PX = 5
 
     @log
     def __init__(self, parent=None):
@@ -167,7 +168,7 @@ class HistogramView(QWidget):
                     self._painter.drawLine(x,
                                            self.height(),
                                            x,
-                                           self.height() - bar_height)
+                                           self.height() - (bar_height - self._DISPLAY_TOP_MARGIN_IN_PX))
 
                 self._painter.restore()
 
