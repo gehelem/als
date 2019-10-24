@@ -104,8 +104,17 @@ class HistogramView(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self._image = None
-        self._histogram = None
+        self._histograms = None
         self._painter = QPainter()
+        self._painter.setRenderHint(QPainter.Antialiasing, True)
+
+        self._color_pens = [QPen(Qt.red), QPen(Qt.green), QPen(Qt.blue)]
+        for pen in self._color_pens:
+            pen.setWidth(2)
+
+        self._white_pen = QPen(Qt.white)
+        self._white_pen.setWidth(2)
+
         DYNAMIC_DATA.add_observer(self)
 
     @log
@@ -123,7 +132,7 @@ class HistogramView(QWidget):
 
             if image is not None:
                 self._image = image
-                self._histogram = self._compute_histogram()
+                self._compute_histograms()
                 self.update()
 
     # pylint: disable=C0103
@@ -138,39 +147,52 @@ class HistogramView(QWidget):
         if self.isVisible():
 
             self._painter.begin(self)
-            self._painter.setRenderHint(QPainter.Antialiasing, True)
             self._painter.translate(QPoint(0, 0))
 
-            if self._histogram is not None:
-                # remove first and last items of a copy of the histogram before getting max value
-                # so we don't end up with a vertically squashed display
-                # when histogram is clipping on black or white
-                tweaked_histogram = np.delete(self._histogram, [0, self._BIN_COUNT - 1])
-                max_value = tweaked_histogram.max()
+            if self._histograms is not None:
 
-                # in some very rare cases (like playing with an image of pure single primary color)
-                # max_value will be 0 after removing the 2 extreme bins of the original histogram
+                # We first need to find the global maximum among our histograms
                 #
-                # in that case, we replace this 0 with the original histogram's max value
-                if max_value == 0:
-                    max_value = self._histogram.max()
+                # We remove first and last item of a copy of each histogram before getting its max value
+                # so we don't end up with a vertically squashed display if histogram is clipping on black or white
+                global_maximum = max([tweaked_histogram.max() for tweaked_histogram in [
+                    np.delete(histogram, [0, self._BIN_COUNT - 1]) for histogram in self._histograms
+                ]])
 
-                self._painter.save()
-                pen = QPen(Qt.white)
-                pen.setWidth(2)
-                self._painter.setPen(pen)
+                if global_maximum == 0:
+                    # In some very rare cases, i.e. playing with images of pure single primary colors,
+                    # the global maximum will be 0 after removing the 2 extreme bins of the original histograms
+                    #
+                    # As only Chuck Norris can divide by zero, we replace this 0 with the global maximum
+                    # among our *original* histograms
+                    global_maximum = max([original_histo.max() for original_histo in self._histograms])
 
-                for i, value in enumerate(self._histogram):
+                if self._image.is_color:
+                    pens = self._color_pens
+                    histograms = self._histograms
+                    self._painter.setCompositionMode(QPainter.CompositionMode_Plus)
+                else:
+                    pens = [self._white_pen]
+                    histograms = [self._histograms[0]]
+                    self._painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
 
-                    x = round(i / self._BIN_COUNT * self.width())
-                    bar_height = round(value / max_value * self.height())
+                for pen, histogram in zip(pens, histograms):
 
-                    self._painter.drawLine(x,
-                                           self.height(),
-                                           x,
-                                           self.height() - (bar_height - self._DISPLAY_TOP_MARGIN_IN_PX))
+                    self._painter.save()
+                    self._painter.setPen(pen)
 
-                self._painter.restore()
+                    for i, value in enumerate(histogram):
+
+                        x = round(i / self._BIN_COUNT * self.width())
+                        bar_height = round(value / global_maximum * self.height())
+
+                        self._painter.drawLine(
+                            x,
+                            self.height(),
+                            x,
+                            self.height() - (bar_height - self._DISPLAY_TOP_MARGIN_IN_PX))
+
+                    self._painter.restore()
 
             else:
                 font_inspector = self._painter.fontMetrics()
@@ -186,9 +208,15 @@ class HistogramView(QWidget):
             self._painter.end()
 
     @log
-    def _compute_histogram(self):
+    def _compute_histograms(self):
         """
-        Compute histogram
+        Compute histograms
         """
+        if self._image.is_color():
 
-        return np.histogram(self._image.data, self._BIN_COUNT)[0]
+            histograms = list()
+            for channel in range(3):
+                histograms.append(np.histogram(self._image.data[:, :, channel], self._BIN_COUNT)[0])
+                self._histograms = histograms
+        else:
+            self._histograms = [np.histogram(self._image.data, self._BIN_COUNT)[0]]
