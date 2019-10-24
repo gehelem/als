@@ -202,7 +202,8 @@ def reset_params(params: List[ProcessingParameter], controls: List[QWidget]):
 
     for param in params:
         param.reset()
-        update_controls_from_params(params, controls)
+
+    update_controls_from_params(params, controls)
 
 
 @log
