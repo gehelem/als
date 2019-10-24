@@ -73,38 +73,38 @@ class Levels(ImageProcessor):
             SwitchParameter(
                 "autostretch",
                 "automatic histogram stretch",
-                True))
+                default=True))
 
         self._parameters.append(
             ListParameter(
                 "stretch method",
                 "autostretch method",
-                'Contrast',
-                ['Adaptive', 'Contrast']))
+                default='Contrast',
+                choices=['Contrast', 'Adaptive']))
 
         self._parameters.append(
             RangeParameter(
                 "black",
                 "black level",
-                0,
-                0,
-                Levels._UPPER_LIMIT))
+                default=0,
+                minimum=0,
+                maximum=Levels._UPPER_LIMIT))
 
         self._parameters.append(
             RangeParameter(
                 "mids",
                 "midtones level",
-                1,
-                0,
-                2))
+                default=1,
+                minimum=0,
+                maximum=2))
 
         self._parameters.append(
             RangeParameter(
                 "white",
                 "while level",
-                Levels._UPPER_LIMIT,
-                0,
-                Levels._UPPER_LIMIT))
+                default=Levels._UPPER_LIMIT,
+                minimum=0,
+                maximum=Levels._UPPER_LIMIT))
 
     @log
     def process_image(self, image: Image):
