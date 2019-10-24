@@ -103,7 +103,6 @@ class HistogramView(QWidget):
     @log
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
-        self._image = None
         self._histograms = None
         self._painter = QPainter()
         self._painter.setRenderHint(QPainter.Antialiasing, True)
@@ -131,8 +130,7 @@ class HistogramView(QWidget):
             image = DYNAMIC_DATA.process_result
 
             if image is not None:
-                self._image = image
-                self._compute_histograms()
+                self._compute_histograms(image)
                 self.update()
 
     # pylint: disable=C0103
@@ -167,7 +165,7 @@ class HistogramView(QWidget):
                     # among our *original* histograms
                     global_maximum = max([original_histo.max() for original_histo in self._histograms])
 
-                if self._image.is_color:
+                if len(self._histograms) > 1:
                     pens = self._color_pens
                     histograms = self._histograms
                     self._painter.setCompositionMode(QPainter.CompositionMode_Plus)
@@ -208,15 +206,15 @@ class HistogramView(QWidget):
             self._painter.end()
 
     @log
-    def _compute_histograms(self):
+    def _compute_histograms(self, image):
         """
         Compute histograms
         """
-        if self._image.is_color():
+        if image.is_color():
 
             histograms = list()
             for channel in range(3):
-                histograms.append(np.histogram(self._image.data[:, :, channel], self._BIN_COUNT)[0])
+                histograms.append(np.histogram(image.data[:, :, channel], self._BIN_COUNT)[0])
                 self._histograms = histograms
         else:
-            self._histograms = [np.histogram(self._image.data, self._BIN_COUNT)[0]]
+            self._histograms = [np.histogram(image.data, self._BIN_COUNT)[0]]
