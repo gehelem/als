@@ -62,7 +62,7 @@
      <x>0</x>
      <y>0</y>
      <width>1075</width>
-     <height>23</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -1075,6 +1075,22 @@
     <hint type="destinationlabel">
      <x>-1</x>
      <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chk_autostretch</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>cb_levels_stretch_method</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>811</x>
+     <y>294</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1008</x>
+     <y>294</y>
     </hint>
    </hints>
   </connection>
