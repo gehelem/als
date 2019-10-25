@@ -175,7 +175,7 @@ Developing ALS
 On top of the steps described in `Installation`_ and `Launching ALS`_, you don't need much to start developing on ALS.
 
 All you have to remember when you work on GUI: ALS uses the Qt framework. If you modify/create .ui files, you'll have to
-recompile the corresponding Python modules. This is done by calling the following script : `utils/compile_ui_and_rc.sh`.
+recompile the corresponding Python modules. This is done by calling the following script : `utils/compile_ui_and_rc.py`.
 All .ui files MUST be located inside the `als.ui` package. Compiled modules are located in the
 `als.generated` package.
 
