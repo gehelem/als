@@ -1,7 +1,7 @@
 import numpy as np
 from pytest import raises
 
-from als.preprocess import get_limit_and_utype
+from als.legacy_code_stash import get_limit_and_utype
 
 
 def test_get_limit_and_utype_invalid():
