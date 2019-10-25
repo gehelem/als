@@ -25,6 +25,7 @@ import os
 import shutil
 from datetime import datetime
 from pathlib import Path
+from typing import List
 
 import als.model.data
 from als import config
@@ -35,6 +36,7 @@ from als.io.network import get_ip, WebServer
 from als.io.output import ImageSaver
 from als.model.base import Image, Session
 from als.model.data import STACKING_MODE_MEAN, DYNAMIC_DATA, WORKER_STATUS_BUSY, WORKER_STATUS_IDLE
+from als.model.params import ProcessingParameter
 from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput, Levels
 from als.stack import Stacker
 
@@ -94,9 +96,8 @@ class Controller:
 
         self._post_process_queue = DYNAMIC_DATA.process_queue
         self._post_process_pipeline: Pipeline = Pipeline('post-process', self._post_process_queue, [ConvertForOutput()])
-        levels_post_process = Levels()
-        self._post_process_pipeline.add_process(levels_post_process)
-        DYNAMIC_DATA.levels_parameters = levels_post_process.get_parameters()
+        self._levels_processor = Levels()
+        self._post_process_pipeline.add_process(self._levels_processor)
         self._post_process_pipeline.start()
 
         self._saver_queue = DYNAMIC_DATA.save_queue
@@ -129,6 +130,15 @@ class Controller:
         self._saver.waiting_signal.connect(self.on_saver_waiting)
 
         DYNAMIC_DATA.session.status_changed_signal.connect(self._notify_model_observers)
+
+    @log
+    def get_levels_parameters(self) -> List[ProcessingParameter]:
+        """
+        Retrieves Levels processor parameters
+
+        :return: Levels processor parameters
+        """
+        return self._levels_processor.get_parameters()
 
     @log
     def remove_model_observer(self, observer):

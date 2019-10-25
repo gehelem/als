@@ -57,7 +57,7 @@ class MainWindow(QMainWindow):
         # prevent log dock to be too tall
         self.resizeDocks([self._ui.log_dock], [MainWindow._LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
 
-        # setup levels controls
+        # setup levels controls and parameters
         self._levels_controls = [
             self._ui.chk_autostretch,
             self._ui.cb_levels_stretch_method,
@@ -66,13 +66,15 @@ class MainWindow(QMainWindow):
             self._ui.sld_white,
         ]
 
-        for label in DYNAMIC_DATA.levels_parameters[1].choices:
+        self._levels_parameters = self._controller.get_levels_parameters()
+
+        for label in self._levels_parameters[1].choices:
             self._ui.cb_levels_stretch_method.addItem(label)
 
         self._reset_levels()
 
         set_sliders_defaults(
-            [DYNAMIC_DATA.levels_parameters[2], DYNAMIC_DATA.levels_parameters[3], DYNAMIC_DATA.levels_parameters[4]],
+            [self._levels_parameters[2], self._levels_parameters[3], self._levels_parameters[4]],
             [self._ui.sld_black, self._ui.sld_midtones, self._ui.sld_white]
         )
 
@@ -103,7 +105,7 @@ class MainWindow(QMainWindow):
         """
         Apply levels processing
         """
-        update_params_from_controls(DYNAMIC_DATA.levels_parameters, self._levels_controls)
+        update_params_from_controls(self._levels_parameters, self._levels_controls)
 
         self._controller.apply_processing()
 
@@ -111,13 +113,13 @@ class MainWindow(QMainWindow):
         """
         Resets levels processing controls to their defaults
         """
-        reset_params(DYNAMIC_DATA.levels_parameters, self._levels_controls)
+        reset_params(self._levels_parameters, self._levels_controls)
 
     def _reload_levels(self):
         """
         Sets levels processing controls to their previously recorded values (last apply)
         """
-        update_controls_from_params(DYNAMIC_DATA.levels_parameters, self._levels_controls)
+        update_controls_from_params(self._levels_parameters, self._levels_controls)
 
     @log
     def reset_image_view(self):

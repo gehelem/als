@@ -9,7 +9,6 @@ import numpy as np
 import als
 from als.code_utilities import SignalingQueue, log
 from als.model.base import Session
-from als.model.params import ProcessingParameter
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ STACKED_IMAGE_FILE_NAME_BASE = "stack_image"
 WEB_SERVED_IMAGE_FILE_NAME_BASE = "web_image"
 
 
-# pylint: disable=R0902, R0904
+# pylint: disable=R0902, R0903
 class DynamicData:
     """
     Holds and maintain application dynamic data and notify observers on significant changes
@@ -53,7 +52,6 @@ class DynamicData:
         self.stacker_status = ""
         self.post_processor_status = ""
         self.saver_status = ""
-        self.levels_parameters: ProcessingParameter = None
 
 
 class HistogramContainer:
