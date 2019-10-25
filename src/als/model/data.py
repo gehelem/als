@@ -39,14 +39,11 @@ class DynamicData:
         self._session = Session()
         self._web_server_is_running = False
         self._web_server_ip = ""
-        self._stacking_mode = ""
-        self._align_before_stacking = True
         self._stack_size = 0
         self._pre_processor_queue_size = 0
         self._stacker_queue_size = 0
         self._post_processor_queue_size = 0
         self._saver_queue_size = 0
-        self._save_every_image: bool = False
         self._post_process_result = None
         self._histogram_container: HistogramContainer = None
         self._pre_process_queue = SignalingQueue()
@@ -285,26 +282,6 @@ class DynamicData:
             self._notify_observers()
 
     @property
-    def save_every_image(self):
-        """
-        Retrieves the flag that tells if we need to save every process result image
-
-        :return: the flag that tells if we need to save every process result image
-        :rtype: bool
-        """
-        return self._save_every_image
-
-    @save_every_image.setter
-    def save_every_image(self, save_every_image):
-        """
-        Sets the flag that tells if we need to save every process result image
-
-        :param save_every_image: flag that tells if we need to save every process result image
-        :type save_every_image: bool
-        """
-        self._save_every_image = save_every_image
-
-    @property
     def stack_size(self):
         """
         Retrieves the published stack size
@@ -367,55 +344,6 @@ class DynamicData:
         """
         self._post_process_result = image
         self._notify_observers(image_only=True)
-
-    @property
-    def align_before_stacking(self):
-        """
-        Retrieves alignment switch
-
-        :return: is alignment ON ?
-        :rtype: bool
-        """
-        return self._align_before_stacking
-
-    @align_before_stacking.setter
-    def align_before_stacking(self, align: bool):
-        """
-        Sets alignment switch
-
-        :param align: is alignment ON ?
-        :type align: bool
-        """
-        self._align_before_stacking = align
-
-    @property
-    def stacking_mode(self):
-        """
-        Retrieves stacking mode.
-
-        :return: String representation of user chosen stacking mode.
-        :rtype: str
-        """
-        return self._stacking_mode
-
-    @stacking_mode.setter
-    def stacking_mode(self, text: str):
-        """
-        Sets stacking mode.
-
-        :param text: String representation of user chosen stacking mode. Allowed values are :
-
-          - Sum : Stacking mode is sum
-          - Mean : stacking mode is mean
-
-        If unknown value is received, fallback to Mean
-
-        :type text: str
-        """
-        if text.strip() in [STACKING_MODE_MEAN, STACKING_MODE_SUM]:
-            self._stacking_mode = text
-        else:
-            self._stacking_mode = STACKING_MODE_MEAN
 
     @property
     def process_queue(self):

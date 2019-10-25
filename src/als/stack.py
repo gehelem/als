@@ -26,7 +26,7 @@ from skimage.transform import SimilarityTransform
 
 from als.code_utilities import log, Timer
 from als.model.base import Image
-from als.model.data import STACKING_MODE_SUM, STACKING_MODE_MEAN, DYNAMIC_DATA
+from als.model.data import STACKING_MODE_SUM, STACKING_MODE_MEAN
 from als.processing import QueueConsumer
 
 _LOGGER = logging.getLogger(__name__)
@@ -54,6 +54,52 @@ class Stacker(QueueConsumer):
         self._size: int = 0
         self._last_stacking_result: Image = None
         self._align_reference: Image = None
+        self._stacking_mode = STACKING_MODE_MEAN
+        self._align_before_stack = True
+
+    @property
+    @log
+    def align_before_stack(self) -> bool:
+        """
+        Gets "align before stack" switch
+
+        :return: Do we align before stacking ?
+        :rtype: bool
+        """
+        return self._align_before_stack
+
+    @align_before_stack.setter
+    @log
+    def align_before_stack(self, align: bool):
+        """
+        Sets "align before stack" switch
+
+        :param align: Do we align before stacking ?
+        :type align: bool
+        """
+        self._align_before_stack = align
+
+    @property
+    @log
+    def stacking_mode(self) -> str:
+        """
+        Gets current stacking mode
+
+        :return: the stacking mode
+        :rtype: str
+        """
+        return self._stacking_mode
+
+    @stacking_mode.setter
+    @log
+    def stacking_mode(self, mode: str):
+        """
+        Sets current stacking mode
+
+        :param mode: stacking mode
+        :type mode: str
+        """
+        self._stacking_mode = mode
 
     @log
     def reset(self):
@@ -114,7 +160,7 @@ class Stacker(QueueConsumer):
                     )
 
                 try:
-                    if DYNAMIC_DATA.align_before_stacking:
+                    if self._align_before_stack:
 
                         # alignment is a memory greedy process, we take special care of such errors
                         try:
@@ -122,7 +168,7 @@ class Stacker(QueueConsumer):
                         except OSError as os_error:
                             raise StackingError(os_error)
 
-                    self._stack_image(image, DYNAMIC_DATA.stacking_mode)
+                    self._stack_image(image)
 
                 except AttributeError:
                     raise StackingError("Our reference images are gone.")
@@ -329,7 +375,7 @@ class Stacker(QueueConsumer):
         return top, bottom, left, right
 
     @log
-    def _stack_image(self, image: Image, stacking_mode: str):
+    def _stack_image(self, image: Image):
         """
         Compute stacking according to user defined stacking mode
 
@@ -337,14 +383,13 @@ class Stacker(QueueConsumer):
 
         :param image: the image to be stacked
         :type image: Image
-
-        :param stacking_mode: a string representation of the desired stacking mode
-        :type stacking_mode: str
         """
 
-        if stacking_mode == STACKING_MODE_SUM:
+        _LOGGER.debug(f"Stacking in {self._stacking_mode} mode...")
+        if self._stacking_mode == STACKING_MODE_SUM:
             image.data = image.data + self._last_stacking_result.data
-        elif stacking_mode == STACKING_MODE_MEAN:
+        elif self._stacking_mode == STACKING_MODE_MEAN:
             image.data = (self.size * self._last_stacking_result.data + image.data) / (self.size + 1)
         else:
-            raise StackingError(f"Unsupported stacking mode : {stacking_mode}")
+            raise StackingError(f"Unsupported stacking mode : {self._stacking_mode}")
+        _LOGGER.debug(f"Stacking in {self._stacking_mode} done.")

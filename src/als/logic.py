@@ -70,15 +70,12 @@ class Controller:
 
         DYNAMIC_DATA.session.set_status(Session.stopped)
         DYNAMIC_DATA.web_server_is_running = False
-        DYNAMIC_DATA.align_before_stacking = True
-        DYNAMIC_DATA.save_every_image = False
+        self._save_every_image = False
 
         DYNAMIC_DATA.pre_processor_status = WORKER_STATUS_IDLE
         DYNAMIC_DATA.stacker_status = WORKER_STATUS_IDLE
         DYNAMIC_DATA.post_processor_status = WORKER_STATUS_IDLE
         DYNAMIC_DATA.saver_status = WORKER_STATUS_IDLE
-
-        DYNAMIC_DATA.stacking_mode = STACKING_MODE_MEAN
 
         self._input_scanner: InputScanner = InputScanner.create_scanner()
 
@@ -91,6 +88,8 @@ class Controller:
 
         self._stacker_queue: SignalingQueue = DYNAMIC_DATA.stacker_queue
         self._stacker: Stacker = Stacker(self._stacker_queue)
+        self._stacker.stacking_mode = STACKING_MODE_MEAN
+        self._stacker.align_before_stack = True
         self._stacker.start()
 
         self._post_process_queue = DYNAMIC_DATA.process_queue
@@ -137,6 +136,66 @@ class Controller:
 
             DYNAMIC_DATA.process_queue.put(self._last_stacking_result.clone())
 
+    @log
+    def get_save_every_image(self) -> bool:
+        """
+        Retrieves the flag that tells if we need to save every process result image
+
+        :return: the flag that tells if we need to save every process result image
+        :rtype: bool
+        """
+        return self._save_every_image
+
+    @log
+    def set_save_every_image(self, save_every_image: bool):
+        """
+        Sets the flag that tells if we need to save every process result image
+
+        :param save_every_image: flag that tells if we need to save every process result image
+        :type save_every_image: bool
+        """
+        self._save_every_image = save_every_image
+
+    @log
+    def get_align_before_stack(self) -> bool:
+        """
+        Gets "align before stack" switch
+
+        :return: Do we align before stacking ?
+        :rtype: bool
+        """
+        return self._stacker.align_before_stack
+
+    @log
+    def set_align_before_stack(self, align: bool):
+        """
+        Sets "align before stack" switch
+
+        :param align: Do we align before stacking ?
+        :type align: bool
+        """
+        self._stacker.align_before_stack = align
+
+    @log
+    def get_stacking_mode(self):
+        """
+        Gets current stacking mode
+
+        :return: the stacking mode
+        :rtype: str
+        """
+        return self._stacker.stacking_mode
+
+    @log
+    def set_stacking_mode(self, mode):
+        """
+        Sets current stacking mode
+
+        :param mode: stacking mode
+        :type mode: str
+        """
+        self._stacker.stacking_mode = mode
+
     @staticmethod
     @log
     def on_stack_size_changed(size):
@@ -159,7 +218,7 @@ class Controller:
         image.origin = "Process result"
         DYNAMIC_DATA.histogram_container = compute_histograms_for_display(image, Controller._BIN_COUNT)
         DYNAMIC_DATA.post_process_result = image
-        self.save_process_result()
+        self.save_post_process_result()
 
     @log
     def on_new_stack_result(self, image: Image):
@@ -342,8 +401,8 @@ class Controller:
             except ScannerStartError as scanner_start_error:
                 raise SessionError("Input scanner could not start", scanner_start_error)
 
-            running_mode = f"{DYNAMIC_DATA.stacking_mode}"
-            running_mode += " with alignment" if DYNAMIC_DATA.align_before_stacking else " without alignment"
+            running_mode = f"{self._stacker.stacking_mode}"
+            running_mode += " with alignment" if self._stacker.align_before_stack else " without alignment"
             _LOGGER.info(f"Session running in mode {running_mode}")
             DYNAMIC_DATA.session.set_status(Session.running)
 
@@ -447,7 +506,7 @@ class Controller:
         shutil.copy(resources_dir_path + "/waiting.jpg", standby_image_path)
 
     @log
-    def save_process_result(self):
+    def save_post_process_result(self):
         """
         Saves stacking result image to disk
         """
@@ -467,7 +526,7 @@ class Controller:
                             als.model.data.WEB_SERVED_IMAGE_FILE_NAME_BASE)
 
         # if user want to save every image, we save a timestamped version
-        if DYNAMIC_DATA.save_every_image:
+        if self._save_every_image:
             self.save_image(image,
                             config.get_image_save_format(),
                             config.get_work_folder_path(),

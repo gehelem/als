@@ -40,13 +40,19 @@ class MainWindow(QMainWindow):
         self._ui.setupUi(self)
         self.setWindowTitle("Astro Live Stacker")
 
-        # populate stacking mode combo box
+        # populate stacking mode combo box=
         self._ui.cb_stacking_mode.blockSignals(True)
         stacking_modes = [STACKING_MODE_SUM, STACKING_MODE_MEAN]
         for stacking_mode in stacking_modes:
             self._ui.cb_stacking_mode.addItem(stacking_mode)
-        self._ui.cb_stacking_mode.setCurrentIndex(stacking_modes.index(DYNAMIC_DATA.stacking_mode))
+        self._ui.cb_stacking_mode.setCurrentIndex(stacking_modes.index(self._controller.get_stacking_mode()))
         self._ui.cb_stacking_mode.blockSignals(False)
+
+        # update align checkbox
+        self._ui.chk_align.setChecked(self._controller.get_align_before_stack())
+
+        # update save every frame checkbox
+        self._ui.chk_save_every_image.setChecked(self._controller.get_save_every_image())
 
         # prevent log dock to be too tall
         self.resizeDocks([self._ui.log_dock], [MainWindow._LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
@@ -140,8 +146,10 @@ class MainWindow(QMainWindow):
 
         if DYNAMIC_DATA.session.is_stopped:
 
-            if SaveWaitDialog.count_remaining_images() > 0:
-                SaveWaitDialog(self).exec()
+            image_waiter = SaveWaitDialog(self._controller, self)
+
+            if image_waiter.count_remaining_images() > 0:
+                image_waiter.exec()
 
             event.accept()
         else:
@@ -184,39 +192,35 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     # pylint: disable=C0103
-    @staticmethod
     @log
-    def on_cb_stacking_mode_currentTextChanged(text: str):
+    def on_cb_stacking_mode_currentTextChanged(self, stacking_mode: str):
         """
         Qt slot executed when stacking mode comb box changed
 
-        :param text: new stacking mode
-        :type text: str
-        :return:
+        :param stacking_mode: new stacking mode
+        :type stacking_mode: str
         """
-        DYNAMIC_DATA.stacking_mode = text
+        self._controller.set_stacking_mode(stacking_mode)
 
-    @staticmethod
     @log
-    def on_chk_align_toggled(checked: bool):
+    def on_chk_align_toggled(self, checked: bool):
         """
         Qt slot executed when 'align' check box is changed
 
         :param checked: is checkbox checked ?
         :type checked: bool
         """
-        DYNAMIC_DATA.align_before_stacking = checked
+        self._controller.set_align_before_stack(checked)
 
-    @staticmethod
     @log
-    def on_chk_save_every_image_toggled(checked: bool):
+    def on_chk_save_every_image_toggled(self, checked: bool):
         """
         Qt slot executed when 'save ever image' check box is changed
 
         :param checked: is checkbox checked ?
         :type checked: bool
         """
-        DYNAMIC_DATA.save_every_image = checked
+        self._controller.set_save_every_image(checked)
 
     @pyqtSlot()
     @log

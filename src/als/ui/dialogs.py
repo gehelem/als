@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QApplication
 import als.model.data
 from als import config
 from als.code_utilities import log
+from als.logic import Controller
 from als.model.data import VERSION, DYNAMIC_DATA, WORKER_STATUS_BUSY
 from generated.about_ui import Ui_AboutDialog
 from generated.prefs_ui import Ui_PrefsDialog
@@ -146,10 +147,12 @@ class SaveWaitDialog(QDialog):
     Dialog shown while waiting for all pending image saves to complete
     """
     @log
-    def __init__(self, parent=None):
+    def __init__(self, controller: Controller, parent=None):
         super().__init__(parent)
         self._ui = Ui_SaveWaitDialog()
         self._ui.setupUi(self)
+
+        self._controller = controller
 
         self.update_display(_)
         DYNAMIC_DATA.add_observer(self)
@@ -160,16 +163,15 @@ class SaveWaitDialog(QDialog):
         Update display
         """
 
-        remaining_image_count = SaveWaitDialog.count_remaining_images()
+        remaining_image_count = self.count_remaining_images()
         self._ui.lbl_remaining_saves.setText(str(remaining_image_count))
 
         if remaining_image_count == 0:
             DYNAMIC_DATA.remove_observer(self)
             self.close()
 
-    @staticmethod
     @log
-    def count_remaining_images():
+    def count_remaining_images(self):
         """
         Count images that still need to be saved.
 
@@ -199,7 +201,9 @@ class SaveWaitDialog(QDialog):
         ]:
             remaining_image_save_count += queue_size
 
-        additional_saves_per_image = [DYNAMIC_DATA.save_every_image, DYNAMIC_DATA.web_server_is_running].count(True)
+        additional_saves_per_image = [
+            self._controller.get_save_every_image(), DYNAMIC_DATA.web_server_is_running].count(True)
+
         remaining_image_save_count *= 1 + additional_saves_per_image
 
         remaining_image_save_count += 1 if DYNAMIC_DATA.saver_status == WORKER_STATUS_BUSY else 0
