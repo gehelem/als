@@ -81,7 +81,7 @@ class MainWindow(QMainWindow):
         self._ui.btn_levels_reload.clicked.connect(self._reload_levels)
 
         # setup exchanges with dynamic data
-        DYNAMIC_DATA.add_observer(self)
+        self._controller.add_model_observer(self)
         self.update_display()
 
         config.register_log_receiver(self)
@@ -164,7 +164,7 @@ class MainWindow(QMainWindow):
         This saves the processed image using user chosen format
 
         """
-        image_to_save = DYNAMIC_DATA.post_process_result
+        image_to_save = DYNAMIC_DATA.post_processor_result
         if image_to_save is not None:
             self._controller.save_image(image_to_save,
                                         config.get_image_save_format(),
@@ -265,7 +265,7 @@ class MainWindow(QMainWindow):
         """
         Update central image display.
         """
-        image_raw_data = DYNAMIC_DATA.post_process_result.data.copy()
+        image_raw_data = DYNAMIC_DATA.post_processor_result.data.copy()
 
         image = array2qimage(image_raw_data, normalize=(2 ** 16 - 1))
         self._image_item.setPixmap(QPixmap.fromImage(image))

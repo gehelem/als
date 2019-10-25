@@ -106,26 +106,58 @@ class Controller:
         self._last_stacking_result = None
         self._web_server = None
 
+        self._model_observers = list()
+
         self._input_scanner.new_image_signal[Image].connect(self.on_new_image_read)
         self._pre_process_pipeline.new_result_signal[Image].connect(self.on_new_pre_processed_image)
-        self._stacker.stack_size_changed_signal[int].connect(Controller.on_stack_size_changed)
+        self._stacker.stack_size_changed_signal[int].connect(self.on_stack_size_changed)
         self._stacker.new_result_signal[Image].connect(self.on_new_stack_result)
-        self._post_process_pipeline.new_result_signal[Image].connect(self.on_new_post_process_result)
+        self._post_process_pipeline.new_result_signal[Image].connect(self.on_new_post_processor_result)
 
-        self._pre_process_queue.size_changed_signal[int].connect(Controller.on_pre_process_queue_size_changed)
-        self._stacker_queue.size_changed_signal[int].connect(Controller.on_stack_queue_size_changed)
-        self._post_process_queue.size_changed_signal[int].connect(Controller.on_process_queue_size_changed)
-        self._saver_queue.size_changed_signal[int].connect(Controller.on_save_queue_size_changed)
+        self._pre_process_queue.size_changed_signal[int].connect(self.on_pre_process_queue_size_changed)
+        self._stacker_queue.size_changed_signal[int].connect(self.on_stacker_queue_size_changed)
+        self._post_process_queue.size_changed_signal[int].connect(self.on_post_processor_queue_size_changed)
+        self._saver_queue.size_changed_signal[int].connect(self.on_saver_queue_size_changed)
 
-        self._pre_process_pipeline.busy_signal.connect(Controller.on_pre_processor_busy)
-        self._pre_process_pipeline.waiting_signal.connect(Controller.on_pre_processor_waiting)
-        self._stacker.busy_signal.connect(Controller.on_stacker_busy)
-        self._stacker.waiting_signal.connect(Controller.on_stacker_waiting)
-        self._post_process_pipeline.busy_signal.connect(Controller.on_post_processor_busy)
-        self._post_process_pipeline.waiting_signal.connect(Controller.on_post_processor_waiting)
-        self._saver.busy_signal.connect(Controller.on_saver_busy)
-        self._saver.waiting_signal.connect(Controller.on_saver_waiting)
+        self._pre_process_pipeline.busy_signal.connect(self.on_pre_processor_busy)
+        self._pre_process_pipeline.waiting_signal.connect(self.on_pre_processor_waiting)
+        self._stacker.busy_signal.connect(self.on_stacker_busy)
+        self._stacker.waiting_signal.connect(self.on_stacker_waiting)
+        self._post_process_pipeline.busy_signal.connect(self.on_post_processor_busy)
+        self._post_process_pipeline.waiting_signal.connect(self.on_post_processor_waiting)
+        self._saver.busy_signal.connect(self.on_saver_busy)
+        self._saver.waiting_signal.connect(self.on_saver_waiting)
 
+        DYNAMIC_DATA.session.status_changed_signal.connect(self._notify_model_observers)
+
+    @log
+    def remove_model_observer(self, observer):
+        """
+        Removes observer from our observers list.
+
+        :param observer: the observer to remove
+        :type observer: any
+        """
+        if observer in self._model_observers:
+            self._model_observers.remove(observer)
+
+    @log
+    def _notify_model_observers(self, image_only=False):
+        """
+        Tells all registered observers to update their display
+        """
+        for observer in self._model_observers:
+            observer.update_display(image_only)
+
+    @log
+    def add_model_observer(self, observer):
+        """
+        Adds an observer to our observers list.
+
+        :param observer: the new observer
+        :type observer: any
+        """
+        self._model_observers.append(observer)
 
     @log
     def apply_processing(self):
@@ -196,9 +228,8 @@ class Controller:
         """
         self._stacker.stacking_mode = mode
 
-    @staticmethod
     @log
-    def on_stack_size_changed(size):
+    def on_stack_size_changed(self, size):
         """
         Stack size just changed
 
@@ -206,9 +237,10 @@ class Controller:
         :type size: int
         """
         DYNAMIC_DATA.stack_size = size
+        self._notify_model_observers()
 
     @log
-    def on_new_post_process_result(self, image: Image):
+    def on_new_post_processor_result(self, image: Image):
         """
         A new image processing result is here
 
@@ -217,7 +249,8 @@ class Controller:
         """
         image.origin = "Process result"
         DYNAMIC_DATA.histogram_container = compute_histograms_for_display(image, Controller._BIN_COUNT)
-        DYNAMIC_DATA.post_process_result = image
+        DYNAMIC_DATA.post_processor_result = image
+        self._notify_model_observers(image_only=True)
         self.save_post_process_result()
 
     @log
@@ -254,33 +287,32 @@ class Controller:
         """
         self._stacker_queue.put(image)
 
-    @staticmethod
     @log
-    def on_pre_process_queue_size_changed(new_size):
+    def on_pre_process_queue_size_changed(self, new_size):
         """
-        Qt slot executed when an item has just been pushed to the pre-process queue
+        Qt slot executed when an item has just been pushed to the pre-processor queue
 
         :param new_size: new queue size
         :type new_size: int
         """
         _LOGGER.debug(f"New pre-processor queue size : {new_size}")
         DYNAMIC_DATA.pre_processor_queue_size = new_size
+        self._notify_model_observers()
 
-    @staticmethod
     @log
-    def on_stack_queue_size_changed(new_size):
+    def on_stacker_queue_size_changed(self, new_size):
         """
-        Qt slot executed when an item has just been pushed to the stack queue
+        Qt slot executed when an item has just been pushed to the stacker queue
 
         :param new_size: new queue size
         :type new_size: int
         """
         _LOGGER.debug(f"New stacker queue size : {new_size}")
         DYNAMIC_DATA.stacker_queue_size = new_size
+        self._notify_model_observers()
 
-    @staticmethod
     @log
-    def on_process_queue_size_changed(new_size):
+    def on_post_processor_queue_size_changed(self, new_size):
         """
         Qt slot executed when an item has just been pushed to the process queue
 
@@ -289,10 +321,10 @@ class Controller:
         """
         _LOGGER.debug(f"New post-processor queue size : {new_size}")
         DYNAMIC_DATA.post_processor_queue_size = new_size
+        self._notify_model_observers()
 
-    @staticmethod
     @log
-    def on_save_queue_size_changed(new_size):
+    def on_saver_queue_size_changed(self, new_size):
         """
         Qt slot executed when an item has just been pushed to the save queue
 
@@ -301,70 +333,72 @@ class Controller:
         """
         _LOGGER.debug(f"New saver queue size : {new_size}")
         DYNAMIC_DATA.saver_queue_size = new_size
+        self._notify_model_observers()
 
-    @staticmethod
     @log
-    def on_pre_processor_busy():
+    def on_pre_processor_busy(self):
         """
         pre-processor just started working on new image
         """
         DYNAMIC_DATA.pre_processor_status = WORKER_STATUS_BUSY
+        self._notify_model_observers()
 
-    @staticmethod
     @log
-    def on_pre_processor_waiting():
+    def on_pre_processor_waiting(self):
         """
         pre-processor just finished working on new image
         """
         DYNAMIC_DATA.pre_processor_status = WORKER_STATUS_IDLE
+        self._notify_model_observers()
 
-    @staticmethod
     @log
-    def on_stacker_busy():
+    def on_stacker_busy(self):
         """
         stacker just started working on new image
         """
         DYNAMIC_DATA.stacker_status = WORKER_STATUS_BUSY
+        self._notify_model_observers()
 
-    @staticmethod
+
     @log
-    def on_stacker_waiting():
+    def on_stacker_waiting(self):
         """
         stacker just finished working on new image
         """
         DYNAMIC_DATA.stacker_status = WORKER_STATUS_IDLE
+        self._notify_model_observers()
 
-    @staticmethod
     @log
-    def on_post_processor_busy():
+    def on_post_processor_busy(self):
         """
         post-processor just started working on new image
         """
         DYNAMIC_DATA.post_processor_status = WORKER_STATUS_BUSY
+        self._notify_model_observers()
 
-    @staticmethod
     @log
-    def on_post_processor_waiting():
+    def on_post_processor_waiting(self):
         """
         post-processor just finished working on new image
         """
         DYNAMIC_DATA.post_processor_status = WORKER_STATUS_IDLE
+        self._notify_model_observers()
 
-    @staticmethod
     @log
-    def on_saver_busy():
+    def on_saver_busy(self):
         """
         saver just started working on new image
         """
         DYNAMIC_DATA.saver_status = WORKER_STATUS_BUSY
+        self._notify_model_observers()
 
-    @staticmethod
     @log
-    def on_saver_waiting():
+    def on_saver_waiting(self):
         """
         saver just finished working on new image
         """
         DYNAMIC_DATA.saver_status = WORKER_STATUS_IDLE
+        self._notify_model_observers()
 
     @log
     def start_session(self):
@@ -461,6 +495,7 @@ class Controller:
 
             DYNAMIC_DATA.web_server_ip = ip_address
             DYNAMIC_DATA.web_server_is_running = True
+            self._notify_model_observers()
 
         except OSError as os_error:
             title = "Could not start web server"
@@ -477,6 +512,7 @@ class Controller:
             self._web_server = None
             _LOGGER.info("Web server stopped")
             DYNAMIC_DATA.web_server_is_running = False
+            self._notify_model_observers()
 
     @staticmethod
     @log
@@ -512,7 +548,7 @@ class Controller:
         """
 
         # we save the image no matter what, then save a jpg for the web server if it is running
-        image = DYNAMIC_DATA.post_process_result
+        image = DYNAMIC_DATA.post_processor_result
 
         self.save_image(image,
                         config.get_image_save_format(),

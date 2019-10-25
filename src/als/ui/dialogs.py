@@ -155,7 +155,7 @@ class SaveWaitDialog(QDialog):
         self._controller = controller
 
         self.update_display(_)
-        DYNAMIC_DATA.add_observer(self)
+        self._controller.add_model_observer(self)
 
     @log
     def update_display(self, _):
@@ -167,7 +167,7 @@ class SaveWaitDialog(QDialog):
         self._ui.lbl_remaining_saves.setText(str(remaining_image_count))
 
         if remaining_image_count == 0:
-            DYNAMIC_DATA.remove_observer(self)
+            self._controller.remove_model_observer(self)
             self.close()
 
     @log
