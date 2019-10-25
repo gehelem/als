@@ -63,10 +63,22 @@ class DynamicData:
 
     @property
     def histogram_container(self):
+        """
+        Gets histogram container
+
+        :return: the histogram container
+        :rtype: HistogramContainer
+        """
         return self._histogram_container
 
     @histogram_container.setter
     def histogram_container(self, container):
+        """
+        Sets the histogram container
+
+        :param container: the container
+        :type container: HistogramContainer
+        """
         self._histogram_container = container
 
     @property
@@ -489,6 +501,8 @@ class DynamicData:
 class HistogramContainer:
     """
     Holds histogram data for an image (color or b&w)
+
+    also holds the global maximum among all held histograms and a way to get the number of bins
     """
     @log
     def __init__(self):
@@ -497,24 +511,55 @@ class HistogramContainer:
 
     @log
     def add_histogram(self, histogram: np.ndarray):
+        """
+        Add an histogram
+
+        :param histogram: the histogram to add
+        :type histogram: numpy.ndarray
+        :return:
+        """
         self._histograms.append(histogram)
 
     @log
     def get_histograms(self) -> List[np.ndarray]:
+        """
+        Gets the histograms
+
+        :return: the histograms
+        :rtype: List[numpy.ndarray]
+        """
         return self._histograms
 
     @property
     def global_maximum(self) -> int:
+        """
+        Gets the global maximum among all histograms
+
+        :return: the global maximum among all histograms
+        :rtype: int
+        """
         return self._global_maximum
 
     @global_maximum.setter
     def global_maximum(self, value: int):
+        """
+        Sets the global maximum among all histograms
+
+        :param value: the global maximum among all histograms
+        :type value: int
+        """
         self._global_maximum = value
 
     @property
     @log
     def bin_count(self):
-        return len(self._histograms[0]) if len(self._histograms) > 0 else 0
+        """
+        Get the bin count, that is the length of any stored histogram. We check the first one if exists
+
+        :return: the number of bins used to compute the stored histograms.
+        :rtype: int
+        """
+        return len(self._histograms[0]) if self._histograms else 0
 
 
 DYNAMIC_DATA = DynamicData()

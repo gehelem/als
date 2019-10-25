@@ -110,7 +110,7 @@ class HistogramView(QWidget):
         self._white_pen = QPen(Qt.white)
         self._white_pen.setWidth(2)
 
-    # pylint: disable=C0103
+    # pylint: disable=C0103, R0914
     @log
     def paintEvent(self, _):
         """
