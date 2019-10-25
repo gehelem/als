@@ -2,6 +2,9 @@
 Provides base application data
 """
 import logging
+from typing import List
+
+import numpy as np
 
 import als
 from als.code_utilities import SignalingQueue, log
@@ -44,7 +47,8 @@ class DynamicData:
         self._post_processor_queue_size = 0
         self._saver_queue_size = 0
         self._save_every_image: bool = False
-        self._process_result = None
+        self._post_process_result = None
+        self._histogram_container: HistogramContainer = None
         self._pre_process_queue = SignalingQueue()
         self._stacker_queue = SignalingQueue()
         self._process_queue = SignalingQueue()
@@ -56,6 +60,14 @@ class DynamicData:
         self._levels_parameters: ProcessingParameter = None
 
         self._session.status_changed_signal.connect(self._notify_observers)
+
+    @property
+    def histogram_container(self):
+        return self._histogram_container
+
+    @histogram_container.setter
+    def histogram_container(self, container):
+        self._histogram_container = container
 
     @property
     def levels_parameters(self) -> ProcessingParameter:
@@ -324,24 +336,24 @@ class DynamicData:
         return self._save_queue
 
     @property
-    def process_result(self):
+    def post_process_result(self):
         """
         Retrieves latest published process result
 
         :return: the latest published process result
         :rtype: Image
         """
-        return self._process_result
+        return self._post_process_result
 
-    @process_result.setter
-    def process_result(self, image):
+    @post_process_result.setter
+    def post_process_result(self, image):
         """
         Record the latest process result
 
         :param image: the latest process result
         :type: Image
         """
-        self._process_result = image
+        self._post_process_result = image
         self._notify_observers(image_only=True)
 
     @property
@@ -472,6 +484,37 @@ class DynamicData:
         """
         for observer in self._observers:
             observer.update_display(image_only)
+
+
+class HistogramContainer:
+    """
+    Holds histogram data for an image (color or b&w)
+    """
+    @log
+    def __init__(self):
+        self._histograms: List[np.ndarray] = list()
+        self._global_maximum: int = 0
+
+    @log
+    def add_histogram(self, histogram: np.ndarray):
+        self._histograms.append(histogram)
+
+    @log
+    def get_histograms(self) -> List[np.ndarray]:
+        return self._histograms
+
+    @property
+    def global_maximum(self) -> int:
+        return self._global_maximum
+
+    @global_maximum.setter
+    def global_maximum(self, value: int):
+        self._global_maximum = value
+
+    @property
+    @log
+    def bin_count(self):
+        return len(self._histograms[0]) if len(self._histograms) > 0 else 0
 
 
 DYNAMIC_DATA = DynamicData()

@@ -29,6 +29,7 @@ from pathlib import Path
 import als.model.data
 from als import config
 from als.code_utilities import log, AlsException, SignalingQueue
+from als.crunching import compute_histograms_for_display
 from als.io.input import InputScanner, ScannerStartError
 from als.io.network import get_ip, WebServer
 from als.io.output import ImageSaver
@@ -61,6 +62,9 @@ class Controller:
     """
     The application controller, in charge of implementing application logic
     """
+
+    _BIN_COUNT = 512
+
     @log
     def __init__(self):
 
@@ -107,7 +111,7 @@ class Controller:
         self._pre_process_pipeline.new_result_signal[Image].connect(self.on_new_pre_processed_image)
         self._stacker.stack_size_changed_signal[int].connect(Controller.on_stack_size_changed)
         self._stacker.new_result_signal[Image].connect(self.on_new_stack_result)
-        self._post_process_pipeline.new_result_signal[Image].connect(self.on_new_process_result)
+        self._post_process_pipeline.new_result_signal[Image].connect(self.on_new_post_process_result)
 
         self._pre_process_queue.size_changed_signal[int].connect(Controller.on_pre_process_queue_size_changed)
         self._stacker_queue.size_changed_signal[int].connect(Controller.on_stack_queue_size_changed)
@@ -145,7 +149,7 @@ class Controller:
         DYNAMIC_DATA.stack_size = size
 
     @log
-    def on_new_process_result(self, image: Image):
+    def on_new_post_process_result(self, image: Image):
         """
         A new image processing result is here
 
@@ -153,7 +157,8 @@ class Controller:
         :type image: Image
         """
         image.origin = "Process result"
-        DYNAMIC_DATA.process_result = image
+        DYNAMIC_DATA.histogram_container = compute_histograms_for_display(image, Controller._BIN_COUNT)
+        DYNAMIC_DATA.post_process_result = image
         self.save_process_result()
 
     @log
@@ -448,7 +453,7 @@ class Controller:
         """
 
         # we save the image no matter what, then save a jpg for the web server if it is running
-        image = DYNAMIC_DATA.process_result
+        image = DYNAMIC_DATA.post_process_result
 
         self.save_image(image,
                         config.get_image_save_format(),

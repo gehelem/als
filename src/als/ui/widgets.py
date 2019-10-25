@@ -4,7 +4,6 @@ Our custom widgets
 import logging
 import typing
 
-import numpy as np
 from PyQt5 import QtGui
 from PyQt5.QtCore import QPoint, Qt
 from PyQt5.QtGui import QPainter, QPen
@@ -97,13 +96,11 @@ class HistogramView(QWidget):
     Our main histogram display
     """
 
-    _BIN_COUNT = 512
     _TOP_MARGIN_IN_PX = 5
 
     @log
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
-        self._histograms = None
         self._painter = QPainter()
 
         self._color_pens = [QPen(Qt.red), QPen(Qt.green), QPen(Qt.blue)]
@@ -112,25 +109,6 @@ class HistogramView(QWidget):
 
         self._white_pen = QPen(Qt.white)
         self._white_pen.setWidth(2)
-
-        DYNAMIC_DATA.add_observer(self)
-
-    @log
-    def update_display(self, image_only: bool = False):
-        """
-        Update display, duh !
-
-        :param image_only: are we receiving a notification that a new processing result is ready ?
-        :type image_only: bool
-        """
-
-        if image_only:
-
-            image = DYNAMIC_DATA.process_result
-
-            if image is not None:
-                self._compute_histograms(image)
-                self.update()
 
     # pylint: disable=C0103
     @log
@@ -146,31 +124,18 @@ class HistogramView(QWidget):
             self._painter.begin(self)
             self._painter.translate(QPoint(0, 0))
 
-            if self._histograms is not None:
+            if DYNAMIC_DATA.histogram_container is not None:
 
-                # We first need to find the global maximum among our histograms
-                #
-                # We remove first and last item of a copy of each histogram before getting its max value
-                # so we don't end up with a vertically squashed display if histogram is clipping on black or white
-                global_maximum = max([tweaked_histogram.max() for tweaked_histogram in [
-                    np.delete(histogram, [0, HistogramView._BIN_COUNT - 1]) for histogram in self._histograms
-                ]])
+                histograms = DYNAMIC_DATA.histogram_container.get_histograms()
+                bin_count = DYNAMIC_DATA.histogram_container.bin_count
+                global_maximum = DYNAMIC_DATA.histogram_container.global_maximum
 
-                if global_maximum == 0:
-                    # In some very rare cases, i.e. playing with images of pure single primary colors,
-                    # the global maximum will be 0 after removing the 2 extreme bins of the original histograms
-                    #
-                    # As only Chuck Norris can divide by zero, we replace this 0 with the global maximum
-                    # among our *original* histograms
-                    global_maximum = max([original_histo.max() for original_histo in self._histograms])
-
-                if len(self._histograms) > 1:
+                if len(histograms) > 1:
                     pens = self._color_pens
-                    histograms = self._histograms
                     self._painter.setCompositionMode(QPainter.CompositionMode_Plus)
                 else:
                     pens = [self._white_pen]
-                    histograms = [self._histograms[0]]
+                    histograms = [histograms[0]]
                     self._painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
 
                 for pen, histogram in zip(pens, histograms):
@@ -180,7 +145,7 @@ class HistogramView(QWidget):
 
                     for i, value in enumerate(histogram):
 
-                        x = round(i / HistogramView._BIN_COUNT * self.width())
+                        x = round(i / bin_count * self.width())
                         bar_height = round(value / global_maximum * self.height())
 
                         self._painter.drawLine(
@@ -203,17 +168,3 @@ class HistogramView(QWidget):
                     "No data")
 
             self._painter.end()
-
-    @log
-    def _compute_histograms(self, image):
-        """
-        Compute histograms
-        """
-        if image.is_color():
-
-            histograms = list()
-            for channel in range(3):
-                histograms.append(np.histogram(image.data[:, :, channel], HistogramView._BIN_COUNT)[0])
-                self._histograms = histograms
-        else:
-            self._histograms = [np.histogram(image.data, HistogramView._BIN_COUNT)[0]]

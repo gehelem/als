@@ -156,7 +156,7 @@ class MainWindow(QMainWindow):
         This saves the processed image using user chosen format
 
         """
-        image_to_save = DYNAMIC_DATA.process_result
+        image_to_save = DYNAMIC_DATA.post_process_result
         if image_to_save is not None:
             self._controller.save_image(image_to_save,
                                         config.get_image_save_format(),
@@ -261,7 +261,7 @@ class MainWindow(QMainWindow):
         """
         Update central image display.
         """
-        image_raw_data = DYNAMIC_DATA.process_result.data.copy()
+        image_raw_data = DYNAMIC_DATA.post_process_result.data.copy()
 
         image = array2qimage(image_raw_data, normalize=(2 ** 16 - 1))
         self._image_item.setPixmap(QPixmap.fromImage(image))
@@ -291,6 +291,7 @@ class MainWindow(QMainWindow):
 
         if image_only:
             self._update_image()
+            self._ui.histogram_view.update()
 
         else:
             web_server_is_running = DYNAMIC_DATA.web_server_is_running
