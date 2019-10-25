@@ -8,6 +8,9 @@ Version 0.6 (Work in progress)
 - New features
 
   - User settings dialog box
+  - Pan & zoom in image with mouse clicks & wheel
+  - 2 automatic brightness adjustment methods to choose from
+  - Histogram display
 
 - Improvements
 
@@ -16,6 +19,7 @@ Version 0.6 (Work in progress)
   - Remember window size and position
   - Configurable image save file type
   - Log window and session controls can be hidden
+  - Much more responsive GUI
 
 - Bug Fixes
 
