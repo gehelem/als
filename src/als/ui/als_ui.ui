@@ -62,7 +62,7 @@
      <x>0</x>
      <y>0</y>
      <width>1075</width>
-     <height>25</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -1080,7 +1080,7 @@
   </connection>
   <connection>
    <sender>chk_autostretch</sender>
-   <signal>clicked(bool)</signal>
+   <signal>toggled(bool)</signal>
    <receiver>cb_levels_stretch_method</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
