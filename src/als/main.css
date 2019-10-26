@@ -50,3 +50,19 @@ QComboBox {
 
     selection-background-color: #444444;
 }
+
+QCheckBox::indicator {
+
+    width: 18px;
+    height: 18px;
+
+    border: 1px solid #444444;
+}
+
+QCheckBox::indicator:checked {
+    image: url(:icons/tick.png);
+}
+
+QCheckBox::indicator:checked:disabled {
+    image: url(:icons/tick-disabled.png);
+}
