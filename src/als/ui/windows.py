@@ -22,7 +22,7 @@ from generated.als_ui import Ui_stack_window
 _LOGGER = logging.getLogger(__name__)
 
 
-# pylint: disable=R0904
+# pylint: disable=R0904, R0902
 class MainWindow(QMainWindow):
     """
     ALS main window.
@@ -89,6 +89,11 @@ class MainWindow(QMainWindow):
         config.register_log_receiver(self)
 
         self.setGeometry(*config.get_window_geometry())
+
+        # manage docks restoration out of 'image only' mode
+        self._restore_log_dock = False
+        self._restore_session_dock = False
+        self._restore_processing_dock = False
 
         # setup image display
         self._scene = QGraphicsScene(self)
@@ -254,13 +259,82 @@ class MainWindow(QMainWindow):
         else:
             self.showNormal()
 
+    @pyqtSlot()
     @log
-    def adjust_value(self):
+    def on_action_image_only_triggered(self):
         """
-        Adjusts stacked image according to GUU controls
+        Qt slot executed when 'image only' action is triggered
+        """
 
+        actions_restore_mapping = {
+
+            self._ui.action_show_processing_panel: self._restore_processing_dock,
+            self._ui.action_show_session_controls: self._restore_session_dock,
+            self._ui.action_show_session_log: self._restore_log_dock,
+        }
+
+        checked = self._ui.action_image_only.isChecked()
+
+        if checked:
+
+            self._restore_session_dock = self._ui.session_dock.isVisible()
+            self._restore_log_dock = self._ui.log_dock.isVisible()
+            self._restore_processing_dock = self._ui.processing_dock.isVisible()
+
+            for action in actions_restore_mapping:
+
+                if action.isChecked():
+                    action.trigger()
+
+        else:
+            for action, restore in actions_restore_mapping.items():
+
+                if restore:
+                    action.trigger()
+
+    @log
+    def on_processing_dock_visibilityChanged(self, visible):
         """
-        # TODO :)
+        Qt slot executed when prcessing dock visibility changed
+
+        :param visible: is it now visible ?
+        :type visible: bool
+        """
+
+        if visible:
+            self._cancel_image_only_mode()
+
+    @log
+    def on_log_dock_visibilityChanged(self, visible):
+        """
+        Qt slot executed when log dock visibility changed
+
+        :param visible: is it now visible ?
+        :type visible: bool
+        """
+
+        if visible:
+            self._cancel_image_only_mode()
+
+    @log
+    def on_session_dock_visibilityChanged(self, visible):
+        """
+        Qt slot executed when session dock visibility changed
+
+        :param visible: is it now visible ?
+        :type visible: bool
+        """
+
+        if visible:
+            self._cancel_image_only_mode()
+
+    @log
+    def _cancel_image_only_mode(self):
+        """
+        Untick 'image only' menu entry
+        """
+
+        self._ui.action_image_only.setChecked(False)
 
     @log
     def _update_image(self):

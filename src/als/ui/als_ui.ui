@@ -85,6 +85,8 @@
     <addaction name="action_show_processing_panel"/>
     <addaction name="action_show_session_log"/>
     <addaction name="separator"/>
+    <addaction name="action_image_only"/>
+    <addaction name="separator"/>
     <addaction name="action_full_screen"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
@@ -950,13 +952,27 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Full screen</string>
+    <string>&amp;Full screen</string>
    </property>
    <property name="statusTip">
     <string>Full Screen</string>
    </property>
    <property name="shortcut">
     <string>F11</string>
+   </property>
+  </action>
+  <action name="action_image_only">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Image only</string>
+   </property>
+   <property name="statusTip">
+    <string>Hide currently visible panels to maximize image display</string>
+   </property>
+   <property name="shortcut">
+    <string>I</string>
    </property>
   </action>
  </widget>
