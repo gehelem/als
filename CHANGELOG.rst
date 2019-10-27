@@ -11,6 +11,7 @@ Version 0.6 (Work in progress)
   - Pan & zoom in image with mouse clicks & wheel
   - 2 automatic brightness adjustment methods to choose from
   - Histogram display
+  - RGB Balance
 
 - Improvements
 
