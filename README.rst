@@ -21,12 +21,9 @@ and with RAW camera files : https://www.libraw.org/supported-cameras
 
 As pictures are added to the stack, user can enhance the resulting image with various processes :
 
-- contrast
-- brightness
+- auto stretch
 - levels
 - RGB balance
-- SCNR
-- Wavelets
 
 The resulting image can be saved to disk and served by a built-in web server, so your mates at the astro
 club can see your wonderful images.
