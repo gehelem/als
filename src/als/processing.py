@@ -60,6 +60,88 @@ class ImageProcessor:
         """
 
 
+class ColorBalance(ImageProcessor):
+    """
+    Implements color balance processing
+    """
+
+    _UPPER_LIMIT = 2**16 - 1
+
+    @log
+    def __init__(self):
+
+        super().__init__()
+
+        self._parameters.append(
+            RangeParameter(
+                "red",
+                "Red level",
+                1,
+                0,
+                2
+            )
+        )
+
+        self._parameters.append(
+            RangeParameter(
+                "green",
+                "Green level",
+                1,
+                0,
+                2
+            )
+        )
+
+        self._parameters.append(
+            RangeParameter(
+                "blue",
+                "Blue level",
+                1,
+                0,
+                2
+            )
+        )
+
+    @log
+    def process_image(self, image: Image):
+        """
+        Performs RGB balance
+
+        :param image: the image to process
+        :type image: Image
+        """
+
+        for param in self._parameters:
+            _LOGGER.debug(f"Color balance param {param.name} = {param.value}")
+
+        red = self._parameters[0]
+        green = self._parameters[1]
+        blue = self._parameters[2]
+
+        red_value = red.value if red.value > 0 else 0.1
+        green_value = green.value if green.value > 0 else 0.1
+        blue_value = blue.value if blue.value > 0 else 0.1
+
+        processed = False
+
+        if not red.is_default():
+            image.data[0] = image.data[0] * red_value
+            processed = True
+
+        if not green.is_default():
+            image.data[1] = image.data[1] * green_value
+            processed = True
+
+        if not blue.is_default():
+            image.data[2] = image.data[2] * blue_value
+            processed = True
+
+        if processed:
+            image.data = np.clip(image.data, 0, ColorBalance._UPPER_LIMIT)
+
+        return image
+
+
 class Levels(ImageProcessor):
     """Implements levels processing"""
 

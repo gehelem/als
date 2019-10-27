@@ -57,6 +57,27 @@ class MainWindow(QMainWindow):
         # prevent log dock to be too tall
         self.resizeDocks([self._ui.log_dock], [MainWindow._LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
 
+        # setup rgb controls and params
+        self._rgb_controls = [
+
+            self._ui.sld_rgb_r,
+            self._ui.sld_rgb_g,
+            self._ui.sld_rgb_b,
+        ]
+
+        self._rgb_parameters = self._controller.get_rgb_parameters()
+
+        set_sliders_defaults(
+            [self._rgb_parameters[0], self._rgb_parameters[1], self._rgb_parameters[2]],
+            [self._ui.sld_rgb_r, self._ui.sld_rgb_g, self._ui.sld_rgb_b]
+        )
+
+        self._reset_rgb()
+
+        self._ui.btn_rgb_apply.clicked.connect(self._apply_rgb)
+        self._ui.btn_rgb_reset.clicked.connect(self._reset_rgb)
+        self._ui.btn_rgb_reload.clicked.connect(self._reload_rgb)
+
         # setup levels controls and parameters
         self._levels_controls = [
             self._ui.chk_autostretch,
@@ -71,12 +92,12 @@ class MainWindow(QMainWindow):
         for label in self._levels_parameters[1].choices:
             self._ui.cb_levels_stretch_method.addItem(label)
 
-        self._reset_levels()
-
         set_sliders_defaults(
             [self._levels_parameters[2], self._levels_parameters[3], self._levels_parameters[4]],
             [self._ui.sld_black, self._ui.sld_midtones, self._ui.sld_white]
         )
+
+        self._reset_levels()
 
         self._ui.btn_levels_apply.clicked.connect(self._apply_levels)
         self._ui.btn_levels_reset.clicked.connect(self._reset_levels)
@@ -106,6 +127,14 @@ class MainWindow(QMainWindow):
         else:
             self.show()
 
+    def _apply_rgb(self):
+        """
+        Apply rgb processing
+        """
+        update_params_from_controls(self._rgb_parameters, self._rgb_controls)
+
+        self._controller.apply_processing()
+
     def _apply_levels(self):
         """
         Apply levels processing
@@ -114,11 +143,23 @@ class MainWindow(QMainWindow):
 
         self._controller.apply_processing()
 
+    def _reset_rgb(self):
+        """
+        Resets rgb controls to their defaults
+        """
+        reset_params(self._rgb_parameters, self._rgb_controls)
+
     def _reset_levels(self):
         """
         Resets levels processing controls to their defaults
         """
         reset_params(self._levels_parameters, self._levels_controls)
+
+    def _reload_rgb(self):
+        """
+        Sets rgb controls to their previously recorded values (last apply)
+        """
+        update_controls_from_params(self._rgb_parameters, self._rgb_controls)
 
     def _reload_levels(self):
         """
