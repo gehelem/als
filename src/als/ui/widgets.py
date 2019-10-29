@@ -130,41 +130,51 @@ class HistogramView(QWidget):
                 bin_count = DYNAMIC_DATA.histogram_container.bin_count
                 global_maximum = DYNAMIC_DATA.histogram_container.global_maximum
 
-                if len(histograms) > 1:
-                    pens = self._color_pens
-                    self._painter.setCompositionMode(QPainter.CompositionMode_Plus)
+                if global_maximum > 0:
+                    if len(histograms) > 1:
+                        pens = self._color_pens
+                        self._painter.setCompositionMode(QPainter.CompositionMode_Plus)
+                    else:
+                        pens = [self._white_pen]
+                        histograms = [histograms[0]]
+                        self._painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
+
+                    for pen, histogram in zip(pens, histograms):
+
+                        self._painter.save()
+                        self._painter.setPen(pen)
+
+                        for i, value in enumerate(histogram):
+
+                            x = round(i / bin_count * self.width())
+                            bar_height = round(value / global_maximum * self.height())
+
+                            self._painter.drawLine(
+                                x,
+                                self.height(),
+                                x,
+                                self.height() - (bar_height - HistogramView._TOP_MARGIN_IN_PX))
+
+                        self._painter.restore()
+
                 else:
-                    pens = [self._white_pen]
-                    histograms = [histograms[0]]
-                    self._painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
-
-                for pen, histogram in zip(pens, histograms):
-
-                    self._painter.save()
-                    self._painter.setPen(pen)
-
-                    for i, value in enumerate(histogram):
-
-                        x = round(i / bin_count * self.width())
-                        bar_height = round(value / global_maximum * self.height())
-
-                        self._painter.drawLine(
-                            x,
-                            self.height(),
-                            x,
-                            self.height() - (bar_height - HistogramView._TOP_MARGIN_IN_PX))
-
-                    self._painter.restore()
+                    self._display_text("Invalid data")
 
             else:
-                font_inspector = self._painter.fontMetrics()
-                message = "No data"
-                message_height = font_inspector.height()
-                message_width = font_inspector.width(message)
-
-                self._painter.drawText(
-                    (self.width() - message_width) / 2,
-                    ((self.height() - message_height) / 2) + message_height,
-                    "No data")
+                self._display_text("No data")
 
             self._painter.end()
+
+
+    @log
+    def _display_text(self, text: str):
+
+        font_inspector = self._painter.fontMetrics()
+        text_height = font_inspector.height()
+        text_width = font_inspector.width(text)
+
+        self._painter.drawText(
+            (self.width() - text_width) / 2,
+            ((self.height() - text_height) / 2) + text_height,
+            text)
+
