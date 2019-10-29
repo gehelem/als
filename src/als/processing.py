@@ -76,9 +76,9 @@ class ColorBalance(ImageProcessor):
             RangeParameter(
                 "red",
                 "Red level",
-                1,
-                0,
-                2
+                default=1,
+                minimum=0,
+                maximum=2
             )
         )
 
@@ -86,9 +86,9 @@ class ColorBalance(ImageProcessor):
             RangeParameter(
                 "green",
                 "Green level",
-                1,
-                0,
-                2
+                default=1,
+                minimum=0,
+                maximum=2
             )
         )
 
@@ -96,9 +96,9 @@ class ColorBalance(ImageProcessor):
             RangeParameter(
                 "blue",
                 "Blue level",
-                1,
-                0,
-                2
+                default=1,
+                minimum=0,
+                maximum=2
             )
         )
 
