@@ -42,8 +42,6 @@ class IndiCamera(IndiDevice):
         # device related intialization
         IndiDevice.__init__(self, device_name=device_name,
                             indi_client=indi_client)
-        if connect_on_create:
-            self.connect()
 
         # Frame Blob: reference that will be used to receive binary
         self.frame_blob = None
@@ -51,6 +49,10 @@ class IndiCamera(IndiDevice):
         # Default exposureTime, gain
         self.exp_time_sec=5
         self.gain=400
+
+        if connect_on_create:
+            self.connect()
+            self.prepare_shoot()
 
         # Finished configuring
         _LOGGER.debug(f"Configured Indi Camera successfully")
@@ -86,8 +88,8 @@ class IndiCamera(IndiDevice):
     def get_received_image(self):
         try:
             ret = []
-            _LOGGER.debug(f"getReceivedImage frameBlob: {self.frameBlob}")
-            for blob in self.frameBlob:
+            _LOGGER.debug(f"getReceivedImage frame_blob: {self.frame_blob}")
+            for blob in self.frame_blob:
                 _LOGGER.debug(f"Indi camera, processing blob with name: "
                               f"{blob.name}, size: {blob.size}, format: "
                               f"{blob.format}")

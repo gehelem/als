@@ -5,6 +5,7 @@ We need to read file and in the future, get images from INDI
 """
 import logging
 import time
+from threading import Event, Thread
 from abc import abstractmethod
 from pathlib import Path
 
@@ -204,6 +205,19 @@ def read_disk_image(path: Path):
 
 
 @log
+def _get_image_from_fit(fit):
+    """
+    return Image from HDUList
+    :param fit: actual HDUList
+    :return:
+    """
+    data = fit[0].data
+    header = fit[0].header
+    image = Image(data)
+    if 'BAYERPAT' in header:
+        image.bayer_pattern = header['BAYERPAT']
+    return image
+@log
 def _read_fit_image(path: Path):
     """
     read FIT image from filesystem
@@ -217,13 +231,7 @@ def _read_fit_image(path: Path):
     try:
         with fits.open(str(path.resolve())) as fit:
             # pylint: disable=E1101
-            data = fit[0].data
-            header = fit[0].header
-
-        image = Image(data)
-
-        if 'BAYERPAT' in header:
-            image.bayer_pattern = header['BAYERPAT']
+            image = _get_image_from_fit(fit)
 
         _set_image_file_origin(image, path)
 
@@ -353,8 +361,16 @@ class IndiScanner(InputScanner, QObject):
             self._device = IndiCamera(indi_client=self._client,
                                       config=dict(camera_name=device_name),
                                       connect_on_create=True)
+            self.launch_bg_acquisition()
         except Exception as e:
             raise ScannerStartError(e)
+
+    @log
+    def launch_bg_acquisition(self):
+        exposure_event = self._device
+        self.main_thread = Thread(target=self.on_received, args=())
+        self.main_thread.name = f"IndiScanner Thread"
+        self.main_thread.start()
 
     @log
     def stop(self):
@@ -365,21 +381,7 @@ class IndiScanner(InputScanner, QObject):
             self._device.disconnect()
 
     @log
-    def on_received(self, event):
-        if event.event_type == 'created':
-            file_is_incomplete = True
-            last_file_size = -1
-            image_path = event.src_path
-            _LOGGER.debug(f"File creation detected : {image_path}. Waiting until file is complete and readable ...")
-
-            while file_is_incomplete:
-                info = QFileInfo(image_path)
-                size = info.size()
-                _LOGGER.debug(f"File {image_path}'s size = {size}")
-                if size == last_file_size:
-                    file_is_incomplete = False
-                    _LOGGER.debug(f"File {image_path} is ready to be read")
-                last_file_size = size
-                time.sleep(_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC)
-
-            self.broadcast_image(read_disk_image(Path(image_path)))
+    def on_received(self):
+        self._device.synchronize_with_image_reception()
+        self.broadcast_image(_get_image_from_fit(
+            self._device.get_received_image()))
