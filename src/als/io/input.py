@@ -348,7 +348,8 @@ class IndiScanner(InputScanner, QObject):
             remote_port = config.get_remote_port()
             device_name = config.get_device_name()
             self._client = IndiClient(config=dict(indi_host=remote_host,
-                                                  indi_port=remote_port))
+                                                  indi_port=remote_port),
+                                      connect_on_create=True)
             self._device = IndiCamera(indi_client=self._client,
                                       config=dict(camera_name=device_name),
                                       connect_on_create=True)

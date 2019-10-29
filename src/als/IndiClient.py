@@ -22,7 +22,7 @@ class IndiClient(PyIndi.BaseClient):
     C++ thread, and not by the python main thread, so be careful.
   '''
 
-  def __init__(self, config):
+  def __init__(self, config, connect_on_create=True):
       # Call indi client base classe ctor
       PyIndi.BaseClient.__init__(self)
 
@@ -39,6 +39,9 @@ class IndiClient(PyIndi.BaseClient):
 
       # Finished configuring
       _LOGGER.debug(f"Configured Indi Client successfully")
+
+      if connect_on_create:
+          self.connect()
 
   def connect(self):
       if self.isServerConnected():

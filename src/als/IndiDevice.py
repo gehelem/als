@@ -49,8 +49,8 @@ class IndiDevice():
         return self.device_name
 
     def __find_device(self):
-        _LOGGER.debug('IndiDevice: asking indi_client to look for device {}'
-                          ''.format(self.device_name))
+        _LOGGER.debug(f"IndiDevice: asking indi_client to look for device "
+                      f"{self.device_name}")
         if self.device is None:
             started = time.time()
             while not self.device:
@@ -65,7 +65,7 @@ class IndiDevice():
                           f"{self.device_name}")
         else:
             _LOGGER.warning(f"Device {self.device_name} already found")
-            
+
     def find_interfaces(self, device):
         interface = device.getDriverInterface()
         interface.acquire()
@@ -105,11 +105,9 @@ class IndiDevice():
 
         # Now connect
         if self.device.isConnected():
-            _LOGGER.warn('already connected to device {}'.format(
-                             self.device_name))
+            _LOGGER.warning(f"already connected to device {self.device_name}")
             return
-        _LOGGER.info('Connecting to device {}'.format(
-                         self.device_name))
+        _LOGGER.info(f"Connecting to device {self.device_name}")
         # get interfaces
         self.interfaces = self.find_interfaces(self.device)
         # set the corresponding switch to on
