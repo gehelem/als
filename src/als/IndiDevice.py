@@ -5,7 +5,7 @@ import time
 
 # Indi stuff
 import PyIndi
-from IndiClient import IndiClient
+from als.IndiClient import IndiClient
 
 _LOGGER = logging.getLogger(__name__)
 

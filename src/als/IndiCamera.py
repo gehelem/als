@@ -8,8 +8,10 @@ import numpy as np
 
 # Indi stuff
 import PyIndi
-from IndiDevice import IndiDevice
-from IndiClient import IndiClientGlobalBlobEvent
+
+# Local stuff
+from als.IndiDevice import IndiDevice
+from als.IndiClient import IndiClientGlobalBlobEvent
 
 # Imaging and Fits stuff
 from astropy.io import fits
