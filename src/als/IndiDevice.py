@@ -18,7 +18,7 @@ class IndiDevice():
         'switch': 'getSwitch',
         'text': 'getText'
     }
-    def __init__(self, logger, device_name, indi_client):
+    def __init__(self, device_name, indi_client):
         self.device_name = device_name
         self.indi_client = indi_client
         self.timeout = IndiDevice.defaultTimeout
@@ -56,16 +56,16 @@ class IndiDevice():
             while not self.device:
                 self.device = self.indi_client.getDevice(self.device_name)
                 if 0 < self.timeout < time.time() - started:
-                    _LOGGER.error('IndiDevice: Timeout while waiting for '
-                                      ' device {}'.format(self.device_name))
-                    raise RuntimeError('IndiDevice Timeout while waiting for '
-                                       'device {}'.format(self.device_name))
+                    _LOGGER.error(f"IndiDevice: Timeout while waiting for "
+                                  f" device {self.device_name}")
+                    raise RuntimeError(f"IndiDevice Timeout while waiting for "
+                                       f"device {self.device_name}")
                 time.sleep(0.01)
-            _LOGGER.debug('Indi Device: indi_client has found device {}'
-                              ''.format(self.device_name))
+            _LOGGER.debug(f"Indi Device: indi_client has found device "
+                          f"{self.device_name}")
         else:
-            _LOGGER.warning('Device {} already found'.format(
-                                self.device_name))
+            _LOGGER.warning(f"Device {self.device_name} already found")
+            
     def find_interfaces(self, device):
         interface = device.getDriverInterface()
         interface.acquire()

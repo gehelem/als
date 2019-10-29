@@ -17,8 +17,8 @@ from watchdog.observers.polling import PollingObserver
 
 from als import config
 from als.code_utilities import log
-from als import IndiCamera
-from als import IndiClient
+from als.IndiCamera import IndiCamera
+from als.IndiClient import IndiClient
 from als.model.base import Image
 
 _LOGGER = logging.getLogger(__name__)
@@ -27,6 +27,7 @@ _IGNORED_FILENAME_START_PATTERNS = ['.', '~', 'tmp']
 _DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC = 0.1
 
 SCANNER_TYPE_FILESYSTEM = "FS"
+SCANNER_TYPE_INDI = "DI"
 
 
 class InputError(Exception):
@@ -96,8 +97,12 @@ class InputScanner:
         :rtype: InputScanner subclass
         """
 
+        #TODO TN fix that
+        return IndiScanner()
         if scanner_type == SCANNER_TYPE_FILESYSTEM:
             return FolderScanner()
+        elif scanner_type == SCANNER_TYPE_INDI:
+            return IndiScanner()
 
         raise ValueError(f"Unsupported scanner type : {scanner_type}")
 
@@ -342,10 +347,10 @@ class IndiScanner(InputScanner, QObject):
             remote_host = config.get_remote_host()
             remote_port = config.get_remote_port()
             device_name = config.get_device_name()
-            self._client = IndiClient(config=dict(indi_host="localhost",
-                                                  indi_port=7624))
+            self._client = IndiClient(config=dict(indi_host=remote_host,
+                                                  indi_port=remote_port))
             self._device = IndiCamera(indi_client=self._client,
-                                      config=dict(camera_name='CCD Simulator'),
+                                      config=dict(camera_name=device_name),
                                       connect_on_create=True)
         except Exception as e:
             raise ScannerStartError(e)

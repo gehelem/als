@@ -31,6 +31,9 @@ _CONFIG_FILE_PATH = os.path.expanduser("~/.als.cfg")
 # keys used to retrieve config values
 _SCAN_FOLDER_PATH = "scan_folder_path"
 _WORK_FOLDER_PATH = "work_folder_path"
+_INDI_REMOTE_HOST = "localhost"
+_INDI_REMOTE_PORT = "7624"
+_INDI_DEVICE_NAME = "CCD Simulator"
 _LOG_LEVEL = "log_level"
 _WWW_SERVER_PORT = "www_server_port"
 _WINDOW_GEOMETRY = "window_geometry"
@@ -57,6 +60,9 @@ _LOG_LEVELS = {
 _DEFAULTS = {
     _SCAN_FOLDER_PATH:    os.path.expanduser("~/als/scan"),
     _WORK_FOLDER_PATH:    os.path.expanduser("~/als/work"),
+    _INDI_REMOTE_HOST:    "localhost",
+    _INDI_REMOTE_PORT:    "7624",
+    _INDI_DEVICE_NAME:    "CCD Simulator",
     _LOG_LEVEL:           _LOG_LEVEL_INFO,
     _WWW_SERVER_PORT:     "8000",
     _WINDOW_GEOMETRY:     "50,100,1024,800",
@@ -215,6 +221,59 @@ def set_scan_folder_path(path):
     """
     _set(_SCAN_FOLDER_PATH, path)
 
+def get_remote_host():
+    """
+    Retrieves sindi remote host
+
+    :return: the indi remote host
+    :rtype: str
+    """
+    return _get(_INDI_REMOTE_HOST)
+
+def set_remote_host(remote_host):
+    """
+    Sets the indi remote_hors
+
+    :param remote_host: the indi remote host
+    :type remote_host: str
+    """
+    _set(_INDI_REMOTE_HOST, remote_host)
+
+def get_remote_port():
+    """
+    Retrieves indi remote port.
+
+    :return: the indi remote port
+    :rtype: str
+    """
+    return _get(_INDI_REMOTE_PORT)
+
+def set_remote_port(remote_port):
+    """
+    Sets the indi remote port.
+
+    :param remote_port: the indi remote port
+    :type remote_port: str
+    """
+    _set(_INDI_REMOTE_PORT, remote_port)
+
+def get_device_name():
+    """
+    Retrieves indi acquisition device name.
+
+    :return: the indi acquisition device name
+    :rtype: str
+    """
+    return _get(_INDI_DEVICE_NAME)
+
+def set_device_name(device_name):
+    """
+    Sets the indi acquisition device name.
+
+    :param device_name: the indi acquisition device name
+    :type device_name: str
+    """
+    _set(_INDI_DEVICE_NAME, device_name)
 
 def get_window_geometry():
     """
