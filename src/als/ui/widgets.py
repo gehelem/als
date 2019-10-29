@@ -165,7 +165,6 @@ class HistogramView(QWidget):
 
             self._painter.end()
 
-
     @log
     def _display_text(self, text: str):
 
@@ -177,4 +176,3 @@ class HistogramView(QWidget):
             (self.width() - text_width) / 2,
             ((self.height() - text_height) / 2) + text_height,
             text)
-
