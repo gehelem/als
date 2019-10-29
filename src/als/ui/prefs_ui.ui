@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>566</width>
+    <width>575</width>
     <height>369</height>
    </rect>
   </property>
@@ -100,21 +100,21 @@
       <item>
        <widget class="QRadioButton" name="radioSaveTiff">
         <property name="text">
-         <string>&amp;Tiff</string>
+         <string>&amp;TIFF</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QRadioButton" name="radioSavePng">
         <property name="text">
-         <string>Pn&amp;g</string>
+         <string>PN&amp;G</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QRadioButton" name="radioSaveJpeg">
         <property name="text">
-         <string>&amp;Jpeg</string>
+         <string>&amp;JPEG</string>
         </property>
        </widget>
       </item>

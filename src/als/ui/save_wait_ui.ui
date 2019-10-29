@@ -10,11 +10,11 @@
     <x>0</x>
     <y>0</y>
     <width>293</width>
-    <height>60</height>
+    <height>95</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Waiting for all images to be saved</string>
+   <string>Saving remaining images</string>
   </property>
   <property name="modal">
    <bool>true</bool>
@@ -37,13 +37,20 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="lbl_save_queue_size">
+      <widget class="QLabel" name="lbl_remaining_saves">
        <property name="text">
         <string>0</string>
        </property>
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btn_quit">
+     <property name="text">
+      <string>Discard unsaved images and quit</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

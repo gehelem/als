@@ -22,7 +22,9 @@ import sys
 from configparser import ConfigParser, DuplicateOptionError, ParsingError
 
 from PyQt5.QtCore import pyqtSignal, QObject
-from als.ui import dialogs
+
+from als.code_utilities import AlsException
+from als.model.data import IMAGE_SAVE_TYPE_JPEG
 
 _CONFIG_FILE_PATH = os.path.expanduser("~/.als.cfg")
 
@@ -33,6 +35,7 @@ _LOG_LEVEL = "log_level"
 _WWW_SERVER_PORT = "www_server_port"
 _WINDOW_GEOMETRY = "window_geometry"
 _IMAGE_SAVE_FORMAT = "image_save_format"
+_FULL_SCREEN = "full_screen"
 
 # keys used to describe logging level
 _LOG_LEVEL_DEBUG = "DEBUG"
@@ -40,11 +43,6 @@ _LOG_LEVEL_INFO = "INFO"
 _LOG_LEVEL_WARNING = "WARNING"
 _LOG_LEVEL_ERROR = "ERROR"
 _LOG_LEVEL_CRITICAL = "CRITICAL"
-
-# keys used to describe file save formats
-IMAGE_SAVE_TIFF = "tiff"
-IMAGE_SAVE_PNG = "png"
-IMAGE_SAVE_JPEG = "jpg"
 
 # store of matches between human readable log levels and logging module constants
 _LOG_LEVELS = {
@@ -62,17 +60,45 @@ _DEFAULTS = {
     _LOG_LEVEL:           _LOG_LEVEL_INFO,
     _WWW_SERVER_PORT:     "8000",
     _WINDOW_GEOMETRY:     "50,100,1024,800",
-    _IMAGE_SAVE_FORMAT:   IMAGE_SAVE_JPEG,
+    _IMAGE_SAVE_FORMAT:   IMAGE_SAVE_TYPE_JPEG,
+    _FULL_SCREEN:         0
 }
 _MAIN_SECTION_NAME = "main"
 
 # application constants
-STACKED_IMAGE_FILE_NAME_BASE = "stack_image"
-WEB_SERVED_IMAGE_FILE_NAME_BASE = "web_image"
 
 # module global data
 _CONFIG_PARSER = ConfigParser()
 _SIGNAL_LOG_HANDLER = None
+
+
+class CouldNotSaveConfig(AlsException):
+    """Raised when config could not be saved"""
+
+
+def set_full_screen_active(full: bool):
+    """
+    Set full screen indicator
+
+    :param full: should app be launched in fullscreen mode ?
+    :type full: bool
+    """
+
+    _set(_FULL_SCREEN, "1" if full else "0")
+
+
+def get_full_screen_active():
+    """
+    Get full screen indicator
+
+    :return: True if app should be launched in fullscreen mode, False otherwise
+    :rtype: bool
+    """
+
+    try:
+        return int(_get(_FULL_SCREEN)) == 1
+    except ValueError:
+        return _DEFAULTS[_FULL_SCREEN]
 
 
 def get_image_save_format():
@@ -228,12 +254,16 @@ def save():
     :except os_error: Saving could not be done
     """
     try:
+
         with open(_CONFIG_FILE_PATH, "w") as config_file:
             _CONFIG_PARSER.write(config_file)
         _get_logger().info("User configuration saved")
+
     except OSError as os_error:
-        _get_logger().error(f"Could not save settings. Error : {os_error}")
-        dialogs.error_box("Settings not saved", f"Your settings could not be saved\n\nDetails : {os_error}")
+        message = "Could not save settings"
+        details = str(os_error)
+        _get_logger().error(f"{message} : {details}")
+        raise CouldNotSaveConfig(message, details)
 
 
 def _get(key):
@@ -343,8 +373,7 @@ def _setup_logging():
     Sets up logging system.
     """
     logging.basicConfig(level=_LOG_LEVELS[_get(_LOG_LEVEL)],
-                        format='%(asctime)-15s %(processName)+15s:%(process)-8d/%(threadName)-12s '
-                               '%(name)-15s %(levelname)-8s %(message)s',
+                        format='%(asctime)-15s %(threadName)-12s %(name)-20s %(levelname)-8s %(message)s',
                         stream=sys.stdout)
     # pylint: disable=W0603
     global _SIGNAL_LOG_HANDLER

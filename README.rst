@@ -2,7 +2,7 @@
 ALS - Astro Live Stacker
 ========================
 
-.. image:: https://img.shields.io/travis/com/gehelem/als
+.. image:: https://img.shields.io/travis/com/gehelem/als/develop
 .. image:: https://img.shields.io/github/license/gehelem/als
 
 
@@ -21,12 +21,9 @@ and with RAW camera files : https://www.libraw.org/supported-cameras
 
 As pictures are added to the stack, user can enhance the resulting image with various processes :
 
-- contrast
-- brightness
+- auto stretch
 - levels
 - RGB balance
-- SCNR
-- Wavelets
 
 The resulting image can be saved to disk and served by a built-in web server, so your mates at the astro
 club can see your wonderful images.
@@ -180,7 +177,7 @@ Developing ALS
 On top of the steps described in `Installation`_ and `Launching ALS`_, you don't need much to start developing on ALS.
 
 All you have to remember when you work on GUI: ALS uses the Qt framework. If you modify/create .ui files, you'll have to
-recompile the corresponding Python modules. This is done by calling the following script : `utils/compile_ui_and_rc.sh`.
+recompile the corresponding Python modules. This is done by calling the following script : `utils/compile_ui_and_rc.py`.
 All .ui files MUST be located inside the `als.ui` package. Compiled modules are located in the
 `als.generated` package.
 

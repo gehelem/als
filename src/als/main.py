@@ -4,12 +4,14 @@ Main module, basically in charge of application init / start
 import logging
 import sys
 
+from pathlib import Path
+
 from PyQt5.QtWidgets import QApplication
 
 from als import config
 from als.logic import Controller
 from als.code_utilities import Timer
-from als.model import VERSION
+from als.model.data import VERSION
 from als.ui.windows import MainWindow
 
 _LOGGER = logging.getLogger(__name__)
@@ -24,12 +26,15 @@ def main():
         app = QApplication(sys.argv)
         config.setup()
 
+        with open(Path(__file__).parent / "main.css", "r") as style_file:
+
+            sheet = style_file.read()
+            app.setStyleSheet(sheet)
+
         _LOGGER.debug("Building and showing main window")
         controller = Controller()
         window = MainWindow(controller)
-        config.register_log_receiver(window)
-        window.setGeometry(*config.get_window_geometry())
-        window.show()
+
         window.reset_image_view()
 
     _LOGGER.info(f"Astro Live Stacker version {VERSION} started in {startup.elapsed_in_milli_as_str} ms.")

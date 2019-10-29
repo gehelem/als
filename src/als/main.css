@@ -1,0 +1,68 @@
+* {
+    background-color: #222222;
+    color: #CC0000;
+    font-size: 14px;
+}
+
+QWidget:disabled {
+
+    color: #444444
+}
+
+QScrollBar::handle {
+
+    background-color: #333333
+}
+
+QScrollBar::add-line, QScrollBar::sub-line {
+
+    background-color: #222222
+}
+
+QMenu::item:selected {
+
+    border: 2px solid #444444;
+}
+
+QMenuBar::item:selected {
+    background: #444444;
+}
+
+
+QMenu::item {
+
+    border: 2px solid transparent;
+    padding: 4px;
+    margin:  0 0 0 15px
+}
+
+QMenu::indicator {
+
+    left: -15px;
+}
+
+#lbl_stack_size {
+
+    font-size: 32px;
+}
+
+QComboBox {
+
+    selection-background-color: #444444;
+}
+
+QCheckBox::indicator {
+
+    width: 18px;
+    height: 18px;
+
+    border: 1px solid #444444;
+}
+
+QCheckBox::indicator:checked {
+    image: url(:icons/tick.png);
+}
+
+QCheckBox::indicator:checked:disabled {
+    image: url(:icons/tick-disabled.png);
+}

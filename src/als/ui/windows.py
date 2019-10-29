@@ -3,22 +3,26 @@ Holds all windows used in the app
 """
 import logging
 
-from PyQt5.QtCore import QEvent, pyqtSlot, Qt
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import pyqtSlot, Qt
+from PyQt5.QtGui import QPixmap, QBrush, QColor
 from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog
 from qimage2ndarray import array2qimage
 
+import als.model.data
 from als import config
+from als.config import CouldNotSaveConfig
 from als.logic import Controller, SessionError, CriticalFolderMissing, WebServerStartFailure
 from als.code_utilities import log
-from als.model import STACKING_MODE_SUM, STACKING_MODE_MEAN, VERSION, DYNAMIC_DATA
+from als.model.data import STACKING_MODE_SUM, STACKING_MODE_MEAN, DYNAMIC_DATA
 from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box, SaveWaitDialog, question, message_box
+from als.ui.params_utils import update_controls_from_params, update_params_from_controls, reset_params, \
+    set_sliders_defaults
 from generated.als_ui import Ui_stack_window
 
 _LOGGER = logging.getLogger(__name__)
 
 
-# pylint: disable=R0904
+# pylint: disable=R0904, R0902
 class MainWindow(QMainWindow):
     """
     ALS main window.
@@ -33,35 +37,135 @@ class MainWindow(QMainWindow):
 
         self._controller = controller
         self._ui = Ui_stack_window()
-
         self._ui.setupUi(self)
-        self.setWindowTitle(_("Astro Live Stacker") + f" - v{VERSION}")
+        self.setWindowTitle("Astro Live Stacker")
 
+        # populate stacking mode combo box=
         self._ui.cb_stacking_mode.blockSignals(True)
         stacking_modes = [STACKING_MODE_SUM, STACKING_MODE_MEAN]
         for stacking_mode in stacking_modes:
             self._ui.cb_stacking_mode.addItem(stacking_mode)
-        self._ui.cb_stacking_mode.setCurrentIndex(stacking_modes.index(DYNAMIC_DATA.stacking_mode))
+        self._ui.cb_stacking_mode.setCurrentIndex(stacking_modes.index(self._controller.get_stacking_mode()))
         self._ui.cb_stacking_mode.blockSignals(False)
 
-        self._ui.postprocess_widget.setCurrentIndex(0)
+        # update align checkbox
+        self._ui.chk_align.setChecked(self._controller.get_align_before_stack())
 
-        # store if docks must be shown or not
-        self.shown_log_dock = True
-        self.show_session_dock = True
+        # update save every frame checkbox
+        self._ui.chk_save_every_image.setChecked(self._controller.get_save_every_image())
 
         # prevent log dock to be too tall
-        self.resizeDocks([self._ui.log_dock], [self._LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
+        self.resizeDocks([self._ui.log_dock], [MainWindow._LOG_DOCK_INITIAL_HEIGHT], Qt.Vertical)
 
-        DYNAMIC_DATA.add_observer(self)
+        # setup rgb controls and params
+        self._rgb_controls = [
 
-        self.update_all()
+            self._ui.sld_rgb_r,
+            self._ui.sld_rgb_g,
+            self._ui.sld_rgb_b,
+        ]
 
+        self._rgb_parameters = self._controller.get_rgb_parameters()
+
+        set_sliders_defaults(
+            [self._rgb_parameters[0], self._rgb_parameters[1], self._rgb_parameters[2]],
+            [self._ui.sld_rgb_r, self._ui.sld_rgb_g, self._ui.sld_rgb_b]
+        )
+
+        self._reset_rgb()
+
+        self._ui.btn_rgb_apply.clicked.connect(self._apply_rgb)
+        self._ui.btn_rgb_reset.clicked.connect(self._reset_rgb)
+        self._ui.btn_rgb_reload.clicked.connect(self._reload_rgb)
+
+        # setup levels controls and parameters
+        self._levels_controls = [
+            self._ui.chk_autostretch,
+            self._ui.cb_levels_stretch_method,
+            self._ui.sld_black,
+            self._ui.sld_midtones,
+            self._ui.sld_white,
+        ]
+
+        self._levels_parameters = self._controller.get_levels_parameters()
+
+        for label in self._levels_parameters[1].choices:
+            self._ui.cb_levels_stretch_method.addItem(label)
+
+        set_sliders_defaults(
+            [self._levels_parameters[2], self._levels_parameters[3], self._levels_parameters[4]],
+            [self._ui.sld_black, self._ui.sld_midtones, self._ui.sld_white]
+        )
+
+        self._reset_levels()
+
+        self._ui.btn_levels_apply.clicked.connect(self._apply_levels)
+        self._ui.btn_levels_reset.clicked.connect(self._reset_levels)
+        self._ui.btn_levels_reload.clicked.connect(self._reload_levels)
+
+        # setup exchanges with dynamic data
+        self._controller.add_model_observer(self)
+        self.update_display()
+
+        config.register_log_receiver(self)
+
+        self.setGeometry(*config.get_window_geometry())
+
+        # manage docks restoration out of 'image only' mode
+        self._restore_log_dock = False
+        self._restore_session_dock = False
+        self._restore_processing_dock = False
+
+        # setup image display
         self._scene = QGraphicsScene(self)
         self._ui.image_view.setScene(self._scene)
         self._image_item = None
-
         self.reset_image_view()
+
+        if config.get_full_screen_active():
+            self._ui.action_full_screen.setChecked(True)
+        else:
+            self.show()
+
+    def _apply_rgb(self):
+        """
+        Apply rgb processing
+        """
+        update_params_from_controls(self._rgb_parameters, self._rgb_controls)
+
+        self._controller.apply_processing()
+
+    def _apply_levels(self):
+        """
+        Apply levels processing
+        """
+        update_params_from_controls(self._levels_parameters, self._levels_controls)
+
+        self._controller.apply_processing()
+
+    def _reset_rgb(self):
+        """
+        Resets rgb controls to their defaults
+        """
+        reset_params(self._rgb_parameters, self._rgb_controls)
+
+    def _reset_levels(self):
+        """
+        Resets levels processing controls to their defaults
+        """
+        reset_params(self._levels_parameters, self._levels_controls)
+
+    def _reload_rgb(self):
+        """
+        Sets rgb controls to their previously recorded values (last apply)
+        """
+        update_controls_from_params(self._rgb_parameters, self._rgb_controls)
+
+    def _reload_levels(self):
+        """
+        Sets levels processing controls to their previously recorded values (last apply)
+        """
+        update_controls_from_params(self._levels_parameters, self._levels_controls)
 
     @log
     def reset_image_view(self):
@@ -71,99 +175,33 @@ class MainWindow(QMainWindow):
         for item in self._scene.items():
             self._scene.removeItem(item)
         self._image_item = QGraphicsPixmapItem(QPixmap(":/icons/dslr-camera.svg"))
+        self._ui.image_view.setBackgroundBrush(QBrush(QColor("#222222"), Qt.SolidPattern))
         self._scene.addItem(self._image_item)
-        self._ui.image_view.fitInView(self._image_item, Qt.KeepAspectRatio)
 
     @log
     def closeEvent(self, event):
         """Handles window close events."""
         # pylint: disable=C0103
 
-        window_rect = self.geometry()
-        config.set_window_geometry((window_rect.x(), window_rect.y(), window_rect.width(), window_rect.height()))
-        config.save()
+        if not self.isFullScreen():
+            window_rect = self.geometry()
+            config.set_window_geometry((window_rect.x(), window_rect.y(), window_rect.width(), window_rect.height()))
+
+        config.set_full_screen_active(self.isFullScreen())
+        MainWindow._save_config()
 
         self._stop_session()
 
-        if DYNAMIC_DATA.save_queue_size > 0:
-            SaveWaitDialog(self).exec()
+        if DYNAMIC_DATA.session.is_stopped:
 
-        DYNAMIC_DATA.remove_observer(self)
-        super().closeEvent(event)
+            image_waiter = SaveWaitDialog(self._controller, self)
 
-    @log
-    def changeEvent(self, event):
-        """Handles window change events."""
-        # pylint: disable=C0103
+            if image_waiter.count_remaining_images() > 0:
+                image_waiter.exec()
 
-        event.accept()
-
-        # if window is going out of minimized state, we restore docks if needed
-        if event.type() == QEvent.WindowStateChange:
-            if not self.windowState() & Qt.WindowMinimized:
-                _LOGGER.debug("Restoring docks visibility")
-                if self.shown_log_dock:
-                    self._ui.log_dock.show()
-                if self.show_session_dock:
-                    self._ui.session_dock.show()
-
-    # ------------------------------------------------------------------------------
-    # Callbacks
-
-    @pyqtSlot(int, name="on_SCNR_Slider_valueChanged")
-    @log
-    def cb_scnr_slider_changed(self, value):
-        """
-        Qt slot for SCNR slider changes.
-
-        :param value: SCNR slider new value
-        :type value: int
-        """
-        self._ui.SCNR_value.setNum(value / 100.)
-
-    @pyqtSlot(int, name="on_R_slider_valueChanged")
-    @log
-    def cb_r_slider_changed(self, value):
-        """
-        Qt slot for R slider changes.
-
-        :param value: R slider new value
-        :type value: int
-        """
-        self._ui.R_value.setNum(value / 100.)
-
-    @pyqtSlot(int, name="on_G_slider_valueChanged")
-    @log
-    def cb_g_slider_changed(self, value):
-        """
-        Qt slot for G slider changes.
-
-        :param value: G slider new value
-        :type value: int
-        """
-        self._ui.G_value.setNum(value / 100.)
-
-    @pyqtSlot(int, name="on_B_slider_valueChanged")
-    @log
-    def cb_b_slider_changed(self, value):
-        """
-        Qt slot for B slider changes.
-
-        :param value: B slider new value
-        :type value: int
-        """
-        self._ui.B_value.setNum(value / 100.)
-
-    @pyqtSlot(int, name="on_contrast_slider_valueChanged")
-    @log
-    def cb_contrast_changed(self, value):
-        """
-        Qt slot for contrast slider changes.
-
-        :param value: contrast slider new value
-        :type value: int
-        """
-        self._ui.contrast.setNum(value / 10)
+            event.accept()
+        else:
+            event.ignore()
 
     @pyqtSlot(name="on_pbSave_clicked")
     @log
@@ -174,21 +212,13 @@ class MainWindow(QMainWindow):
         This saves the processed image using user chosen format
 
         """
-        image_to_save = DYNAMIC_DATA.process_result
+        image_to_save = DYNAMIC_DATA.post_processor_result
         if image_to_save is not None:
             self._controller.save_image(image_to_save,
                                         config.get_image_save_format(),
                                         config.get_work_folder_path(),
-                                        config.STACKED_IMAGE_FILE_NAME_BASE,
+                                        als.model.data.STACKED_IMAGE_FILE_NAME_BASE,
                                         add_timestamp=True)
-
-    @pyqtSlot(name="on_pb_apply_value_clicked")
-    @log
-    def cb_apply_value(self):
-        """Qt slot for clicks on the 'apply' button"""
-        #     self.adjust_value()
-        #     self.update_image()
-        #_LOGGER.info("Define new display value")
 
     @pyqtSlot(name="on_action_quit_triggered")
     @log
@@ -210,39 +240,35 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     # pylint: disable=C0103
-    @staticmethod
     @log
-    def on_cb_stacking_mode_currentTextChanged(text: str):
+    def on_cb_stacking_mode_currentTextChanged(self, stacking_mode: str):
         """
         Qt slot executed when stacking mode comb box changed
 
-        :param text: new stacking mode
-        :type text: str
-        :return:
+        :param stacking_mode: new stacking mode
+        :type stacking_mode: str
         """
-        DYNAMIC_DATA.stacking_mode = text
+        self._controller.set_stacking_mode(stacking_mode)
 
-    @staticmethod
     @log
-    def on_chk_align_toggled(checked: bool):
+    def on_chk_align_toggled(self, checked: bool):
         """
         Qt slot executed when 'align' check box is changed
 
         :param checked: is checkbox checked ?
         :type checked: bool
         """
-        DYNAMIC_DATA.align_before_stacking = checked
+        self._controller.set_align_before_stack(checked)
 
-    @staticmethod
     @log
-    def on_chk_save_every_image_toggled(checked: bool):
+    def on_chk_save_every_image_toggled(self, checked: bool):
         """
         Qt slot executed when 'save ever image' check box is changed
 
         :param checked: is checkbox checked ?
         :type checked: bool
         """
-        DYNAMIC_DATA.save_every_image = checked
+        self._controller.set_save_every_image(checked)
 
     @pyqtSlot()
     @log
@@ -261,19 +287,102 @@ class MainWindow(QMainWindow):
         self._stop_www()
 
     @log
-    def adjust_value(self):
+    def on_action_full_screen_toggled(self, checked):
         """
-        Adjusts stacked image according to GUU controls
+        Qt slot executed when action 'Full screen' is toggled
 
+        :param checked: is the action active ?
+        :type checked: bool
         """
-        # TODO :)
+
+        if checked:
+            self.showFullScreen()
+        else:
+            self.showNormal()
+
+    @pyqtSlot()
+    @log
+    def on_action_image_only_triggered(self):
+        """
+        Qt slot executed when 'image only' action is triggered
+        """
+
+        actions_restore_mapping = {
+
+            self._ui.action_show_processing_panel: self._restore_processing_dock,
+            self._ui.action_show_session_controls: self._restore_session_dock,
+            self._ui.action_show_session_log: self._restore_log_dock,
+        }
+
+        checked = self._ui.action_image_only.isChecked()
+
+        if checked:
+
+            self._restore_session_dock = self._ui.session_dock.isVisible()
+            self._restore_log_dock = self._ui.log_dock.isVisible()
+            self._restore_processing_dock = self._ui.processing_dock.isVisible()
+
+            for action in actions_restore_mapping:
+
+                if action.isChecked():
+                    action.trigger()
+
+        else:
+            for action, restore in actions_restore_mapping.items():
+
+                if restore:
+                    action.trigger()
 
     @log
-    def update_image(self):
+    def on_processing_dock_visibilityChanged(self, visible):
+        """
+        Qt slot executed when prcessing dock visibility changed
+
+        :param visible: is it now visible ?
+        :type visible: bool
+        """
+
+        if visible:
+            self._cancel_image_only_mode()
+
+    @log
+    def on_log_dock_visibilityChanged(self, visible):
+        """
+        Qt slot executed when log dock visibility changed
+
+        :param visible: is it now visible ?
+        :type visible: bool
+        """
+
+        if visible:
+            self._cancel_image_only_mode()
+
+    @log
+    def on_session_dock_visibilityChanged(self, visible):
+        """
+        Qt slot executed when session dock visibility changed
+
+        :param visible: is it now visible ?
+        :type visible: bool
+        """
+
+        if visible:
+            self._cancel_image_only_mode()
+
+    @log
+    def _cancel_image_only_mode(self):
+        """
+        Untick 'image only' menu entry
+        """
+
+        self._ui.action_image_only.setChecked(False)
+
+    @log
+    def _update_image(self):
         """
         Update central image display.
         """
-        image_raw_data = DYNAMIC_DATA.process_result.data.copy()
+        image_raw_data = DYNAMIC_DATA.post_processor_result.data.copy()
 
         image = array2qimage(image_raw_data, normalize=(2 ** 16 - 1))
         self._image_item.setPixmap(QPixmap.fromImage(image))
@@ -282,15 +391,6 @@ class MainWindow(QMainWindow):
     @log
     def cb_play(self):
         """Qt slot for mouse clicks on the 'play' button"""
-
-        self._ui.white_slider.setEnabled(False)
-        self._ui.black_slider.setEnabled(False)
-        self._ui.contrast_slider.setEnabled(False)
-        self._ui.brightness_slider.setEnabled(False)
-        self._ui.R_slider.setEnabled(False)
-        self._ui.G_slider.setEnabled(False)
-        self._ui.B_slider.setEnabled(False)
-        self._ui.pb_apply_value.setEnabled(False)
 
         self._start_session()
 
@@ -305,63 +405,75 @@ class MainWindow(QMainWindow):
         self._ui.log.scrollToBottom()
 
     @log
-    def update_all(self):
+    def update_display(self, image_only: bool = False):
         """
         Updates all displays and controls depending on DataStore held data
         """
 
-        web_server_is_running = DYNAMIC_DATA.web_server_is_running
-        session = DYNAMIC_DATA.session
-        session_is_running = session.is_running()
-        session_is_stopped = session.is_stopped()
-        session_is_paused = session.is_paused()
+        if image_only:
+            self._update_image()
+            self._ui.histogram_view.update()
 
-        # update running statuses
-        scanner_status_message = f"Scanner on {config.get_scan_folder_path()}: "
-        scanner_status_message += f"Running" if session_is_running else "Stopped"
-        self._ui.lbl_scanner_status.setText(scanner_status_message)
-
-        if web_server_is_running:
-            url = f"http://{DYNAMIC_DATA.web_server_ip}:{config.get_www_server_port_number()}"
-            self._ui.lbl_web_server_status.setText(f'Web server: Started, reachable at <a href="{url}">{url}</a>')
         else:
-            self._ui.lbl_web_server_status.setText("Web server: Stopped")
+            web_server_is_running = DYNAMIC_DATA.web_server_is_running
+            session = DYNAMIC_DATA.session
+            session_is_running = session.is_running
+            session_is_stopped = session.is_stopped
+            session_is_paused = session.is_paused
 
-        if session_is_stopped:
-            session_status_string = "Stopped"
-        elif session_is_paused:
-            session_status_string = "Paused"
-        elif session_is_running:
-            session_status_string = "Running"
-        else:
-            # this should never happen, that's why we check ;)
-            session_status_string = "### BUG !"
-        self._ui.lbl_session_status.setText(f"Session: {session_status_string}")
+            # update running statuses
+            scanner_status_message = f"Scanner on {config.get_scan_folder_path()} : "
+            scanner_status_message += f"Running" if session_is_running else "Stopped"
+            self._ui.lbl_scanner_status.setText(scanner_status_message)
 
-        # update preferences accessibility according to session and web server status
-        self._ui.action_prefs.setEnabled(not web_server_is_running and session_is_stopped)
+            if web_server_is_running:
+                url = f"http://{DYNAMIC_DATA.web_server_ip}:{config.get_www_server_port_number()}"
+                webserver_status = f'Started, reachable at <a href="{url}" style="color: #CC0000">{url}</a>'
+            else:
+                webserver_status = "Stopped"
+            self._ui.lbl_web_server_status.setText(f"Web server : {webserver_status}")
 
-        # handle Start / Pause / Stop  buttons
-        self._ui.pbPlay.setEnabled(session_is_stopped or session_is_paused)
-        self._ui.pbStop.setEnabled(session_is_running or session_is_paused)
-        self._ui.pbPause.setEnabled(session_is_running)
+            if session_is_stopped:
+                session_status = "Stopped"
+            elif session_is_paused:
+                session_status = "Paused"
+            elif session_is_running:
+                session_status = "Running"
+            else:
+                # this should never happen, that's why we check ;)
+                session_status = "### BUG !"
+            self._ui.lbl_session_status.setText(f"{session_status}")
 
-        # handle align + stack mode buttons
-        self._ui.chk_align.setEnabled(session_is_stopped)
-        self._ui.cb_stacking_mode.setEnabled(session_is_stopped)
+            # update preferences accessibility according to session and web server status
+            self._ui.action_prefs.setEnabled(not web_server_is_running and session_is_stopped)
 
-        # handle web stop start buttons
-        self._ui.btn_web_start.setEnabled(not web_server_is_running)
-        self._ui.btn_web_stop.setEnabled(web_server_is_running)
+            # handle Start / Pause / Stop  buttons
+            self._ui.pbPlay.setEnabled(session_is_stopped or session_is_paused)
+            self._ui.pbStop.setEnabled(session_is_running or session_is_paused)
+            self._ui.pbPause.setEnabled(session_is_running)
 
-        # update stack size
-        self._ui.lbl_stack_size.setText(str(DYNAMIC_DATA.stack_size))
+            # handle align + stack mode buttons
+            self._ui.chk_align.setEnabled(session_is_stopped)
+            self._ui.cb_stacking_mode.setEnabled(session_is_stopped)
 
-        # update queues sizes
-        self._ui.lbl_pre_process_queue_size.setText(str(DYNAMIC_DATA.pre_process_queue_size))
-        self._ui.lbl_stack_queue_size.setText(str(DYNAMIC_DATA.stack_queue_size))
-        self._ui.lbl_process_queue_size.setText(str(DYNAMIC_DATA.process_queue_size))
-        self._ui.lbl_save_queue_size.setText(str(DYNAMIC_DATA.save_queue_size))
+            # handle web stop start buttons
+            self._ui.btn_web_start.setEnabled(not web_server_is_running)
+            self._ui.btn_web_stop.setEnabled(web_server_is_running)
+
+            # update stack size
+            self._ui.lbl_stack_size.setText(str(DYNAMIC_DATA.stack_size))
+
+            # update queues sizes
+            self._ui.lbl_pre_process_queue_size.setText(str(DYNAMIC_DATA.pre_processor_queue_size))
+            self._ui.lbl_stack_queue_size.setText(str(DYNAMIC_DATA.stacker_queue_size))
+            self._ui.lbl_process_queue_size.setText(str(DYNAMIC_DATA.post_processor_queue_size))
+            self._ui.lbl_save_queue_size.setText(str(DYNAMIC_DATA.saver_queue_size))
+
+            # handle component statuses
+            self._ui.lbl_pre_processor_status.setText(DYNAMIC_DATA.pre_processor_status)
+            self._ui.lbl_stacker_status.setText(DYNAMIC_DATA.stacker_status)
+            self._ui.lbl_post_processor_status.setText(DYNAMIC_DATA.post_processor_status)
+            self._ui.lbl_saver_status.setText(DYNAMIC_DATA.saver_status)
 
     @pyqtSlot(name="on_pbStop_clicked")
     @log
@@ -375,32 +487,6 @@ class MainWindow(QMainWindow):
         """Qt slot for mouse clicks on the 'Pause' button"""
         self._controller.pause_session()
 
-    @pyqtSlot(bool, name="on_log_dock_visibilityChanged")
-    @log
-    def cb_log_dock_changed_visibility(self, visible):
-        """
-        Qt slot for changes of log dock visibility.
-
-        :param visible: True if log dock is visible
-        :type visible: bool
-        """
-
-        if not self.windowState() & Qt.WindowMinimized:
-            self.shown_log_dock = visible
-
-    @pyqtSlot(bool, name="on_session_dock_visibilityChanged")
-    @log
-    def cb_session_dock_changed_visibility(self, visible):
-        """
-        Qt slot for changes of session dock visibility.
-
-        :param visible: True if session dock is visible
-        :type visible: bool
-        """
-
-        if not self.windowState() & Qt.WindowMinimized:
-            self.show_session_dock = visible
-
     @log
     def _start_www(self):
         """Starts web server"""
@@ -413,7 +499,7 @@ class MainWindow(QMainWindow):
                           "machines. Please check your network connection"
                 warning_box(title, message)
         except WebServerStartFailure as start_failure:
-            error_box(start_failure.message, start_failure.message)
+            error_box(start_failure.message, start_failure.details)
 
     @log
     def _stop_www(self):
@@ -454,14 +540,19 @@ class MainWindow(QMainWindow):
         :type ask_confirmation: bool
         """
 
-        if not DYNAMIC_DATA.session.is_stopped():
-            message = """Stopping the current session will reset the stack and all image enhancements.
+        if not DYNAMIC_DATA.session.is_stopped:
 
-            Are you sure you want to stop the current session ?
-            """
-            do_stop_session = True if not ask_confirmation else question("Really stop session ?",
-                                                                         message,
-                                                                         default_yes=False)
+            do_stop_session = True
+
+            if ask_confirmation and DYNAMIC_DATA.stack_size > 0:
+                message = (
+                    "Stopping the current session will reset the stack and all image enhancements.\n\n"
+                    "Are you sure you want to stop the current session ?")
+
+                do_stop_session = question("Really stop session ?",
+                                           message,
+                                           default_yes=False)
+
             if do_stop_session:
                 self._controller.stop_session()
 
@@ -477,6 +568,15 @@ class MainWindow(QMainWindow):
         accepted = PreferencesDialog(self).exec() == QDialog.Accepted
 
         if accepted:
-            self.update_all()
+            self.update_display()
 
         return accepted
+
+    @staticmethod
+    @log
+    def _save_config():
+
+        try:
+            config.save()
+        except CouldNotSaveConfig as save_error:
+            error_box(save_error.message, f"Your settings could not be saved\n\nDetails : {save_error.details}")

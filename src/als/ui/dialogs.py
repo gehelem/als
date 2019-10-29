@@ -7,9 +7,11 @@ from pathlib import Path
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QApplication
 
-from als import config, model
+import als.model.data
+from als import config
 from als.code_utilities import log
-from als.model import DYNAMIC_DATA
+from als.logic import Controller
+from als.model.data import VERSION, DYNAMIC_DATA, WORKER_STATUS_BUSY
 from generated.about_ui import Ui_AboutDialog
 from generated.prefs_ui import Ui_PrefsDialog
 from generated.save_wait_ui import Ui_SaveWaitDialog
@@ -35,9 +37,9 @@ class PreferencesDialog(QDialog):
 
         config_to_image_save_type_mapping = {
 
-            config.IMAGE_SAVE_JPEG: self._ui.radioSaveJpeg,
-            config.IMAGE_SAVE_PNG:  self._ui.radioSavePng,
-            config.IMAGE_SAVE_TIFF: self._ui.radioSaveTiff
+            als.model.data.IMAGE_SAVE_TYPE_JPEG: self._ui.radioSaveJpeg,
+            als.model.data.IMAGE_SAVE_TYPE_PNG:  self._ui.radioSavePng,
+            als.model.data.IMAGE_SAVE_TYPE_TIFF: self._ui.radioSaveTiff
         }
 
         config_to_image_save_type_mapping[config.get_image_save_format()].setChecked(True)
@@ -53,7 +55,7 @@ class PreferencesDialog(QDialog):
         for ui_field in [self._ui.ln_work_folder_path, self._ui.ln_scan_folder_path]:
 
             if not Path(ui_field.text()).is_dir():
-                ui_field.setStyleSheet("border: 1px solid red")
+                ui_field.setStyleSheet("border: 1px solid orange")
             else:
                 ui_field.setStyleSheet("border: 1px")
 
@@ -79,9 +81,9 @@ class PreferencesDialog(QDialog):
 
         image_save_type_to_config_mapping = {
 
-            self._ui.radioSaveJpeg: config.IMAGE_SAVE_JPEG,
-            self._ui.radioSavePng:  config.IMAGE_SAVE_PNG,
-            self._ui.radioSaveTiff: config.IMAGE_SAVE_TIFF
+            self._ui.radioSaveJpeg: als.model.data.IMAGE_SAVE_TYPE_JPEG,
+            self._ui.radioSavePng: als.model.data.IMAGE_SAVE_TYPE_PNG,
+            self._ui.radioSaveTiff: als.model.data.IMAGE_SAVE_TYPE_TIFF
         }
 
         for radio_button, image_save_type in image_save_type_to_config_mapping.items():
@@ -89,7 +91,7 @@ class PreferencesDialog(QDialog):
                 config.set_image_save_format(image_save_type)
                 break
 
-        config.save()
+        PreferencesDialog._save_config()
 
         super().accept()
 
@@ -117,6 +119,15 @@ class PreferencesDialog(QDialog):
 
         self._show_missing_folders()
 
+    @staticmethod
+    @log
+    def _save_config():
+
+        try:
+            config.save()
+        except config.CouldNotSaveConfig as save_error:
+            error_box(save_error.message, f"Your settings could not be saved\n\nDetails : {save_error.details}")
+
 
 class AboutDialog(QDialog):
     """
@@ -128,7 +139,7 @@ class AboutDialog(QDialog):
         super().__init__(parent)
         self._ui = Ui_AboutDialog()
         self._ui.setupUi(self)
-        self._ui.lblVersionValue.setText(model.VERSION)
+        self._ui.lblVersionValue.setText(VERSION)
 
 
 class SaveWaitDialog(QDialog):
@@ -136,24 +147,77 @@ class SaveWaitDialog(QDialog):
     Dialog shown while waiting for all pending image saves to complete
     """
     @log
-    def __init__(self, parent=None):
+    def __init__(self, controller: Controller, parent=None):
         super().__init__(parent)
         self._ui = Ui_SaveWaitDialog()
         self._ui.setupUi(self)
-        self._ui.lbl_save_queue_size.setText(str(DYNAMIC_DATA.save_queue_size))
-        DYNAMIC_DATA.save_queue.size_changed_signal[int].connect(self.on_save_queue_size_changed)
+
+        self._controller = controller
+
+        self.update_display(_)
+        self._controller.add_model_observer(self)
 
     @log
-    def on_save_queue_size_changed(self, size):
+    def update_display(self, _):
         """
-        Save queue size just changed
+        Update display
+        """
 
-        :param size: the size of the save queue
-        :type size: int
-        """
-        self._ui.lbl_save_queue_size.setText(str(size))
-        if size == 0:
+        remaining_image_count = self.count_remaining_images()
+        self._ui.lbl_remaining_saves.setText(str(remaining_image_count))
+
+        if remaining_image_count == 0:
+            self._controller.remove_model_observer(self)
             self.close()
+
+    @log
+    def count_remaining_images(self):
+        """
+        Count images that still need to be saved.
+
+        We count 1 image to save for each image in the queues and each worker still Busy and also
+        take 'save every image' setting and web server status into account
+
+        :return: the number of images remaining to be saved
+        :rtype: int
+        """
+
+        remaining_image_save_count = 0
+
+        for status in [
+
+                DYNAMIC_DATA.pre_processor_status,
+                DYNAMIC_DATA.stacker_status,
+                DYNAMIC_DATA.post_processor_status,
+        ]:
+            if status == WORKER_STATUS_BUSY:
+                remaining_image_save_count += 1
+
+        for queue_size in [
+
+                DYNAMIC_DATA.pre_processor_queue_size,
+                DYNAMIC_DATA.stacker_queue_size,
+                DYNAMIC_DATA.post_processor_queue_size,
+        ]:
+            remaining_image_save_count += queue_size
+
+        additional_saves_per_image = [
+            self._controller.get_save_every_image(), DYNAMIC_DATA.web_server_is_running].count(True)
+
+        remaining_image_save_count *= 1 + additional_saves_per_image
+
+        remaining_image_save_count += 1 if DYNAMIC_DATA.saver_status == WORKER_STATUS_BUSY else 0
+        remaining_image_save_count += DYNAMIC_DATA.saver_queue_size
+
+        return remaining_image_save_count
+
+    @log
+    @pyqtSlot()
+    def on_btn_quit_clicked(self):
+        """
+        Qt slot called when user clicks 'Discard unsaved images and quit'
+        """
+        self.close()
 
 
 def question(title, message, default_yes: bool = True):
