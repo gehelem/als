@@ -106,7 +106,7 @@ virtual environment and installing ALS's dependencies into it.
 
 .. code-block::
 
-  $ sudo apt install -y gcc python3-dev python3-venv indi-full gsc swig
+  $ sudo apt install -y gcc python3-dev python3-venv indi-full gsc swig zlib1g-dev
 
 
 2. **Dive into ALS folder**.

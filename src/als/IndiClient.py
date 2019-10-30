@@ -37,11 +37,11 @@ class IndiClient(PyIndi.BaseClient):
       _LOGGER.debug(f"Indi Client, remote host is: {self.getHost()}:"
                     f"{self.getPort()}")
 
-      # Finished configuring
-      _LOGGER.debug(f"Configured Indi Client successfully")
-
       if connect_on_create:
           self.connect()
+
+      # Finished configuring
+      _LOGGER.debug(f"Configured Indi Client successfully")
 
   def connect(self):
       if self.isServerConnected():

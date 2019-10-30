@@ -119,7 +119,7 @@ class IndiDevice():
             return
         _LOGGER.info(f"Disconnecting from device {self.device_name}")
         # set the corresponding switch to off
-        self.set_switch('CONNECTION', on_switches=['DISCONNECT'])
+        self.indi_client.disconnectServer()
 
     def get_values(self, ctl_name, ctl_type):
         return dict(map(lambda c: (c.name, c.value),
