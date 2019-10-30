@@ -30,6 +30,7 @@ _DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC = 0.1
 SCANNER_TYPE_FILESYSTEM = "FS"
 SCANNER_TYPE_INDI = "DI"
 
+_INDI_STOP_ACQ_TIMEOUT_SEC = 5
 
 class InputError(Exception):
     """
@@ -345,6 +346,7 @@ class IndiScanner(InputScanner, QObject):
         InputScanner.__init__(self)
         QObject.__init__(self)
         self._observer = None
+        self.do_loop = True
 
     @log
     def start(self):
@@ -361,22 +363,32 @@ class IndiScanner(InputScanner, QObject):
             self._device = IndiCamera(indi_client=self._client,
                                       config=dict(camera_name=device_name),
                                       connect_on_create=True)
+            self.do_loop = True
             self.launch_bg_acquisition()
         except Exception as e:
             raise ScannerStartError(e)
 
     @log
     def launch_bg_acquisition(self):
-        exposure_event = self._device
-        self.main_thread = Thread(target=self.on_received, args=())
+        self.main_thread = Thread(target=self.loop_acquisition, args=())
         self.main_thread.name = f"IndiScanner Thread"
         self.main_thread.start()
+
+    @log
+    def loop_acquisition(self):
+        while self.do_loop:
+            self.loop_thread = Thread(target=self.on_received, args=())
+            self.loop_thread.name = f"IndiLoopScanner Thread"
+            self.loop_thread.start()
+            self.loop_thread.join()
 
     @log
     def stop(self):
         """
         Stops listening to server for new blobs
         """
+        self.do_loop = False
+        self.main_thread.join(timeout=_INDI_STOP_ACQ_TIMEOUT_SEC)
         if self._device is not None:
             self._device.disconnect()
 

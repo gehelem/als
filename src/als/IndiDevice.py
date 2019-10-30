@@ -115,13 +115,11 @@ class IndiDevice():
 
     def disconnect(self):
         if not self.device.isConnected():
-            _LOGGER.warning('Not connected to device {}'.format(
-                             self.device_name))
+            _LOGGER.warning(f"Not connected to device {self.device_name}")
             return
-        _LOGGER.info('Disconnecting from device {}'.format(
-                         self.device_name))
+        _LOGGER.info(f"Disconnecting from device {self.device_name}")
         # set the corresponding switch to off
-        self.set_switch('CONNECTION', off_switches=['CONNECT'])
+        self.set_switch('CONNECTION', on_switches=['DISCONNECT'])
 
     def get_values(self, ctl_name, ctl_type):
         return dict(map(lambda c: (c.name, c.value),
@@ -160,20 +158,26 @@ class IndiDevice():
         prop = prop if prop else self.get_prop(prop_name, prop_type, timeout)
         return dict((c.name, get_dict(c)) for c in prop)
 
-    def set_switch(self, name, on_switches = [], off_switches = [],
-                  sync=True, timeout=None):
+    def set_switch(self, name, on_switches=[], off_switches=[],
+                   sync=True, timeout=None):
         pv = self.get_prop(name, 'switch')
-        if pv.r == PyIndi.ISR_ATMOST1 or pv.r == PyIndi.ISR_1OFMANY:
+        is_exclusive = pv.r == PyIndi.ISR_ATMOST1 or pv.r == PyIndi.ISR_1OFMANY
+        if is_exclusive :
             on_switches = on_switches[0:1]
             off_switches = [s.name for s in pv if s.name not in on_switches]
         for index in range(0, len(pv)):
-            pv[index].s = (PyIndi.ISS_ON if pv[index].name in on_switches
-                else PyIndi.ISS_OFF)
+            current_state = pv[index].s
+            new_state = current_state
+            if pv[index].name in on_switches:
+                new_state = PyIndi.ISS_ON
+            elif is_exclusive or pv[index].name in off_switches:
+                new_state = PyIndi.ISS_OFF
+            pv[index].s = new_state
         self.indi_client.sendNewSwitch(pv)
         if sync:
             self.__wait_prop_status(pv, statuses=[PyIndi.IPS_IDLE,
                                                 PyIndi.IPS_OK],
-                                  timeout=timeout)
+                                    timeout=timeout)
         return pv
         
     def set_number(self, name, valueVector, sync=True, timeout=None):
