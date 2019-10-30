@@ -102,6 +102,14 @@ class ColorBalance(ImageProcessor):
             )
         )
 
+        self._parameters.append(
+            SwitchParameter(
+                "active",
+                "RGB balance active",
+                default=True
+            )
+        )
+
     @log
     def process_image(self, image: Image):
         """
@@ -117,27 +125,29 @@ class ColorBalance(ImageProcessor):
         red = self._parameters[0]
         green = self._parameters[1]
         blue = self._parameters[2]
+        active = self._parameters[3]
 
-        red_value = red.value if red.value > 0 else 0.1
-        green_value = green.value if green.value > 0 else 0.1
-        blue_value = blue.value if blue.value > 0 else 0.1
+        if active.value:
+            red_value = red.value if red.value > 0 else 0.1
+            green_value = green.value if green.value > 0 else 0.1
+            blue_value = blue.value if blue.value > 0 else 0.1
 
-        processed = False
+            processed = False
 
-        if not red.is_default():
-            image.data[0] = image.data[0] * red_value
-            processed = True
+            if not red.is_default():
+                image.data[0] = image.data[0] * red_value
+                processed = True
 
-        if not green.is_default():
-            image.data[1] = image.data[1] * green_value
-            processed = True
+            if not green.is_default():
+                image.data[1] = image.data[1] * green_value
+                processed = True
 
-        if not blue.is_default():
-            image.data[2] = image.data[2] * blue_value
-            processed = True
+            if not blue.is_default():
+                image.data[2] = image.data[2] * blue_value
+                processed = True
 
-        if processed:
-            image.data = np.clip(image.data, 0, ColorBalance._UPPER_LIMIT)
+            if processed:
+                image.data = np.clip(image.data, 0, ColorBalance._UPPER_LIMIT)
 
         return image
 

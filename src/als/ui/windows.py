@@ -63,6 +63,7 @@ class MainWindow(QMainWindow):
             self._ui.sld_rgb_r,
             self._ui.sld_rgb_g,
             self._ui.sld_rgb_b,
+            self._ui.chk_rgb_active
         ]
 
         self._rgb_parameters = self._controller.get_rgb_parameters()

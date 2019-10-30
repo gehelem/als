@@ -692,6 +692,16 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
+         <widget class="QCheckBox" name="chk_rgb_active">
+          <property name="text">
+           <string>Active</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
          <layout class="QGridLayout" name="gridLayout_2">
           <item row="0" column="0">
            <widget class="QLabel" name="label_5">
@@ -1190,12 +1200,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>811</x>
-     <y>294</y>
+     <x>859</x>
+     <y>469</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1008</x>
-     <y>294</y>
+     <x>1055</x>
+     <y>471</y>
     </hint>
    </hints>
   </connection>
