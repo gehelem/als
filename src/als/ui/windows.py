@@ -59,17 +59,16 @@ class MainWindow(QMainWindow):
 
         # setup rgb controls and params
         self._rgb_controls = [
-
+            self._ui.chk_rgb_active,
             self._ui.sld_rgb_r,
             self._ui.sld_rgb_g,
             self._ui.sld_rgb_b,
-            self._ui.chk_rgb_active
         ]
 
         self._rgb_parameters = self._controller.get_rgb_parameters()
 
         set_sliders_defaults(
-            [self._rgb_parameters[0], self._rgb_parameters[1], self._rgb_parameters[2]],
+            [self._rgb_parameters[1], self._rgb_parameters[2], self._rgb_parameters[3]],
             [self._ui.sld_rgb_r, self._ui.sld_rgb_g, self._ui.sld_rgb_b]
         )
 
@@ -79,10 +78,33 @@ class MainWindow(QMainWindow):
         self._ui.btn_rgb_reset.clicked.connect(self._reset_rgb)
         self._ui.btn_rgb_reload.clicked.connect(self._reload_rgb)
 
+        # setup autostretch controls and params
+        self._autostretch_controls = [
+
+            self._ui.chk_stretch_active,
+            self._ui.cb_stretch_method,
+            self._ui.sld_stretch_strength
+        ]
+
+        self._autostretch_parameters = self._controller.get_autostretch_parameters()
+
+        set_sliders_defaults(
+            [self._autostretch_parameters[2]],
+            [self._ui.sld_stretch_strength]
+        )
+
+        for label in self._autostretch_parameters[1].choices:
+            self._ui.cb_stretch_method.addItem(label)
+
+        self._reset_autostretch()
+
+        self._ui.btn_stretch_apply.clicked.connect(self._apply_autostretch)
+        self._ui.btn_stretch_reset.clicked.connect(self._reset_autostretch)
+        self._ui.btn_stretch_reload.clicked.connect(self._reload_autostretch)
+
         # setup levels controls and parameters
         self._levels_controls = [
-            self._ui.chk_autostretch,
-            self._ui.cb_levels_stretch_method,
+            self._ui.chk_levels_active,
             self._ui.sld_black,
             self._ui.sld_midtones,
             self._ui.sld_white,
@@ -90,11 +112,8 @@ class MainWindow(QMainWindow):
 
         self._levels_parameters = self._controller.get_levels_parameters()
 
-        for label in self._levels_parameters[1].choices:
-            self._ui.cb_levels_stretch_method.addItem(label)
-
         set_sliders_defaults(
-            [self._levels_parameters[2], self._levels_parameters[3], self._levels_parameters[4]],
+            [self._levels_parameters[1], self._levels_parameters[2], self._levels_parameters[3]],
             [self._ui.sld_black, self._ui.sld_midtones, self._ui.sld_white]
         )
 
@@ -128,6 +147,14 @@ class MainWindow(QMainWindow):
         else:
             self.show()
 
+    def _apply_autostretch(self):
+        """
+        Apply autostretch processing
+        """
+        update_params_from_controls(self._autostretch_parameters, self._autostretch_controls)
+
+        self._controller.apply_processing()
+
     def _apply_rgb(self):
         """
         Apply rgb processing
@@ -143,6 +170,12 @@ class MainWindow(QMainWindow):
         update_params_from_controls(self._levels_parameters, self._levels_controls)
 
         self._controller.apply_processing()
+
+    def _reset_autostretch(self):
+        """
+        Resets autostretch controls to their defaults
+        """
+        reset_params(self._autostretch_parameters, self._autostretch_controls)
 
     def _reset_rgb(self):
         """
@@ -161,6 +194,12 @@ class MainWindow(QMainWindow):
         Sets rgb controls to their previously recorded values (last apply)
         """
         update_controls_from_params(self._rgb_parameters, self._rgb_controls)
+
+    def _reload_autostretch(self):
+        """
+        Sets autostretch controls to their previously recorded values (last apply)
+        """
+        update_controls_from_params(self._autostretch_parameters, self._autostretch_controls)
 
     def _reload_levels(self):
         """

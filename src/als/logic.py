@@ -37,7 +37,7 @@ from als.io.output import ImageSaver
 from als.model.base import Image, Session
 from als.model.data import STACKING_MODE_MEAN, DYNAMIC_DATA, WORKER_STATUS_BUSY, WORKER_STATUS_IDLE
 from als.model.params import ProcessingParameter
-from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput, Levels, ColorBalance
+from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput, Levels, ColorBalance, AutoStretch
 from als.stack import Stacker
 
 gettext.install('als', 'locale')
@@ -97,7 +97,9 @@ class Controller:
         self._post_process_queue = DYNAMIC_DATA.process_queue
         self._post_process_pipeline: Pipeline = Pipeline('post-process', self._post_process_queue, [ConvertForOutput()])
         self._rgb_processor = ColorBalance()
+        self._autostretch_processor = AutoStretch()
         self._levels_processor = Levels()
+        self._post_process_pipeline.add_process(self._autostretch_processor)
         self._post_process_pipeline.add_process(self._levels_processor)
         self._post_process_pipeline.add_process(self._rgb_processor)
         self._post_process_pipeline.start()
@@ -132,6 +134,15 @@ class Controller:
         self._saver.waiting_signal.connect(self.on_saver_waiting)
 
         DYNAMIC_DATA.session.status_changed_signal.connect(self._notify_model_observers)
+
+    @log
+    def get_autostretch_parameters(self) -> List[ProcessingParameter]:
+        """
+        Retrieves autostretch parameters
+
+        :return: autostretch parameters
+        """
+        return self._autostretch_processor.get_parameters()
 
     @log
     def get_rgb_parameters(self) -> List[ProcessingParameter]:
