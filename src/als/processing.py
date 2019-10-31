@@ -290,9 +290,9 @@ class Levels(ImageProcessor):
 
             if do_midtones:
                 _LOGGER.debug("Performing midtones adjustments...")
-                corrected_midtones_value = self._compute_midtones_value()
-                image.data = _16_BITS_MAX_VALUE * image.data ** (1 / corrected_midtones_value) / _16_BITS_MAX_VALUE ** (
-                    1 / corrected_midtones_value)
+                midtones_value = midtones.value if midtones.value > 0 else 0.1
+                image.data = _16_BITS_MAX_VALUE * image.data ** (1 / midtones_value) / _16_BITS_MAX_VALUE ** (
+                    1 / midtones_value)
                 _LOGGER.debug("Midtones level adjustments Done")
 
             # black / white levels
@@ -310,34 +310,6 @@ class Levels(ImageProcessor):
                                               (0, _16_BITS_MAX_VALUE)))
 
         return image
-
-    def _compute_midtones_value(self):
-        """
-        Modify midtone param value using a custom transfer function.
-
-        actual midtone param (input) has a range of [0, 2]
-
-        transfer function has the following properties :
-
-          - f(0) = 0.1
-          - for x in ]0, 1] : f(x) = x
-          - for x in ]1, 2] : f(x) = 1.5x
-
-        :return: the computed midtones param value
-        :rtype: float
-        """
-        mids_level = self._parameters[2].value
-
-        if mids_level < 0 or mids_level > 2:
-            raise ProcessingError(f"Invalid value for midtones input value : {mids_level}")
-
-        if mids_level == 0:
-            return 0.1
-
-        if mids_level <= 1:
-            return mids_level
-
-        return 1.5 * mids_level
 
 
 # pylint: disable=R0903
