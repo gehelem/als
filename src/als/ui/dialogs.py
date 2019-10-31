@@ -220,6 +220,7 @@ class SaveWaitDialog(QDialog):
         self.close()
 
 
+@log
 def question(title, message, default_yes: bool = True):
     """
     Asks a question to user in a Qt MessageBox and return True/False as Yes/No
@@ -243,6 +244,7 @@ def question(title, message, default_yes: bool = True):
         default_button)
 
 
+@log
 def warning_box(title, message):
     """
     Displays a waring Qt MessageBox
@@ -254,6 +256,7 @@ def warning_box(title, message):
     message_box('Warning : ' + title, message, QMessageBox.Warning)
 
 
+@log
 def error_box(title, message):
     """
     Displays an error Qt MessageBox
@@ -265,6 +268,7 @@ def error_box(title, message):
     message_box('Error : ' + title, message, QMessageBox.Critical)
 
 
+@log
 def message_box(title, message, icon=QMessageBox.Information):
     """
     Displays a Qt MessageBox with custom icon : Info by default

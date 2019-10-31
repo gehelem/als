@@ -239,6 +239,7 @@ def _compute_slider_value_from_param_value(value: Any, amplitude: Any):
 
     return value / amplitude * Slider.MAX_VALUE
 
+
 @log
 def _compute_param_value_from_slider_value(param: RangeParameter, slider_value):
     """

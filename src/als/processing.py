@@ -182,6 +182,7 @@ class AutoStretch(ImageProcessor):
                 minimum=0,
                 maximum=3))
 
+    @log
     def process_image(self, image: Image):
 
         for param in self._parameters:
@@ -197,6 +198,7 @@ class AutoStretch(ImageProcessor):
                                    (image.data.min(), image.data.max()),
                                    (0, _16_BITS_MAX_VALUE))
 
+            @log
             def histo_adpative_equalization(data):
 
                 # special case for autostretch value == 0
@@ -207,6 +209,7 @@ class AutoStretch(ImageProcessor):
                     nbins=_16_BITS_MAX_VALUE + 1,
                     clip_limit=.01 * strength)
 
+            @log
             def contrast_stretching(data):
                 low, high = np.percentile(data, (stretch_strength.value, 100 - stretch_strength.value))
                 return exposure.rescale_intensity(data, in_range=(low, high))
@@ -462,6 +465,7 @@ class Pipeline(QueueConsumer):
         self._processes = []
         self._final_processes = final_processes
 
+    @log
     def _handle_image(self, image: Image):
 
         try:

@@ -74,6 +74,7 @@ class AlsException(Exception):
     """
     Base class for all custom errors
     """
+    @log
     def __init__(self, message, details):
         Exception.__init__(self)
         self.message = message
@@ -99,24 +100,29 @@ class SignalingQueue(Queue, QObject):
     :type: int
     """
 
+    @log
     def __init__(self, maxsize=0):
         Queue.__init__(self, maxsize)
         QObject.__init__(self)
 
+    @log
     def get(self, block=True, timeout=None):
         item = super().get(block, timeout)
         self.size_changed_signal.emit(self.qsize())
         return item
 
+    @log
     def get_nowait(self):
         item = super().get_nowait()
         self.size_changed_signal.emit(self.qsize())
         return item
 
+    @log
     def put(self, item, block=True, timeout=None):
         super().put(item, block, timeout)
         self.size_changed_signal.emit(self.qsize())
 
+    @log
     def put_nowait(self, item):
         super().put_nowait(item)
         self.size_changed_signal.emit(self.qsize())

@@ -81,6 +81,7 @@ class ImageView(QGraphicsView):
             self.scale(1 / ImageView._ZOOM_FACTOR, 1 / ImageView._ZOOM_FACTOR)
 
     # pylint: disable=C0103
+    @log
     def mouseDoubleClickEvent(self, _):
         """
         Reacts to a double-click in image view : Fit image in view

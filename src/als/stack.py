@@ -123,6 +123,7 @@ class Stacker(QueueConsumer):
         self.new_result_signal.emit(image)
 
     @property
+    @log
     def size(self):
         """
         Retrieves the number of stacked images since last reset
@@ -133,6 +134,7 @@ class Stacker(QueueConsumer):
         return self._size
 
     @size.setter
+    @log
     def size(self, size):
         """
         Sets stack size
@@ -143,6 +145,7 @@ class Stacker(QueueConsumer):
         self._size = size
         self.stack_size_changed_signal.emit(self.size)
 
+    @log
     def _handle_image(self, image: Image):
 
         if self.size == 0:

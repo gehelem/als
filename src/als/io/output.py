@@ -24,6 +24,7 @@ class ImageSaver(QueueConsumer):
     def __init__(self, save_queue: SignalingQueue):
         QueueConsumer.__init__(self, "save", save_queue)
 
+    @log
     def _handle_image(self, image: Image):
 
         ImageSaver._save_image(image)

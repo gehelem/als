@@ -80,6 +80,7 @@ class InputScanner:
         """
 
     @staticmethod
+    @log
     def create_scanner(scanner_type: str = SCANNER_TYPE_FILESYSTEM):
         """
         Factory for image scanners.
@@ -311,9 +312,11 @@ def _read_raw_image(path: Path):
         return None
 
 
+@log
 def _report_fs_error(path: Path, error: Exception):
     _LOGGER.error(f"Error reading from file {str(path.resolve())} : {str(error)}")
 
 
+@log
 def _set_image_file_origin(image: Image, path: Path):
     image.origin = f"FILE : {str(path.resolve())}"

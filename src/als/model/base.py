@@ -99,6 +99,7 @@ class Image:
         self._origin: str = "UNDEFINED"
         self._destination: str = "UNDEFINED"
 
+    @log
     def clone(self):
         """
         Clone an image
@@ -232,6 +233,7 @@ class Image:
         """
         return self._data.ndim > 2
 
+    @log
     def is_bw(self):
         """
         Tells if image is black and white
@@ -241,6 +243,7 @@ class Image:
         """
         return self._data.ndim == 2 and self._bayer_pattern is None
 
+    @log
     def is_same_shape_as(self, other):
         """
         Is this image's shape equal to another's ?
@@ -253,6 +256,7 @@ class Image:
         """
         return self._data.shape == other.data.shape
 
+    @log
     def set_color_axis_as(self, wanted_axis):
         """
         Reorganise internal data array so color information is on a specified axis

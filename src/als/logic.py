@@ -391,7 +391,6 @@ class Controller:
         DYNAMIC_DATA.stacker_status = WORKER_STATUS_BUSY
         self._notify_model_observers()
 
-
     @log
     def on_stacker_waiting(self):
         """

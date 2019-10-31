@@ -74,10 +74,6 @@ class MainWindow(QMainWindow):
 
         self._reset_rgb()
 
-        self._ui.btn_rgb_apply.clicked.connect(self._apply_rgb)
-        self._ui.btn_rgb_reset.clicked.connect(self._reset_rgb)
-        self._ui.btn_rgb_reload.clicked.connect(self._reload_rgb)
-
         # setup autostretch controls and params
         self._autostretch_controls = [
 
@@ -98,10 +94,6 @@ class MainWindow(QMainWindow):
 
         self._reset_autostretch()
 
-        self._ui.btn_stretch_apply.clicked.connect(self._apply_autostretch)
-        self._ui.btn_stretch_reset.clicked.connect(self._reset_autostretch)
-        self._ui.btn_stretch_reload.clicked.connect(self._reload_autostretch)
-
         # setup levels controls and parameters
         self._levels_controls = [
             self._ui.chk_levels_active,
@@ -118,10 +110,6 @@ class MainWindow(QMainWindow):
         )
 
         self._reset_levels()
-
-        self._ui.btn_levels_apply.clicked.connect(self._apply_levels)
-        self._ui.btn_levels_reset.clicked.connect(self._reset_levels)
-        self._ui.btn_levels_reload.clicked.connect(self._reload_levels)
 
         # setup exchanges with dynamic data
         self._controller.add_model_observer(self)
@@ -147,6 +135,8 @@ class MainWindow(QMainWindow):
         else:
             self.show()
 
+    @log
+    @pyqtSlot(name="on_btn_stretch_apply_clicked")
     def _apply_autostretch(self):
         """
         Apply autostretch processing
@@ -155,6 +145,8 @@ class MainWindow(QMainWindow):
 
         self._controller.apply_processing()
 
+    @log
+    @pyqtSlot(name="on_btn_rgb_apply_clicked")
     def _apply_rgb(self):
         """
         Apply rgb processing
@@ -163,6 +155,8 @@ class MainWindow(QMainWindow):
 
         self._controller.apply_processing()
 
+    @log
+    @pyqtSlot(name="on_btn_levels_apply_clicked")
     def _apply_levels(self):
         """
         Apply levels processing
@@ -171,36 +165,48 @@ class MainWindow(QMainWindow):
 
         self._controller.apply_processing()
 
+    @log
+    @pyqtSlot(name="on_btn_stretch_reset_clicked")
     def _reset_autostretch(self):
         """
         Resets autostretch controls to their defaults
         """
         reset_params(self._autostretch_parameters, self._autostretch_controls)
 
+    @log
+    @pyqtSlot(name="on_btn_rgb_reset_clicked")
     def _reset_rgb(self):
         """
         Resets rgb controls to their defaults
         """
         reset_params(self._rgb_parameters, self._rgb_controls)
 
+    @log
+    @pyqtSlot(name="on_btn_levels_reset_clicked")
     def _reset_levels(self):
         """
         Resets levels processing controls to their defaults
         """
         reset_params(self._levels_parameters, self._levels_controls)
 
+    @log
+    @pyqtSlot(name="on_btn_rgb_reload_clicked")
     def _reload_rgb(self):
         """
         Sets rgb controls to their previously recorded values (last apply)
         """
         update_controls_from_params(self._rgb_parameters, self._rgb_controls)
 
+    @log
+    @pyqtSlot(name="on_btn_stretch_reload_clicked")
     def _reload_autostretch(self):
         """
         Sets autostretch controls to their previously recorded values (last apply)
         """
         update_controls_from_params(self._autostretch_parameters, self._autostretch_controls)
 
+    @log
+    @pyqtSlot(name="on_btn_levels_reload_clicked")
     def _reload_levels(self):
         """
         Sets levels processing controls to their previously recorded values (last apply)

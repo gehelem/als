@@ -87,6 +87,7 @@ class HistogramContainer:
         return self._histograms
 
     @property
+    @log
     def global_maximum(self) -> int:
         """
         Gets the global maximum among all histograms
@@ -97,6 +98,7 @@ class HistogramContainer:
         return self._global_maximum
 
     @global_maximum.setter
+    @log
     def global_maximum(self, value: int):
         """
         Sets the global maximum among all histograms
