@@ -566,7 +566,13 @@ class Controller:
         work_dir_path = config.get_work_folder_path()
         resources_dir_path = os.path.dirname(os.path.realpath(__file__)) + "/../resources"
 
-        shutil.copy(resources_dir_path + "/index.html", work_dir_path)
+        with open(resources_dir_path + "/index.html", 'r') as file:
+            index_content = file.read()
+
+        index_content = index_content.replace('##PERIOD##', str(config.get_www_server_refresh_period()))
+
+        with open(work_dir_path + "/index.html", 'w') as file:
+            file.write(index_content)
 
         standby_image_path = work_dir_path + "/" + als.model.data.WEB_SERVED_IMAGE_FILE_NAME_BASE
         standby_image_path += '.' + als.model.data.IMAGE_SAVE_TYPE_JPEG

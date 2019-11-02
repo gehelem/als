@@ -36,6 +36,7 @@ _WWW_SERVER_PORT = "www_server_port"
 _WINDOW_GEOMETRY = "window_geometry"
 _IMAGE_SAVE_FORMAT = "image_save_format"
 _FULL_SCREEN = "full_screen"
+_WWW_REFRESH_PERIOD = "web_refresh_period"
 
 # keys used to describe logging level
 _LOG_LEVEL_DEBUG = "DEBUG"
@@ -61,7 +62,8 @@ _DEFAULTS = {
     _WWW_SERVER_PORT:     "8000",
     _WINDOW_GEOMETRY:     "50,100,1024,800",
     _IMAGE_SAVE_FORMAT:   IMAGE_SAVE_TYPE_JPEG,
-    _FULL_SCREEN:         0
+    _FULL_SCREEN:         0,
+    _WWW_REFRESH_PERIOD: "5",
 }
 _MAIN_SECTION_NAME = "main"
 
@@ -174,6 +176,29 @@ def set_www_server_port_number(port_number):
     :type port_number: int
     """
     _set(_WWW_SERVER_PORT, port_number)
+
+
+def get_www_server_refresh_period():
+    """
+    Retrieves the configured web server page refresh period.
+
+    :return: The web server page refresh period, or its default value if config entry
+             is not parsable as an int.
+    """
+    try:
+        return int(_get(_WWW_REFRESH_PERIOD))
+    except ValueError:
+        return _DEFAULTS[_WWW_REFRESH_PERIOD]
+
+
+def set_www_server_refresh_period(period):
+    """
+    Sets web server page refresh period.
+
+    :param period: the period
+    :type period: int
+    """
+    _set(_WWW_REFRESH_PERIOD, str(period))
 
 
 def get_work_folder_path():

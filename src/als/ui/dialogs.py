@@ -33,6 +33,7 @@ class PreferencesDialog(QDialog):
         self._ui.ln_scan_folder_path.setText(config.get_scan_folder_path())
         self._ui.ln_work_folder_path.setText(config.get_work_folder_path())
         self._ui.ln_web_server_port.setText(str(config.get_www_server_port_number()))
+        self._ui.spn_webpage_refresh_period.setValue(config.get_www_server_refresh_period())
         self._ui.chk_debug_logs.setChecked(config.is_debug_log_on())
 
         config_to_image_save_type_mapping = {
@@ -76,6 +77,8 @@ class PreferencesDialog(QDialog):
             self._ui.ln_web_server_port.setFocus()
             self._ui.ln_web_server_port.selectAll()
             return
+
+        config.set_www_server_refresh_period(self._ui.spn_webpage_refresh_period.value())
 
         config.set_debug_log(self._ui.chk_debug_logs.isChecked())
 
