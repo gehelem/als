@@ -136,6 +136,62 @@ class MainWindow(QMainWindow):
             self.show()
 
     @log
+    @pyqtSlot(bool)
+    def on_chk_stretch_active_clicked(self, checked: bool):
+        """
+        Qt slot executed when autostretch 'active' checkbox is clicked
+
+        :param checked: is the box now checked ?
+        :type: bool
+        """
+
+        self._ui.btn_stretch_reload.setEnabled(checked)
+        self._ui.btn_stretch_reset.setEnabled(checked)
+        self._ui.btn_stretch_apply.setEnabled(checked)
+        self._ui.cb_stretch_method.setEnabled(checked)
+        self._ui.sld_stretch_strength.setEnabled(checked)
+
+        self._apply_autostretch()
+
+    @log
+    @pyqtSlot(bool)
+    def on_chk_levels_active_clicked(self, checked: bool):
+        """
+        Qt slot executed when levels 'active' checkbox is clicked
+
+        :param checked: is the box now checked ?
+        :type: bool
+        """
+
+        self._ui.btn_levels_reload.setEnabled(checked)
+        self._ui.btn_levels_reset.setEnabled(checked)
+        self._ui.btn_levels_apply.setEnabled(checked)
+        self._ui.sld_black.setEnabled(checked)
+        self._ui.sld_midtones.setEnabled(checked)
+        self._ui.sld_white.setEnabled(checked)
+
+        self._apply_levels()
+
+    @log
+    @pyqtSlot(bool)
+    def on_chk_rgb_active_clicked(self, checked: bool):
+        """
+        Qt slot executed when RGB 'active' checkbox is clicked
+
+        :param checked: is the box now checked ?
+        :type: bool
+        """
+
+        self._ui.btn_rgb_reload.setEnabled(checked)
+        self._ui.btn_rgb_reset.setEnabled(checked)
+        self._ui.btn_rgb_apply.setEnabled(checked)
+        self._ui.sld_rgb_r.setEnabled(checked)
+        self._ui.sld_rgb_g.setEnabled(checked)
+        self._ui.sld_rgb_b.setEnabled(checked)
+
+        self._apply_rgb()
+
+    @log
     @pyqtSlot(name="on_btn_stretch_apply_clicked")
     def _apply_autostretch(self):
         """
