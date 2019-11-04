@@ -60,7 +60,8 @@ class PreferencesDialog(QDialog):
             else:
                 ui_field.setStyleSheet("border: 1px")
 
-    # FIXME : using @log on this causes TypeError: accept() takes 1 positional argument but 2 were given
+    @log
+    @pyqtSlot()
     def accept(self):
         """checks and stores user settings"""
         config.set_scan_folder_path(self._ui.ln_scan_folder_path.text())
