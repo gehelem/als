@@ -22,9 +22,9 @@ fi
 
 rm -rf ${SCAN}/*
 
-for i in ${SAMPLES}/*.{fits,FITS,fit,FIT,jpg,JPG,jpeg,JPEG}
+for i in ${SAMPLES}/*.{fits,FITS,fit,FIT,jpg,JPG,jpeg,JPEG,cr2,CR2,arw,ARW,nef,NEF}
 do
-    if [ -f "${i}" ]  #to avoid fake outputs when extention isn't found
+    if [[ -f "${i}" ]]  #to avoid fake outputs when extension isn't found
     then
         cp -v "${i}" ${SCAN}
         sleep 5
