@@ -40,6 +40,7 @@ class StackingError(Exception):
     """
 
 
+# pylint: disable=R0902
 class Stacker(QueueConsumer):
     """
     Responsible of image stacking : alignment and registration
