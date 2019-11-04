@@ -106,9 +106,11 @@ class Stacker(QueueConsumer):
         """
         Reset stacker to its starting state : No reference, no result and counter = 0.
         """
-        self.size = 0
+        self._size = 0
         self._last_stacking_result = None
         self._align_reference = None
+        self.stack_size_changed_signal.emit(self.size)
+
 
     @log
     def _publish_stacking_result(self, image: Image):
