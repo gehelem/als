@@ -19,7 +19,7 @@ Version 0.6 (Work in progress)
   - Image server page is auto-refreshed
   - Remember window size and position
   - Configurable image save file type
-  - Log window and session controls can be hidden
+  - Log window, session controls and processing controls can be hidden
   - Much more responsive GUI
 
 - Bug Fixes
@@ -27,7 +27,7 @@ Version 0.6 (Work in progress)
   - Crash if new pictures written on slow storage device
   - Image served by webserver is too bright
   - Crash if new picture cannot be aligned with current stack
-  - Crash if starting a new session and scan folder is missing
+  - Crash if starting a new session when scan folder is missing
 
 
 Version 0.5 (2019-07-10)
