@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+#
+# The purpose of this script is to simulate an astrophoto session by copying
+# images from the "image_samples" folder to a folder given as 1st argument on
+# the commandline.
 
 set -e
 
