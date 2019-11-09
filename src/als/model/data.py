@@ -38,10 +38,6 @@ class DynamicData:
         self.web_server_is_running = False
         self.web_server_ip = ""
         self.stack_size = 0
-        self.pre_processor_queue_size = 0
-        self.stacker_queue_size = 0
-        self.post_processor_queue_size = 0
-        self.saver_queue_size = 0
         self.post_processor_result = None
         self.histogram_container: HistogramContainer = None
         self.pre_process_queue = SignalingQueue()

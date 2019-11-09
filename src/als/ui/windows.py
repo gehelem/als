@@ -566,10 +566,10 @@ class MainWindow(QMainWindow):
             self._ui.lbl_stack_size.setText(str(DYNAMIC_DATA.stack_size))
 
             # update queues sizes
-            self._ui.lbl_pre_process_queue_size.setText(str(DYNAMIC_DATA.pre_processor_queue_size))
-            self._ui.lbl_stack_queue_size.setText(str(DYNAMIC_DATA.stacker_queue_size))
-            self._ui.lbl_process_queue_size.setText(str(DYNAMIC_DATA.post_processor_queue_size))
-            self._ui.lbl_save_queue_size.setText(str(DYNAMIC_DATA.saver_queue_size))
+            self._ui.lbl_pre_process_queue_size.setText(str(DYNAMIC_DATA.pre_process_queue.qsize()))
+            self._ui.lbl_stack_queue_size.setText(str(DYNAMIC_DATA.stacker_queue.qsize()))
+            self._ui.lbl_process_queue_size.setText(str(DYNAMIC_DATA.process_queue.qsize()))
+            self._ui.lbl_save_queue_size.setText(str(DYNAMIC_DATA.save_queue.qsize()))
 
             # handle component statuses
             self._ui.lbl_pre_processor_status.setText(DYNAMIC_DATA.pre_processor_status)

@@ -196,7 +196,7 @@ class Controller:
         """
         Apply processing on last stacking result
         """
-        if self._stacker.size > 0 and DYNAMIC_DATA.post_processor_queue_size == 0:
+        if self._stacker.size > 0 and DYNAMIC_DATA.process_queue.qsize() == 0:
 
             DYNAMIC_DATA.process_queue.put(self._last_stacking_result.clone())
 
@@ -328,7 +328,6 @@ class Controller:
         :type new_size: int
         """
         _LOGGER.debug(f"New pre-processor queue size : {new_size}")
-        DYNAMIC_DATA.pre_processor_queue_size = new_size
         self._notify_model_observers()
 
     @log
@@ -340,7 +339,6 @@ class Controller:
         :type new_size: int
         """
         _LOGGER.debug(f"New stacker queue size : {new_size}")
-        DYNAMIC_DATA.stacker_queue_size = new_size
         self._notify_model_observers()
 
     @log
@@ -352,7 +350,6 @@ class Controller:
         :type new_size: int
         """
         _LOGGER.debug(f"New post-processor queue size : {new_size}")
-        DYNAMIC_DATA.post_processor_queue_size = new_size
         self._notify_model_observers()
 
     @log
@@ -364,7 +361,6 @@ class Controller:
         :type new_size: int
         """
         _LOGGER.debug(f"New saver queue size : {new_size}")
-        DYNAMIC_DATA.saver_queue_size = new_size
         self._notify_model_observers()
 
     @log
