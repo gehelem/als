@@ -168,6 +168,12 @@ Using ALS
 4. Start picture acquisition
 5. Watch the magic do its work
 
+Some hints on mouse navigation in the displayed image :
+
+- Mouse wheel : zoom in and out
+- Left click + mouse move : move around the image
+- Double click : fit image to view
+
 Developing ALS
 ==============
 

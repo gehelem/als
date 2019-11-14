@@ -2,8 +2,8 @@
 Changelog
 =========
 
-Version 0.6 (Work in progress)
-==============================
+Version 0.6 (2019-11-14)
+========================
 
 - New features
 
@@ -16,10 +16,11 @@ Version 0.6 (Work in progress)
 - Improvements
 
   - Image server port is configurable
-  - Image server page is auto-refreshed
+  - Image server page is auto-refreshed with configurable time period
   - Remember window size and position
   - Configurable image save file type
   - Log window, session controls and processing controls can be hidden
+  - FullScreen mode
   - Much more responsive GUI
 
 - Bug Fixes
