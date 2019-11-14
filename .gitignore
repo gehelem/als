@@ -1,3 +1,14 @@
+#als specific
+/scan
+/wrk
+src/als/resources/user.ini
+/docs/api
+/src/generated/*_ui.py
+/src/generated/*_rc.py
+
+# swap files
+*.swp
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -105,7 +116,3 @@ venv.bak/
 
 \.idea/
 
-#als specific
-/scan
-/wrk
-resources_dir/user.ini
