@@ -362,6 +362,10 @@ class Debayer(ImageProcessor):
 
             cv_debay = bayer_pattern[3] + bayer_pattern[2]
 
+            # hugly fix for GBRB CFA patterns poorly handled by openCV
+            if cv_debay == "GR":
+                cv_debay = "BG"
+
             try:
                 debayered_data = cv2.cvtColor(image.data, cv2_debayer_dict[cv_debay])
             except KeyError:
