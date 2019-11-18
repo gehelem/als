@@ -9,6 +9,13 @@ Version 0.7 (work in progress)
 
   - Log to file
 
+Version 0.6.1 (2019-11-18)
+==========================
+
+- Bug Fixes
+
+  - Faulty debayering of images shot with cameras with a GBRG CFA pattern
+
 Version 0.6 (2019-11-14)
 ========================
 
