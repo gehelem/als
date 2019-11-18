@@ -1,10 +1,8 @@
 #als specific
-/scan
-/wrk
-src/als/resources/user.ini
 /docs/api
 /src/generated/*_ui.py
 /src/generated/*_rc.py
+*.log
 
 # swap files
 *.swp
@@ -63,7 +61,6 @@ coverage.xml
 *.pot
 
 # Django stuff:
-*.log
 local_settings.py
 db.sqlite3
 

@@ -20,6 +20,7 @@ import logging
 import os
 import sys
 from configparser import ConfigParser, DuplicateOptionError, ParsingError
+from pathlib import Path
 
 from PyQt5.QtCore import pyqtSignal, QObject
 
@@ -397,14 +398,28 @@ def _setup_logging():
     """
     Sets up logging system.
     """
-    logging.basicConfig(level=_LOG_LEVELS[_get(_LOG_LEVEL)],
-                        format='%(asctime)-15s %(threadName)-12s %(name)-20s %(levelname)-8s %(message)s',
-                        stream=sys.stdout)
+
+    global_log_format_string = '%(asctime)-15s %(threadName)-12s %(name)-20s %(levelname)-8s %(message)s'
+    log_level = _LOG_LEVELS[_get(_LOG_LEVEL)]
+
+    logging.basicConfig(level=log_level,
+                        format=global_log_format_string,
+                        filename=Path(__file__).parent.parent.parent / "als.log",
+                        filemode='w')
+
+    # setup console log handler
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(log_level)
+    console_handler.setFormatter(logging.Formatter(global_log_format_string))
+
+    # setup signaling log handler
     # pylint: disable=W0603
     global _SIGNAL_LOG_HANDLER
     _SIGNAL_LOG_HANDLER = SignalLogHandler()
     _SIGNAL_LOG_HANDLER.setLevel(_LOG_LEVELS[_LOG_LEVEL_INFO])
-    logging.getLogger("").addHandler(_SIGNAL_LOG_HANDLER)
+
+    logging.getLogger('').addHandler(console_handler)
+    logging.getLogger('').addHandler(_SIGNAL_LOG_HANDLER)
 
     # in here, we maintain a list of third party loggers for which we don't want to see anything but WARNING & up
     third_party_polluters = [
