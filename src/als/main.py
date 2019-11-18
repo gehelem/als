@@ -6,6 +6,7 @@ import sys
 
 from pathlib import Path
 
+import psutil
 from PyQt5.QtWidgets import QApplication
 
 from als import config
@@ -25,6 +26,14 @@ def main():
     with Timer() as startup:
         app = QApplication(sys.argv)
         config.setup()
+
+        # look for existing "Stacker" processes and kill them
+        #
+        # Those Stacker processes are leftovers from a previous ALS crash occurring while stacking
+        # using multiprocessing
+        for process in psutil.process_iter():
+            if process.name() == "Stacker":
+                process.kill()
 
         with open(Path(__file__).parent / "main.css", "r") as style_file:
 
