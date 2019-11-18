@@ -159,10 +159,10 @@ class HistogramView(QWidget):
                         self._painter.restore()
 
                 else:
-                    self._display_text("Invalid data")
+                    self._display_text(self.tr("Invalid data"))
 
             else:
-                self._display_text("No data")
+                self._display_text(self.tr("No data"))
 
             self._painter.end()
 

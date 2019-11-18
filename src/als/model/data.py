@@ -6,6 +6,8 @@ from typing import List
 
 import numpy as np
 
+from PyQt5.QtCore import QObject
+
 import als
 from als.code_utilities import SignalingQueue, log
 from als.model.base import Session
@@ -14,10 +16,6 @@ _LOGGER = logging.getLogger(__name__)
 
 VERSION = als.__version__
 
-STACKING_MODE_SUM = "Sum"
-STACKING_MODE_MEAN = "Mean"
-
-WORKER_STATUS_BUSY = "Busy"
 WORKER_STATUS_IDLE = "-"
 
 IMAGE_SAVE_TYPE_TIFF = "tiff"
@@ -26,6 +24,80 @@ IMAGE_SAVE_TYPE_JPEG = "jpg"
 
 STACKED_IMAGE_FILE_NAME_BASE = "stack_image"
 WEB_SERVED_IMAGE_FILE_NAME_BASE = "web_image"
+
+
+# pylint: disable=R0903
+class I18n(QObject):
+    """
+    Holds global localized strings.
+
+    All strings are initialized with dummy text and MUST be defined in setup()
+    """
+
+    STACKING_MODE_SUM = "TEMP"
+    STACKING_MODE_MEAN = "TEMP"
+    STRETCH_MODE_LOCAL = "TEMP"
+    STRETCH_MODE_GLOBAL = "TEMP"
+    WORKER_STATUS_BUSY = "TEMP"
+
+    SCANNER = "TEMP"
+    OF = "TEMP"
+
+    RUNNING_M = "TEMP"
+    RUNNING_F = "TEMP"
+    STOPPED_M = "TEMP"
+    STOPPED_F = "TEMP"
+    PAUSED = "TEMP"
+
+    WEB_SERVER = "TEMP"
+    ADDRESS = "TEMP"
+
+    TOOLTIP_BLACK_LEVEL = "TEMP"
+    TOOLTIP_MIDTONES_LEVEL = "TEMP"
+    TOOLTIP_WHITE_LEVEL = "TEMP"
+
+    TOOLTIP_RED_LEVEL = "TEMP"
+    TOOLTIP_GREEN_LEVEL = "TEMP"
+    TOOLTIP_BLUE_LEVEL = "TEMP"
+
+    TOOLTIP_STRETCH_STRENGTH = "TEMP"
+
+    TOOLTIP_RGB_ACTIVE = "TEMP"
+    TOOLTIP_STRETCH_ACTIVE = "TEMP"
+    TOOLTIP_LEVELS_ACTIVE = "TEMP"
+
+    TOOLTIP_STRETCH_METHOD = "TEMP"
+
+
+    def setup(self):
+        """
+        Sets real values for localized strings
+        """
+        I18n.STACKING_MODE_SUM = self.tr("sum")
+        I18n.STACKING_MODE_MEAN = self.tr("mean")
+        I18n.STRETCH_MODE_LOCAL = self.tr("local")
+        I18n.STRETCH_MODE_GLOBAL = self.tr("global")
+        I18n.WORKER_STATUS_BUSY = self.tr("busy")
+        I18n.SCANNER = self.tr("scanner")
+        I18n.OF = self.tr("of")
+        I18n.RUNNING_M = self.tr("running", "gender m")
+        I18n.RUNNING_F = self.tr("running", "gender f")
+        I18n.STOPPED_M = self.tr("stopped", "gender m")
+        I18n.STOPPED_F = self.tr("stopped", "gender f")
+        I18n.PAUSED = self.tr("paused")
+        I18n.WEB_SERVER = self.tr("web server")
+        I18n.ADDRESS = self.tr("address")
+        I18n.TOOLTIP_RED_LEVEL = self.tr("Red level")
+        I18n.TOOLTIP_GREEN_LEVEL = self.tr("Green level")
+        I18n.TOOLTIP_BLUE_LEVEL = self.tr("Blue level")
+        I18n.TOOLTIP_BLACK_LEVEL = self.tr("Black level")
+        I18n.TOOLTIP_MIDTONES_LEVEL = self.tr("Midtones level")
+        I18n.TOOLTIP_WHITE_LEVEL = self.tr("White level")
+        I18n.TOOLTIP_STRETCH_STRENGTH = self.tr("Autostretch strength")
+        I18n.TOOLTIP_RGB_ACTIVE = self.tr("RGB balance active")
+        I18n.TOOLTIP_STRETCH_ACTIVE = self.tr("Autostretch active")
+        I18n.TOOLTIP_LEVELS_ACTIVE = self.tr("Levels active")
+        I18n.TOOLTIP_STRETCH_METHOD = self.tr("Autostretch method")
 
 
 # pylint: disable=R0902, R0903

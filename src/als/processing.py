@@ -8,12 +8,14 @@ from pathlib import Path
 
 import cv2
 import numpy as np
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread, pyqtSignal, QT_TRANSLATE_NOOP
 from scipy.signal import convolve2d
 from skimage import exposure
 
 from als.code_utilities import log, Timer, SignalingQueue
+from als.messaging import MESSAGE_HUB
 from als.model.base import Image
+from als.model.data import I18n
 from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter, ListParameter
 from als.io import input as als_input
 from als import config
@@ -80,7 +82,7 @@ class ColorBalance(ImageProcessor):
         self._parameters.append(
             SwitchParameter(
                 "active",
-                "RGB balance active",
+                I18n.TOOLTIP_RGB_ACTIVE,
                 default=True
             )
         )
@@ -88,7 +90,7 @@ class ColorBalance(ImageProcessor):
         self._parameters.append(
             RangeParameter(
                 "red",
-                "Red level",
+                I18n.TOOLTIP_RED_LEVEL,
                 default=1,
                 minimum=0,
                 maximum=2
@@ -98,7 +100,7 @@ class ColorBalance(ImageProcessor):
         self._parameters.append(
             RangeParameter(
                 "green",
-                "Green level",
+                I18n.TOOLTIP_GREEN_LEVEL,
                 default=1,
                 minimum=0,
                 maximum=2
@@ -108,7 +110,7 @@ class ColorBalance(ImageProcessor):
         self._parameters.append(
             RangeParameter(
                 "blue",
-                "Blue level",
+                I18n.TOOLTIP_BLUE_LEVEL,
                 default=1,
                 minimum=0,
                 maximum=2
@@ -169,20 +171,20 @@ class AutoStretch(ImageProcessor):
         self._parameters.append(
             SwitchParameter(
                 "active",
-                "autostretch active",
+                I18n.TOOLTIP_STRETCH_ACTIVE,
                 default=True))
 
         self._parameters.append(
             ListParameter(
                 "stretch method",
-                "autostretch method",
-                default='Contrast',
-                choices=['Contrast', 'Adaptive']))
+                I18n.TOOLTIP_STRETCH_METHOD,
+                default=I18n.STRETCH_MODE_GLOBAL,
+                choices=[I18n.STRETCH_MODE_GLOBAL, I18n.STRETCH_MODE_LOCAL]))
 
         self._parameters.append(
             RangeParameter(
                 "strength",
-                "autostretch strength",
+                I18n.TOOLTIP_STRETCH_STRENGTH,
                 default=0.75,
                 minimum=0,
                 maximum=3))
@@ -252,13 +254,13 @@ class Levels(ImageProcessor):
         self._parameters.append(
             SwitchParameter(
                 "active",
-                "levels active",
+                I18n.TOOLTIP_LEVELS_ACTIVE,
                 default=True))
 
         self._parameters.append(
             RangeParameter(
                 "black",
-                "black level",
+                I18n.TOOLTIP_BLACK_LEVEL,
                 default=0,
                 minimum=0,
                 maximum=_16_BITS_MAX_VALUE))
@@ -266,7 +268,7 @@ class Levels(ImageProcessor):
         self._parameters.append(
             RangeParameter(
                 "mids",
-                "midtones level",
+                I18n.TOOLTIP_MIDTONES_LEVEL,
                 default=1,
                 minimum=0,
                 maximum=2))
@@ -274,7 +276,7 @@ class Levels(ImageProcessor):
         self._parameters.append(
             RangeParameter(
                 "white",
-                "while level",
+                I18n.TOOLTIP_WHITE_LEVEL,
                 default=_16_BITS_MAX_VALUE,
                 minimum=0,
                 maximum=_16_BITS_MAX_VALUE))
@@ -383,7 +385,10 @@ class HotPixelRemover(ImageProcessor):
                 means = HotPixelRemover._neighbors_average(image.data)
                 image.data = np.where(image.data / means > _HOT_PIXEL_RATIO, means, image.data)
             else:
-                _LOGGER.warning("Hot Pixel Remover cannot work on debayered color images.")
+                MESSAGE_HUB.dispatch_warning(
+                    __name__,
+                    QT_TRANSLATE_NOOP("", "Hot Pixel Remover cannot work on debayered color images.")
+                )
 
         return image
 
@@ -447,8 +452,12 @@ class RemoveDark(ImageProcessor):
 
                     if image.data.dtype.name != masterdark.data.dtype.name:
 
-                        _LOGGER.warning(f"Dark & Light data types mismatch. Light: {image.data.dtype.name} vs "
-                                        f"Dark: {masterdark.data.dtype.name}. Dark needs to be conformed.")
+                        data_mismatch_message = QT_TRANSLATE_NOOP(
+                            "",
+                            "Dark & Light data types mismatch. Light: {} vs Dark: {}. Dark needs to be conformed."
+                        )
+                        data_mismatch_values = [image.data.dtype.name, masterdark.data.dtype.name]
+                        MESSAGE_HUB.dispatch_warning(__name__, data_mismatch_message, data_mismatch_values)
 
                         with Timer() as conforming_timer:
 
@@ -484,13 +493,19 @@ class RemoveDark(ImageProcessor):
                     _LOGGER.debug(f"Dark frame subtracted in {subtraction_timer.elapsed_in_milli_as_str} ms")
 
                 else:
-                    _LOGGER.warning(
-                        f"Data structure inconsistency between {image.origin} and {masterdark.origin}. "
-                        "Dark subtraction is SKIPPED")
+                    mismatch_message = QT_TRANSLATE_NOOP(
+                        "",
+                        "Data structure inconsistency between {} and {}. Dark subtraction is SKIPPED"
+                    )
+                    mismatch_values = [image.origin, masterdark.origin]
+                    MESSAGE_HUB.dispatch_warning(__name__, mismatch_message, mismatch_values)
             else:
-                _LOGGER.warning(
-                    f"Could not read dark file {config.get_master_dark_file_path()}. Dark subtraction is SKIPPED")
-
+                read_error_message = QT_TRANSLATE_NOOP(
+                    "",
+                    "Could not read dark {}. Dark subtraction is SKIPPED"
+                )
+                read_error_values = [config.get_master_dark_file_path(), ]
+                MESSAGE_HUB.dispatch_warning(__name__, read_error_message, read_error_values)
         return image
 
 
@@ -557,12 +572,15 @@ class QueueConsumer(QThread):
 
                 self.busy_signal.emit()
                 image = self._queue.get()
-                _LOGGER.info(f"Start {self._name} on {image.origin}")
+                MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Start {} on {}"), [self._name, image.origin])
 
                 with Timer() as timer:
                     self._handle_image(image)
 
-                _LOGGER.info(f"End {self._name} on {image.origin} in {timer.elapsed_in_milli_as_str} ms")
+                MESSAGE_HUB.dispatch_info(
+                    __name__,
+                    QT_TRANSLATE_NOOP("", "End {} on {} in {} ms"),
+                    [self._name, image.origin, timer.elapsed_in_milli_as_str])
                 self.waiting_signal.emit()
 
             self.msleep(20)
@@ -573,7 +591,7 @@ class QueueConsumer(QThread):
         Sets flag that will interrupt the main loop in run()
         """
         self._stop_asked = True
-        _LOGGER.info(f"{self._name} stopped")
+        MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "{} stopped"), [self._name, ])
 
 
 class Pipeline(QueueConsumer):
@@ -597,10 +615,8 @@ class Pipeline(QueueConsumer):
             self.new_result_signal.emit(image)
 
         except ProcessingError as processing_error:
-            _LOGGER.warning(
-                f"Error applying process '{processor.__class__.__name__}' to image {image} : "
-                f"{processing_error} *** "
-                f"Image will be ignored")
+            message = QT_TRANSLATE_NOOP("", "Error applying process '{}' to image {} : {} *** Image will be ignored")
+            MESSAGE_HUB.dispatch_warning(__name__, message, [processor.__class__.__name__, image, processing_error])
 
     @log
     def add_process(self, process: ImageProcessor):

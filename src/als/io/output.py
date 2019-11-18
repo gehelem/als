@@ -6,9 +6,11 @@ For now, we only save some images to disk, but who knows...
 import logging
 
 import cv2
+from PyQt5.QtCore import QT_TRANSLATE_NOOP
 
 import als.model.data
 from als.code_utilities import log, SignalingQueue
+from als.messaging import MESSAGE_HUB
 from als.model.base import Image
 from als.processing import QueueConsumer
 
@@ -54,14 +56,19 @@ class ImageSaver(QueueConsumer):
             save_is_successful, failure_details = False, f"Unsupported File format for {target_path}"
 
         if save_is_successful:
-            message = f"Image saved : {target_path}"
-            _LOGGER.info(message)
+            MESSAGE_HUB.dispatch_info(
+                __name__,
+                QT_TRANSLATE_NOOP("", "Image saved : {}"),
+                [target_path, ]
+            )
 
         else:
-            message = f"Failed to save image : {target_path}"
+            details = target_path
+
             if failure_details.strip():
-                message += ' : ' + failure_details
-            _LOGGER.error(message)
+                details += ' : ' + failure_details
+
+            MESSAGE_HUB.dispatch_error(__name__, QT_TRANSLATE_NOOP("", "Failed to save image : {}"), [details, ])
 
     @staticmethod
     @log

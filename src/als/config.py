@@ -22,8 +22,6 @@ import sys
 from configparser import ConfigParser, DuplicateOptionError, ParsingError
 from pathlib import Path
 
-from PyQt5.QtCore import pyqtSignal, QObject
-
 from als.code_utilities import AlsException
 from als.model.data import IMAGE_SAVE_TYPE_JPEG
 
@@ -43,6 +41,7 @@ _MINIMUM_MATCH_COUNT = "alignment_minimum_match_count"
 _USE_MASTER_DARK = "use_master_dark"
 _MASTER_DARK_FILE_PATH = "master_dark_file_path"
 _USE_HOT_PIXEL_REMOVER = "use_hot_pixel_remover"
+_LANG = "lang"
 
 # keys used to describe logging level
 _LOG_LEVEL_DEBUG = "DEBUG"
@@ -75,6 +74,7 @@ _DEFAULTS = {
     _USE_MASTER_DARK:       0,
     _MASTER_DARK_FILE_PATH: "",
     _USE_HOT_PIXEL_REMOVER: 0,
+    _LANG:                  "sys",
 }
 _MAIN_SECTION_NAME = "main"
 
@@ -82,7 +82,6 @@ _MAIN_SECTION_NAME = "main"
 
 # module global data
 _CONFIG_PARSER = ConfigParser()
-_SIGNAL_LOG_HANDLER = None
 
 
 class CouldNotSaveConfig(AlsException):
@@ -256,6 +255,26 @@ def set_work_folder_path(path):
     :type path: str
     """
     _set(_WORK_FOLDER_PATH, path)
+
+
+def get_lang():
+    """
+    Retrieves preferred language
+
+    :return: the preferred language
+    :rtype: str
+    """
+    return _get(_LANG)
+
+
+def set_lang(lang):
+    """
+    Sets the preferred language
+
+    :param lang: the preferred language
+    :type lang: str
+    """
+    _set(_LANG, lang)
 
 
 def get_web_folder_path():
@@ -481,45 +500,6 @@ def setup():
     _get_logger().debug("***************************************************************************")
 
 
-class SignalLogHandler(logging.Handler, QObject):
-    """
-    Logging handler responsible of sending log messages as a QT signal.
-
-    Any object can register, as soon as it has a on_log_message(str) function
-    """
-    message_signal = pyqtSignal(str)
-
-    def __init__(self):
-        logging.Handler.__init__(self)
-        QObject.__init__(self)
-        self.setFormatter(logging.Formatter('%(asctime)-15s %(levelname)-8s%(message)s'))
-
-    def emit(self, record):
-        self.message_signal.emit(self.format(record))
-
-    def add_receiver(self, receiver):
-        """
-        Connects this handler's message signal to a receiver
-
-        :param receiver: the receiver
-        :type receiver: any. It must have a on_log_message(str) function.
-        """
-        self.message_signal[str].connect(receiver.on_log_message)
-
-
-def register_log_receiver(receiver):
-    """
-    Registers any object as a log message receiver.
-
-    :param receiver: the receiver
-    :type receiver: any. It must have a on_log_message(str) function.
-    """
-
-    # pylint: disable=W0603
-    global _SIGNAL_LOG_HANDLER
-    _SIGNAL_LOG_HANDLER.add_receiver(receiver)
-
-
 def _setup_logging():
     """
     Sets up logging system.
@@ -537,15 +517,7 @@ def _setup_logging():
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(log_level)
     console_handler.setFormatter(logging.Formatter(global_log_format_string))
-
-    # setup signaling log handler
-    # pylint: disable=W0603
-    global _SIGNAL_LOG_HANDLER
-    _SIGNAL_LOG_HANDLER = SignalLogHandler()
-    _SIGNAL_LOG_HANDLER.setLevel(_LOG_LEVELS[_LOG_LEVEL_INFO])
-
     logging.getLogger('').addHandler(console_handler)
-    logging.getLogger('').addHandler(_SIGNAL_LOG_HANDLER)
 
     # in here, we maintain a list of third party loggers for which we don't want to see anything but WARNING & up
     third_party_polluters = [

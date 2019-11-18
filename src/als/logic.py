@@ -19,30 +19,31 @@
 """
 Module holding all application logic
 """
-import gettext
 import logging
 
-from datetime import datetime
 from pathlib import Path
 from typing import List
 
-from PyQt5.QtCore import QFile
+from PyQt5.QtCore import QFile, QT_TRANSLATE_NOOP, QCoreApplication
 
-import als.model.data
 from als import config
-from als.code_utilities import log, AlsException, SignalingQueue, get_text_content_of_resource
+from als.code_utilities import log, AlsException, SignalingQueue, get_text_content_of_resource, get_timestamp
 from als.crunching import compute_histograms_for_display
 from als.io.input import InputScanner, ScannerStartError
 from als.io.network import get_ip, WebServer
 from als.io.output import ImageSaver
+from als.messaging import MESSAGE_HUB
 from als.model.base import Image, Session
-from als.model.data import STACKING_MODE_MEAN, DYNAMIC_DATA, WORKER_STATUS_BUSY, WORKER_STATUS_IDLE
+from als.model.data import (
+    DYNAMIC_DATA, WORKER_STATUS_IDLE,
+    I18n, STACKED_IMAGE_FILE_NAME_BASE,
+    IMAGE_SAVE_TYPE_JPEG, WEB_SERVED_IMAGE_FILE_NAME_BASE
+)
 from als.model.params import ProcessingParameter
 from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput, Levels, ColorBalance, AutoStretch, \
     HotPixelRemover, RemoveDark
 from als.stack import Stacker
 
-gettext.install('als', 'locale')
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -92,7 +93,7 @@ class Controller:
 
         self._stacker_queue: SignalingQueue = DYNAMIC_DATA.stacker_queue
         self._stacker: Stacker = Stacker(self._stacker_queue)
-        self._stacker.stacking_mode = STACKING_MODE_MEAN
+        self._stacker.stacking_mode = I18n.STACKING_MODE_MEAN
         self._stacker.align_before_stack = True
         self._stacker.start()
 
@@ -370,7 +371,7 @@ class Controller:
         """
         pre-processor just started working on new image
         """
-        DYNAMIC_DATA.pre_processor_status = WORKER_STATUS_BUSY
+        DYNAMIC_DATA.pre_processor_status = I18n.WORKER_STATUS_BUSY
         self._notify_model_observers()
 
     @log
@@ -386,7 +387,7 @@ class Controller:
         """
         stacker just started working on new image
         """
-        DYNAMIC_DATA.stacker_status = WORKER_STATUS_BUSY
+        DYNAMIC_DATA.stacker_status = I18n.WORKER_STATUS_BUSY
         self._notify_model_observers()
 
     @log
@@ -402,7 +403,7 @@ class Controller:
         """
         post-processor just started working on new image
         """
-        DYNAMIC_DATA.post_processor_status = WORKER_STATUS_BUSY
+        DYNAMIC_DATA.post_processor_status = I18n.WORKER_STATUS_BUSY
         self._notify_model_observers()
 
     @log
@@ -418,7 +419,7 @@ class Controller:
         """
         saver just started working on new image
         """
-        DYNAMIC_DATA.saver_status = WORKER_STATUS_BUSY
+        DYNAMIC_DATA.saver_status = I18n.WORKER_STATUS_BUSY
         self._notify_model_observers()
 
     @log
@@ -437,7 +438,7 @@ class Controller:
         try:
             if DYNAMIC_DATA.session.is_stopped:
 
-                _LOGGER.info("Starting new session...")
+                MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Starting new session..."))
 
                 self._stacker.reset()
 
@@ -456,7 +457,7 @@ class Controller:
 
             else:
                 # session was paused when this start was ordered. No need for checks & setup
-                _LOGGER.info("Restarting input scanner ...")
+                MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Restarting input scanner ..."))
 
             # setup web content
             try:
@@ -467,17 +468,20 @@ class Controller:
             # start input scanner
             try:
                 self._input_scanner.start()
-                _LOGGER.info("Input scanner started")
+                MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Input scanner started"))
             except ScannerStartError as scanner_start_error:
                 raise SessionError("Input scanner could not start", scanner_start_error)
 
-            running_mode = f"{self._stacker.stacking_mode}"
-            running_mode += " with alignment" if self._stacker.align_before_stack else " without alignment"
-            _LOGGER.info(f"Session running in mode {running_mode}")
+            MESSAGE_HUB.dispatch_info(
+                __name__,
+                QT_TRANSLATE_NOOP("", "Session running in mode {} with alignment {}"),
+                [self._stacker.stacking_mode, self._stacker.align_before_stack])
             DYNAMIC_DATA.session.set_status(Session.running)
 
         except SessionError as session_error:
-            _LOGGER.error(f"Session error. {session_error.message} : {session_error.details}")
+            MESSAGE_HUB.dispatch_error(__name__,
+                                       QT_TRANSLATE_NOOP("", "Session error. {} : {}"),
+                                       [session_error.message, session_error.details])
             raise
 
     @log
@@ -490,7 +494,7 @@ class Controller:
             Controller.purge_queue(self._pre_process_queue)
             Controller.purge_queue(self._stacker_queue)
             Controller.purge_queue(self._post_process_queue)
-            _LOGGER.info("Session stopped")
+            MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Session stopped"))
             DYNAMIC_DATA.session.set_status(Session.stopped)
 
     @log
@@ -500,7 +504,7 @@ class Controller:
         """
         if DYNAMIC_DATA.session.is_running:
             self._stop_input_scanner()
-        _LOGGER.info("Session paused")
+        MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Session paused"))
         DYNAMIC_DATA.session.set_status(Session.paused)
 
     @log
@@ -515,22 +519,18 @@ class Controller:
             self._web_server = WebServer(web_folder_path)
             self._web_server.start()
 
-            if ip_address == "127.0.0.1":
-                log_function = _LOGGER.warning
-            else:
-                log_function = _LOGGER.info
-
             url = f"http://{ip_address}:{port_number}"
-            log_function(f"Web server started. Reachable at {url}")
+            MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Web server started. Reachable at {}"), [url, ])
 
             DYNAMIC_DATA.web_server_ip = ip_address
             DYNAMIC_DATA.web_server_is_running = True
             self._notify_model_observers()
 
         except OSError as os_error:
-            title = "Could not start web server"
-            _LOGGER.error(f"{title} : {os_error}")
-            raise WebServerStartFailure(title, str(os_error))
+            log_message = QT_TRANSLATE_NOOP("", "Could not start web server : {}")
+            error_title = QCoreApplication.translate("", "Could not start web server")
+            MESSAGE_HUB.dispatch_error(__name__, log_message, [str(os_error), ])
+            raise WebServerStartFailure(error_title, str(os_error))
 
     @log
     def stop_www(self):
@@ -540,7 +540,7 @@ class Controller:
             self._web_server.stop()
             self._web_server.join()
             self._web_server = None
-            _LOGGER.info("Web server stopped")
+            MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Web server stopped"))
             DYNAMIC_DATA.web_server_is_running = False
             self._notify_model_observers()
 
@@ -570,8 +570,8 @@ class Controller:
         with open(web_folder_path + "/index.html", 'w') as index_file:
             index_file.write(index_content)
 
-        standby_image_path = web_folder_path + "/" + als.model.data.WEB_SERVED_IMAGE_FILE_NAME_BASE
-        standby_image_path += '.' + als.model.data.IMAGE_SAVE_TYPE_JPEG
+        standby_image_path = web_folder_path + "/" + WEB_SERVED_IMAGE_FILE_NAME_BASE
+        standby_image_path += '.' + IMAGE_SAVE_TYPE_JPEG
         standby_file = QFile(":/web/waiting.jpg")
         standby_file.copy(standby_image_path)
         Path(standby_image_path).chmod(0o644)
@@ -588,19 +588,19 @@ class Controller:
         self.save_image(image,
                         config.get_image_save_format(),
                         config.get_work_folder_path(),
-                        als.model.data.STACKED_IMAGE_FILE_NAME_BASE)
+                        STACKED_IMAGE_FILE_NAME_BASE)
 
         self.save_image(image,
-                        als.model.data.IMAGE_SAVE_TYPE_JPEG,
+                        IMAGE_SAVE_TYPE_JPEG,
                         config.get_web_folder_path(),
-                        als.model.data.WEB_SERVED_IMAGE_FILE_NAME_BASE)
+                        WEB_SERVED_IMAGE_FILE_NAME_BASE)
 
         # if user want to save every image, we save a timestamped version
         if self._save_every_image:
             self.save_image(image,
                             config.get_image_save_format(),
                             config.get_work_folder_path(),
-                            als.model.data.STACKED_IMAGE_FILE_NAME_BASE,
+                            STACKED_IMAGE_FILE_NAME_BASE,
                             add_timestamp=True)
 
     # pylint: disable=R0913
@@ -627,7 +627,7 @@ class Controller:
         filename_base = filename_base
 
         if add_timestamp:
-            filename_base += '-' + Controller.get_timestamp()
+            filename_base += '-' + get_timestamp().replace(' ', "-").replace(":", '-').replace('.', '-')
 
         image_to_save = image.clone()
         image_to_save.destination = dest_folder_path + "/" + filename_base + '.' + file_extension
@@ -651,20 +651,7 @@ class Controller:
         self._saver.stop()
         self._saver.wait()
 
-    @staticmethod
-    @log
-    def get_timestamp():
-        """
-        Return a timestamp build from current date and time
-
-        :return: the timestamp
-        :rtype: str
-        """
-        timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now())))
-        timestamp = timestamp.replace(' ', "-").replace(":", '-').replace('.', '-')
-        return timestamp
-
     @log
     def _stop_input_scanner(self):
         self._input_scanner.stop()
-        _LOGGER.info("Input scanner stopped")
+        MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Input scanner stopped"))

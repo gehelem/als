@@ -1,14 +1,18 @@
 <RCC>
-  <qresource prefix="icons">
-    <file>dslr-camera.svg</file>
-    <file>tick.png</file>
-    <file>tick-disabled.png</file>
-  </qresource>
-  <qresource prefix="web">
-    <file>index.html</file>
-    <file>waiting.jpg</file>
-  </qresource>
-  <qresource prefix="main">
-    <file>main.css</file>
-  </qresource>
+    <qresource prefix="icons">
+        <file>dslr-camera.svg</file>
+        <file>tick.png</file>
+        <file>tick-disabled.png</file>
+    </qresource>
+    <qresource prefix="web">
+        <file>index.html</file>
+        <file>waiting.jpg</file>
+    </qresource>
+    <qresource prefix="main">
+        <file>main.css</file>
+    </qresource>
+    <qresource prefix="i18n">
+        <file>als_fr.qm</file>
+        <file>qtbase_fr.qm</file>
+    </qresource>
 </RCC>

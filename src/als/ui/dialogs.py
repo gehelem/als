@@ -4,14 +4,15 @@ Provides all dialogs used in ALS GUI
 import logging
 from pathlib import Path
 
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, QT_TRANSLATE_NOOP
 from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QApplication
 
 import als.model.data
 from als import config
 from als.code_utilities import log
 from als.logic import Controller
-from als.model.data import VERSION, DYNAMIC_DATA, WORKER_STATUS_BUSY
+from als.messaging import MESSAGE_HUB
+from als.model.data import VERSION, DYNAMIC_DATA, I18n
 from generated.about_ui import Ui_AboutDialog
 from generated.prefs_ui import Ui_PrefsDialog
 from generated.save_wait_ui import Ui_SaveWaitDialog
@@ -31,6 +32,12 @@ class PreferencesDialog(QDialog):
         super().__init__(parent)
         self._ui = Ui_PrefsDialog()
         self._ui.setupUi(self)
+
+        self._ui.cmb_lang.setItemData(0, 'sys')
+        self._ui.cmb_lang.setItemData(1, 'en')
+        self._ui.cmb_lang.setItemData(2, 'fr')
+
+        self._ui.cmb_lang.setCurrentIndex(self._ui.cmb_lang.findData(config.get_lang()))
 
         self._ui.ln_scan_folder_path.setText(config.get_scan_folder_path())
         self._ui.ln_work_folder_path.setText(config.get_work_folder_path())
@@ -108,9 +115,9 @@ class PreferencesDialog(QDialog):
         if web_server_port_number_str.isdigit() and 1024 <= int(web_server_port_number_str) <= 65535:
             config.set_www_server_port_number(web_server_port_number_str)
         else:
-            message = "Web server port number must be a number between 1024 and 65535"
-            error_box("Wrong value", message)
-            _LOGGER.error(f"Port number validation failed : {message}")
+            message = self.tr("Web server port number must be a number between 1024 and 65535")
+            error_box(self.tr("Wrong value"), message)
+            MESSAGE_HUB.dispatch_error(__name__, QT_TRANSLATE_NOOP("", "Port number validation failed : {}"), [message,])
             self._ui.ln_web_server_port.setFocus()
             self._ui.ln_web_server_port.selectAll()
             return
@@ -131,6 +138,8 @@ class PreferencesDialog(QDialog):
                 config.set_image_save_format(image_save_type)
                 break
 
+        config.set_lang(self._ui.cmb_lang.currentData())
+
         PreferencesDialog._save_config()
 
         super().accept()
@@ -140,7 +149,7 @@ class PreferencesDialog(QDialog):
     def browse_scan(self):
         """Opens a folder dialog to choose scan folder"""
         scan_folder_path = QFileDialog.getExistingDirectory(self,
-                                                            _("Select scan folder"),
+                                                            self.tr("Select scan folder"),
                                                             self._ui.ln_scan_folder_path.text())
         if scan_folder_path:
             self._ui.ln_scan_folder_path.setText(scan_folder_path)
@@ -152,7 +161,7 @@ class PreferencesDialog(QDialog):
     def browse_work(self):
         """Opens a folder dialog to choose work folder"""
         work_folder_path = QFileDialog.getExistingDirectory(self,
-                                                            _("Select work folder"),
+                                                            self.tr("Select work folder"),
                                                             self._ui.ln_work_folder_path.text())
         if work_folder_path:
             self._ui.ln_work_folder_path.setText(work_folder_path)
@@ -164,7 +173,7 @@ class PreferencesDialog(QDialog):
     def browse_web(self):
         """Opens a folder dialog to choose web folder"""
         web_folder_path = QFileDialog.getExistingDirectory(self,
-                                                           _("Select web folder"),
+                                                           self.tr("Select web folder"),
                                                            self._ui.ln_web_folder_path.text())
         if web_folder_path:
             self._ui.ln_web_folder_path.setText(web_folder_path)
@@ -176,7 +185,7 @@ class PreferencesDialog(QDialog):
     def browse_dark(self):
         """Opens a folder dialog to choose dark file"""
         dark_file_path = QFileDialog.getOpenFileName(self,
-                                                     _("Select dark file"),
+                                                     self.tr("Select dark file"),
                                                      self._ui.ln_master_dark_path.text())
         if dark_file_path[0]:
             self._ui.ln_master_dark_path.setText(dark_file_path[0])
@@ -218,7 +227,7 @@ class SaveWaitDialog(QDialog):
 
         self._controller = controller
 
-        self.update_display(_)
+        self.update_display(None)
         self._controller.add_model_observer(self)
 
     @log
@@ -254,7 +263,7 @@ class SaveWaitDialog(QDialog):
                 DYNAMIC_DATA.stacker_status,
                 DYNAMIC_DATA.post_processor_status,
         ]:
-            if status == WORKER_STATUS_BUSY:
+            if status == I18n.WORKER_STATUS_BUSY:
                 remaining_image_save_count += 1
 
         for queue_size in [
@@ -269,7 +278,7 @@ class SaveWaitDialog(QDialog):
 
         remaining_image_save_count *= 1 + additional_saves_per_image
 
-        remaining_image_save_count += 1 if DYNAMIC_DATA.saver_status == WORKER_STATUS_BUSY else 0
+        remaining_image_save_count += 1 if DYNAMIC_DATA.saver_status == I18n.WORKER_STATUS_BUSY else 0
         remaining_image_save_count += DYNAMIC_DATA.save_queue.qsize()
 
         return remaining_image_save_count

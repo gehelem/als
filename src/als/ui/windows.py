@@ -12,8 +12,9 @@ import als.model.data
 from als import config
 from als.config import CouldNotSaveConfig
 from als.logic import Controller, SessionError, CriticalFolderMissing, WebServerStartFailure
+from als.messaging import MESSAGE_HUB
 from als.code_utilities import log
-from als.model.data import STACKING_MODE_SUM, STACKING_MODE_MEAN, DYNAMIC_DATA
+from als.model.data import DYNAMIC_DATA, I18n
 from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box, SaveWaitDialog, question, message_box
 from als.ui.params_utils import update_controls_from_params, update_params_from_controls, reset_params, \
     set_sliders_defaults
@@ -42,7 +43,7 @@ class MainWindow(QMainWindow):
 
         # populate stacking mode combo box=
         self._ui.cb_stacking_mode.blockSignals(True)
-        stacking_modes = [STACKING_MODE_SUM, STACKING_MODE_MEAN]
+        stacking_modes = [I18n.STACKING_MODE_SUM, I18n.STACKING_MODE_MEAN]
         for stacking_mode in stacking_modes:
             self._ui.cb_stacking_mode.addItem(stacking_mode)
         self._ui.cb_stacking_mode.setCurrentIndex(stacking_modes.index(self._controller.get_stacking_mode()))
@@ -115,8 +116,6 @@ class MainWindow(QMainWindow):
         self._controller.add_model_observer(self)
         self.update_display()
 
-        config.register_log_receiver(self)
-
         self.setGeometry(*config.get_window_geometry())
 
         # manage docks restoration out of 'image only' mode
@@ -134,6 +133,8 @@ class MainWindow(QMainWindow):
             self._ui.action_full_screen.setChecked(True)
         else:
             self.show()
+
+        MESSAGE_HUB.add_receiver(self)
 
     @log
     @pyqtSlot(bool)
@@ -290,7 +291,7 @@ class MainWindow(QMainWindow):
             config.set_window_geometry((window_rect.x(), window_rect.y(), window_rect.width(), window_rect.height()))
 
         config.set_full_screen_active(self.isFullScreen())
-        MainWindow._save_config()
+        self._save_config()
 
         self._stop_session()
 
@@ -496,11 +497,11 @@ class MainWindow(QMainWindow):
 
         self._start_session()
 
-    def on_log_message(self, message):
+    def on_message(self, message):
         """
-        print received log message to GUI log window
+        print received message to GUI log window
 
-        :param message: the log message
+        :param message: the message
         :type message: str
         """
         self._ui.log.addItem(message)
@@ -523,24 +524,26 @@ class MainWindow(QMainWindow):
             session_is_stopped = session.is_stopped
             session_is_paused = session.is_paused
 
-            # update running statuses
-            scanner_status_message = f"Scanner on {config.get_scan_folder_path()} : "
-            scanner_status_message += f"Running" if session_is_running else "Stopped"
+            # update scanner statuses
+            scanner_status_message = f"{I18n.SCANNER} {I18n.OF} {config.get_scan_folder_path()} : "
+            scanner_status_message += f"{I18n.RUNNING_M}" if session_is_running else f"{I18n.STOPPED_M}"
             self._ui.lbl_scanner_status.setText(scanner_status_message)
 
+            # update web server status
             if web_server_is_running:
                 url = f"http://{DYNAMIC_DATA.web_server_ip}:{config.get_www_server_port_number()}"
-                webserver_status = f'Started, reachable at <a href="{url}" style="color: #CC0000">{url}</a>'
+                webserver_status = f'{I18n.RUNNING_M}, ' \
+                                   f'{I18n.ADDRESS} =  <a href="{url}" style="color: #CC0000">{url}</a>'
             else:
-                webserver_status = "Stopped"
-            self._ui.lbl_web_server_status.setText(f"Web server : {webserver_status}")
+                webserver_status = I18n.STOPPED_M
+            self._ui.lbl_web_server_status.setText(f"{I18n.WEB_SERVER} : {webserver_status}")
 
             if session_is_stopped:
-                session_status = "Stopped"
+                session_status = I18n.STOPPED_F
             elif session_is_paused:
-                session_status = "Paused"
+                session_status = I18n.PAUSED
             elif session_is_running:
-                session_status = "Running"
+                session_status = I18n.RUNNING_F
             else:
                 # this should never happen, that's why we check ;)
                 session_status = "### BUG !"
@@ -596,9 +599,9 @@ class MainWindow(QMainWindow):
         try:
             self._controller.start_www()
             if DYNAMIC_DATA.web_server_ip == "127.0.0.1":
-                title = "Web server access is limited"
-                message = "Web server IP address is 127.0.0.1.\n\nServer won't be reachable by other " \
-                          "machines. Please check your network connection"
+                title = self.tr("Web server access is limited")
+                message = self.tr("Web server IP address is 127.0.0.1.\n\nServer won't be reachable by other machines. "
+                                  "Please check your network connection")
                 warning_box(title, message)
         except WebServerStartFailure as start_failure:
             error_box(start_failure.message, start_failure.details)
@@ -620,18 +623,18 @@ class MainWindow(QMainWindow):
         try:
             self._controller.start_session()
             if is_retry:
-                message_box("Session started", "Session successfully started after retry")
+                message_box(self.tr("Session started"), self.tr("Session successfully started after retry"))
 
         except CriticalFolderMissing as folder_missing:
 
-            text = folder_missing.details
-            text += "\n\n Would you like to open the preferences box ?"
+            text = folder_missing.details + "\n\n"
+            text += self.tr("Would you like to open the preferences box ?")
 
             if question(folder_missing.message, text) and self._open_preferences():
                 self._start_session(is_retry=True)
 
         except SessionError as session_error:
-            error_box(session_error.message, str(session_error.details) + "\n\nSession start aborted")
+            error_box(session_error.message, str(session_error.details) + "\n\n" + self.tr("Session start aborted"))
 
     @log
     def _stop_session(self, ask_confirmation: bool = True):
@@ -648,10 +651,10 @@ class MainWindow(QMainWindow):
 
             if ask_confirmation and DYNAMIC_DATA.stack_size > 0:
                 message = (
-                    "Stopping the current session will reset the stack and all image enhancements.\n\n"
-                    "Are you sure you want to stop the current session ?")
+                    self.tr("Stopping the current session will reset the stack and all image enhancements.\n\n"
+                            "Are you sure you want to stop the current session ?"))
 
-                do_stop_session = question("Really stop session ?",
+                do_stop_session = question(self.tr("Really stop session ?"),
                                            message,
                                            default_yes=False)
 
@@ -661,7 +664,7 @@ class MainWindow(QMainWindow):
     @log
     def _open_preferences(self):
         """
-        Opens preferences dialog box and return True if dilaog was closed using "OK"
+        Opens preferences dialog box and return True if dialog was closed using "OK"
 
         :return: Was the dilaog closed with "OK" ?
         :rtype: bool
@@ -674,11 +677,10 @@ class MainWindow(QMainWindow):
 
         return accepted
 
-    @staticmethod
     @log
-    def _save_config():
+    def _save_config(self):
 
         try:
             config.save()
         except CouldNotSaveConfig as save_error:
-            error_box(save_error.message, f"Your settings could not be saved\n\nDetails : {save_error.details}")
+            error_box(save_error.message, self.tr("Your settings could not be saved\n\nDetails : {}").format(save_error.details))

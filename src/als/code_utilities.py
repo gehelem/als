@@ -1,6 +1,7 @@
 """
 Provides a set of utilities aimed at app developpers
 """
+from datetime import datetime
 import logging
 from functools import wraps
 from queue import Queue
@@ -131,6 +132,18 @@ class SignalingQueue(Queue, QObject):
     def put_nowait(self, item):
         super().put_nowait(item)
         self.size_changed_signal.emit(self.qsize())
+
+
+@log
+def get_timestamp():
+    """
+    Return a timestamp built from current date and time
+
+    :return: the timestamp
+    :rtype: str
+    """
+    timestamp = str(datetime.fromtimestamp(datetime.timestamp(datetime.now())))
+    return timestamp
 
 
 def human_readable_byte_size(num):

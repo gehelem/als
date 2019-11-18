@@ -7,6 +7,7 @@ Version 0.7 (work in progress)
 
 - New features
 
+  - french translation
   - dark frame subtraction
   - hot pixel removal
 

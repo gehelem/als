@@ -6,14 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>729</width>
-    <height>639</height>
+    <width>647</width>
+    <height>690</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>ALS preferences</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
+  <layout class="QVBoxLayout" name="verticalLayout_3">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_11"/>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_10"/>
+   </item>
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
@@ -312,7 +318,7 @@
         <item row="1" column="0">
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>Web page &amp;refresh period (in seconds)</string>
+           <string>Web page &amp;refresh period (in seconds) :</string>
           </property>
           <property name="buddy">
            <cstring>spn_webpage_refresh_period</cstring>
@@ -350,15 +356,87 @@
    <item>
     <widget class="QGroupBox" name="groupBox_6">
      <property name="title">
-      <string>Misc</string>
+      <string>Core (Require application restart)</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
+     <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QCheckBox" name="chk_debug_logs">
-        <property name="text">
-         <string>Debug &amp;logs (requires application restart)</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_12">
+        <item>
+         <widget class="QCheckBox" name="chk_debug_logs">
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+          <property name="text">
+           <string>Debug &amp;logs</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_5">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_9">
+        <item>
+         <widget class="QLabel" name="lbl_lang">
+          <property name="text">
+           <string>L&amp;anguage</string>
+          </property>
+          <property name="buddy">
+           <cstring>cmb_lang</cstring>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="cmb_lang">
+          <property name="minimumSize">
+           <size>
+            <width>120</width>
+            <height>0</height>
+           </size>
+          </property>
+          <item>
+           <property name="text">
+            <string>System</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string notr="true">English</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string notr="true">Français</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>

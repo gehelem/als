@@ -9,7 +9,7 @@ from abc import abstractmethod
 from pathlib import Path
 
 from astropy.io import fits
-from PyQt5.QtCore import QFileInfo, pyqtSignal, QObject
+from PyQt5.QtCore import QFileInfo, pyqtSignal, QObject, QT_TRANSLATE_NOOP
 from rawpy import imread
 from rawpy._rawpy import LibRawNonFatalError, LibRawFatalError
 from watchdog.events import FileSystemEventHandler
@@ -17,6 +17,7 @@ from watchdog.observers.polling import PollingObserver
 
 from als import config
 from als.code_utilities import log
+from als.messaging import MESSAGE_HUB
 from als.model.base import Image
 
 _LOGGER = logging.getLogger(__name__)
@@ -194,7 +195,11 @@ def read_disk_image(path: Path):
             image = _read_raw_image(path)
 
         if image is not None:
-            _LOGGER.info(f"Successful image read from {image.origin}")
+            MESSAGE_HUB.dispatch_info(
+                __name__,
+                QT_TRANSLATE_NOOP("", "Successful image read from {}"),
+                [image.origin, ]
+            )
 
     return image
 
@@ -316,7 +321,10 @@ def _read_raw_image(path: Path):
 
 @log
 def _report_fs_error(path: Path, error: Exception):
-    _LOGGER.error(f"Error reading from file {str(path.resolve())} : {str(error)}")
+    MESSAGE_HUB.dispatch_error(
+        __name__,
+        QT_TRANSLATE_NOOP("", "Error reading from file {} : {}"),
+        [str(path.resolve()), str(error)])
 
 
 @log
