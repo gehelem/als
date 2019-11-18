@@ -2,6 +2,13 @@
 Changelog
 =========
 
+Version 0.7 (work in progress)
+==============================
+
+- Improvements
+
+  - Log to file
+
 Version 0.6 (2019-11-14)
 ========================
 
