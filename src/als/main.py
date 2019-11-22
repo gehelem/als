@@ -32,7 +32,7 @@ def main():
         # Those Stacker processes are leftovers from a previous ALS crash occurring while stacking
         # using multiprocessing
         for process in psutil.process_iter():
-            if process.name() == "Stacker":
+            if process.name() == "Stacker" and process.status() != psutil.STATUS_ZOMBIE:
                 process.kill()
 
         with open(Path(__file__).parent / "main.css", "r") as style_file:
