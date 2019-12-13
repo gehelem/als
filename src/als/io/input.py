@@ -22,7 +22,7 @@ from als.model.base import Image
 _LOGGER = logging.getLogger(__name__)
 
 _IGNORED_FILENAME_START_PATTERNS = ['.', '~', 'tmp']
-_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC = 0.1
+_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC = 0.5
 
 SCANNER_TYPE_FILESYSTEM = "FS"
 
