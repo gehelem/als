@@ -21,6 +21,9 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def log_sys_info():
+    """
+    Log detailed info about current running system
+    """
 
     _LOGGER.debug('System info dump - START')
     _LOGGER.debug(f"Platform name: {sys.platform}")
