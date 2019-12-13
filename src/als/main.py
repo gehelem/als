@@ -2,6 +2,8 @@
 Main module, basically in charge of application init / start
 """
 import logging
+import os
+import platform
 import sys
 
 from pathlib import Path
@@ -18,6 +20,21 @@ from als.ui.windows import MainWindow
 _LOGGER = logging.getLogger(__name__)
 
 
+def log_sys_info():
+
+    _LOGGER.debug('System info dump - START')
+    _LOGGER.debug(f"Platform name: {sys.platform}")
+    _LOGGER.debug(f"Platform architecture: {platform.architecture()}")
+    _LOGGER.debug(f"Machine name: {platform.machine()}")
+    _LOGGER.debug(f"CPU type: {platform.processor()}")
+    _LOGGER.debug(f"CPU count: {os.cpu_count()}")
+    _LOGGER.debug(f"OS name: {platform.system()}")
+    _LOGGER.debug(f"OS release: {platform.release()}")
+    _LOGGER.debug(f"Available memory: {psutil.virtual_memory().available}")
+    _LOGGER.debug(f"Python version: {sys.version}")
+    _LOGGER.debug('System info dump - START')
+
+
 def main():
     """
     Application launcher
@@ -26,6 +43,8 @@ def main():
     with Timer() as startup:
         app = QApplication(sys.argv)
         config.setup()
+
+        log_sys_info()
 
         # look for existing "Stacker" processes and kill them
         #
