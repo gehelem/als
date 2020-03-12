@@ -24,13 +24,11 @@ then
     exit 2
 fi
 
-rm -rf ${SCAN}/*
-
 for i in ${SAMPLES}/*.{fits,FITS,fit,FIT,cr2,CR2,arw,ARW,nef,NEF}
 do
     if [[ -f "${i}" ]]  #to avoid fake outputs when extension isn't found
     then
-        cp -v "${i}" ${SCAN}
+        cp -fv "${i}" ${SCAN}
         sleep 5
     fi
 done
