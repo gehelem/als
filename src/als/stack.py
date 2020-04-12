@@ -28,10 +28,10 @@ from als.code_utilities import log, Timer
 from als.model.base import Image
 from als.model.data import STACKING_MODE_SUM, STACKING_MODE_MEAN
 from als.processing import QueueConsumer
-
+from als import config
 _LOGGER = logging.getLogger(__name__)
 
-_MINIMUM_MATCHES_FOR_VALID_TRANSFORM = 25
+_MINIMUM_MATCHES_FOR_VALID_TRANSFORM = config.get_al_minimum_stars()
 
 
 class StackingError(Exception):
