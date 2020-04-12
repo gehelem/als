@@ -35,6 +35,8 @@ class PreferencesDialog(QDialog):
         self._ui.ln_web_server_port.setText(str(config.get_www_server_port_number()))
         self._ui.spn_webpage_refresh_period.setValue(config.get_www_server_refresh_period())
         self._ui.chk_debug_logs.setChecked(config.is_debug_log_on())
+        #Get al_minimum_stars
+        self._ui.spn_al_minimum_stars.setValue(int(config.get_al_minimum_stars()))
 
         config_to_image_save_type_mapping = {
 
@@ -68,6 +70,8 @@ class PreferencesDialog(QDialog):
         config.set_work_folder_path(self._ui.ln_work_folder_path.text())
 
         web_server_port_number_str = self._ui.ln_web_server_port.text()
+
+        config.set_al_minimum_stars(self._ui.spn_al_minimum_stars.value())
 
         if web_server_port_number_str.isdigit() and 1024 <= int(web_server_port_number_str) <= 65535:
             config.set_www_server_port_number(web_server_port_number_str)
