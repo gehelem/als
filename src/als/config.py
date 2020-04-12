@@ -38,6 +38,7 @@ _WINDOW_GEOMETRY = "window_geometry"
 _IMAGE_SAVE_FORMAT = "image_save_format"
 _FULL_SCREEN = "full_screen"
 _WWW_REFRESH_PERIOD = "web_refresh_period"
+_AL_MINIMUM_STARS = "alignment_minimum_stars"
 
 # keys used to describe logging level
 _LOG_LEVEL_DEBUG = "DEBUG"
@@ -65,6 +66,7 @@ _DEFAULTS = {
     _IMAGE_SAVE_FORMAT:   IMAGE_SAVE_TYPE_JPEG,
     _FULL_SCREEN:         0,
     _WWW_REFRESH_PERIOD: "5",
+    _AL_MINIMUM_STARS: "25",
 }
 _MAIN_SECTION_NAME = "main"
 
@@ -240,6 +242,26 @@ def set_scan_folder_path(path):
     :type path: str
     """
     _set(_SCAN_FOLDER_PATH, path)
+
+
+def get_al_minimum_stars():
+    """
+    Retrieves alignment minimum stars value.
+
+    :return: the minimum stars number for alignment
+    :rtype: int
+    """
+    return int(_get(_AL_MINIMUM_STARS))
+
+
+def set_al_minimum_stars(star_number):
+    """
+    Sets the alignment minimum stars value.
+
+    :param path: the minimum stars number for alignment
+    :type path: int
+    """
+    _set(_AL_MINIMUM_STARS, str(star_number))
 
 
 def get_window_geometry():
