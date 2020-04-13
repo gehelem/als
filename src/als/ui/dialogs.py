@@ -36,7 +36,10 @@ class PreferencesDialog(QDialog):
         self._ui.spn_webpage_refresh_period.setValue(config.get_www_server_refresh_period())
         self._ui.chk_debug_logs.setChecked(config.is_debug_log_on())
         #Get al_minimum_stars
-        self._ui.spn_al_minimum_stars.setValue(int(config.get_al_minimum_stars()))
+        self._ui.spn_al_minimum_stars.setValue(config.get_al_minimum_stars())
+        #Get darks values
+        self._ui.chk_use_dark.setChecked(config.get_use_master_dark())
+        self._ui.ln_master_dark_path.setText(config.get_master_dark_file_path())
 
         config_to_image_save_type_mapping = {
 
@@ -72,6 +75,9 @@ class PreferencesDialog(QDialog):
         web_server_port_number_str = self._ui.ln_web_server_port.text()
 
         config.set_al_minimum_stars(self._ui.spn_al_minimum_stars.value())
+
+        config.set_use_master_dark(self._ui.chk_use_dark.isChecked())
+        config.set_master_dark_file_path(self._ui.ln_master_dark_path.text())
 
         if web_server_port_number_str.isdigit() and 1024 <= int(web_server_port_number_str) <= 65535:
             config.set_www_server_port_number(web_server_port_number_str)
@@ -126,6 +132,18 @@ class PreferencesDialog(QDialog):
             self._ui.ln_work_folder_path.setText(work_folder_path)
 
         self._show_missing_folders()
+
+    @pyqtSlot(name="on_btn_dark_scan_clicked")
+    @log
+    def browse_dark(self):
+        """Opens a folder dialog to choose dark file"""
+        dark_file_path = QFileDialog.getOpenFileName(self,
+                                                    _("Select dark file"),
+                                                    self._ui.ln_master_dark_path.text())
+        if dark_file_path[0]:
+            self._ui.ln_master_dark_path.setText(dark_file_path[0])
+
+        #self._show_missing_folders()
 
     @staticmethod
     @log

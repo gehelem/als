@@ -39,6 +39,8 @@ _IMAGE_SAVE_FORMAT = "image_save_format"
 _FULL_SCREEN = "full_screen"
 _WWW_REFRESH_PERIOD = "web_refresh_period"
 _AL_MINIMUM_STARS = "alignment_minimum_stars"
+_USE_MASTER_DARK = "use_master_dark"
+_MASTER_DARK_FILE_PATH = "master_dark_file_path"
 
 # keys used to describe logging level
 _LOG_LEVEL_DEBUG = "DEBUG"
@@ -67,6 +69,8 @@ _DEFAULTS = {
     _FULL_SCREEN:         0,
     _WWW_REFRESH_PERIOD: "5",
     _AL_MINIMUM_STARS: "25",
+    _USE_MASTER_DARK: False,
+    _MASTER_DARK_FILE_PATH: os.path.expanduser("~/als/dark/masterdark.fit"),
 }
 _MAIN_SECTION_NAME = "main"
 
@@ -262,6 +266,51 @@ def set_al_minimum_stars(star_number):
     :type path: int
     """
     _set(_AL_MINIMUM_STARS, str(star_number))
+
+
+def set_use_master_dark(use_dark: bool):
+    """
+    Set use dark indicator
+
+    :param full: Remove master dark from images ?
+    :type full: bool
+    """
+
+    _set(_USE_MASTER_DARK, "1" if use_dark else "0")
+
+
+def get_use_master_dark():
+    """
+    Get use dark indicator
+
+    :return: True if dark should be used, False otherwise
+    :rtype: bool
+    """
+
+    try:
+        return bool(_get(_USE_MASTER_DARK)) == 1
+    except ValueError:
+        return _DEFAULTS[_USE_MASTER_DARK]
+
+
+def get_master_dark_file_path():
+    """
+    Retrieves the master dark file path.
+
+    :return: the master dark file path
+    :rtype: str
+    """
+    return str(_get(_MASTER_DARK_FILE_PATH))
+
+
+def set_master_dark_file_path(path):
+    """
+    Sets the master dark file path.
+
+    :param path: the master dark file path
+    :type path: str
+    """
+    _set(_MASTER_DARK_FILE_PATH, str(path))
 
 
 def get_window_geometry():

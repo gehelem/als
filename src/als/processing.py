@@ -4,6 +4,7 @@ Provides all means of image processing
 import logging
 from abc import abstractmethod
 from typing import List
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -13,6 +14,8 @@ from skimage import exposure
 from als.code_utilities import log, Timer, SignalingQueue
 from als.model.base import Image
 from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter, ListParameter
+from als.io import input
+from als import config
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -372,6 +375,21 @@ class Debayer(ImageProcessor):
                 raise ProcessingError(f"unsupported bayer pattern : {bayer_pattern}")
 
             image.data = debayered_data
+
+        return image
+
+
+class RemoveDark(ImageProcessor):
+    """
+    Provides image dark removal.
+    """
+
+    @log
+    def process_image(self, image: Image):
+
+        if config.get_use_master_dark():
+            masterdark = input.read_disk_image(Path(config.get_master_dark_file_path()))
+            image.data = image.data - masterdark.data
 
         return image
 

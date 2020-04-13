@@ -37,7 +37,7 @@ from als.io.output import ImageSaver
 from als.model.base import Image, Session
 from als.model.data import STACKING_MODE_MEAN, DYNAMIC_DATA, WORKER_STATUS_BUSY, WORKER_STATUS_IDLE
 from als.model.params import ProcessingParameter
-from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput, Levels, ColorBalance, AutoStretch
+from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput, Levels, ColorBalance, AutoStretch, RemoveDark
 from als.stack import Stacker
 
 gettext.install('als', 'locale')
@@ -85,7 +85,7 @@ class Controller:
         self._pre_process_pipeline: Pipeline = Pipeline(
             'pre-process',
             self._pre_process_queue,
-            [Debayer(), Standardize()])
+            [RemoveDark(), Debayer(), Standardize()])
         self._pre_process_pipeline.start()
 
         self._stacker_queue: SignalingQueue = DYNAMIC_DATA.stacker_queue
