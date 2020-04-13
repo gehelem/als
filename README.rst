@@ -2,7 +2,7 @@
 ALS - Astro Live Stacker
 ========================
 
-Website : https://als-app.org
+Awesome Website : https://als-app.org
 
 .. image:: https://img.shields.io/travis/com/gehelem/als/develop
 .. image:: https://img.shields.io/github/license/gehelem/als
