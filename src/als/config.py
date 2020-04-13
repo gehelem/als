@@ -69,7 +69,7 @@ _DEFAULTS = {
     _FULL_SCREEN:         0,
     _WWW_REFRESH_PERIOD: "5",
     _AL_MINIMUM_STARS: "25",
-    _USE_MASTER_DARK: False,
+    _USE_MASTER_DARK: "0",
     _MASTER_DARK_FILE_PATH: os.path.expanduser("~/als/dark/masterdark.fit"),
 }
 _MAIN_SECTION_NAME = "main"
@@ -286,9 +286,9 @@ def get_use_master_dark():
     :return: True if dark should be used, False otherwise
     :rtype: bool
     """
-
+    
     try:
-        return bool(_get(_USE_MASTER_DARK)) == 1
+        return _get(_USE_MASTER_DARK) == "1"
     except ValueError:
         return _DEFAULTS[_USE_MASTER_DARK]
 
