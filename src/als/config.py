@@ -300,7 +300,7 @@ def get_master_dark_file_path():
     :return: the master dark file path
     :rtype: str
     """
-    return str(_get(_MASTER_DARK_FILE_PATH))
+    return _get(_MASTER_DARK_FILE_PATH)
 
 
 def set_master_dark_file_path(path):
@@ -310,7 +310,7 @@ def set_master_dark_file_path(path):
     :param path: the master dark file path
     :type path: str
     """
-    _set(_MASTER_DARK_FILE_PATH, str(path))
+    _set(_MASTER_DARK_FILE_PATH, path)
 
 
 def get_window_geometry():
