@@ -5,6 +5,7 @@ We need to read file and in the future, get images from INDI
 """
 import logging
 import time
+from threading import Event, Thread
 from abc import abstractmethod
 from pathlib import Path
 
@@ -17,6 +18,8 @@ from watchdog.observers.polling import PollingObserver
 
 from als import config
 from als.code_utilities import log
+from als.IndiCamera import IndiCamera
+from als.IndiClient import IndiClient
 from als.model.base import Image
 
 _LOGGER = logging.getLogger(__name__)
@@ -25,7 +28,9 @@ _IGNORED_FILENAME_START_PATTERNS = ['.', '~', 'tmp']
 _DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC = 0.5
 
 SCANNER_TYPE_FILESYSTEM = "FS"
+SCANNER_TYPE_INDI = "DI"
 
+_INDI_STOP_ACQ_TIMEOUT_SEC = 5
 
 class InputError(Exception):
     """
@@ -95,8 +100,12 @@ class InputScanner:
         :rtype: InputScanner subclass
         """
 
+        #TODO TN fix that
+        return IndiScanner()
         if scanner_type == SCANNER_TYPE_FILESYSTEM:
             return FolderScanner()
+        elif scanner_type == SCANNER_TYPE_INDI:
+            return IndiScanner()
 
         raise ValueError(f"Unsupported scanner type : {scanner_type}")
 
@@ -198,6 +207,19 @@ def read_disk_image(path: Path):
 
 
 @log
+def _get_image_from_fit(fit):
+    """
+    return Image from HDUList
+    :param fit: actual HDUList
+    :return:
+    """
+    data = fit[0].data
+    header = fit[0].header
+    image = Image(data)
+    if 'BAYERPAT' in header:
+        image.bayer_pattern = header['BAYERPAT']
+    return image
+@log
 def _read_fit_image(path: Path):
     """
     read FIT image from filesystem
@@ -211,13 +233,7 @@ def _read_fit_image(path: Path):
     try:
         with fits.open(str(path.resolve())) as fit:
             # pylint: disable=E1101
-            data = fit[0].data
-            header = fit[0].header
-
-        image = Image(data)
-
-        if 'BAYERPAT' in header:
-            image.bayer_pattern = header['BAYERPAT']
+            image = _get_image_from_fit(fit)
 
         _set_image_file_origin(image, path)
 
@@ -320,3 +336,67 @@ def _report_fs_error(path: Path, error: Exception):
 @log
 def _set_image_file_origin(image: Image, path: Path):
     image.origin = f"FILE : {str(path.resolve())}"
+
+
+class IndiScanner(InputScanner, QObject):
+    """
+    Connects to an indi server and watch for a specific device blob
+
+    the watched server/device is retrieved from user config on scanner startup
+    """
+    @log
+    def __init__(self):
+        InputScanner.__init__(self)
+        QObject.__init__(self)
+        self._observer = None
+        self.do_loop = True
+
+    @log
+    def start(self):
+        """
+        Starts connect to server/device for new blobs
+        """
+        try:
+            remote_host = config.get_remote_host()
+            remote_port = config.get_remote_port()
+            device_name = config.get_device_name()
+            self._client = IndiClient(config=dict(indi_host=remote_host,
+                                                  indi_port=remote_port),
+                                      connect_on_create=True)
+            self._device = IndiCamera(indi_client=self._client,
+                                      config=dict(camera_name=device_name),
+                                      connect_on_create=True)
+            self.do_loop = True
+            self.launch_bg_acquisition()
+        except Exception as e:
+            raise ScannerStartError(e)
+
+    @log
+    def launch_bg_acquisition(self):
+        self.main_thread = Thread(target=self.loop_acquisition, args=())
+        self.main_thread.name = f"IndiScanner Thread"
+        self.main_thread.start()
+
+    @log
+    def loop_acquisition(self):
+        while self.do_loop:
+            self.loop_thread = Thread(target=self.on_received, args=())
+            self.loop_thread.name = f"IndiLoopScanner Thread"
+            self.loop_thread.start()
+            self.loop_thread.join()
+
+    @log
+    def stop(self):
+        """
+        Stops listening to server for new blobs
+        """
+        self.do_loop = False
+        self.main_thread.join(timeout=_INDI_STOP_ACQ_TIMEOUT_SEC)
+        if self._device is not None:
+            self._device.disconnect()
+
+    @log
+    def on_received(self):
+        self._device.synchronize_with_image_reception()
+        self.broadcast_image(_get_image_from_fit(
+            self._device.get_received_image()))

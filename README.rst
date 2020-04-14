@@ -105,10 +105,15 @@ virtual environment and installing ALS's dependencies into it.
 
 - `gcc` and `python3-dev` to compile some dependencies (don't be scared)
 - `python3-venv` to handle virtualenvs
+- `indi` and gsc catalog `gsc` to enable indi support
 
 .. code-block::
 
-  $ sudo apt update && sudo apt install -y gcc python3-dev python3-venv
+  $ sudo add-apt-repository -y ppa:mutlaqja/ppa && sudo apt update
+
+.. code-block::
+
+  $ sudo apt install -y gcc python3-dev python3-venv indi-full gsc swig zlib1g-dev
 
 
 2. **Dive into ALS folder**.
