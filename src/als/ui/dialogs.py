@@ -143,7 +143,7 @@ class PreferencesDialog(QDialog):
         if dark_file_path[0]:
             self._ui.ln_master_dark_path.setText(dark_file_path[0])
 
-        #self._show_missing_folders()
+        self._show_missing_folders()
 
     @staticmethod
     @log

@@ -388,8 +388,22 @@ class RemoveDark(ImageProcessor):
     def process_image(self, image: Image):
 
         if config.get_use_master_dark():
-            masterdark = input.read_disk_image(Path(config.get_master_dark_file_path()))
-            image.data = image.data - masterdark.data
+            try:
+                masterdark = input.read_disk_image(Path(config.get_master_dark_file_path()))
+            except:
+                _LOGGER.warning(
+                f"Error reading {config.get_master_dark_file_path()} : "
+                f"Dark removal will be ignored")
+            if isinstance(masterdark, Image):
+                if image.is_same_shape_as(masterdark):
+                    image.data = image.data - masterdark.data
+                    _LOGGER.info(
+                    f"Success: Dark removed."
+                    )
+                else:
+                    _LOGGER.warning(
+                    f"Error: Data structure divergeance between {image} and {masterdark}. "
+                    f"Dark removal will be ignored")
 
         return image
 
