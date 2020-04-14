@@ -30,6 +30,11 @@ As pictures are added to the stack, user can enhance the resulting image with va
 The resulting image can be saved to disk and served by a built-in web server, so your mates at the astro
 club can see your wonderful images.
 
+Requirements
+============
+
+- Python version 3.6 minimum
+
 Download
 ========
 
