@@ -35,8 +35,8 @@ class PreferencesDialog(QDialog):
         self._ui.ln_web_server_port.setText(str(config.get_www_server_port_number()))
         self._ui.spn_webpage_refresh_period.setValue(config.get_www_server_refresh_period())
         self._ui.chk_debug_logs.setChecked(config.is_debug_log_on())
-        #Get al_minimum_stars
-        self._ui.spn_al_minimum_stars.setValue(config.get_al_minimum_stars())
+        #Get align_minimum_stars
+        self._ui.spn_align_minimum_stars.setValue(config.get_align_minimum_stars())
         #Get darks values
         self._ui.chk_use_dark.setChecked(config.get_use_master_dark())
         self._ui.ln_master_dark_path.setText(config.get_master_dark_file_path())
@@ -74,7 +74,7 @@ class PreferencesDialog(QDialog):
 
         web_server_port_number_str = self._ui.ln_web_server_port.text()
 
-        config.set_al_minimum_stars(self._ui.spn_al_minimum_stars.value())
+        config.set_align_minimum_stars(self._ui.spn_align_minimum_stars.value())
 
         config.set_use_master_dark(self._ui.chk_use_dark.isChecked())
         config.set_master_dark_file_path(self._ui.ln_master_dark_path.text())

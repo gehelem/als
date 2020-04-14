@@ -31,7 +31,7 @@ from als.processing import QueueConsumer
 from als import config
 _LOGGER = logging.getLogger(__name__)
 
-_MINIMUM_MATCHES_FOR_VALID_TRANSFORM = config.get_al_minimum_stars()
+_MINIMUM_MATCHES_FOR_VALID_TRANSFORM = config.get_align_minimum_stars()
 
 
 class StackingError(Exception):
