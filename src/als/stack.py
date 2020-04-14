@@ -31,7 +31,7 @@ from als.processing import QueueConsumer
 from als import config
 _LOGGER = logging.getLogger(__name__)
 
-_MINIMUM_MATCHES_FOR_VALID_TRANSFORM = config.get_align_minimum_stars()
+#_MINIMUM_MATCHES_FOR_VALID_TRANSFORM = config.get_align_minimum_stars()
 
 
 class StackingError(Exception):
@@ -310,6 +310,7 @@ class Stacker(QueueConsumer):
         :return: the found transformation
         :raises: StackingError when no transformation is found using the whole image
         """
+        _MINIMUM_MATCHES_FOR_VALID_TRANSFORM = config.get_align_minimum_stars()
 
         for ratio in [.1, .33, 1.]:
 
