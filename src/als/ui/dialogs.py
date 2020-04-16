@@ -138,8 +138,8 @@ class PreferencesDialog(QDialog):
     def browse_dark(self):
         """Opens a folder dialog to choose dark file"""
         dark_file_path = QFileDialog.getOpenFileName(self,
-                                                    _("Select dark file"),
-                                                    self._ui.ln_master_dark_path.text())
+                                                     _("Select dark file"),
+                                                     self._ui.ln_master_dark_path.text())
         if dark_file_path[0]:
             self._ui.ln_master_dark_path.setText(dark_file_path[0])
 
