@@ -50,17 +50,17 @@ class PreferencesDialog(QDialog):
 
         config_to_image_save_type_mapping[config.get_image_save_format()].setChecked(True)
 
-        self._show_missing_folders()
+        self._validate_all_pathes()
 
     @log
-    def _show_missing_folders(self):
+    def _validate_all_pathes(self):
         """
         Draw a red border around text fields containing a path to a missing folder
         """
 
-        for ui_field in [self._ui.ln_work_folder_path, self._ui.ln_scan_folder_path]:
+        for ui_field in [self._ui.ln_work_folder_path, self._ui.ln_scan_folder_path, self._ui.ln_master_dark_path]:
 
-            if not Path(ui_field.text()).is_dir():
+            if not Path(ui_field.text()).exists():
                 ui_field.setStyleSheet("border: 1px solid orange")
             else:
                 ui_field.setStyleSheet("border: 1px")
@@ -119,7 +119,7 @@ class PreferencesDialog(QDialog):
         if scan_folder_path:
             self._ui.ln_scan_folder_path.setText(scan_folder_path)
 
-        self._show_missing_folders()
+        self._validate_all_pathes()
 
     @pyqtSlot(name="on_btn_browse_work_clicked")
     @log
@@ -131,7 +131,7 @@ class PreferencesDialog(QDialog):
         if work_folder_path:
             self._ui.ln_work_folder_path.setText(work_folder_path)
 
-        self._show_missing_folders()
+        self._validate_all_pathes()
 
     @pyqtSlot(name="on_btn_dark_scan_clicked")
     @log
@@ -143,7 +143,7 @@ class PreferencesDialog(QDialog):
         if dark_file_path[0]:
             self._ui.ln_master_dark_path.setText(dark_file_path[0])
 
-        self._show_missing_folders()
+        self._validate_all_pathes()
 
     @staticmethod
     @log
