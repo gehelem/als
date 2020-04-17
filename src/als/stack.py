@@ -111,7 +111,6 @@ class Stacker(QueueConsumer):
         self._align_reference = None
         self.stack_size_changed_signal.emit(self.size)
 
-
     @log
     def _publish_stacking_result(self, image: Image):
         """
@@ -337,7 +336,7 @@ class Stacker(QueueConsumer):
                 _LOGGER.debug(f"image matched features count : {matches_count}")
 
                 if matches_count < minimum_matches_for_valid_transform:
-                    _LOGGER.debug(f"Found transformation but matches count is too low : "
+                    _LOGGER.warning(f"Found transformation but matches count is too low : "
                                   f"{matches_count} < {minimum_matches_for_valid_transform}. "
                                   "Discarding transformation")
                     raise StackingError("Too few matches")
