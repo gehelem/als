@@ -57,18 +57,21 @@ class PreferencesDialog(QDialog):
         """
         Draw a red border around text fields containing a path to a missing folder
         """
+        warning_style = "border: 1px solid orange"
+        normal_style = "border: 1px"
 
         for ui_field in [self._ui.ln_work_folder_path, self._ui.ln_scan_folder_path]:
 
             if not Path(ui_field.text()).is_dir():
-                ui_field.setStyleSheet("border: 1px solid orange")
+                ui_field.setStyleSheet(warning_style)
             else:
-                ui_field.setStyleSheet("border: 1px")
+                ui_field.setStyleSheet(normal_style)
 
-        if not Path(self._ui.ln_master_dark_path.text()).is_file():
-            self._ui.ln_master_dark_path.setStyleSheet("border: 1px solid orange")
-        else:
-            self._ui.ln_master_dark_path.setStyleSheet("border: 1px")
+        if self._ui.chk_use_dark.isChecked():
+            if Path(self._ui.ln_master_dark_path.text()).is_file():
+                self._ui.ln_master_dark_path.setStyleSheet(normal_style)
+            else:
+                self._ui.ln_master_dark_path.setStyleSheet(warning_style)
 
     @log
     @pyqtSlot()
