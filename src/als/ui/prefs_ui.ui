@@ -109,7 +109,7 @@
         <item row="1" column="0">
          <widget class="QLabel" name="lbl_dark_folder">
           <property name="text">
-           <string>&amp;Master dark folder :</string>
+           <string>Master &amp;dark folder :</string>
           </property>
           <property name="buddy">
            <cstring>btn_dark_scan</cstring>
@@ -152,7 +152,7 @@
         <item row="0" column="0">
          <widget class="QLabel" name="lbl_align_minimum_stars">
           <property name="text">
-           <string>Minimum alignment stars :</string>
+           <string>&amp;Minimum alignment stars :</string>
           </property>
           <property name="textFormat">
            <enum>Qt::AutoText</enum>
