@@ -366,7 +366,10 @@ class HotPixelRemover(ImageProcessor):
     @log
     def process_image(self, image: Image):
 
-        _HOT_RATIO = 1.5  # TODO : should maybe user definable
+        # the idea is to check every pixel value against its 8 neighbors
+        # if its value is more than _HOT_RATIO times the mean of its neighbors' values
+        # me replace its value with that mean
+        _HOT_RATIO = 2  # TODO : should maybe user definable
         means = HotPixelRemover._neighbors_average(image.data)
         image.data = np.where(image.data / means > _HOT_RATIO, means, image.data)
 
