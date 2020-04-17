@@ -152,7 +152,7 @@
         <item row="0" column="0">
          <widget class="QLabel" name="lbl_minimum_match_count">
           <property name="text">
-           <string>Minimum stars matches &amp;count :</string>
+           <string>Minimum matches &amp;count :</string>
           </property>
           <property name="textFormat">
            <enum>Qt::AutoText</enum>
