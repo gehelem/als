@@ -109,7 +109,7 @@
         <item row="1" column="0">
          <widget class="QLabel" name="lbl_dark_folder">
           <property name="text">
-           <string>Master &amp;dark folder :</string>
+           <string>&amp;Master dark folder :</string>
           </property>
           <property name="buddy">
            <cstring>btn_dark_scan</cstring>
@@ -152,7 +152,7 @@
         <item row="0" column="0">
          <widget class="QLabel" name="lbl_minimum_match_count">
           <property name="text">
-           <string>&amp;Minimum stars matches count :</string>
+           <string>Minimum stars matches &amp;count :</string>
           </property>
           <property name="textFormat">
            <enum>Qt::AutoText</enum>
