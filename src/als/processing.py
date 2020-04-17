@@ -344,11 +344,16 @@ class Standardize(ImageProcessor):
 
 
 class HotPixelRemover(ImageProcessor):
+    """Provides hot pixels removal"""
 
     @staticmethod
-    def _eight_neighbor_average(data):
-
-        original_dtype = data.dtype
+    def _neighbors_average(data):
+        """
+        returns an array containing the means of all original array's pixels' neighbors
+        :param data: the image to compute means for
+        :return: an array containing the means of all original array's pixels' neighbors
+        :rtype: np.Array
+        """
 
         kernel = np.ones((3, 3))
         kernel[1, 1] = 0
@@ -356,13 +361,14 @@ class HotPixelRemover(ImageProcessor):
         neighbor_sum = convolve2d(data, kernel, mode='same', boundary='fill', fillvalue=0)
         num_neighbor = convolve2d(np.ones(data.shape), kernel, mode='same', boundary='fill', fillvalue=0)
 
-        return (neighbor_sum / num_neighbor).astype(original_dtype)
+        return (neighbor_sum / num_neighbor).astype(data.dtype)
 
     @log
     def process_image(self, image: Image):
 
-        means = HotPixelRemover._eight_neighbor_average(image.data)
-        image.data = np.where(image.data / means > 2, means, image.data)
+        _HOT_RATIO = 1.5  # TODO : should maybe user definable
+        means = HotPixelRemover._neighbors_average(image.data)
+        image.data = np.where(image.data / means > _HOT_RATIO, means, image.data)
 
         return image
 
