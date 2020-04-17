@@ -9,6 +9,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal
+from scipy.signal import convolve2d
 from skimage import exposure
 
 from als.code_utilities import log, Timer, SignalingQueue
@@ -344,39 +345,24 @@ class Standardize(ImageProcessor):
 
 class HotPixelRemover(ImageProcessor):
 
+    @staticmethod
+    def _eight_neighbor_average(x):
+
+        original_dtype = x.dtype
+
+        kernel = np.ones((3, 3))
+        kernel[1, 1] = 0
+
+        neighbor_sum = convolve2d(x, kernel, mode='same', boundary='fill', fillvalue=0)
+        num_neighbor = convolve2d(np.ones(x.shape), kernel, mode='same', boundary='fill', fillvalue=0)
+
+        return (neighbor_sum / num_neighbor).astype(original_dtype)
+
     @log
     def process_image(self, image: Image):
 
-        data = image.data
-
-        hot_pixels_count = 0
-
-        _LOGGER.debug(f"HPR: Data shape {data.shape}")
-
-        for x in range(1, image.width - 2):
-            for y in range(1, image.height - 2):
-
-                neighbors_values = list()
-                neighbors_values.append(data[y-1][x-1])
-                neighbors_values.append(data[y][x-1])
-                neighbors_values.append(data[y+1][x-1])
-
-                neighbors_values.append(data[y-1][x])
-                current_value = data[y][x]
-                neighbors_values.append(data[y+1][x])
-
-                neighbors_values.append(data[y-1][x+1])
-                neighbors_values.append(data[y][x+1])
-                neighbors_values.append(data[y+1][x+1])
-                neighbors_mean = sum(neighbors_values) / 8
-
-                # _LOGGER.debug(f"HPR: Row: {x} - Column: {y} - value: {current_value} - neighbors mean: {neighbors_mean}")
-
-                if current_value / neighbors_mean > 2:
-                    data[y][x] = neighbors_mean
-                    hot_pixels_count += 1
-
-        _LOGGER.info(f"HPR removed {hot_pixels_count} hot pixel(s)")
+        means = HotPixelRemover._eight_neighbor_average(image.data)
+        image.data = np.where(image.data / means > 2, means, image.data)
 
         return image
 
