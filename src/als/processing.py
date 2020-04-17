@@ -346,15 +346,15 @@ class Standardize(ImageProcessor):
 class HotPixelRemover(ImageProcessor):
 
     @staticmethod
-    def _eight_neighbor_average(x):
+    def _eight_neighbor_average(data):
 
-        original_dtype = x.dtype
+        original_dtype = data.dtype
 
         kernel = np.ones((3, 3))
         kernel[1, 1] = 0
 
-        neighbor_sum = convolve2d(x, kernel, mode='same', boundary='fill', fillvalue=0)
-        num_neighbor = convolve2d(np.ones(x.shape), kernel, mode='same', boundary='fill', fillvalue=0)
+        neighbor_sum = convolve2d(data, kernel, mode='same', boundary='fill', fillvalue=0)
+        num_neighbor = convolve2d(np.ones(data.shape), kernel, mode='same', boundary='fill', fillvalue=0)
 
         return (neighbor_sum / num_neighbor).astype(original_dtype)
 
