@@ -309,7 +309,7 @@ class Stacker(QueueConsumer):
         :return: the found transformation
         :raises: StackingError when no transformation is found using the whole image
         """
-        minimum_matches_for_valid_transform = config.get_align_minimum_stars()
+        minimum_matches_for_valid_transform = config.get_minimum_match_count()
 
         for ratio in [.1, .33, 1.]:
 

@@ -38,7 +38,7 @@ _WINDOW_GEOMETRY = "window_geometry"
 _IMAGE_SAVE_FORMAT = "image_save_format"
 _FULL_SCREEN = "full_screen"
 _WWW_REFRESH_PERIOD = "web_refresh_period"
-_ALIGN_MINIMUM_STARS = "alignment_minimum_stars"
+_MINIMUM_MATCH_COUNT = "alignment_minimum_match_count"
 _USE_MASTER_DARK = "use_master_dark"
 _MASTER_DARK_FILE_PATH = "master_dark_file_path"
 
@@ -68,7 +68,7 @@ _DEFAULTS = {
     _IMAGE_SAVE_FORMAT:   IMAGE_SAVE_TYPE_JPEG,
     _FULL_SCREEN:         0,
     _WWW_REFRESH_PERIOD: "5",
-    _ALIGN_MINIMUM_STARS: "25",
+    _MINIMUM_MATCH_COUNT: "25",
     _USE_MASTER_DARK: "0",
     _MASTER_DARK_FILE_PATH: "",
 }
@@ -248,24 +248,24 @@ def set_scan_folder_path(path):
     _set(_SCAN_FOLDER_PATH, path)
 
 
-def get_align_minimum_stars():
+def get_minimum_match_count():
     """
     Retrieves alignment minimum stars value.
 
     :return: the minimum stars number for alignment
     :rtype: int
     """
-    return int(_get(_ALIGN_MINIMUM_STARS))
+    return int(_get(_MINIMUM_MATCH_COUNT))
 
 
-def set_align_minimum_stars(star_number):
+def set_minimum_match_count(star_number):
     """
     Sets the alignment minimum stars value.
 
     :param star_number: the minimum stars number for alignment
     :type star_number: int
     """
-    _set(_ALIGN_MINIMUM_STARS, str(star_number))
+    _set(_MINIMUM_MATCH_COUNT, str(star_number))
 
 
 def set_use_master_dark(use_dark: bool):
