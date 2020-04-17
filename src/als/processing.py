@@ -342,6 +342,45 @@ class Standardize(ImageProcessor):
         return image
 
 
+class HotPixelRemover(ImageProcessor):
+
+    @log
+    def process_image(self, image: Image):
+
+        data = image.data
+
+        hot_pixels_count = 0
+
+        _LOGGER.debug(f"HPR: Data shape {data.shape}")
+
+        for x in range(1, image.width - 2):
+            for y in range(1, image.height - 2):
+
+                neighbors_values = list()
+                neighbors_values.append(data[y-1][x-1])
+                neighbors_values.append(data[y][x-1])
+                neighbors_values.append(data[y+1][x-1])
+
+                neighbors_values.append(data[y-1][x])
+                current_value = data[y][x]
+                neighbors_values.append(data[y+1][x])
+
+                neighbors_values.append(data[y-1][x+1])
+                neighbors_values.append(data[y][x+1])
+                neighbors_values.append(data[y+1][x+1])
+                neighbors_mean = sum(neighbors_values) / 8
+
+                # _LOGGER.debug(f"HPR: Row: {x} - Column: {y} - value: {current_value} - neighbors mean: {neighbors_mean}")
+
+                if current_value / neighbors_mean > 2:
+                    data[y][x] = neighbors_mean
+                    hot_pixels_count += 1
+
+        _LOGGER.info(f"HPR removed {hot_pixels_count} hot pixel(s)")
+
+        return image
+
+
 # pylint: disable=R0903
 class Debayer(ImageProcessor):
     """
