@@ -17,7 +17,8 @@ from generated.prefs_ui import Ui_PrefsDialog
 from generated.save_wait_ui import Ui_SaveWaitDialog
 
 _LOGGER = logging.getLogger(__name__)
-
+_WARNING_STYLE_SHEET = "border: 1px solid orange"
+_NORMAL_STYLE_SHEET = "border: 1px"
 
 class PreferencesDialog(QDialog):
     """
@@ -57,21 +58,20 @@ class PreferencesDialog(QDialog):
         """
         Draw a red border around text fields containing a path to a missing folder
         """
-        warning_style = "border: 1px solid orange"
-        normal_style = "border: 1px"
 
         for ui_field in [self._ui.ln_work_folder_path, self._ui.ln_scan_folder_path]:
 
             if not Path(ui_field.text()).is_dir():
-                ui_field.setStyleSheet(warning_style)
+                ui_field.setStyleSheet(_WARNING_STYLE_SHEET)
             else:
-                ui_field.setStyleSheet(normal_style)
+                ui_field.setStyleSheet(_NORMAL_STYLE_SHEET)
 
         if self._ui.chk_use_dark.isChecked():
-            if Path(self._ui.ln_master_dark_path.text()).is_file():
-                self._ui.ln_master_dark_path.setStyleSheet(normal_style)
-            else:
-                self._ui.ln_master_dark_path.setStyleSheet(warning_style)
+            if not Path(self._ui.ln_master_dark_path.text()).is_file():
+                self._ui.ln_master_dark_path.setStyleSheet(_WARNING_STYLE_SHEET)
+        else:
+            if (not Path(self._ui.ln_master_dark_path.text()).is_file()) and (self._ui.ln_master_dark_path.text() != ""):
+                self._ui.ln_master_dark_path.setStyleSheet(_WARNING_STYLE_SHEET)
 
     @log
     @pyqtSlot()
