@@ -337,8 +337,8 @@ class Stacker(QueueConsumer):
 
                 if matches_count < minimum_matches_for_valid_transform:
                     _LOGGER.warning(f"Found transformation but matches count is too low : "
-                                  f"{matches_count} < {minimum_matches_for_valid_transform}. "
-                                  "Discarding transformation")
+                                    f"{matches_count} < {minimum_matches_for_valid_transform}. "
+                                    "Discarding transformation")
                     raise StackingError("Too few matches")
 
                 return transformation
