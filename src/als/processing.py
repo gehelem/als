@@ -369,9 +369,15 @@ class HotPixelRemover(ImageProcessor):
         # the idea is to check every pixel value against its 8 neighbors
         # if its value is more than _HOT_RATIO times the mean of its neighbors' values
         # me replace its value with that mean
-        _HOT_RATIO = 2  # TODO : should maybe user definable
-        means = HotPixelRemover._neighbors_average(image.data)
-        image.data = np.where(image.data / means > _HOT_RATIO, means, image.data)
+
+        # this can only work on B&W or non-debayered color images
+
+        if not image.is_color():
+            _HOT_RATIO = 2  # TODO : should maybe user definable
+            means = HotPixelRemover._neighbors_average(image.data)
+            image.data = np.where(image.data / means > _HOT_RATIO, means, image.data)
+        else:
+            _LOGGER.warning("Hot Pixel Remover cannot work on debayered color images.")
 
         return image
 
