@@ -66,12 +66,10 @@ class PreferencesDialog(QDialog):
             else:
                 ui_field.setStyleSheet(_NORMAL_STYLE_SHEET)
 
-        if self._ui.chk_use_dark.isChecked():
-            if not Path(self._ui.ln_master_dark_path.text()).is_file():
-                self._ui.ln_master_dark_path.setStyleSheet(_WARNING_STYLE_SHEET)
+        if Path(self._ui.ln_master_dark_path.text()).is_file() or (not self._ui.chk_use_dark.isChecked() and self._ui.ln_master_dark_path.text() == ""):
+            self._ui.ln_master_dark_path.setStyleSheet(_NORMAL_STYLE_SHEET)
         else:
-            if (not Path(self._ui.ln_master_dark_path.text()).is_file()) and (self._ui.ln_master_dark_path.text() != ""):
-                self._ui.ln_master_dark_path.setStyleSheet(_WARNING_STYLE_SHEET)
+            self._ui.ln_master_dark_path.setStyleSheet(_WARNING_STYLE_SHEET)
 
     @log
     @pyqtSlot()
