@@ -21,6 +21,7 @@ from als import config
 _LOGGER = logging.getLogger(__name__)
 
 _16_BITS_MAX_VALUE = 2**16 - 1
+_HOT_PIXEL_RATIO = 2
 
 
 class ProcessingError(Exception):
@@ -373,9 +374,8 @@ class HotPixelRemover(ImageProcessor):
         # this can only work on B&W or non-debayered color images
 
         if not image.is_color():
-            _HOT_RATIO = 2  # should maybe be user definable
             means = HotPixelRemover._neighbors_average(image.data)
-            image.data = np.where(image.data / means > _HOT_RATIO, means, image.data)
+            image.data = np.where(image.data / means > _HOT_PIXEL_RATIO, means, image.data)
         else:
             _LOGGER.warning("Hot Pixel Remover cannot work on debayered color images.")
 
