@@ -392,16 +392,13 @@ class RemoveDark(ImageProcessor):
             if masterdark is not None:
                 if image.is_same_shape_as(masterdark) and (image.data.dtype.name == masterdark.data.dtype.name):
                     image.data = np.where(image.data > masterdark.data, image.data - masterdark.data, 0)
-                    _LOGGER.info(
-                        f"Success: Dark removed.")
                 else:
                     _LOGGER.warning(
-                        f"Error: Data structure divergeance between {image} and {masterdark}. "
-                        f"Dark removal will be ignored")
+                        f"Data structure inconsistency between {image.origin} and {masterdark.origin}. "
+                        "Dark subtraction is SKIPPED")
             else:
                 _LOGGER.warning(
-                    f"Error reading {config.get_master_dark_file_path()} : "
-                    f"Dark removal will be ignored")
+                    f"Could not read dark file {config.get_master_dark_file_path()}. Dark subtraction is SKIPPED")
 
         return image
 
