@@ -20,6 +20,7 @@ _LOGGER = logging.getLogger(__name__)
 _WARNING_STYLE_SHEET = "border: 1px solid orange"
 _NORMAL_STYLE_SHEET = "border: 1px"
 
+
 class PreferencesDialog(QDialog):
     """
     Our main preferences dialog box
@@ -36,9 +37,7 @@ class PreferencesDialog(QDialog):
         self._ui.ln_web_server_port.setText(str(config.get_www_server_port_number()))
         self._ui.spn_webpage_refresh_period.setValue(config.get_www_server_refresh_period())
         self._ui.chk_debug_logs.setChecked(config.is_debug_log_on())
-        #Get minimum_match_count
         self._ui.spn_minimum_match_count.setValue(config.get_minimum_match_count())
-        #Get darks values
         self._ui.chk_use_dark.setChecked(config.get_use_master_dark())
         self._ui.ln_master_dark_path.setText(config.get_master_dark_file_path())
 
@@ -51,10 +50,10 @@ class PreferencesDialog(QDialog):
 
         config_to_image_save_type_mapping[config.get_image_save_format()].setChecked(True)
 
-        self._validate_all_pathes()
+        self._validate_all_paths()
 
     @log
-    def _validate_all_pathes(self):
+    def _validate_all_paths(self):
         """
         Draw a red border around text fields containing a path to a missing folder
         """
@@ -66,19 +65,21 @@ class PreferencesDialog(QDialog):
             else:
                 ui_field.setStyleSheet(_NORMAL_STYLE_SHEET)
 
-        if (Path(self._ui.ln_master_dark_path.text()).is_file() or
-                (not self._ui.chk_use_dark.isChecked() and self._ui.ln_master_dark_path.text() == "")):
+        master_dark_path = self._ui.ln_master_dark_path.text()
+        if (Path(master_dark_path).is_file() or
+                (not master_dark_path and not self._ui.chk_use_dark.isChecked())):
             self._ui.ln_master_dark_path.setStyleSheet(_NORMAL_STYLE_SHEET)
         else:
             self._ui.ln_master_dark_path.setStyleSheet(_WARNING_STYLE_SHEET)
 
     @log
-    def on_chk_use_dark_toggled(self, checked: bool):
+    def on_chk_use_dark_toggled(self, _):
         """
-        Validate path if chk_use_dark is toggled
+        Triggers config values validation when chk_use_dark is toggled
+
+        :param _: well, you know, we really don't care. This the method we call that will check this
         """
-        _LOGGER.debug(f'Preferences "Use master dark" checked = {checked}')
-        self._validate_all_pathes()
+        self._validate_all_paths()
 
     @log
     @pyqtSlot()
@@ -86,11 +87,8 @@ class PreferencesDialog(QDialog):
         """checks and stores user settings"""
         config.set_scan_folder_path(self._ui.ln_scan_folder_path.text())
         config.set_work_folder_path(self._ui.ln_work_folder_path.text())
-
         web_server_port_number_str = self._ui.ln_web_server_port.text()
-
         config.set_minimum_match_count(self._ui.spn_minimum_match_count.value())
-
         config.set_use_master_dark(self._ui.chk_use_dark.isChecked())
         config.set_master_dark_file_path(self._ui.ln_master_dark_path.text())
 
@@ -134,7 +132,7 @@ class PreferencesDialog(QDialog):
         if scan_folder_path:
             self._ui.ln_scan_folder_path.setText(scan_folder_path)
 
-        self._validate_all_pathes()
+        self._validate_all_paths()
 
     @pyqtSlot(name="on_btn_browse_work_clicked")
     @log
@@ -146,7 +144,7 @@ class PreferencesDialog(QDialog):
         if work_folder_path:
             self._ui.ln_work_folder_path.setText(work_folder_path)
 
-        self._validate_all_pathes()
+        self._validate_all_paths()
 
     @pyqtSlot(name="on_btn_dark_scan_clicked")
     @log
@@ -158,7 +156,7 @@ class PreferencesDialog(QDialog):
         if dark_file_path[0]:
             self._ui.ln_master_dark_path.setText(dark_file_path[0])
 
-        self._validate_all_pathes()
+        self._validate_all_paths()
 
     @staticmethod
     @log
