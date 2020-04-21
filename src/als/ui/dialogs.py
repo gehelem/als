@@ -83,6 +83,15 @@ class PreferencesDialog(QDialog):
 
     @log
     @pyqtSlot()
+    def on_btn_dark_clear_clicked(self):
+        """
+        Clears dark path input field and validate settings
+        """
+        self._ui.ln_master_dark_path.clear()
+        self._validate_all_paths()
+
+    @log
+    @pyqtSlot()
     def accept(self):
         """checks and stores user settings"""
         config.set_scan_folder_path(self._ui.ln_scan_folder_path.text())
