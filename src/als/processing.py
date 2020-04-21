@@ -394,12 +394,32 @@ class RemoveDark(ImageProcessor):
 
                     if image.data.dtype.name != masterdark.data.dtype.name:
 
+                        # master dark and light data types don't match : converting...
+                        if issubclass(image.data.dtype.type, np.integer):
+                            image_min_allowed = np.iinfo(image.data.dtype).min
+                            image_max_allowed = np.iinfo(image.data.dtype).max
+                        elif issubclass(image.data.dtype.type, np.floating):
+                            image_min_allowed = 0.0
+                            image_max_allowed = 1.0
+                        else:
+                            raise ProcessingError(f"unhandled image data type : {image.data.dtype.type}")
+
+                        if issubclass(masterdark.data.dtype.type, np.integer):
+                            masterdark_min_allowed = np.iinfo(masterdark.data.dtype).min
+                            masterdark_max_allowed = np.iinfo(masterdark.data.dtype).max
+                        elif issubclass(masterdark.data.dtype.type, np.floating):
+                            masterdark_min_allowed = 0.0
+                            masterdark_max_allowed = 1.0
+                        else:
+                            raise ProcessingError(f"unhandled masterdark data type : {masterdark.data.dtype.type}")
+
                         masterdark.data = np.interp(
                             masterdark.data,
-                            (np.iinfo(masterdark.data.dtype).min, np.iinfo(masterdark.data.dtype).max),
-                            (np.iinfo(image.data.dtype).min, np.iinfo(image.data.dtype).max)).astype(image.data.dtype)
+                            (masterdark_min_allowed, masterdark_max_allowed),
+                            (image_min_allowed, image_max_allowed)).astype(image.data.dtype)
 
                     image.data = np.where(image.data > masterdark.data, image.data - masterdark.data, 0)
+
                 else:
                     _LOGGER.warning(
                         f"Data structure inconsistency between {image.origin} and {masterdark.origin}. "
