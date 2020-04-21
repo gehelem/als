@@ -5,9 +5,14 @@ Changelog
 Version 0.7 (work in progress)
 ==============================
 
+- New features
+
+  - dark frame subtraction
+
 - Improvements
 
   - Log to file
+  - Minimum matches for alignment is user-definable
 
 Version 0.6.1 (2019-11-18)
 ==========================
