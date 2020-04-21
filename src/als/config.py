@@ -60,16 +60,16 @@ _LOG_LEVELS = {
 
 # application default values
 _DEFAULTS = {
-    _SCAN_FOLDER_PATH:    os.path.expanduser("~/als/scan"),
-    _WORK_FOLDER_PATH:    os.path.expanduser("~/als/work"),
-    _LOG_LEVEL:           _LOG_LEVEL_INFO,
-    _WWW_SERVER_PORT:     "8000",
-    _WINDOW_GEOMETRY:     "50,100,1024,800",
-    _IMAGE_SAVE_FORMAT:   IMAGE_SAVE_TYPE_JPEG,
-    _FULL_SCREEN:         0,
-    _WWW_REFRESH_PERIOD: "5",
-    _MINIMUM_MATCH_COUNT: "25",
-    _USE_MASTER_DARK: "0",
+    _SCAN_FOLDER_PATH:      os.path.expanduser("~/als/scan"),
+    _WORK_FOLDER_PATH:      os.path.expanduser("~/als/work"),
+    _LOG_LEVEL:             _LOG_LEVEL_INFO,
+    _WWW_SERVER_PORT:       "8000",
+    _WINDOW_GEOMETRY:       "50,100,1024,800",
+    _IMAGE_SAVE_FORMAT:     IMAGE_SAVE_TYPE_JPEG,
+    _FULL_SCREEN:           0,
+    _WWW_REFRESH_PERIOD:    5,
+    _MINIMUM_MATCH_COUNT:   25,
+    _USE_MASTER_DARK:       0,
     _MASTER_DARK_FILE_PATH: "",
 }
 _MAIN_SECTION_NAME = "main"
@@ -191,6 +191,7 @@ def get_www_server_refresh_period():
 
     :return: The web server page refresh period, or its default value if config entry
              is not parsable as an int.
+    :rtype: int
     """
     try:
         return int(_get(_WWW_REFRESH_PERIOD))
@@ -255,22 +256,25 @@ def get_minimum_match_count():
     :return: the minimum stars number for alignment
     :rtype: int
     """
-    return int(_get(_MINIMUM_MATCH_COUNT))
+    try:
+        return int(_get(_MINIMUM_MATCH_COUNT))
+    except ValueError:
+        return _DEFAULTS[_MINIMUM_MATCH_COUNT]
 
 
-def set_minimum_match_count(star_number):
+def set_minimum_match_count(minimum_match_count):
     """
     Sets the alignment minimum stars value.
 
-    :param star_number: the minimum stars number for alignment
-    :type star_number: int
+    :param minimum_match_count: the minimum stars number for alignment
+    :type minimum_match_count: int
     """
-    _set(_MINIMUM_MATCH_COUNT, str(star_number))
+    _set(_MINIMUM_MATCH_COUNT, str(minimum_match_count))
 
 
 def set_use_master_dark(use_dark: bool):
     """
-    Set use dark indicator
+    Set use dark flag
 
     :param use_dark: Remove master dark from images ?
     :type use_dark: bool
@@ -281,7 +285,7 @@ def set_use_master_dark(use_dark: bool):
 
 def get_use_master_dark():
     """
-    Get use dark indicator
+    Get use dark flag
 
     :return: True if dark should be used, False otherwise
     :rtype: bool
