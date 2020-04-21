@@ -28,10 +28,9 @@ from als.code_utilities import log, Timer
 from als.model.base import Image
 from als.model.data import STACKING_MODE_SUM, STACKING_MODE_MEAN
 from als.processing import QueueConsumer
-
+from als import config
 _LOGGER = logging.getLogger(__name__)
 
-_MINIMUM_MATCHES_FOR_VALID_TRANSFORM = 25
 
 
 class StackingError(Exception):
@@ -309,6 +308,7 @@ class Stacker(QueueConsumer):
         :return: the found transformation
         :raises: StackingError when no transformation is found using the whole image
         """
+        minimum_matches_for_valid_transform = config.get_minimum_match_count()
 
         for ratio in [.1, .33, 1.]:
 
@@ -335,9 +335,9 @@ class Stacker(QueueConsumer):
                 matches_count = len(matches[0])
                 _LOGGER.debug(f"image matched features count : {matches_count}")
 
-                if matches_count < _MINIMUM_MATCHES_FOR_VALID_TRANSFORM:
+                if matches_count < minimum_matches_for_valid_transform:
                     _LOGGER.warning(f"Found transformation but matches count is too low : "
-                                    f"{matches_count} < {_MINIMUM_MATCHES_FOR_VALID_TRANSFORM}. "
+                                    f"{matches_count} < {minimum_matches_for_valid_transform}. "
                                     "Discarding transformation")
                     raise StackingError("Too few matches")
 

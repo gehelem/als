@@ -38,6 +38,9 @@ _WINDOW_GEOMETRY = "window_geometry"
 _IMAGE_SAVE_FORMAT = "image_save_format"
 _FULL_SCREEN = "full_screen"
 _WWW_REFRESH_PERIOD = "web_refresh_period"
+_MINIMUM_MATCH_COUNT = "alignment_minimum_match_count"
+_USE_MASTER_DARK = "use_master_dark"
+_MASTER_DARK_FILE_PATH = "master_dark_file_path"
 
 # keys used to describe logging level
 _LOG_LEVEL_DEBUG = "DEBUG"
@@ -65,6 +68,9 @@ _DEFAULTS = {
     _IMAGE_SAVE_FORMAT:   IMAGE_SAVE_TYPE_JPEG,
     _FULL_SCREEN:         0,
     _WWW_REFRESH_PERIOD: "5",
+    _MINIMUM_MATCH_COUNT: "25",
+    _USE_MASTER_DARK: "0",
+    _MASTER_DARK_FILE_PATH: "",
 }
 _MAIN_SECTION_NAME = "main"
 
@@ -240,6 +246,71 @@ def set_scan_folder_path(path):
     :type path: str
     """
     _set(_SCAN_FOLDER_PATH, path)
+
+
+def get_minimum_match_count():
+    """
+    Retrieves alignment minimum stars value.
+
+    :return: the minimum stars number for alignment
+    :rtype: int
+    """
+    return int(_get(_MINIMUM_MATCH_COUNT))
+
+
+def set_minimum_match_count(star_number):
+    """
+    Sets the alignment minimum stars value.
+
+    :param star_number: the minimum stars number for alignment
+    :type star_number: int
+    """
+    _set(_MINIMUM_MATCH_COUNT, str(star_number))
+
+
+def set_use_master_dark(use_dark: bool):
+    """
+    Set use dark indicator
+
+    :param use_dark: Remove master dark from images ?
+    :type use_dark: bool
+    """
+
+    _set(_USE_MASTER_DARK, "1" if use_dark else "0")
+
+
+def get_use_master_dark():
+    """
+    Get use dark indicator
+
+    :return: True if dark should be used, False otherwise
+    :rtype: bool
+    """
+
+    try:
+        return _get(_USE_MASTER_DARK) == "1"
+    except ValueError:
+        return _DEFAULTS[_USE_MASTER_DARK]
+
+
+def get_master_dark_file_path():
+    """
+    Retrieves the master dark file path.
+
+    :return: the master dark file path
+    :rtype: str
+    """
+    return _get(_MASTER_DARK_FILE_PATH)
+
+
+def set_master_dark_file_path(path):
+    """
+    Sets the master dark file path.
+
+    :param path: the master dark file path
+    :type path: str
+    """
+    _set(_MASTER_DARK_FILE_PATH, path)
 
 
 def get_window_geometry():
