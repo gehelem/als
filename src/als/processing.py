@@ -390,7 +390,15 @@ class RemoveDark(ImageProcessor):
         if config.get_use_master_dark():
             masterdark = als_input.read_disk_image(Path(config.get_master_dark_file_path()))
             if masterdark is not None:
-                if image.is_same_shape_as(masterdark) and (image.data.dtype.name == masterdark.data.dtype.name):
+                if image.is_same_shape_as(masterdark):
+
+                    if image.data.dtype.name != masterdark.data.dtype.name:
+
+                        masterdark.data = np.interp(
+                            masterdark.data,
+                            (np.iinfo(masterdark.data.dtype).min, np.iinfo(masterdark.data.dtype).max),
+                            (np.iinfo(image.data.dtype).min, np.iinfo(image.data.dtype).max)).astype(image.data.dtype)
+
                     image.data = np.where(image.data > masterdark.data, image.data - masterdark.data, 0)
                 else:
                     _LOGGER.warning(
