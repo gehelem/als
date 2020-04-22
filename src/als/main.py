@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import QApplication
 
 from als import config
 from als.logic import Controller
-from als.code_utilities import Timer
+from als.code_utilities import Timer, human_readable_byte_size
 from als.model.data import VERSION
 from als.ui.windows import MainWindow
 
@@ -34,7 +34,7 @@ def log_sys_info():
     _LOGGER.debug(f"CPU count             : {os.cpu_count()}")
     _LOGGER.debug(f"OS name               : {platform.system()}")
     _LOGGER.debug(f"OS release            : {platform.release()}")
-    _LOGGER.debug(f"Available memory      : {psutil.virtual_memory().available}")
+    _LOGGER.debug(f"Available memory      : {human_readable_byte_size(psutil.virtual_memory().available)}")
     _LOGGER.debug(f"Python version        : {sys.version}")
     _LOGGER.debug('System info dump - END')
     _LOGGER.debug("***************************************************************************")

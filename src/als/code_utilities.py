@@ -126,3 +126,11 @@ class SignalingQueue(Queue, QObject):
     def put_nowait(self, item):
         super().put_nowait(item)
         self.size_changed_signal.emit(self.qsize())
+
+
+def human_readable_byte_size(num, suffix='B'):
+    for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
+        if abs(num) < 1024.0:
+            return "%3.3f %s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.3f %s%s" % (num, 'Yi', suffix)
