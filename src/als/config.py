@@ -41,6 +41,7 @@ _WWW_REFRESH_PERIOD = "web_refresh_period"
 _MINIMUM_MATCH_COUNT = "alignment_minimum_match_count"
 _USE_MASTER_DARK = "use_master_dark"
 _MASTER_DARK_FILE_PATH = "master_dark_file_path"
+_USE_HOT_PIXEL_REMOVER = "use_hot_pixel_remover"
 
 # keys used to describe logging level
 _LOG_LEVEL_DEBUG = "DEBUG"
@@ -71,6 +72,7 @@ _DEFAULTS = {
     _MINIMUM_MATCH_COUNT:   25,
     _USE_MASTER_DARK:       0,
     _MASTER_DARK_FILE_PATH: "",
+    _USE_HOT_PIXEL_REMOVER: 0,
 }
 _MAIN_SECTION_NAME = "main"
 
@@ -108,6 +110,31 @@ def get_full_screen_active():
         return int(_get(_FULL_SCREEN)) == 1
     except ValueError:
         return _DEFAULTS[_FULL_SCREEN]
+
+
+def set_hot_pixel_remover(hpr_on: bool):
+    """
+    Set 'use hot pixel remover' flag
+
+    :param hpr_on: should we use hot pixel remover ?
+    :type hpr_on: bool
+    """
+
+    _set(_USE_HOT_PIXEL_REMOVER, "1" if hpr_on else "0")
+
+
+def get_hot_pixel_remover():
+    """
+    Get 'use hot pixel remover' flag
+
+    :return: True if app should use hot pixel remover, False otherwise
+    :rtype: bool
+    """
+
+    try:
+        return int(_get(_USE_HOT_PIXEL_REMOVER)) == 1
+    except ValueError:
+        return int(_DEFAULTS[_USE_HOT_PIXEL_REMOVER]) == 1
 
 
 def get_image_save_format():

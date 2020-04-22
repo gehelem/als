@@ -40,6 +40,7 @@ class PreferencesDialog(QDialog):
         self._ui.spn_minimum_match_count.setValue(config.get_minimum_match_count())
         self._ui.chk_use_dark.setChecked(config.get_use_master_dark())
         self._ui.ln_master_dark_path.setText(config.get_master_dark_file_path())
+        self._ui.chk_use_hpr.setChecked(config.get_hot_pixel_remover())
 
         config_to_image_save_type_mapping = {
 
@@ -100,6 +101,7 @@ class PreferencesDialog(QDialog):
         config.set_minimum_match_count(self._ui.spn_minimum_match_count.value())
         config.set_use_master_dark(self._ui.chk_use_dark.isChecked())
         config.set_master_dark_file_path(self._ui.ln_master_dark_path.text())
+        config.set_hot_pixel_remover(self._ui.chk_use_hpr.isChecked())
 
         if web_server_port_number_str.isdigit() and 1024 <= int(web_server_port_number_str) <= 65535:
             config.set_www_server_port_number(web_server_port_number_str)

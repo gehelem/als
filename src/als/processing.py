@@ -373,11 +373,17 @@ class HotPixelRemover(ImageProcessor):
 
         # this can only work on B&W or non-debayered color images
 
-        if not image.is_color():
-            means = HotPixelRemover._neighbors_average(image.data)
-            image.data = np.where(image.data / means > _HOT_PIXEL_RATIO, means, image.data)
-        else:
-            _LOGGER.warning("Hot Pixel Remover cannot work on debayered color images.")
+        hpr_on = config.get_hot_pixel_remover()
+
+        _LOGGER.debug(f"Hot pixel remover enabled : {hpr_on}")
+
+        if hpr_on:
+
+            if not image.is_color():
+                means = HotPixelRemover._neighbors_average(image.data)
+                image.data = np.where(image.data / means > _HOT_PIXEL_RATIO, means, image.data)
+            else:
+                _LOGGER.warning("Hot Pixel Remover cannot work on debayered color images.")
 
         return image
 
