@@ -128,9 +128,16 @@ class SignalingQueue(Queue, QObject):
         self.size_changed_signal.emit(self.qsize())
 
 
-def human_readable_byte_size(num, suffix='B'):
+def human_readable_byte_size(num):
+    """
+    returns a human readable representation of a raw number of bytes
+
+    :param num: how nay bytes ?
+    :return: a human readable representation of given bytes
+    :rtype: str
+    """
     for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
         if abs(num) < 1024.0:
-            return "%3.3f %s%s" % (num, unit, suffix)
+            return "%3.3f %sB" % (num, unit)
         num /= 1024.0
-    return "%.3f %s%s" % (num, 'Yi', suffix)
+    return "%.3f %sB" % (num, 'Yi')
