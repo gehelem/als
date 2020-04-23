@@ -160,7 +160,9 @@ class FolderScanner(FileSystemEventHandler, InputScanner, QObject):
                     file_is_incomplete = False
                     _LOGGER.debug(f"File {image_path} is ready to be read")
                 last_file_size = size
-                time.sleep(_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC)
+
+                if file_is_incomplete:
+                    time.sleep(_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC)
 
             self.broadcast_image(read_disk_image(Path(image_path)))
 
