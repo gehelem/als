@@ -129,9 +129,10 @@ class ImageSaver(QueueConsumer):
         As we are using cv2.imwrite, we won't get any details on failures. So failure details will always
         be the empty string.
         """
-        # here we are sure that image data type us unsigned 16 bits. We need to downscale to 8 bits
+        # here we are sure that image data type is unsigned 16 bits. We need to downscale to 8 bits
         image.data = (image.data / (((2 ** 16) - 1) / ((2 ** 8) - 1))).astype('uint8')
+        cv2_color_conversion_flag = cv2.COLOR_RGB2BGR if image.is_color() else cv2.COLOR_GRAY2BGR
 
         return cv2.imwrite(target_path,
-                           cv2.cvtColor(image.data, cv2.COLOR_RGB2BGR),
+                           cv2.cvtColor(image.data, cv2_color_conversion_flag),
                            [int(cv2.IMWRITE_JPEG_QUALITY), 90]), ''
