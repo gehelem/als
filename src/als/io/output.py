@@ -83,7 +83,8 @@ class ImageSaver(QueueConsumer):
         As we are using cv2.imwrite, we won't get any details on failures. So failure details will always
         be the empty string.
         """
-        return cv2.imwrite(target_path, cv2.cvtColor(image.data, cv2.COLOR_RGB2BGR)), ""
+        cv2_color_conversion_flag = cv2.COLOR_RGB2BGR if image.is_color() else cv2.COLOR_GRAY2BGR
+        return cv2.imwrite(target_path, cv2.cvtColor(image.data, cv2_color_conversion_flag)), ""
 
     @staticmethod
     @log
@@ -105,8 +106,9 @@ class ImageSaver(QueueConsumer):
         As we are using cv2.imwrite, we won't get any details on failures. So failure details will always
         be the empty string.
         """
+        cv2_color_conversion_flag = cv2.COLOR_RGB2BGR if image.is_color() else cv2.COLOR_GRAY2BGR
         return cv2.imwrite(target_path,
-                           cv2.cvtColor(image.data, cv2.COLOR_RGB2BGR),
+                           cv2.cvtColor(image.data, cv2_color_conversion_flag),
                            [cv2.IMWRITE_PNG_COMPRESSION, 9]), ""
 
     @staticmethod
