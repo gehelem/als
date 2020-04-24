@@ -32,7 +32,6 @@ from als import config
 _LOGGER = logging.getLogger(__name__)
 
 
-
 class StackingError(Exception):
     """
     Base class for stacking errors
@@ -276,8 +275,8 @@ class Stacker(QueueConsumer):
         :param transformation: the transformation to apply
         :type transformation: skimage.transform._geometric.SimilarityTransform
 
-        :param results_dict: the dict into which transformation result is to be stored. dict key is the channel number for a
-               color image, or 0 for a b&w image
+        :param results_dict: the dict into which transformation result is to be stored. dict key is the channel number
+               for a color image, or 0 for a b&w image
         :type results_dict: dict
 
         :param channel: the 0 indexed number of the color channel to process (0=red, 1=green, 2=blue)
@@ -336,10 +335,8 @@ class Stacker(QueueConsumer):
 
                 minimum_matches_for_valid_transform = config.get_minimum_match_count()
                 if matches_count < minimum_matches_for_valid_transform:
-                    _LOGGER.warning(f"Found transformation but matches count is too low : "
-                                    f"{matches_count} < {minimum_matches_for_valid_transform}. "
-                                    "Discarding transformation")
-                    raise StackingError("Too few matches")
+                    raise StackingError(f"Alignment matches count is lower than configured threshold : "
+                                        f"{matches_count} < {minimum_matches_for_valid_transform}.")
 
                 return transformation
 
