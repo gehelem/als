@@ -560,7 +560,7 @@ class Controller:
         """Prepares the work folder."""
 
         work_dir_path = config.get_work_folder_path()
-        resources_dir_path = os.path.dirname(os.path.realpath(__file__)) + "/../resources"
+        resources_dir_path = str(Path(os.path.dirname(os.path.realpath(__file__))).parent/"resources")
 
         with open(resources_dir_path + "/index.html", 'r') as file:
             index_content = file.read()
