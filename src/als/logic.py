@@ -81,6 +81,12 @@ class Controller:
         DYNAMIC_DATA.post_processor_status = WORKER_STATUS_IDLE
         DYNAMIC_DATA.saver_status = WORKER_STATUS_IDLE
 
+        # setup work folder
+        try:
+            Controller._setup_web_content()
+        except OSError as os_error:
+            raise WebServerStartFailure("Work folder could not be prepared", str(os_error))
+
         self._input_scanner: InputScanner = InputScanner.create_scanner()
 
         self._pre_process_queue: SignalingQueue = DYNAMIC_DATA.pre_process_queue
@@ -504,12 +510,6 @@ class Controller:
         ip_address = get_ip()
         port_number = config.get_www_server_port_number()
 
-        # setup work folder
-        try:
-            Controller._setup_web_content()
-        except OSError as os_error:
-            raise WebServerStartFailure("Work folder could not be prepared", str(os_error))
-
         try:
             self._web_server = WebServer(work_folder)
             self._web_server.start()
@@ -589,11 +589,10 @@ class Controller:
                         config.get_work_folder_path(),
                         als.model.data.STACKED_IMAGE_FILE_NAME_BASE)
 
-        if DYNAMIC_DATA.web_server_is_running:
-            self.save_image(image,
-                            als.model.data.IMAGE_SAVE_TYPE_JPEG,
-                            config.get_work_folder_path(),
-                            als.model.data.WEB_SERVED_IMAGE_FILE_NAME_BASE)
+        self.save_image(image,
+                        als.model.data.IMAGE_SAVE_TYPE_JPEG,
+                        config.get_work_folder_path(),
+                        als.model.data.WEB_SERVED_IMAGE_FILE_NAME_BASE)
 
         # if user want to save every image, we save a timestamped version
         if self._save_every_image:

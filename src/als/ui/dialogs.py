@@ -251,8 +251,7 @@ class SaveWaitDialog(QDialog):
         ]:
             remaining_image_save_count += queue_size
 
-        additional_saves_per_image = [
-            self._controller.get_save_every_image(), DYNAMIC_DATA.web_server_is_running].count(True)
+        additional_saves_per_image = 1 if self._controller.get_save_every_image() else 0
 
         remaining_image_save_count *= 1 + additional_saves_per_image
 
