@@ -1,32 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
     <meta http-equiv="refresh" content="##PERIOD##"/>
     <title>ALS</title>
-
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-        }
-
-        .imgbox {
-            display: grid;
+        body, html {
             height: 100%;
+            margin: 0;
         }
 
-        .center-fit {
-            max-width: 100%;
-            max-height: 100vh;
-            margin: auto;
+        .bg {
+            /* The image used */
+            background-image: url("web_image.jpg");
+
+
+            /* Full height */
+            height: 100%;
+
+            /* Center and scale the image nicely */
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            overflow: hidden;
         }
+
+        .container {
+            position: relative;
+            max-width: max;
+            margin: 0 auto;
+        }
+
+        .container .content {
+            position: absolute;
+            bottom: 0;
+            background: rgb(0, 0, 0); /* Fallback color */
+            background: rgba(0, 0, 0, 0.2); /* Black background with 0.2 opacity */
+            color: #f1f1f1;
+            width: 100%;
+            padding: min;
+        }
+
     </style>
 
 </head>
-<body bgcolor="#111111">
-<div id="image" class="imgbox">
-    <img class="center-fit" src="web_image.jpg">
-</div>
+
+<body>
+<div class="bg"></div>
+
+<div class="container">
+    <div class="content">
+        <p>Image from ALS <a href="https://als-app.org/">(https://als-app.org/) </a></p>
+    </div>
+
+
 </body>
 </html>
