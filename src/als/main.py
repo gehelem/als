@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 import psutil
+from PyQt5.QtCore import QFile, QIODevice, QTextStream
 from PyQt5.QtWidgets import QApplication
 
 from als import config
@@ -59,9 +60,9 @@ def main():
             if process.name() == "Stacker" and process.status() != psutil.STATUS_ZOMBIE:
                 process.kill()
 
-        with open(Path(__file__).parent / "main.css", "r") as style_file:
-
-            sheet = style_file.read()
+        fd = QFile(":/main/main.css")
+        if fd.open(QIODevice.ReadOnly | QFile.Text):
+            sheet = QTextStream(fd).readAll()
             app.setStyleSheet(sheet)
 
         _LOGGER.debug("Building and showing main window")

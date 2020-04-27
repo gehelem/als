@@ -4,4 +4,11 @@
     <file>tick.png</file>
     <file>tick-disabled.png</file>
   </qresource>
+  <qresource prefix="web">
+    <file>index.html</file>
+    <file>waiting.jpg</file>
+  </qresource>
+  <qresource prefix="main">
+    <file>main.css</file>
+  </qresource>
 </RCC>

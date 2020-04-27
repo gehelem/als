@@ -21,11 +21,12 @@ Module holding all application logic
 """
 import gettext
 import logging
-import os
-import shutil
+
 from datetime import datetime
 from pathlib import Path
 from typing import List
+
+from PyQt5.QtCore import QFile, QIODevice, QTextStream
 
 import als.model.data
 from als import config
@@ -39,6 +40,10 @@ from als.model.data import STACKING_MODE_MEAN, DYNAMIC_DATA, WORKER_STATUS_BUSY,
 from als.model.params import ProcessingParameter
 from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput, Levels, ColorBalance, AutoStretch, RemoveDark
 from als.stack import Stacker
+
+#### WARNING !!!!! Don't ever remove this USED import !!!!!
+import generated.resource_rc
+#### most IDE's report this as unused. They lie to you. It is used in web content setup
 
 gettext.install('als', 'locale')
 
@@ -560,19 +565,19 @@ class Controller:
         """Prepares the work folder."""
 
         work_dir_path = config.get_work_folder_path()
-        resources_dir_path = str(Path(os.path.dirname(os.path.realpath(__file__))).parent/"resources")
 
-        with open(resources_dir_path + "/index.html", 'r') as file:
-            index_content = file.read()
+        fd = QFile(":/web/index.html")
+        if fd.open(QIODevice.ReadOnly | QFile.Text):
+            index_content = QTextStream(fd).readAll()
+            index_content = index_content.replace('##PERIOD##', str(config.get_www_server_refresh_period()))
 
-        index_content = index_content.replace('##PERIOD##', str(config.get_www_server_refresh_period()))
-
-        with open(work_dir_path + "/index.html", 'w') as file:
-            file.write(index_content)
+            with open(work_dir_path + "/index.html", 'w') as index_file:
+                index_file.write(index_content)
 
         standby_image_path = work_dir_path + "/" + als.model.data.WEB_SERVED_IMAGE_FILE_NAME_BASE
         standby_image_path += '.' + als.model.data.IMAGE_SAVE_TYPE_JPEG
-        shutil.copy(resources_dir_path + "/waiting.jpg", standby_image_path)
+        standby_file = QFile(":/web/waiting.jpg")
+        standby_file.copy(standby_image_path)
 
     @log
     def save_post_process_result(self):
