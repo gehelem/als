@@ -20,11 +20,7 @@ python setup.py develop
 
 VERSION=$(git describe --tags)
 
-pyinstaller -n als-${VERSION} \
---add-data src/resources/index.html:resources \
---add-data src/resources/waiting.jpg:resources  \
---add-data src/als/main.css:. \
-src/als/main.py
+pyinstaller -F -n als-${VERSION} src/als/main.py
 
 cd dist
 
