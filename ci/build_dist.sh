@@ -18,10 +18,7 @@ pip install pyinstaller
 
 python setup.py develop
 
-VERSION=$(git describe --tags)
+VERSION=$(git describe)
 
-pyinstaller -F -n als-${VERSION} src/als/main.py
+pyinstaller -F -n als-${VERSION} --windowed src/als/main.py
 
-cd dist
-
-tar zcvf als-${VERSION}.tgz als-${VERSION}
