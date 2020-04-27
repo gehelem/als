@@ -18,7 +18,8 @@ pip install pyinstaller
 
 python setup.py develop
 
-VERSION=$(git describe)
+VERSION=$(grep __version__ src/als/__init__.py | tail -n1 | cut -d'"' -f2)
+COMMIT=$(git rev-parse --short HEAD)
 
-pyinstaller -F -n als-${VERSION} --windowed src/als/main.py
+pyinstaller -F -n als-${VERSION}-${COMMIT} --windowed src/als/main.py
 
