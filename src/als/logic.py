@@ -572,6 +572,7 @@ class Controller:
         standby_image_path += '.' + als.model.data.IMAGE_SAVE_TYPE_JPEG
         standby_file = QFile(":/web/waiting.jpg")
         standby_file.copy(standby_image_path)
+        Path(standby_image_path).chmod(0o644)
 
     @log
     def save_post_process_result(self):
