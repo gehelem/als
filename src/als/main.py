@@ -6,15 +6,12 @@ import os
 import platform
 import sys
 
-from pathlib import Path
-
 import psutil
-from PyQt5.QtCore import QFile, QIODevice, QTextStream
 from PyQt5.QtWidgets import QApplication
 
 from als import config
 from als.logic import Controller
-from als.code_utilities import Timer, human_readable_byte_size
+from als.code_utilities import Timer, human_readable_byte_size, get_text_content_of_resource
 from als.model.data import VERSION
 from als.ui.windows import MainWindow
 
@@ -60,10 +57,7 @@ def main():
             if process.name() == "Stacker" and process.status() != psutil.STATUS_ZOMBIE:
                 process.kill()
 
-        fd = QFile(":/main/main.css")
-        if fd.open(QIODevice.ReadOnly | QFile.Text):
-            sheet = QTextStream(fd).readAll()
-            app.setStyleSheet(sheet)
+        app.setStyleSheet(get_text_content_of_resource(":/main/main.css"))
 
         _LOGGER.debug("Building and showing main window")
         controller = Controller()

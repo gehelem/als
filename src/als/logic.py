@@ -26,11 +26,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
-from PyQt5.QtCore import QFile, QIODevice, QTextStream
+from PyQt5.QtCore import QFile
 
 import als.model.data
 from als import config
-from als.code_utilities import log, AlsException, SignalingQueue
+from als.code_utilities import log, AlsException, SignalingQueue, get_text_content_of_resource
 from als.crunching import compute_histograms_for_display
 from als.io.input import InputScanner, ScannerStartError
 from als.io.network import get_ip, WebServer
@@ -40,10 +40,6 @@ from als.model.data import STACKING_MODE_MEAN, DYNAMIC_DATA, WORKER_STATUS_BUSY,
 from als.model.params import ProcessingParameter
 from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput, Levels, ColorBalance, AutoStretch, RemoveDark
 from als.stack import Stacker
-
-#### WARNING !!!!! Don't ever remove this USED import !!!!!
-import generated.resource_rc
-#### most IDE's report this as unused. They lie to you. It is used in web content setup
 
 gettext.install('als', 'locale')
 
@@ -566,13 +562,11 @@ class Controller:
 
         work_dir_path = config.get_work_folder_path()
 
-        fd = QFile(":/web/index.html")
-        if fd.open(QIODevice.ReadOnly | QFile.Text):
-            index_content = QTextStream(fd).readAll()
-            index_content = index_content.replace('##PERIOD##', str(config.get_www_server_refresh_period()))
+        index_content = get_text_content_of_resource(":/web/index.html")
+        index_content = index_content.replace('##PERIOD##', str(config.get_www_server_refresh_period()))
 
-            with open(work_dir_path + "/index.html", 'w') as index_file:
-                index_file.write(index_content)
+        with open(work_dir_path + "/index.html", 'w') as index_file:
+            index_file.write(index_content)
 
         standby_image_path = work_dir_path + "/" + als.model.data.WEB_SERVED_IMAGE_FILE_NAME_BASE
         standby_image_path += '.' + als.model.data.IMAGE_SAVE_TYPE_JPEG

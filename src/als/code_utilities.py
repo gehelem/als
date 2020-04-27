@@ -6,7 +6,12 @@ from functools import wraps
 from queue import Queue
 from time import time
 
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal, QFile, QIODevice, QTextStream
+
+# WARNING !!!!! Don't ever remove this USED import !!!!!
+# most IDEs report this as unused. They lie to you. We use it in get_text_content_of_resource()
+# pylint:disable=unused-import
+import generated.resource_rc
 
 
 def log(func):
@@ -141,3 +146,21 @@ def human_readable_byte_size(num):
             return "%3.3f %sB" % (num, unit)
         num /= 1024.0
     return "%.3f %sB" % (num, 'Yi')
+
+
+def get_text_content_of_resource(resource_uri: str):
+    """
+    Get text content of a file stored inside Qt resources
+
+    :param resource_uri: URI if said resource
+    :type resource_uri: str
+
+    :return: textual content or empty-string if an OS error occurred
+    ;:rtype: str
+    """
+    try:
+        fake_file = QFile(resource_uri)
+        fake_file.open(QIODevice.ReadOnly | QFile.Text)
+        return QTextStream(fake_file).readAll()
+    except OSError:
+        return ""
