@@ -6,6 +6,6 @@ try:
     DIST_NAME = __name__
     __version__ = get_distribution(DIST_NAME).version
 except DistributionNotFound:
-    __version__ = 'unknown'
+    __version__ = "0.7-dev"
 finally:
     del get_distribution, DistributionNotFound
