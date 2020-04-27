@@ -34,6 +34,7 @@ class PreferencesDialog(QDialog):
 
         self._ui.ln_scan_folder_path.setText(config.get_scan_folder_path())
         self._ui.ln_work_folder_path.setText(config.get_work_folder_path())
+        self._ui.ln_web_folder_path.setText(config.get_web_folder_path())
         self._ui.ln_web_server_port.setText(str(config.get_www_server_port_number()))
         self._ui.spn_webpage_refresh_period.setValue(config.get_www_server_refresh_period())
         self._ui.chk_debug_logs.setChecked(config.is_debug_log_on())
@@ -59,12 +60,12 @@ class PreferencesDialog(QDialog):
         Draw a red border around text fields containing a path to a missing folder
         """
 
-        for ui_field in [self._ui.ln_work_folder_path, self._ui.ln_scan_folder_path]:
+        for folder_path in [self._ui.ln_work_folder_path, self._ui.ln_scan_folder_path, self._ui.ln_web_folder_path]:
 
-            if not Path(ui_field.text()).is_dir():
-                ui_field.setStyleSheet(_WARNING_STYLE_SHEET)
+            if not Path(folder_path.text()).is_dir():
+                folder_path.setStyleSheet(_WARNING_STYLE_SHEET)
             else:
-                ui_field.setStyleSheet(_NORMAL_STYLE_SHEET)
+                folder_path.setStyleSheet(_NORMAL_STYLE_SHEET)
 
         master_dark_path = self._ui.ln_master_dark_path.text()
         if (Path(master_dark_path).is_file() or
@@ -97,6 +98,7 @@ class PreferencesDialog(QDialog):
         """checks and stores user settings"""
         config.set_scan_folder_path(self._ui.ln_scan_folder_path.text())
         config.set_work_folder_path(self._ui.ln_work_folder_path.text())
+        config.set_web_folder_path(self._ui.ln_web_folder_path.text())
         web_server_port_number_str = self._ui.ln_web_server_port.text()
         config.set_minimum_match_count(self._ui.spn_minimum_match_count.value())
         config.set_use_master_dark(self._ui.chk_use_dark.isChecked())
@@ -154,6 +156,18 @@ class PreferencesDialog(QDialog):
                                                             self._ui.ln_work_folder_path.text())
         if work_folder_path:
             self._ui.ln_work_folder_path.setText(work_folder_path)
+
+        self._validate_all_paths()
+
+    @pyqtSlot(name="on_btn_browse_web_clicked")
+    @log
+    def browse_web(self):
+        """Opens a folder dialog to choose web folder"""
+        web_folder_path = QFileDialog.getExistingDirectory(self,
+                                                           _("Select web folder"),
+                                                           self._ui.ln_web_folder_path.text())
+        if web_folder_path:
+            self._ui.ln_web_folder_path.setText(web_folder_path)
 
         self._validate_all_paths()
 

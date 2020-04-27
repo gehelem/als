@@ -81,12 +81,6 @@ class Controller:
         DYNAMIC_DATA.post_processor_status = WORKER_STATUS_IDLE
         DYNAMIC_DATA.saver_status = WORKER_STATUS_IDLE
 
-        # setup work folder
-        try:
-            Controller._setup_web_content()
-        except OSError as os_error:
-            raise WebServerStartFailure("Work folder could not be prepared", str(os_error))
-
         self._input_scanner: InputScanner = InputScanner.create_scanner()
 
         self._pre_process_queue: SignalingQueue = DYNAMIC_DATA.pre_process_queue
@@ -449,7 +443,8 @@ class Controller:
 
                 folders_dict = {
                     "scan": config.get_scan_folder_path(),
-                    "work": config.get_work_folder_path()
+                    "work": config.get_work_folder_path(),
+                    "web":  config.get_web_folder_path(),
                 }
 
                 # checking presence of both scan & work folders
@@ -462,6 +457,12 @@ class Controller:
             else:
                 # session was paused when this start was ordered. No need for checks & setup
                 _LOGGER.info("Restarting input scanner ...")
+
+            # setup web content
+            try:
+                Controller._setup_web_content()
+            except OSError as os_error:
+                raise SessionError("Web folder could not be prepared", str(os_error))
 
             # start input scanner
             try:
@@ -506,12 +507,12 @@ class Controller:
     def start_www(self):
         """Starts web server"""
 
-        work_folder = config.get_work_folder_path()
+        web_folder_path = config.get_web_folder_path()
         ip_address = get_ip()
         port_number = config.get_www_server_port_number()
 
         try:
-            self._web_server = WebServer(work_folder)
+            self._web_server = WebServer(web_folder_path)
             self._web_server.start()
 
             if ip_address == "127.0.0.1":
@@ -561,15 +562,15 @@ class Controller:
     def _setup_web_content():
         """Prepares the work folder."""
 
-        work_dir_path = config.get_work_folder_path()
+        web_folder_path = config.get_web_folder_path()
 
         index_content = get_text_content_of_resource(":/web/index.html")
         index_content = index_content.replace('##PERIOD##', str(config.get_www_server_refresh_period()))
 
-        with open(work_dir_path + "/index.html", 'w') as index_file:
+        with open(web_folder_path + "/index.html", 'w') as index_file:
             index_file.write(index_content)
 
-        standby_image_path = work_dir_path + "/" + als.model.data.WEB_SERVED_IMAGE_FILE_NAME_BASE
+        standby_image_path = web_folder_path + "/" + als.model.data.WEB_SERVED_IMAGE_FILE_NAME_BASE
         standby_image_path += '.' + als.model.data.IMAGE_SAVE_TYPE_JPEG
         standby_file = QFile(":/web/waiting.jpg")
         standby_file.copy(standby_image_path)
@@ -591,7 +592,7 @@ class Controller:
 
         self.save_image(image,
                         als.model.data.IMAGE_SAVE_TYPE_JPEG,
-                        config.get_work_folder_path(),
+                        config.get_web_folder_path(),
                         als.model.data.WEB_SERVED_IMAGE_FILE_NAME_BASE)
 
         # if user want to save every image, we save a timestamped version

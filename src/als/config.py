@@ -32,6 +32,7 @@ _CONFIG_FILE_PATH = os.path.expanduser("~/.als.cfg")
 # keys used to retrieve config values
 _SCAN_FOLDER_PATH = "scan_folder_path"
 _WORK_FOLDER_PATH = "work_folder_path"
+_WWW_FOLDER_PATH = "web_folder_path"
 _LOG_LEVEL = "log_level"
 _WWW_SERVER_PORT = "www_server_port"
 _WINDOW_GEOMETRY = "window_geometry"
@@ -63,6 +64,7 @@ _LOG_LEVELS = {
 _DEFAULTS = {
     _SCAN_FOLDER_PATH:      os.path.expanduser("~/als/scan"),
     _WORK_FOLDER_PATH:      os.path.expanduser("~/als/work"),
+    _WWW_FOLDER_PATH:       os.path.expanduser("~/als/work"),
     _LOG_LEVEL:             _LOG_LEVEL_INFO,
     _WWW_SERVER_PORT:       "8000",
     _WINDOW_GEOMETRY:       "50,100,1024,800",
@@ -254,6 +256,26 @@ def set_work_folder_path(path):
     :type path: str
     """
     _set(_WORK_FOLDER_PATH, path)
+
+
+def get_web_folder_path():
+    """
+    Retrieves web folder path.
+
+    :return: the web folder path
+    :rtype: str
+    """
+    return _get(_WWW_FOLDER_PATH)
+
+
+def set_web_folder_path(path):
+    """
+    Sets the web folder path.
+
+    :param path: the web folder path
+    :type path: str
+    """
+    _set(_WWW_FOLDER_PATH, path)
 
 
 def get_scan_folder_path():
