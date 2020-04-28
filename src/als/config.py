@@ -481,7 +481,7 @@ def _setup_logging():
 
     logging.basicConfig(level=log_level,
                         format=global_log_format_string,
-                        filename=Path(__file__).parent.parent.parent / "als.log",
+                        filename=str(Path.home() / "als.log"),
                         filemode='w')
 
     # setup console log handler
