@@ -8,10 +8,11 @@ Version 0.7 (work in progress)
 - New features
 
   - dark frame subtraction
+  - hot pixel removal
 
 - Improvements
 
-  - Log to file
+  - Log to file in user home folder
   - Minimum matches for alignment is user-definable
 
 Version 0.6.1 (2019-11-18)
