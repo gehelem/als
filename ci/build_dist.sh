@@ -20,7 +20,7 @@ python setup.py develop
 
 VERSION=$(grep __version__ src/als/__init__.py | tail -n1 | cut -d'"' -f2)
 
-if [[ ${VERSION} == *"dev"* ]]; then
+if [ -z "${VERSION##*"dev"*}" ] ;then
   VERSION=${VERSION}-$(git rev-parse --short HEAD)
 fi
 
