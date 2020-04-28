@@ -447,7 +447,6 @@ class RemoveDark(ImageProcessor):
 
                     if image.data.dtype.name != masterdark.data.dtype.name:
 
-                        _LOGGER.debug("Dark frame and light frame data type mismatch. Conforming dark frame...")
                         _LOGGER.warning(f"Dark & Light data types mismatch. Light: {image.data.dtype.name} vs "
                                         f"Dark: {masterdark.data.dtype.name}. Dark needs to be conformed.")
 
