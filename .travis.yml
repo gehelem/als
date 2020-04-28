@@ -5,7 +5,7 @@ jobs:
   include:
     - stage: "Checks"
       name: "PyLint"
-      script: python setup.py develop && ./ci/pylint.sh
+      script: python setup.py develop && pip install --upgrade astroid==2.2.0 && ./ci/pylint.sh
     - # Same stage
       name: "Tests"
       script: python setup.py develop test
