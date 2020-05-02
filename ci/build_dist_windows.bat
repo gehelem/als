@@ -3,7 +3,7 @@
 python -m venv venv
 CALL venv\Scripts\activate
 		
-pip install --upgrade pip
+REM pip install --upgrade pip
 pip install --upgrade wheel
 pip install --upgrade setuptools
 pip install numpy==1.16.4
