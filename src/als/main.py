@@ -2,6 +2,7 @@
 Main module, basically in charge of application init / start
 """
 import logging
+import multiprocessing
 import os
 import platform
 import sys
@@ -76,4 +77,5 @@ def main():
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     main()
