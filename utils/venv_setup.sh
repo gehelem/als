@@ -13,7 +13,7 @@
 # The result is a directory that contains a full python3 working environment with all external libraries
 # needed by als.
 #
-# WARNING : the resulting directory is quite heavy : around 700MB
+# WARNING : the resulting directory is quite heavy : around 800MB
 #
 # enjoy :)
 #
@@ -35,7 +35,11 @@ echo "Creating virtual env in : ${VENV} ..."
 python3 -m venv ${VENV}
 source ${VENV}/bin/activate
 pip install --upgrade pip
+pip install wheel
+pip install setuptools
+pip install $(grep numpy ${PRJ}/requirements.txt)
 pip install -r ${PRJ}/requirements.txt
+pip install --upgrade astroid==2.2.0
 
 echo "Virtualenv setup is complete"
 
