@@ -33,7 +33,7 @@ club can see your wonderful images.
 Requirements
 ============
 
-- Python version 3.6 minimum
+Running ALS from sources requires python version 3.6 or 3.7
 
 Download
 ========
