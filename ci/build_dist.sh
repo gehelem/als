@@ -1,4 +1,4 @@
-# this script builds a full dsitribution
+# this script builds a full ALS distribution
 #
 # BEWARE : this is still experimental and has only been
 #          tested on a python3.6 system
@@ -13,10 +13,14 @@ python3 -m venv venv
 
 pip install --upgrade pip
 pip install wheel
+pip install setuptools
+pip install $(grep numpy requirements.txt)
 pip install -r requirements.txt
-pip install pyinstaller
+pip install --upgrade astroid==2.2.0
 
 python setup.py develop
+
+./ci/pylint.sh
 
 VERSION=$(grep __version__ src/als/__init__.py | tail -n1 | cut -d'"' -f2)
 
