@@ -16,15 +16,19 @@ fi
 
 pip install --upgrade pip
 pip install --upgrade wheel
+pip install setuptools
 
 patch < ci/rpi4_requirements.patch
 pip install -I -r requirements.txt
+pip install --upgrade astroid==2.2.0
 
 python setup.py develop
 
+./ci/pylint.sh
+
 VERSION=$(grep __version__ src/als/__init__.py | tail -n1 | cut -d'"' -f2)
 
-if [ -z "${VERSION##*"dev"*}" ] ;then
+if [ -z "${VERSION##*"dev"*}" -a -d .git ] ;then
   VERSION=${VERSION}-$(git rev-parse --short HEAD)
 fi
 
