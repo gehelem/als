@@ -74,6 +74,7 @@ class Session(QObject):
             self.status_changed_signal.emit()
 
 
+# pylint: disable=too-many-instance-attributes
 class Image:
     """
     Represents an image, our basic processing object.
