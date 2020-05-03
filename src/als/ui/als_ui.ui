@@ -228,8 +228,8 @@
             <property name="font">
              <font>
               <pointsize>15</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
+              <weight>50</weight>
+              <bold>false</bold>
               <underline>false</underline>
              </font>
             </property>
