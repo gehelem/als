@@ -58,7 +58,7 @@ def main():
         # Those Stacker processes are leftovers from a previous ALS crash occurring while stacking
         # using multiprocessing
         for process in psutil.process_iter():
-            if process.name() == "Stacker" and process.status() != psutil.STATUS_ZOMBIE:
+            if process.status() != psutil.STATUS_ZOMBIE and process.name() == "Stacker":
                 process.kill()
 
         app.setStyleSheet(get_text_content_of_resource(":/main/main.css"))
