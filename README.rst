@@ -18,10 +18,10 @@ Features
 
 ALS polls a folder on your machine and aligns + stacks any new picture saved into that folder.
 
-ALS is compatible with `.fit` and `.fits` in 8bits and 16bits unsigned (B&W, RGB, and No Debayering)
-and with RAW camera files : https://www.libraw.org/supported-cameras
+ALS is compatible with `.fit` and `.fits` files and RAW camera files : https://www.libraw.org/supported-cameras
 
-As pictures are added to the stack, user can enhance the resulting image with various processes :
+After a pre-processing stage that includes dark subtraction, hot pixel removal and debayering (if needed), pictures
+are aligned and stacked. User can then enhance the resulting image with various processes :
 
 - auto stretch
 - levels
@@ -35,8 +35,13 @@ Requirements
 
 Running ALS from sources requires python version 3.6 or 3.7
 
-Download
-========
+Download and run pre-built binaries
+===================================
+
+Nightly builds are published here : https://als-app.org/nightlies
+
+Download and run from sources
+=============================
 
 **The following download and install procedure has been tested on a freshly installed Ubuntu 18 LTS (a.k.a. Bionic).
 Your mileage may vary.**
@@ -98,7 +103,8 @@ virtual environment and installing ALS's dependencies into it.
 .. note::
 
   All below commands have to be used in your terminal of choice. In all of them, please replace ``ALS_HOME`` with the
-  actual path of the folder in which you extracted the GitHub archive or cloned de ALS repo. See `Download`_ section for
+  actual path of the folder in which you extracted the GitHub archive or cloned de ALS repo. See
+  `Download and run from sources`_ section for
   details
 
 1. **Install a few system packages** :
