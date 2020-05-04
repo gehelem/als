@@ -118,10 +118,11 @@ class MainWindow(QMainWindow):
 
         self.setGeometry(*config.get_window_geometry())
 
-        # manage docks restoration out of 'image only' mode
+        # setup management of 'image only' mode
         self._restore_log_dock = False
         self._restore_session_dock = False
         self._restore_processing_dock = False
+        self._ui.lbl_stack_size_mini.setVisible(self._ui.action_image_only.isChecked())
 
         # setup image display
         self._scene = QGraphicsScene(self)
@@ -410,6 +411,8 @@ class MainWindow(QMainWindow):
         Qt slot executed when 'image only' action is triggered
         """
 
+        self._ui.lbl_stack_size_mini.setVisible(self._ui.action_image_only.isChecked())
+
         actions_restore_mapping = {
 
             self._ui.action_show_processing_panel: self._restore_processing_dock,
@@ -566,7 +569,9 @@ class MainWindow(QMainWindow):
             self._ui.btn_web_stop.setEnabled(web_server_is_running)
 
             # update stack size
-            self._ui.lbl_stack_size.setText(str(DYNAMIC_DATA.stack_size))
+            stack_size_str = str(DYNAMIC_DATA.stack_size)
+            self._ui.lbl_stack_size.setText(stack_size_str)
+            self._ui.lbl_stack_size_mini.setText(f"{I18n.STACK_SIZE} : {stack_size_str}")
 
             # update queues sizes
             self._ui.lbl_pre_process_queue_size.setText(str(DYNAMIC_DATA.pre_process_queue.qsize()))

@@ -16,6 +16,7 @@ Version 0.7 (work in progress)
   - Log to file in user home folder
   - Minimum matches for alignment is user-definable
   - Write web content to a specific folder
+  - Show stack size in 'image only' mode
 
 Version 0.6.1 (2019-11-18)
 ==========================

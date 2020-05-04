@@ -40,6 +40,16 @@
        </widget>
       </item>
       <item>
+       <widget class="QLabel" name="lbl_stack_size_mini">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QLabel" name="lbl_web_server_status">
         <property name="text">
          <string/>

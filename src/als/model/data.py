@@ -55,19 +55,16 @@ class I18n(QObject):
     TOOLTIP_BLACK_LEVEL = "TEMP"
     TOOLTIP_MIDTONES_LEVEL = "TEMP"
     TOOLTIP_WHITE_LEVEL = "TEMP"
-
     TOOLTIP_RED_LEVEL = "TEMP"
     TOOLTIP_GREEN_LEVEL = "TEMP"
     TOOLTIP_BLUE_LEVEL = "TEMP"
-
     TOOLTIP_STRETCH_STRENGTH = "TEMP"
-
     TOOLTIP_RGB_ACTIVE = "TEMP"
     TOOLTIP_STRETCH_ACTIVE = "TEMP"
     TOOLTIP_LEVELS_ACTIVE = "TEMP"
-
     TOOLTIP_STRETCH_METHOD = "TEMP"
 
+    STACK_SIZE = "TEMP"
 
     def setup(self):
         """
@@ -98,6 +95,7 @@ class I18n(QObject):
         I18n.TOOLTIP_STRETCH_ACTIVE = self.tr("Autostretch active")
         I18n.TOOLTIP_LEVELS_ACTIVE = self.tr("Levels active")
         I18n.TOOLTIP_STRETCH_METHOD = self.tr("Autostretch method")
+        I18n.STACK_SIZE = self.tr("stack size")
 
 
 # pylint: disable=R0902, R0903
