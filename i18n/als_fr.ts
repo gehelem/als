@@ -54,17 +54,17 @@
         <translation>Session démarrée en mode {} avec alignement {}</translation>
     </message>
     <message>
-        <location filename="../src/als/processing.py" line="575"/>
+        <location filename="../src/als/processing.py" line="576"/>
         <source>Start {} on {}</source>
         <translation>Démarrage {} sur {}</translation>
     </message>
     <message>
-        <location filename="../src/als/processing.py" line="580"/>
+        <location filename="../src/als/processing.py" line="581"/>
         <source>End {} on {} in {} ms</source>
         <translation>Fin de {} sur {} en {} ms</translation>
     </message>
     <message>
-        <location filename="../src/als/processing.py" line="594"/>
+        <location filename="../src/als/processing.py" line="595"/>
         <source>{} stopped</source>
         <translation>{} stoppé</translation>
     </message>
@@ -84,7 +84,7 @@
         <translation>Impossible de stacker l&apos;image {} : {}. L&apos;image est ABANDONNEE</translation>
     </message>
     <message>
-        <location filename="../src/als/processing.py" line="618"/>
+        <location filename="../src/als/processing.py" line="619"/>
         <source>Error applying process &apos;{}&apos; to image {} : {} *** Image will be ignored</source>
         <translation>Erreur en exécutant process {} à l&apos;image {} : {} *** L&apos;image sera ignorée</translation>
     </message>
@@ -124,11 +124,6 @@
         <translation>Types de données différents. Light: {} vs Dark: {}. Le dark doit être mis en conformité.</translation>
     </message>
     <message>
-        <location filename="../src/als/processing.py" line="496"/>
-        <source>Data structure inconsistency between {} and {}. Dark subtraction is SKIPPED</source>
-        <translation>Incohérence des données entre {} et {}. La soustraction de dark est IGNOREE</translation>
-    </message>
-    <message>
         <location filename="../src/als/processing.py" line="503"/>
         <source>Could not read dark {}. Dark subtraction is SKIPPED</source>
         <translation>Erreur de lecture du dark {}. La soustraction de dark est IGNOREE</translation>
@@ -137,6 +132,11 @@
         <location filename="../src/als/processing.py" line="388"/>
         <source>Hot Pixel Remover cannot work on debayered color images.</source>
         <translation>La suppresion des pixel chaud ne peut être effectuée sur des images couleur.</translation>
+    </message>
+    <message>
+        <location filename="../src/als/processing.py" line="496"/>
+        <source>Data structure inconsistency. Light: {} vs Dark: {}. Dark subtraction is SKIPPED</source>
+        <translation>Incohérence de la structure des données. Light: {} vs Dark: {}. La soustraction de dark est IGNOREE</translation>
     </message>
 </context>
 <context>

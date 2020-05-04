@@ -495,9 +495,9 @@ class RemoveDark(ImageProcessor):
                 else:
                     mismatch_message = QT_TRANSLATE_NOOP(
                         "",
-                        "Data structure inconsistency between {} and {}. Dark subtraction is SKIPPED"
+                        "Data structure inconsistency. Light: {} vs Dark: {}. Dark subtraction is SKIPPED"
                     )
-                    mismatch_values = [image.origin, masterdark.origin]
+                    mismatch_values = [image.data.shape, masterdark.data.shape]
                     MESSAGE_HUB.dispatch_warning(__name__, mismatch_message, mismatch_values)
             else:
                 read_error_message = QT_TRANSLATE_NOOP(
@@ -506,6 +506,7 @@ class RemoveDark(ImageProcessor):
                 )
                 read_error_values = [config.get_master_dark_file_path(), ]
                 MESSAGE_HUB.dispatch_warning(__name__, read_error_message, read_error_values)
+
         return image
 
 
