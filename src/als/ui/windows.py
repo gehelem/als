@@ -307,6 +307,18 @@ class MainWindow(QMainWindow):
         else:
             event.ignore()
 
+    @log
+    @pyqtSlot(bool)
+    def on_chk_follow_logs_clicked(self, checked):
+        """
+        scroll session log to last message when checkbox is checked
+
+        :param checked: is the checkbox checked ?
+        :type checked: bool
+        """
+        if checked:
+            self._ui.log.scrollToBottom()
+
     @pyqtSlot(name="on_pbSave_clicked")
     @log
     def cb_save(self):
@@ -508,7 +520,8 @@ class MainWindow(QMainWindow):
         :type message: str
         """
         self._ui.log.addItem(message)
-        self._ui.log.scrollToBottom()
+        if self._ui.chk_follow_logs.isChecked():
+            self._ui.log.scrollToBottom()
 
     @log
     def update_display(self, image_only: bool = False):
