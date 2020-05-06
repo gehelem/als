@@ -85,6 +85,9 @@
     <property name="title">
      <string>&amp;Edit</string>
     </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
+    </property>
     <addaction name="action_prefs"/>
    </widget>
    <widget class="QMenu" name="menuView">
