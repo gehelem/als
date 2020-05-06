@@ -440,6 +440,7 @@ class Controller:
 
                 MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Starting new session..."))
 
+                DYNAMIC_DATA.has_new_warnings = False
                 self._stacker.reset()
 
                 folders_dict = {

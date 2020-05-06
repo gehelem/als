@@ -14,42 +14,42 @@
         <translation>Démarrage nouvelle session...</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="460"/>
+        <location filename="../src/als/logic.py" line="461"/>
         <source>Restarting input scanner ...</source>
         <translation>Redémarrage scanneur d&apos;entrée...</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="471"/>
+        <location filename="../src/als/logic.py" line="472"/>
         <source>Input scanner started</source>
         <translation>Scanneur d&apos;entrée démarré</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="497"/>
+        <location filename="../src/als/logic.py" line="498"/>
         <source>Session stopped</source>
         <translation>Session stoppée</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="507"/>
+        <location filename="../src/als/logic.py" line="508"/>
         <source>Session paused</source>
         <translation>Session en pause</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="523"/>
+        <location filename="../src/als/logic.py" line="524"/>
         <source>Web server started. Reachable at {}</source>
         <translation>Serveur d&apos;image démarré. Joignable à {}</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="543"/>
+        <location filename="../src/als/logic.py" line="544"/>
         <source>Web server stopped</source>
         <translation>Serveur d&apos;image stoppé</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="657"/>
+        <location filename="../src/als/logic.py" line="658"/>
         <source>Input scanner stopped</source>
         <translation>Scanneur d&apos;entrée stoppé</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="475"/>
+        <location filename="../src/als/logic.py" line="476"/>
         <source>Session running in mode {} with alignment {}</source>
         <translation>Session démarrée en mode {} avec alignement {}</translation>
     </message>
@@ -89,17 +89,17 @@
         <translation>Erreur en exécutant process {} à l&apos;image {} : {} *** L&apos;image sera ignorée</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="482"/>
+        <location filename="../src/als/logic.py" line="483"/>
         <source>Session error. {} : {}</source>
         <translation>Erreur de session {} : {}</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="531"/>
+        <location filename="../src/als/logic.py" line="532"/>
         <source>Could not start web server</source>
         <translation>Impossible de démarrer le serveur web</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="530"/>
+        <location filename="../src/als/logic.py" line="531"/>
         <source>Could not start web server : {}</source>
         <translation>Impossible de démarrer le serveur web : {}</translation>
     </message>
@@ -320,12 +320,12 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/als/ui/windows.py" line="627"/>
+        <location filename="../src/als/ui/windows.py" line="656"/>
         <source>Web server access is limited</source>
         <translation>L&apos;accès au serveur web est limité</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="628"/>
+        <location filename="../src/als/ui/windows.py" line="657"/>
         <source>Web server IP address is 127.0.0.1.
 
 Server won&apos;t be reachable by other machines. Please check your network connection</source>
@@ -334,27 +334,27 @@ Server won&apos;t be reachable by other machines. Please check your network conn
 Le serveur ne sera pas joignable par d&apos;autres machines. Veuillez vérifier votre configuration réseau</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="651"/>
+        <location filename="../src/als/ui/windows.py" line="680"/>
         <source>Session started</source>
         <translation>Session démarrée</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="651"/>
+        <location filename="../src/als/ui/windows.py" line="680"/>
         <source>Session successfully started after retry</source>
         <translation>Session démarrée après une nouvelle tentative</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="656"/>
+        <location filename="../src/als/ui/windows.py" line="685"/>
         <source>Would you like to open the preferences box ?</source>
         <translation>Désirez-vous ouvrir l&apos;écran des préférences ?</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="662"/>
+        <location filename="../src/als/ui/windows.py" line="691"/>
         <source>Session start aborted</source>
         <translation>Démarrage de session abandonné</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="678"/>
+        <location filename="../src/als/ui/windows.py" line="707"/>
         <source>Stopping the current session will reset the stack and all image enhancements.
 
 Are you sure you want to stop the current session ?</source>
@@ -363,12 +363,12 @@ Are you sure you want to stop the current session ?</source>
 Etes-vous sûr de vouloir stopper la session courante ?</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="682"/>
+        <location filename="../src/als/ui/windows.py" line="711"/>
         <source>Really stop session ?</source>
         <translation>Vraiment stopper la session ?</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="711"/>
+        <location filename="../src/als/ui/windows.py" line="740"/>
         <source>Your settings could not be saved
 
 Details : {}</source>
@@ -377,9 +377,14 @@ Details : {}</source>
 Détails : {}</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="575"/>
+        <location filename="../src/als/ui/windows.py" line="593"/>
         <source>Preferences are avaialble when session and webserver are both stopped</source>
         <translation>Les préférences sont accessibles quand la session et le serveur d&apos;iamges sont tous deux à l&apos;arrêt</translation>
+    </message>
+    <message>
+        <location filename="../src/als/ui/windows.py" line="629"/>
+        <source>click to aknowledge alerts</source>
+        <translation>cliquer pour acquitter les alertes</translation>
     </message>
 </context>
 <context>
@@ -614,7 +619,7 @@ Détails : {}</translation>
         <translation>START</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="931"/>
+        <location filename="../src/als/ui/als_ui.ui" line="978"/>
         <source>R</source>
         <translation>R</translation>
     </message>
@@ -739,167 +744,167 @@ Détails : {}</translation>
         <translation>Journal de session</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="679"/>
+        <location filename="../src/als/ui/als_ui.ui" line="726"/>
         <source>Processing</source>
         <translation>Traitements</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="695"/>
+        <location filename="../src/als/ui/als_ui.ui" line="742"/>
         <source>Histogram</source>
         <translation>Histogramme</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="714"/>
+        <location filename="../src/als/ui/als_ui.ui" line="761"/>
         <source>Auto stretch</source>
         <translation>Auto stretch</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="919"/>
+        <location filename="../src/als/ui/als_ui.ui" line="966"/>
         <source>Active</source>
         <translation>Actif</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="729"/>
+        <location filename="../src/als/ui/als_ui.ui" line="776"/>
         <source>Method:</source>
         <translation>Méthode:</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="750"/>
+        <location filename="../src/als/ui/als_ui.ui" line="797"/>
         <source>Strength</source>
         <translation>Force</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="986"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1033"/>
         <source>Reset</source>
         <translation>Défaut</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="993"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1040"/>
         <source>Reload</source>
         <translation>Recharger</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1000"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1047"/>
         <source>Apply</source>
         <translation>Appliquer</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="803"/>
+        <location filename="../src/als/ui/als_ui.ui" line="850"/>
         <source>Levels</source>
         <translation>Niveaux</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="820"/>
+        <location filename="../src/als/ui/als_ui.ui" line="867"/>
         <source>black</source>
         <translation>noir</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="830"/>
+        <location filename="../src/als/ui/als_ui.ui" line="877"/>
         <source>midtones</source>
         <translation>exposition</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="837"/>
+        <location filename="../src/als/ui/als_ui.ui" line="884"/>
         <source>white</source>
         <translation>blanc</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="913"/>
+        <location filename="../src/als/ui/als_ui.ui" line="960"/>
         <source>RGB Balance</source>
         <translation>Balance RVB</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="948"/>
+        <location filename="../src/als/ui/als_ui.ui" line="995"/>
         <source>G</source>
         <translation>V</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="965"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1012"/>
         <source>B</source>
         <translation>B</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1027"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1074"/>
         <source>&amp;Quit</source>
         <translation>&amp;Quitter</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1033"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1080"/>
         <source>Quit</source>
         <translation>Quitter</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1036"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1083"/>
         <source>Quit ALS</source>
         <translation>Quitter ALS</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1044"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1091"/>
         <source>&amp;Preferences...</source>
         <translation>&amp;Préférences...</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1047"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1094"/>
         <source>Open preferences box</source>
         <translation>Ouvrir l&apos;écran des préférences</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1061"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1108"/>
         <source>Main &amp;controls</source>
         <translation>&amp;Contrôles principaux</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1067"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1114"/>
         <source>Show / hide main controls</source>
         <translation>Afficher / cacher contrôles principaux</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1081"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1128"/>
         <source>Session &amp;log</source>
         <translation>Journa&amp;l de session</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1087"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1134"/>
         <source>Show / hide session log</source>
         <translation>Afficher / cacher journal de session</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1095"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1142"/>
         <source>&amp;About ALS...</source>
         <translation>&amp;A propos d&apos;ALS...</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1098"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1145"/>
         <source>About ALS</source>
         <translation>A propos d&apos;ALS</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1112"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1159"/>
         <source>&amp;Processing panel</source>
         <translation>&amp;Panneau des traitements</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1118"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1165"/>
         <source>Show / hide processing panel</source>
         <translation>Afficher / cacher panneau des traitements</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1129"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1176"/>
         <source>&amp;Full screen</source>
         <translation>Plein éc&amp;ran</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1132"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1179"/>
         <source>Full Screen</source>
         <translation>Plein écran</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1143"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1190"/>
         <source>&amp;Image only</source>
         <translation>&amp;Image seulement</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1146"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1193"/>
         <source>Hide currently visible panels to maximize image display</source>
         <translation>Cacher les paneaux visibles pour maximiser l&apos;affichage de l&apos;image</translation>
     </message>
@@ -929,7 +934,7 @@ Détails : {}</translation>
         <translation>F</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="627"/>
+        <location filename="../src/als/ui/als_ui.ui" line="672"/>
         <source>Follow</source>
         <translation>Suivre</translation>
     </message>

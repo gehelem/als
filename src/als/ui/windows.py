@@ -4,8 +4,8 @@ Holds all windows used in the app
 import logging
 
 from PyQt5.QtCore import pyqtSlot, Qt
-from PyQt5.QtGui import QPixmap, QBrush, QColor
-from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog
+from PyQt5.QtGui import QPixmap, QBrush, QColor, QCursor
+from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog, qApp
 from qimage2ndarray import array2qimage
 
 import als.model.data
@@ -523,6 +523,24 @@ class MainWindow(QMainWindow):
         if self._ui.chk_follow_logs.isChecked():
             self._ui.log.scrollToBottom()
 
+        if not DYNAMIC_DATA.has_new_warnings and any([log_type in message for log_type in ['WARNING', 'ERROR']]):
+            self._ui.lbl_warning_sign.setVisible(True)
+            DYNAMIC_DATA.has_new_warnings = True
+
+    @log
+    def mouseReleaseEvent(self, _):
+        """
+        Slot called whenever mouse button is released when pointer is over the main window
+
+        :param _: ignored. We get usefull info from elsewhere
+        """
+
+        # 1 case : hide warning sign if user just clicked it
+        widget_under_mouse = qApp.widgetAt(QCursor.pos())
+        if widget_under_mouse is self._ui.lbl_warning_sign:
+            DYNAMIC_DATA.has_new_warnings = False
+            self.update_display()
+
     @log
     def update_display(self, image_only: bool = False):
         """
@@ -604,6 +622,17 @@ class MainWindow(QMainWindow):
             self._ui.lbl_stacker_status.setText(DYNAMIC_DATA.stacker_status)
             self._ui.lbl_post_processor_status.setText(DYNAMIC_DATA.post_processor_status)
             self._ui.lbl_saver_status.setText(DYNAMIC_DATA.saver_status)
+
+            # manage warning sign
+            if DYNAMIC_DATA.has_new_warnings:
+                warning_pixmap = QPixmap(":/icons/warning_sign.svg")
+                warning_tooltip = self.tr("click to aknowledge alerts")
+            else:
+                warning_pixmap = QPixmap()
+                warning_tooltip = ""
+
+            self._ui.lbl_warning_sign.setPixmap(warning_pixmap)
+            self._ui.lbl_warning_sign.setToolTip(warning_tooltip)
 
     @pyqtSlot(name="on_pbStop_clicked")
     @log

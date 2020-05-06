@@ -118,6 +118,7 @@ class DynamicData:
         self.stacker_status = ""
         self.post_processor_status = ""
         self.saver_status = ""
+        self.has_new_warnings = False
 
 
 class HistogramContainer:

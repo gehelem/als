@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1075</width>
-    <height>974</height>
+    <width>1156</width>
+    <height>873</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -71,7 +71,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1075</width>
+     <width>1156</width>
      <height>23</height>
     </rect>
    </property>
@@ -622,14 +622,61 @@
    <widget class="QWidget" name="dockWidgetContents_2">
     <layout class="QHBoxLayout" name="horizontalLayout_9">
      <item>
-      <widget class="QCheckBox" name="chk_follow_logs">
-       <property name="text">
-        <string>Follow</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayout_10">
+       <item>
+        <widget class="QLabel" name="lbl_warning_sign">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>48</width>
+           <height>48</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>48</width>
+           <height>48</height>
+          </size>
+         </property>
+         <property name="baseSize">
+          <size>
+           <width>48</width>
+           <height>48</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string/>
+         </property>
+         <property name="text">
+          <string notr="true"/>
+         </property>
+         <property name="pixmap">
+          <pixmap resource="../../resources/resource.qrc">:/icons/warning_sign.svg</pixmap>
+         </property>
+         <property name="scaledContents">
+          <bool>true</bool>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignJustify|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="chk_follow_logs">
+         <property name="text">
+          <string>Follow</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <widget class="QListWidget" name="log">
