@@ -379,7 +379,7 @@ Détails : {}</translation>
     <message>
         <location filename="../src/als/ui/windows.py" line="593"/>
         <source>Preferences are avaialble when session and webserver are both stopped</source>
-        <translation>Les préférences sont accessibles quand la session et le serveur d&apos;iamges sont tous deux à l&apos;arrêt</translation>
+        <translation>Les préférences sont accessibles quand la session et le serveur d&apos;images sont tous deux à l&apos;arrêt</translation>
     </message>
     <message>
         <location filename="../src/als/ui/windows.py" line="629"/>
