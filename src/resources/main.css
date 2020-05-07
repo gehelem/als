@@ -9,6 +9,12 @@ QWidget:disabled {
     color: #444444
 }
 
+QPushButton:checked {
+
+    border: 2px solid #cc0000;
+    border-radius: 4px;
+}
+
 QScrollBar::handle {
 
     background-color: #333333

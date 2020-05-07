@@ -4,8 +4,9 @@ Holds all windows used in the app
 import logging
 
 from PyQt5.QtCore import pyqtSlot, Qt
-from PyQt5.QtGui import QPixmap, QBrush, QColor, QCursor
-from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog, qApp, QApplication
+from PyQt5.QtGui import QPixmap, QBrush, QColor
+from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog, QApplication, \
+    QListWidgetItem
 from qimage2ndarray import array2qimage
 
 import als.model.data
@@ -21,6 +22,7 @@ from als.ui.params_utils import update_controls_from_params, update_params_from_
 from generated.als_ui import Ui_stack_window
 
 _LOGGER = logging.getLogger(__name__)
+_INFO_LOG_TAG = 'INFO'
 
 
 # pylint: disable=R0904, R0902
@@ -319,6 +321,23 @@ class MainWindow(QMainWindow):
         if checked:
             self._ui.log.scrollToBottom()
 
+    @log
+    @pyqtSlot(bool)
+    def on_btn_issues_only_clicked(self, toggled):
+        """
+        Filters out INFO messages from session log button is toggled
+
+        :param toggled: is button toggled ?
+        :type toggled: bool
+        """
+
+        if toggled:
+            for item in self._ui.log.findItems(_INFO_LOG_TAG, Qt.MatchContains):
+                item.setHidden(True)
+        else:
+            for i in range(self._ui.log.count()):
+                self._ui.log.item(i).setHidden(False)
+
     @pyqtSlot(name="on_pbSave_clicked")
     @log
     def cb_save(self):
@@ -475,6 +494,7 @@ class MainWindow(QMainWindow):
         if visible:
             self._cancel_image_only_mode()
 
+    # pylint: disable=no-self-use
     @log
     def on_log_itemClicked(self, item):
         """
@@ -529,27 +549,18 @@ class MainWindow(QMainWindow):
         :param message: the message
         :type message: str
         """
-        self._ui.log.addItem(message)
-        if self._ui.chk_follow_logs.isChecked():
-            self._ui.log.scrollToBottom()
-
-        if not DYNAMIC_DATA.has_new_warnings and any([log_type in message for log_type in ['WARNING', 'ERROR']]):
+        new_item = QListWidgetItem(message)
+        if any([log_type in message for log_type in ['WARNING', 'ERROR']]):
             DYNAMIC_DATA.has_new_warnings = True
 
-    @log
-    def mouseReleaseEvent(self, _):
-        """
-        Slot called whenever mouse button is released when pointer is over the main window
+        self._ui.log.addItem(new_item)
+        if _INFO_LOG_TAG in message and self._ui.btn_issues_only.isChecked():
+            new_item.setHidden(True)
 
-        :param _: ignored. We get usefull info from elsewhere
-        """
+        if self._ui.btn_follow_logs.isChecked():
+            self._ui.log.scrollToBottom()
 
-        # 1 case : hide warning sign if user just clicked it
-        widget_under_mouse = qApp.widgetAt(QCursor.pos())
-        if widget_under_mouse is self._ui.lbl_warning_sign:
-            DYNAMIC_DATA.has_new_warnings = False
-            self.update_display()
-
+    # pylint: disable=too-many-statements
     @log
     def update_display(self, image_only: bool = False):
         """
@@ -635,13 +646,10 @@ class MainWindow(QMainWindow):
             # manage warning sign
             if DYNAMIC_DATA.has_new_warnings:
                 warning_pixmap = QPixmap(":/icons/warning_sign.svg")
-                warning_tooltip = self.tr("click to aknowledge alerts")
             else:
                 warning_pixmap = QPixmap()
-                warning_tooltip = ""
 
             self._ui.lbl_warning_sign.setPixmap(warning_pixmap)
-            self._ui.lbl_warning_sign.setToolTip(warning_tooltip)
 
     @pyqtSlot(name="on_pbStop_clicked")
     @log
@@ -684,6 +692,8 @@ class MainWindow(QMainWindow):
         """
 
         try:
+            if DYNAMIC_DATA.session.is_stopped:
+                self._ui.log.clear()
             self._controller.start_session()
             if is_retry:
                 message_box(self.tr("Session started"), self.tr("Session successfully started after retry"))
@@ -746,4 +756,6 @@ class MainWindow(QMainWindow):
         try:
             config.save()
         except CouldNotSaveConfig as save_error:
-            error_box(save_error.message, self.tr("Your settings could not be saved\n\nDetails : {}").format(save_error.details))
+            error_box(
+                save_error.message,
+                self.tr("Your settings could not be saved\n\nDetails : {}").format(save_error.details))

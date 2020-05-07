@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1156</width>
-    <height>873</height>
+    <height>877</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -624,6 +624,19 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_10">
        <item>
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
         <widget class="QLabel" name="lbl_warning_sign">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -667,9 +680,22 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="chk_follow_logs">
+        <widget class="QPushButton" name="btn_issues_only">
          <property name="text">
-          <string>Follow</string>
+          <string>issues only</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_follow_logs">
+         <property name="text">
+          <string>follow</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
          </property>
          <property name="checked">
           <bool>true</bool>
