@@ -78,7 +78,7 @@ def main():
                 _LOGGER.warning("Failed to detect system locale. App will not be translated")
                 locale_prefix = "en"
 
-        if not locale_prefix == "en":
+        if locale_prefix != "en":
 
             translators = list()
             for component in ["als", "qtbase"]:
