@@ -524,7 +524,6 @@ class MainWindow(QMainWindow):
             self._ui.log.scrollToBottom()
 
         if not DYNAMIC_DATA.has_new_warnings and any([log_type in message for log_type in ['WARNING', 'ERROR']]):
-            self._ui.lbl_warning_sign.setVisible(True)
             DYNAMIC_DATA.has_new_warnings = True
 
     @log
