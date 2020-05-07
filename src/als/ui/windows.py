@@ -5,7 +5,7 @@ import logging
 
 from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap, QBrush, QColor, QCursor
-from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog, qApp
+from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog, qApp, QApplication
 from qimage2ndarray import array2qimage
 
 import als.model.data
@@ -474,6 +474,16 @@ class MainWindow(QMainWindow):
 
         if visible:
             self._cancel_image_only_mode()
+
+    @log
+    def on_log_itemClicked(self, item):
+        """
+        Copy clicked log line content to clipboard
+
+        :param item: the clicked log item
+        :type item: PyQt5.QtWidgets.QListWidgetItem
+        """
+        QApplication.clipboard().setText(item.text())
 
     @log
     def on_session_dock_visibilityChanged(self, visible):
