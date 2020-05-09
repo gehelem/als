@@ -189,7 +189,7 @@ def read_disk_image(path: Path):
             break
 
     if not ignore_image:
-        if path.suffix.lower() in ['.fit', '.fits']:
+        if path.suffix.lower() in ['.fit', '.fits', '.fts']:
             image = _read_fit_image(path)
         else:
             image = _read_raw_image(path)
