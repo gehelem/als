@@ -42,6 +42,7 @@ _USE_MASTER_DARK = "use_master_dark"
 _MASTER_DARK_FILE_PATH = "master_dark_file_path"
 _USE_HOT_PIXEL_REMOVER = "use_hot_pixel_remover"
 _LANG = "lang"
+_BAYER_PATTERN = "bayer_pattern"
 
 # keys used to describe logging level
 _LOG_LEVEL_DEBUG = "DEBUG"
@@ -75,6 +76,7 @@ _DEFAULTS = {
     _MASTER_DARK_FILE_PATH: "",
     _USE_HOT_PIXEL_REMOVER: 0,
     _LANG:                  "sys",
+    _BAYER_PATTERN:         "AUTO",
 }
 _MAIN_SECTION_NAME = "main"
 
@@ -255,6 +257,26 @@ def set_work_folder_path(path):
     :type path: str
     """
     _set(_WORK_FOLDER_PATH, path)
+
+
+def get_bayer_pattern():
+    """
+    Retrieves preferred bayer pattern
+
+    :return: the preferred bayer pattern
+    :rtype: str
+    """
+    return _get(_BAYER_PATTERN)
+
+
+def set_bayer_pattern(pattern):
+    """
+    Sets the preferred bayer pattern
+
+    :param pattern: the work folder path
+    :type pattern: str
+    """
+    _set(_BAYER_PATTERN, pattern)
 
 
 def get_lang():

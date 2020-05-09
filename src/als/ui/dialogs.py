@@ -36,8 +36,11 @@ class PreferencesDialog(QDialog):
         self._ui.cmb_lang.setItemData(0, 'sys')
         self._ui.cmb_lang.setItemData(1, 'en')
         self._ui.cmb_lang.setItemData(2, 'fr')
-
         self._ui.cmb_lang.setCurrentIndex(self._ui.cmb_lang.findData(config.get_lang()))
+
+        for pattern_index in range(5):
+            self._ui.cmb_bayer_pattern.setItemData(pattern_index, self._ui.cmb_bayer_pattern.itemText(pattern_index))
+        self._ui.cmb_bayer_pattern.setCurrentIndex(self._ui.cmb_bayer_pattern.findData(config.get_bayer_pattern()))
 
         self._ui.ln_scan_folder_path.setText(config.get_scan_folder_path())
         self._ui.ln_work_folder_path.setText(config.get_work_folder_path())
@@ -139,6 +142,7 @@ class PreferencesDialog(QDialog):
                 break
 
         config.set_lang(self._ui.cmb_lang.currentData())
+        config.set_bayer_pattern(self._ui.cmb_bayer_pattern.currentData())
 
         PreferencesDialog._save_config()
 

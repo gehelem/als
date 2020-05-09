@@ -6,20 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>647</width>
-    <height>690</height>
+    <width>655</width>
+    <height>698</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>ALS preferences</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3">
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_11"/>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_10"/>
-   </item>
+  <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
@@ -136,7 +130,7 @@
      <property name="title">
       <string>Pre-Processing</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_4">
+     <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
        <widget class="QCheckBox" name="chk_use_dark">
         <property name="text">
@@ -186,18 +180,70 @@
        </layout>
       </item>
       <item>
-       <widget class="Line" name="line">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QCheckBox" name="chk_use_hpr">
         <property name="text">
          <string>Use &amp;hot pixel remover</string>
         </property>
        </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_10">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Debayering pattern</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="cmb_bayer_pattern">
+          <property name="minimumSize">
+           <size>
+            <width>80</width>
+            <height>0</height>
+           </size>
+          </property>
+          <item>
+           <property name="text">
+            <string notr="true">AUTO</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string notr="true">GRBG</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string notr="true">RGGB</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string notr="true">GBRG</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string notr="true">BGGR</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_6">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>

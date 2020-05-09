@@ -402,30 +402,43 @@ class Debayer(ImageProcessor):
     @log
     def process_image(self, image: Image):
 
-        if image.needs_debayering():
+        preferred_bayer_pattern = config.get_bayer_pattern()
 
+        if preferred_bayer_pattern == "AUTO" and not image.needs_debayering():
+            return image
+
+        cv2_debayer_dict = {
+
+            "BG": cv2.COLOR_BAYER_BG2RGB,
+            "GB": cv2.COLOR_BAYER_GB2RGB,
+            "RG": cv2.COLOR_BAYER_RG2RGB,
+            "GR": cv2.COLOR_BAYER_GR2RGB
+        }
+
+        if preferred_bayer_pattern != 'AUTO':
+            bayer_pattern = preferred_bayer_pattern
+
+            if image.needs_debayering() and bayer_pattern != image.bayer_pattern:
+                pattern_mismatch_msg = QT_TRANSLATE_NOOP(
+                    "",
+                    "The bayer pattern defined in your preferences differs from the one present in current image. "
+                    "Preferred: {} vs image: {}. Debayering result may be wrong.")
+                pattern_mismatch_values = [preferred_bayer_pattern, image.bayer_pattern]
+                MESSAGE_HUB.dispatch_warning(__name__,
+                                             pattern_mismatch_msg,
+                                             pattern_mismatch_values)
+
+        else:
             bayer_pattern = image.bayer_pattern
 
-            cv2_debayer_dict = {
+        cv_debay = bayer_pattern[3] + bayer_pattern[2]
 
-                "BG": cv2.COLOR_BAYER_BG2RGB,
-                "GB": cv2.COLOR_BAYER_GB2RGB,
-                "RG": cv2.COLOR_BAYER_RG2RGB,
-                "GR": cv2.COLOR_BAYER_GR2RGB
-            }
+        try:
+            debayered_data = cv2.cvtColor(image.data, cv2_debayer_dict[cv_debay])
+        except KeyError:
+            raise ProcessingError(f"unsupported bayer pattern : {bayer_pattern}")
 
-            cv_debay = bayer_pattern[3] + bayer_pattern[2]
-
-            # ugly temp fix for GBRG CFA patterns poorly handled by openCV
-            if cv_debay == "GR":
-                cv_debay = "BG"
-
-            try:
-                debayered_data = cv2.cvtColor(image.data, cv2_debayer_dict[cv_debay])
-            except KeyError:
-                raise ProcessingError(f"unsupported bayer pattern : {bayer_pattern}")
-
-            image.data = debayered_data
+        image.data = debayered_data
 
         return image
 
