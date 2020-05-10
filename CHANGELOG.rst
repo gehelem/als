@@ -14,6 +14,8 @@ Version 0.7 (work in progress)
 - Improvements
 
   - Log to file in user home folder
+  - Ability to only show problems in session log
+  - Ability to manually override Bayer pattern used for demosaicing
   - Minimum matches for alignment is user-definable
   - Write web content to a specific folder
   - Show stack size in 'image only' mode
