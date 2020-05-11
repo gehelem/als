@@ -29,7 +29,7 @@ if [ -z "${VERSION##*"dev"*}" -a -d .git ] ;then
   VERSION=${VERSION}-$(git rev-parse --short HEAD)
 fi
 
-pyinstaller -n als --windowed --exclude-module tkinter  src/als/main.py
+pyinstaller -i src/resources/als_logo.icns -n als --windowed --exclude-module tkinter  src/als/main.py
 cp -vf /usr/local/Cellar/libpng/1.6.37/lib/libpng16.16.dylib dist/als.app/Contents/MacOS
 
 hdiutil create -imagekey zlib-level=9 -srcfolder  dist/als.app dist/als-${VERSION}.dmg
