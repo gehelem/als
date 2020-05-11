@@ -228,7 +228,7 @@ def _read_fit_image(path: Path):
 
         _set_image_file_origin(image, path)
 
-    except OSError as error:
+    except (OSError, TypeError) as error:
         _report_fs_error(path, error)
         return None
 
