@@ -28,5 +28,4 @@ if [ -z "${VERSION##*"dev"*}" -a -d .git ] ;then
   VERSION=${VERSION}-$(git rev-parse --short HEAD)
 fi
 
-pyinstaller -F -n als-${VERSION} --windowed src/als/main.py
-
+pyinstaller -i src/resources/als_logo.ico -F -n als-${VERSION} --windowed src/als/main.py
