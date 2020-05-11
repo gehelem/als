@@ -4,6 +4,7 @@
         <file>tick.png</file>
         <file>tick-disabled.png</file>
         <file>warning_sign.svg</file>
+        <file>als_logo.svg</file>
     </qresource>
     <qresource prefix="web">
         <file>index.html</file>

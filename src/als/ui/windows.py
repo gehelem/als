@@ -4,7 +4,7 @@ Holds all windows used in the app
 import logging
 
 from PyQt5.QtCore import pyqtSlot, Qt
-from PyQt5.QtGui import QPixmap, QBrush, QColor
+from PyQt5.QtGui import QPixmap, QBrush, QColor, QIcon
 from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog, QApplication, \
     QListWidgetItem
 from qimage2ndarray import array2qimage
@@ -37,6 +37,8 @@ class MainWindow(QMainWindow):
     def __init__(self, controller: Controller, parent=None):
 
         super().__init__(parent)
+
+        self.setWindowIcon(QIcon(":/icons/als_logo.svg"))
 
         self._controller = controller
         self._ui = Ui_stack_window()
