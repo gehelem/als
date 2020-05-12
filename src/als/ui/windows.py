@@ -588,11 +588,11 @@ class MainWindow(QMainWindow):
             # update web server status
             if web_server_is_running:
                 url = f"http://{DYNAMIC_DATA.web_server_ip}:{config.get_www_server_port_number()}"
-                webserver_status = f'{I18n.RUNNING_M}, ' \
-                                   f'{I18n.ADDRESS} =  <a href="{url}" style="color: #CC0000">{url}</a>'
+                webserver_status = f'{I18n.RUNNING_M} : <a href="{url}" style="color: #CC0000">{url}</a>'
             else:
                 webserver_status = I18n.STOPPED_M
             self._ui.lbl_web_server_status.setText(f"{I18n.WEB_SERVER} : {webserver_status}")
+            self._ui.lbl_web_server_status_main.setText(f"{webserver_status}")
 
             if session_is_stopped:
                 session_status = I18n.STOPPED_F
