@@ -62,6 +62,15 @@ class PreferencesDialog(QDialog):
 
         config_to_image_save_type_mapping[config.get_image_save_format()].setChecked(True)
 
+        self._ui.chk_www_own_folder.setChecked(config.get_www_use_dedicated_folder())
+
+        self._web_folder_controls = [self._ui.lbl_web_folder,
+                                     self._ui.ln_web_folder_path,
+                                     self._ui.btn_browse_web]
+
+        for control in self._web_folder_controls:
+            control.setVisible(self._ui.chk_www_own_folder.isChecked())
+
         self._validate_all_paths()
 
     @log
@@ -70,7 +79,12 @@ class PreferencesDialog(QDialog):
         Draw a red border around text fields containing a path to a missing folder
         """
 
-        for folder_path in [self._ui.ln_work_folder_path, self._ui.ln_scan_folder_path, self._ui.ln_web_folder_path]:
+        paths_to_check = [self._ui.ln_work_folder_path, self._ui.ln_scan_folder_path]
+
+        if self._ui.chk_www_own_folder.isChecked():
+            paths_to_check.append(self._ui.ln_web_folder_path)
+
+        for folder_path in paths_to_check:
 
             if not Path(folder_path.text()).is_dir():
                 folder_path.setStyleSheet(_WARNING_STYLE_SHEET)
@@ -94,6 +108,18 @@ class PreferencesDialog(QDialog):
         self._validate_all_paths()
 
     @log
+    @pyqtSlot(bool)
+    def on_chk_www_own_folder_clicked(self, checked):
+        """
+        Hides web folder setting controls if server does not use dedicated folder
+
+        :param checked: is 'use dedicated folder' box checked ?
+        :type checked: bool
+        """
+        for control in self._web_folder_controls:
+            control.setVisible(checked)
+
+    @log
     @pyqtSlot()
     def on_btn_dark_clear_clicked(self):
         """
@@ -108,7 +134,17 @@ class PreferencesDialog(QDialog):
         """checks and stores user settings"""
         config.set_scan_folder_path(self._ui.ln_scan_folder_path.text())
         config.set_work_folder_path(self._ui.ln_work_folder_path.text())
-        config.set_web_folder_path(self._ui.ln_web_folder_path.text())
+
+        www_own_folder_is_checked = self._ui.chk_www_own_folder.isChecked()
+        config.set_www_use_dedicated_folder(www_own_folder_is_checked)
+
+        if www_own_folder_is_checked:
+            web_folder_path = self._ui.ln_web_folder_path.text()
+        else:
+            web_folder_path = self._ui.ln_work_folder_path.text()
+
+        config.set_web_folder_path(web_folder_path)
+
         web_server_port_number_str = self._ui.ln_web_server_port.text()
         config.set_minimum_match_count(self._ui.spn_minimum_match_count.value())
         config.set_use_master_dark(self._ui.chk_use_dark.isChecked())

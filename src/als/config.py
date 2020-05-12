@@ -31,6 +31,7 @@ _CONFIG_FILE_PATH = os.path.expanduser("~/.als.cfg")
 _SCAN_FOLDER_PATH = "scan_folder_path"
 _WORK_FOLDER_PATH = "work_folder_path"
 _WWW_FOLDER_PATH = "web_folder_path"
+_WWW_DEDICATED_FOLDER = "www_dedicated_folder"
 _LOG_LEVEL = "log_level"
 _WWW_SERVER_PORT = "www_server_port"
 _WINDOW_GEOMETRY = "window_geometry"
@@ -65,6 +66,7 @@ _DEFAULTS = {
     _SCAN_FOLDER_PATH:      os.path.expanduser("~/als/scan"),
     _WORK_FOLDER_PATH:      os.path.expanduser("~/als/work"),
     _WWW_FOLDER_PATH:       os.path.expanduser("~/als/work"),
+    _WWW_DEDICATED_FOLDER:  0,
     _LOG_LEVEL:             _LOG_LEVEL_INFO,
     _WWW_SERVER_PORT:       "8000",
     _WINDOW_GEOMETRY:       "50,100,1024,800",
@@ -113,6 +115,31 @@ def get_full_screen_active():
         return int(_get(_FULL_SCREEN)) == 1
     except ValueError:
         return _DEFAULTS[_FULL_SCREEN]
+
+
+def set_www_use_dedicated_folder(dedicated: bool):
+    """
+    Set www dedicated folder flag
+
+    :param dedicated: must webserver use its own web folder
+    :type dedicated: bool
+    """
+
+    _set(_WWW_DEDICATED_FOLDER, "1" if dedicated else "0")
+
+
+def get_www_use_dedicated_folder():
+    """
+    Get www dedicated folder flag
+
+    :return: True if webserver must use its own web folder
+    :rtype: bool
+    """
+
+    try:
+        return int(_get(_WWW_DEDICATED_FOLDER)) == 1
+    except ValueError:
+        return _DEFAULTS[_WWW_DEDICATED_FOLDER]
 
 
 def set_hot_pixel_remover(hpr_on: bool):
