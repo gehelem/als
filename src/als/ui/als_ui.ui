@@ -1169,7 +1169,7 @@
     <string>Show / hide main controls</string>
    </property>
    <property name="shortcut">
-    <string notr="true">B</string>
+    <string notr="true">C</string>
    </property>
   </action>
   <action name="action_show_session_log">
