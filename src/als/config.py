@@ -23,7 +23,7 @@ from configparser import ConfigParser, DuplicateOptionError, ParsingError
 from pathlib import Path
 
 from als.code_utilities import AlsException
-from als.model.data import IMAGE_SAVE_TYPE_JPEG
+from als.model.data import IMAGE_SAVE_TYPE_JPEG, DYNAMIC_DATA
 
 _CONFIG_FILE_PATH = os.path.expanduser("~/.als.cfg")
 
@@ -520,13 +520,15 @@ def setup():
     # get an "empty" config
     #
     # if config file is invalid, we raise a ValueError with details
+
+    DYNAMIC_DATA.is_first_run = not Path(_CONFIG_FILE_PATH).is_file()
+
     try:
         _CONFIG_PARSER.read(_CONFIG_FILE_PATH)
     except DuplicateOptionError as duplicate_error:
         raise ValueError(duplicate_error)
     except ParsingError as parsing_error:
         raise ValueError(parsing_error)
-
     _setup_logging()
 
     # add our main config section if not already present (i.e. previous read failed)

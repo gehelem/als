@@ -119,6 +119,7 @@ class DynamicData:
         self.post_processor_status = ""
         self.saver_status = ""
         self.has_new_warnings = False
+        self.is_first_run = True
 
 
 class HistogramContainer:

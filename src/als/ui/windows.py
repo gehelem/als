@@ -2,6 +2,7 @@
 Holds all windows used in the app
 """
 import logging
+from os import linesep
 
 from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap, QBrush, QColor, QIcon
@@ -138,6 +139,18 @@ class MainWindow(QMainWindow):
             self._ui.action_full_screen.setChecked(True)
         else:
             self.show()
+
+        if DYNAMIC_DATA.is_first_run:
+            _LOGGER.info("First run detected")
+
+            message_box(
+                self.tr("Welcome to ALS"),
+                self.tr('It appears this is your first use of ALS. Welcome !') + linesep*2 +
+                self.tr('Clicking OK will bring up the settings page.') + linesep*2 +
+                self.tr("Make sure the scan & work folders are set correctly : They must be created by you..."))
+
+            if self._open_preferences():
+                self.update_display()
 
         MESSAGE_HUB.add_receiver(self)
 
