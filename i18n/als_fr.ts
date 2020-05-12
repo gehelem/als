@@ -114,7 +114,7 @@
         <translation>Echec de sauvegarde image {}</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="123"/>
+        <location filename="../src/als/ui/dialogs.py" line="159"/>
         <source>Port number validation failed : {}</source>
         <translation>Numéro de port non valide : {}</translation>
     </message>
@@ -152,22 +152,22 @@
         <translation>A propos d&apos;ALS</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/about_ui.ui" line="57"/>
+        <location filename="../src/als/ui/about_ui.ui" line="104"/>
         <source>Version :</source>
         <translation>Version :</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/about_ui.ui" line="103"/>
+        <location filename="../src/als/ui/about_ui.ui" line="150"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;License : &lt;a href=&quot;http://www.gnu.org/licenses/gpl-3.0.txt&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#CC0000;&quot;&gt;GPLv3&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Licence : &lt;a href=&quot;http://www.gnu.org/licenses/gpl-3.0.txt&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#CC0000;&quot;&gt;GPLv3&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/about_ui.ui" line="143"/>
+        <location filename="../src/als/ui/about_ui.ui" line="190"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Website : &lt;a href=&quot;https://als-app.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#CC0000;&quot;&gt;https://als-app.org&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Site Web : &lt;a href=&quot;https://als-app.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#CC0000;&quot;&gt;https://als-app.org&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/about_ui.ui" line="196"/>
+        <location filename="../src/als/ui/about_ui.ui" line="243"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
@@ -325,12 +325,12 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/als/ui/windows.py" line="673"/>
+        <location filename="../src/als/ui/windows.py" line="675"/>
         <source>Web server access is limited</source>
         <translation>L&apos;accès au serveur web est limité</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="674"/>
+        <location filename="../src/als/ui/windows.py" line="676"/>
         <source>Web server IP address is 127.0.0.1.
 
 Server won&apos;t be reachable by other machines. Please check your network connection</source>
@@ -339,27 +339,27 @@ Server won&apos;t be reachable by other machines. Please check your network conn
 Le serveur ne sera pas joignable par d&apos;autres machines. Veuillez vérifier votre configuration réseau</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="699"/>
+        <location filename="../src/als/ui/windows.py" line="701"/>
         <source>Session started</source>
         <translation>Session démarrée</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="699"/>
+        <location filename="../src/als/ui/windows.py" line="701"/>
         <source>Session successfully started after retry</source>
         <translation>Session démarrée après une nouvelle tentative</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="704"/>
+        <location filename="../src/als/ui/windows.py" line="706"/>
         <source>Would you like to open the preferences box ?</source>
         <translation>Désirez-vous ouvrir l&apos;écran des préférences ?</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="710"/>
+        <location filename="../src/als/ui/windows.py" line="712"/>
         <source>Session start aborted</source>
         <translation>Démarrage de session abandonné</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="726"/>
+        <location filename="../src/als/ui/windows.py" line="728"/>
         <source>Stopping the current session will reset the stack and all image enhancements.
 
 Are you sure you want to stop the current session ?</source>
@@ -368,12 +368,12 @@ Are you sure you want to stop the current session ?</source>
 Etes-vous sûr de vouloir stopper la session courante ?</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="730"/>
+        <location filename="../src/als/ui/windows.py" line="732"/>
         <source>Really stop session ?</source>
         <translation>Vraiment stopper la session ?</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="759"/>
+        <location filename="../src/als/ui/windows.py" line="761"/>
         <source>Your settings could not be saved
 
 Details : {}</source>
@@ -382,7 +382,7 @@ Details : {}</source>
 Détails : {}</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="613"/>
+        <location filename="../src/als/ui/windows.py" line="615"/>
         <source>Preferences are avaialble when session and webserver are both stopped</source>
         <translation>Les préférences sont accessibles quand la session et le serveur d&apos;images sont tous deux à l&apos;arrêt</translation>
     </message>
@@ -390,32 +390,32 @@ Détails : {}</translation>
 <context>
     <name>PreferencesDialog</name>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="121"/>
+        <location filename="../src/als/ui/dialogs.py" line="157"/>
         <source>Web server port number must be a number between 1024 and 65535</source>
         <translation>Le numéro de port du serveur web doit être compris entre 1024 et 65535</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="122"/>
+        <location filename="../src/als/ui/dialogs.py" line="158"/>
         <source>Wrong value</source>
         <translation>Valeur incorrecte</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="155"/>
+        <location filename="../src/als/ui/dialogs.py" line="191"/>
         <source>Select scan folder</source>
         <translation>Sélectionner le dossier à scanner</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="167"/>
+        <location filename="../src/als/ui/dialogs.py" line="203"/>
         <source>Select work folder</source>
         <translation>Sélectionner le dossier de travail</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="179"/>
+        <location filename="../src/als/ui/dialogs.py" line="215"/>
         <source>Select web folder</source>
         <translation>Sélectionner le dossier web</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="191"/>
+        <location filename="../src/als/ui/dialogs.py" line="227"/>
         <source>Select dark file</source>
         <translation>Selectionner le fichier de dark</translation>
     </message>
@@ -433,7 +433,7 @@ Détails : {}</translation>
         <translation>Dossier &amp;scanné :</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="176"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="421"/>
         <source>Change...</source>
         <translation>Modifier...</translation>
     </message>
@@ -443,87 +443,87 @@ Détails : {}</translation>
         <translation>Dossier de tra&amp;vail :</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="303"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="269"/>
         <source>File saving format</source>
         <translation>Format d&apos;écriture des fichiers</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="309"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="275"/>
         <source>&amp;TIFF</source>
         <translation>&amp;TIFF</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="316"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="282"/>
         <source>PN&amp;G</source>
         <translation>PN&amp;G</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="323"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="289"/>
         <source>&amp;JPEG</source>
         <translation>&amp;JPEG</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="333"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="299"/>
         <source>Web server</source>
         <translation>Serveur web</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="341"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="309"/>
         <source>Server &amp;port number (between 1024 and 65535) :</source>
         <translation>Numéro de &amp;port du serveur (entre 1024 et 65535) :</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="367"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="335"/>
         <source>Web page &amp;refresh period (in seconds) :</source>
         <translation>Période de &amp;rafraîchissement de la page web (en secondes) :</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="511"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="552"/>
         <source>Cancel</source>
         <translation>Annuler</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="518"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="559"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="131"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="97"/>
         <source>Pre-Processing</source>
         <translation>Pre-Processing</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="137"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="103"/>
         <source>&amp;Use dark subtraction</source>
         <translation>&amp;Utiliser soustraction de dark</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="146"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="112"/>
         <source>&amp;Dark path :</source>
         <translation>Fichier de &amp;dark :</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="169"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="135"/>
         <source>Clear</source>
         <translation>Vider</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="185"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="151"/>
         <source>Use &amp;hot pixel remover</source>
         <translation>Utiliser suppression des pixels c&amp;hauds</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="254"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="220"/>
         <source>Alignment</source>
         <translation>Alignement</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="262"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="228"/>
         <source>Minimum &amp;matches count :</source>
         <translation>Nombre &amp;minimum de points communs :</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="96"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="398"/>
         <source>We&amp;b folder :</source>
         <translation>Dossier we&amp;b :</translation>
     </message>
@@ -533,29 +533,34 @@ Détails : {}</translation>
         <translation>Chemins</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="405"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="433"/>
         <source>Core (Require application restart)</source>
         <translation>Interne (Nécessite un redémarrage)</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="416"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="444"/>
         <source>Debug &amp;logs</source>
         <translation>Journaux détai&amp;llés</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="457"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="485"/>
         <source>System</source>
         <translation>Système</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="440"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="468"/>
         <source>L&amp;anguage</source>
         <translation>L&amp;angue</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="194"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="160"/>
         <source>Debayering pattern</source>
         <translation>Matrice de bayer</translation>
+    </message>
+    <message>
+        <location filename="../src/als/ui/prefs_ui.ui" line="374"/>
+        <source>Use dedicacted folder</source>
+        <translation type="unfinished">Utiliser un dossier spécifique</translation>
     </message>
 </context>
 <context>
@@ -619,12 +624,12 @@ Détails : {}</translation>
         <translation>Démarrer / reprendre session</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="364"/>
+        <location filename="../src/als/ui/als_ui.ui" line="379"/>
         <source>START</source>
         <translation>START</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1004"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1027"/>
         <source>R</source>
         <translation>R</translation>
     </message>
@@ -644,12 +649,12 @@ Détails : {}</translation>
         <translation>Stopper session</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="380"/>
+        <location filename="../src/als/ui/als_ui.ui" line="401"/>
         <source>STOP</source>
         <translation>STOP</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="503"/>
+        <location filename="../src/als/ui/als_ui.ui" line="526"/>
         <source>Stack</source>
         <translation>Stack</translation>
     </message>
@@ -674,242 +679,242 @@ Détails : {}</translation>
         <translation>Serveur d&apos;images</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="361"/>
+        <location filename="../src/als/ui/als_ui.ui" line="376"/>
         <source>Start image server</source>
         <translation>Démarrer serveur d&apos;images</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="377"/>
+        <location filename="../src/als/ui/als_ui.ui" line="398"/>
         <source>Stop image server</source>
         <translation>Stopper serveur d&apos;images</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="393"/>
+        <location filename="../src/als/ui/als_ui.ui" line="416"/>
         <source>Image saver</source>
         <translation>Enregistreur d&apos;images</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="410"/>
+        <location filename="../src/als/ui/als_ui.ui" line="433"/>
         <source>Save current image to disk</source>
         <translation>Enregristre l&apos;image courante sur disque</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="413"/>
+        <location filename="../src/als/ui/als_ui.ui" line="436"/>
         <source>Save current</source>
         <translation>Enr. image courante</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="432"/>
+        <location filename="../src/als/ui/als_ui.ui" line="455"/>
         <source>Save every new image in a timestamped file</source>
         <translation>Enregistre chaque image dans un fichier horodaté</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="435"/>
+        <location filename="../src/als/ui/als_ui.ui" line="458"/>
         <source>Save every frame</source>
         <translation>Enr. chaque image</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="450"/>
+        <location filename="../src/als/ui/als_ui.ui" line="473"/>
         <source>Workers</source>
         <translation>Modules</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="456"/>
+        <location filename="../src/als/ui/als_ui.ui" line="479"/>
         <source>Queue size</source>
         <translation>Taille file d&apos;attente</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="466"/>
+        <location filename="../src/als/ui/als_ui.ui" line="489"/>
         <source>Status</source>
         <translation>Statut</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="476"/>
+        <location filename="../src/als/ui/als_ui.ui" line="499"/>
         <source>Pre-process</source>
         <translation>Pre-process</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="574"/>
+        <location filename="../src/als/ui/als_ui.ui" line="597"/>
         <source>status</source>
         <translation>statut</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="530"/>
+        <location filename="../src/als/ui/als_ui.ui" line="553"/>
         <source>Process</source>
         <translation>Process</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="557"/>
+        <location filename="../src/als/ui/als_ui.ui" line="580"/>
         <source>Save</source>
         <translation>Sauvegarde</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="617"/>
+        <location filename="../src/als/ui/als_ui.ui" line="640"/>
         <source>Session log</source>
         <translation>Journal de session</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="752"/>
+        <location filename="../src/als/ui/als_ui.ui" line="775"/>
         <source>Processing</source>
         <translation>Traitements</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="768"/>
+        <location filename="../src/als/ui/als_ui.ui" line="791"/>
         <source>Histogram</source>
         <translation>Histogramme</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="787"/>
+        <location filename="../src/als/ui/als_ui.ui" line="810"/>
         <source>Auto stretch</source>
         <translation>Auto stretch</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="992"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1015"/>
         <source>Active</source>
         <translation>Actif</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="802"/>
+        <location filename="../src/als/ui/als_ui.ui" line="825"/>
         <source>Method:</source>
         <translation>Méthode:</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="823"/>
+        <location filename="../src/als/ui/als_ui.ui" line="846"/>
         <source>Strength</source>
         <translation>Force</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1059"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1082"/>
         <source>Reset</source>
         <translation>Défaut</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1066"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1089"/>
         <source>Reload</source>
         <translation>Recharger</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1073"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1096"/>
         <source>Apply</source>
         <translation>Appliquer</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="876"/>
+        <location filename="../src/als/ui/als_ui.ui" line="899"/>
         <source>Levels</source>
         <translation>Niveaux</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="893"/>
+        <location filename="../src/als/ui/als_ui.ui" line="916"/>
         <source>black</source>
         <translation>noir</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="903"/>
+        <location filename="../src/als/ui/als_ui.ui" line="926"/>
         <source>midtones</source>
         <translation>exposition</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="910"/>
+        <location filename="../src/als/ui/als_ui.ui" line="933"/>
         <source>white</source>
         <translation>blanc</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="986"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1009"/>
         <source>RGB Balance</source>
         <translation>Balance RVB</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1021"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1044"/>
         <source>G</source>
         <translation>V</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1038"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1061"/>
         <source>B</source>
         <translation>B</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1100"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1123"/>
         <source>&amp;Quit</source>
         <translation>&amp;Quitter</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1106"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1129"/>
         <source>Quit</source>
         <translation>Quitter</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1109"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1132"/>
         <source>Quit ALS</source>
         <translation>Quitter ALS</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1117"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1140"/>
         <source>&amp;Preferences...</source>
         <translation>&amp;Préférences...</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1120"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1143"/>
         <source>Open preferences box</source>
         <translation>Ouvrir l&apos;écran des préférences</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1134"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1157"/>
         <source>Main &amp;controls</source>
         <translation>&amp;Contrôles principaux</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1140"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1163"/>
         <source>Show / hide main controls</source>
         <translation>Afficher / cacher contrôles principaux</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1154"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1177"/>
         <source>Session &amp;log</source>
         <translation>Journa&amp;l de session</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1160"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1183"/>
         <source>Show / hide session log</source>
         <translation>Afficher / cacher journal de session</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1168"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1191"/>
         <source>&amp;About ALS...</source>
         <translation>&amp;A propos d&apos;ALS...</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1171"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1194"/>
         <source>About ALS</source>
         <translation>A propos d&apos;ALS</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1185"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1208"/>
         <source>&amp;Processing panel</source>
         <translation>&amp;Panneau des traitements</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1191"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1214"/>
         <source>Show / hide processing panel</source>
         <translation>Afficher / cacher panneau des traitements</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1202"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1225"/>
         <source>&amp;Full screen</source>
         <translation>Plein éc&amp;ran</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1205"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1228"/>
         <source>Full Screen</source>
         <translation>Plein écran</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1216"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1239"/>
         <source>&amp;Image only</source>
         <translation>&amp;Image seulement</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="1219"/>
+        <location filename="../src/als/ui/als_ui.ui" line="1242"/>
         <source>Hide currently visible panels to maximize image display</source>
         <translation>Cacher les paneaux visibles pour maximiser l&apos;affichage de l&apos;image</translation>
     </message>
@@ -924,27 +929,27 @@ Détails : {}</translation>
         <translation>A</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="383"/>
+        <location filename="../src/als/ui/als_ui.ui" line="404"/>
         <source>W</source>
         <translation>W</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="416"/>
+        <location filename="../src/als/ui/als_ui.ui" line="439"/>
         <source>S</source>
         <translation>S</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="438"/>
+        <location filename="../src/als/ui/als_ui.ui" line="461"/>
         <source>F</source>
         <translation>F</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="685"/>
+        <location filename="../src/als/ui/als_ui.ui" line="708"/>
         <source>issues only</source>
         <translation>Problèmes seuls</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/als_ui.ui" line="695"/>
+        <location filename="../src/als/ui/als_ui.ui" line="718"/>
         <source>follow</source>
         <translation>suivre</translation>
     </message>
