@@ -39,7 +39,7 @@ class MainWindow(QMainWindow):
 
         super().__init__(parent)
 
-        self.setWindowIcon(QIcon(":/icons/als_logo.svg"))
+        self.setWindowIcon(QIcon(":/icons/als_logo.png"))
 
         self._controller = controller
         self._ui = Ui_stack_window()
