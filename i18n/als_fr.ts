@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="fr_FR">
+<!DOCTYPE TS><TS version="2.0" language="fr_FR" sourcelanguage="">
 <context>
     <name></name>
     <message>
@@ -170,19 +169,6 @@
         <location filename="../src/als/ui/about_ui.ui" line="243"/>
         <source>OK</source>
         <translation>OK</translation>
-    </message>
-</context>
-<context>
-    <name>HistogramView</name>
-    <message>
-        <location filename="../src/als/ui/widgets.py" line="162"/>
-        <source>Invalid data</source>
-        <translation>Données invalides</translation>
-    </message>
-    <message>
-        <location filename="../src/als/ui/widgets.py" line="165"/>
-        <source>No data</source>
-        <translation>Pas de données</translation>
     </message>
 </context>
 <context>

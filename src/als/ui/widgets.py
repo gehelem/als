@@ -6,7 +6,7 @@ import typing
 
 from PyQt5 import QtGui
 from PyQt5.QtCore import QPoint, Qt
-from PyQt5.QtGui import QPainter, QPen
+from PyQt5.QtGui import QPainter, QPen, QColor
 from PyQt5.QtWidgets import QSlider, QGraphicsView, QWidget
 
 from als.code_utilities import log
@@ -111,6 +111,8 @@ class HistogramView(QWidget):
         self._white_pen = QPen(Qt.white)
         self._white_pen.setWidth(2)
 
+        self._background_color = QColor("#222222")
+
     # pylint: disable=C0103, R0914
     @log
     def paintEvent(self, _):
@@ -124,6 +126,7 @@ class HistogramView(QWidget):
 
             self._painter.begin(self)
             self._painter.translate(QPoint(0, 0))
+            self._painter.fillRect(0, 0, self.width() - 1, self.height() - 1, self._background_color)
 
             if DYNAMIC_DATA.histogram_container is not None:
 
@@ -157,12 +160,6 @@ class HistogramView(QWidget):
                                 self.height() - (bar_height - HistogramView._TOP_MARGIN_IN_PX))
 
                         self._painter.restore()
-
-                else:
-                    self._display_text(self.tr("Invalid data"))
-
-            else:
-                self._display_text(self.tr("No data"))
 
             self._painter.end()
 
