@@ -32,4 +32,4 @@ fi
 pyinstaller -i src/resources/als_logo.icns -n als --windowed --exclude-module tkinter  src/als/main.py
 cp -vf /usr/local/Cellar/libpng/1.6.37/lib/libpng16.16.dylib dist/als.app/Contents/MacOS
 
-create-dmg --volname "ALS ${VERSION}" --window-pos 200 120 --window-size 800 400 --icon-size 100 --icon "als.app" 200 190 --hide-extension "als.app" --app-drop-link 600 185 "dist/ALS-${VERSION}.dmg" dist/als.app
+create-dmg --volname "ALS ${VERSION}" --window-pos 200 120 --window-size 500 300 --icon-size 100 --icon "als.app" 120 140 --hide-extension "als.app" --app-drop-link 370 140 --background src/resources/starfield.png dist/ALS-0.7-dev-bbc7f4b.dmg dist/als.app
