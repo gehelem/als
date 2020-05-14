@@ -1,4 +1,4 @@
-# this script builds a full dsitribution
+# this script builds a full distribution
 #
 #          tested on a python3.6 system
 #
@@ -23,11 +23,29 @@ python setup.py develop
 
 ./ci/pylint.sh
 
-VERSION=$(grep __version__ src/als/__init__.py | tail -n1 | cut -d'"' -f2)
+tags=$(git tag --contains HEAD)
 
-if [ -z "${VERSION##*"dev"*}" -a -d .git ] ;then
-  VERSION=${VERSION}-$(git rev-parse --short HEAD)
+if [ -z "${tags}" ]
+then
+  tag_count=0
+else
+  tag_count=$(echo "${tags}" | wc -l)
 fi
+
+if [ ${tag_count} -gt 1 ]
+then
+    echo "More that one tag exist on HEAD. Cancelling ..."
+    exit 1
+fi
+
+if [ $tag_count -eq 1 ]
+then
+  VERSION=$(git tag --contains HEAD)
+else
+  VERSION=$(grep __version__ src/als/__init__.py | tail -n1 | cut -d'"' -f2)-v$(git rev-parse --short HEAD)
+fi
+
+echo "Building version: ${VERSION}"
 
 pyinstaller -i src/resources/als_logo.icns -n als --windowed --exclude-module tkinter  src/als/main.py
 cp -vf /usr/local/Cellar/libpng/1.6.37/lib/libpng16.16.dylib dist/als.app/Contents/MacOS
