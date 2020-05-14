@@ -7,7 +7,7 @@ from os import linesep
 from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap, QBrush, QColor, QIcon
 from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog, QApplication, \
-    QListWidgetItem, qApp
+    QListWidgetItem, qApp, QLabel, QFrame
 from qimage2ndarray import array2qimage
 
 import als.model.data
@@ -34,6 +34,7 @@ class MainWindow(QMainWindow):
 
     _LOG_DOCK_INITIAL_HEIGHT = 150
 
+    # pylint: disable=too-many-statements
     @log
     def __init__(self, controller: Controller, parent=None):
 
@@ -119,7 +120,6 @@ class MainWindow(QMainWindow):
 
         # setup exchanges with dynamic data
         self._controller.add_model_observer(self)
-        self.update_display()
 
         self.setGeometry(*config.get_window_geometry())
 
@@ -127,7 +127,6 @@ class MainWindow(QMainWindow):
         self._restore_log_dock = False
         self._restore_session_dock = False
         self._restore_processing_dock = False
-        self._ui.lbl_stack_size_mini.setVisible(self._ui.action_image_only.isChecked())
 
         # setup image display
         self._scene = QGraphicsScene(self)
@@ -135,13 +134,26 @@ class MainWindow(QMainWindow):
         self._image_item = None
         self.reset_image_view()
 
-        if config.get_full_screen_active():
-            self._ui.action_full_screen.setChecked(True)
-        else:
-            self.show()
+        # setup statusbar
+        self._lbl_statusbar_scanner_status = QLabel(self._ui.statusBar)
+        self._lbl_statusbar_scanner_status.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+
+        self._lbl_statusbar_stack_size = QLabel(self._ui.statusBar)
+        self._lbl_statusbar_stack_size.setMinimumWidth(150)
+        self._lbl_statusbar_stack_size.setAlignment(Qt.AlignHCenter)
+        self._lbl_statusbar_stack_size.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+
+        self._lbl_statusbar_web_server_status = QLabel(self._ui.statusBar)
+        self._lbl_statusbar_web_server_status.setOpenExternalLinks(True)
+        self._lbl_statusbar_web_server_status.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+
+        self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_scanner_status)
+        self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_stack_size)
+        self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_web_server_status)
 
         self._ui.action_night_mode.setChecked(config.get_night_mode_active())
 
+        # handle first run
         if DYNAMIC_DATA.is_first_run:
             _LOGGER.info("First run detected")
 
@@ -154,7 +166,13 @@ class MainWindow(QMainWindow):
             if self._open_preferences():
                 self.update_display()
 
+        self.update_display()
         MESSAGE_HUB.add_receiver(self)
+
+        if config.get_full_screen_active():
+            self._ui.action_full_screen.setChecked(True)
+        else:
+            self.show()
 
     @log
     @pyqtSlot(bool)
@@ -476,8 +494,6 @@ class MainWindow(QMainWindow):
         Qt slot executed when 'image only' action is triggered
         """
 
-        self._ui.lbl_stack_size_mini.setVisible(self._ui.action_image_only.isChecked())
-
         actions_restore_mapping = {
 
             self._ui.action_show_processing_panel: self._restore_processing_dock,
@@ -615,7 +631,7 @@ class MainWindow(QMainWindow):
             # update scanner statuses
             scanner_status_message = f"{I18n.SCANNER} {I18n.OF} {config.get_scan_folder_path()} : "
             scanner_status_message += f"{I18n.RUNNING_M}" if session_is_running else f"{I18n.STOPPED_M}"
-            self._ui.lbl_scanner_status.setText(scanner_status_message)
+            self._lbl_statusbar_scanner_status.setText(scanner_status_message)
 
             # update web server status
             if web_server_is_running:
@@ -623,7 +639,7 @@ class MainWindow(QMainWindow):
                 webserver_status = f'{I18n.RUNNING_M} : <a href="{url}" style="color: #CC0000">{url}</a>'
             else:
                 webserver_status = I18n.STOPPED_M
-            self._ui.lbl_web_server_status.setText(f"{I18n.WEB_SERVER} : {webserver_status}")
+            self._lbl_statusbar_web_server_status.setText(f"{I18n.WEB_SERVER} : {webserver_status}")
             self._ui.lbl_web_server_status_main.setText(f"{webserver_status}")
 
             if session_is_stopped:
@@ -663,7 +679,7 @@ class MainWindow(QMainWindow):
             # update stack size
             stack_size_str = str(DYNAMIC_DATA.stack_size)
             self._ui.lbl_stack_size.setText(stack_size_str)
-            self._ui.lbl_stack_size_mini.setText(f"{I18n.STACK_SIZE} : {stack_size_str}")
+            self._lbl_statusbar_stack_size.setText(f"{I18n.STACK_SIZE} : {stack_size_str}")
 
             # update queues sizes
             self._ui.lbl_pre_process_queue_size.setText(str(DYNAMIC_DATA.pre_process_queue.qsize()))
