@@ -571,11 +571,15 @@ class Controller:
         with open(web_folder_path + "/index.html", 'w') as index_file:
             index_file.write(index_content)
 
-        standby_image_path = web_folder_path + "/" + WEB_SERVED_IMAGE_FILE_NAME_BASE
-        standby_image_path += '.' + IMAGE_SAVE_TYPE_JPEG
+        standby_image_path = Path(web_folder_path) / (WEB_SERVED_IMAGE_FILE_NAME_BASE + '.' + IMAGE_SAVE_TYPE_JPEG)
         standby_file = QFile(":/web/waiting.jpg")
-        standby_file.copy(standby_image_path)
-        Path(standby_image_path).chmod(0o644)
+        standby_file.copy(str(standby_image_path.resolve()))
+        standby_image_path.chmod(0o644)
+
+        favicon_image_path = Path(web_folder_path) / "favicon.ico"
+        standby_file = QFile(":/icons/als_logo.ico")
+        standby_file.copy(str(favicon_image_path.resolve()))
+        favicon_image_path.chmod(0o644)
 
     @log
     def save_post_process_result(self):
