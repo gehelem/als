@@ -44,6 +44,7 @@ _MASTER_DARK_FILE_PATH = "master_dark_file_path"
 _USE_HOT_PIXEL_REMOVER = "use_hot_pixel_remover"
 _LANG = "lang"
 _BAYER_PATTERN = "bayer_pattern"
+_NIGHT_MODE = "night_mode"
 
 # keys used to describe logging level
 _LOG_LEVEL_DEBUG = "DEBUG"
@@ -79,6 +80,7 @@ _DEFAULTS = {
     _USE_HOT_PIXEL_REMOVER: 0,
     _LANG:                  "sys",
     _BAYER_PATTERN:         "AUTO",
+    _NIGHT_MODE:            1,
 }
 _MAIN_SECTION_NAME = "main"
 
@@ -115,6 +117,31 @@ def get_full_screen_active():
         return int(_get(_FULL_SCREEN)) == 1
     except ValueError:
         return _DEFAULTS[_FULL_SCREEN]
+
+
+def set_night_mode_active(night: bool):
+    """
+    Set night mode indicator
+
+    :param night: should app be launched in night mode ?
+    :type night: bool
+    """
+
+    _set(_NIGHT_MODE, "1" if night else "0")
+
+
+def get_night_mode_active():
+    """
+    Get night mode indicator
+
+    :return: True if app should be launched in night mode, False otherwise
+    :rtype: bool
+    """
+
+    try:
+        return int(_get(_NIGHT_MODE)) == 1
+    except ValueError:
+        return _DEFAULTS[_NIGHT_MODE]
 
 
 def set_www_use_dedicated_folder(dedicated: bool):

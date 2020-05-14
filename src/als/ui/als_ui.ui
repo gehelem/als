@@ -101,6 +101,7 @@
     <addaction name="action_image_only"/>
     <addaction name="separator"/>
     <addaction name="action_full_screen"/>
+    <addaction name="action_night_mode"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
@@ -1252,6 +1253,20 @@
    </property>
    <property name="shortcut">
     <string notr="true">I</string>
+   </property>
+  </action>
+  <action name="action_night_mode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Night mode</string>
+   </property>
+   <property name="toolTip">
+    <string>switch night mode</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true">N</string>
    </property>
   </action>
  </widget>

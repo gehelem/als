@@ -13,7 +13,7 @@ from PyQt5.QtCore import QTranslator, QT_TRANSLATE_NOOP
 from PyQt5.QtWidgets import QApplication
 
 from als import config
-from als.code_utilities import Timer, human_readable_byte_size, get_text_content_of_resource
+from als.code_utilities import Timer, human_readable_byte_size
 from als.logic import Controller
 from als.messaging import MESSAGE_HUB
 from als.model.data import I18n, VERSION
@@ -60,8 +60,6 @@ def main():
         for process in psutil.process_iter():
             if process.status() != psutil.STATUS_ZOMBIE and process.name() == "Stacker":
                 process.kill()
-
-        app.setStyleSheet(get_text_content_of_resource(":/main/main.css"))
 
         locale_prefix = config.get_lang()
         if locale_prefix == 'sys':
