@@ -44,7 +44,7 @@
         <translation>Serveur d&apos;image stoppé</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="662"/>
+        <location filename="../src/als/logic.py" line="664"/>
         <source>Input scanner stopped</source>
         <translation>Scanneur d&apos;entrée stoppé</translation>
     </message>
@@ -114,7 +114,7 @@
         <translation>Echec de sauvegarde image {}</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="159"/>
+        <location filename="../src/als/ui/dialogs.py" line="162"/>
         <source>Port number validation failed : {}</source>
         <translation>Numéro de port non valide : {}</translation>
     </message>
@@ -317,12 +317,12 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/als/ui/windows.py" line="728"/>
+        <location filename="../src/als/ui/windows.py" line="729"/>
         <source>Web server access is limited</source>
         <translation>L&apos;accès au serveur web est limité</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="729"/>
+        <location filename="../src/als/ui/windows.py" line="730"/>
         <source>Web server IP address is 127.0.0.1.
 
 Server won&apos;t be reachable by other machines. Please check your network connection</source>
@@ -331,41 +331,27 @@ Server won&apos;t be reachable by other machines. Please check your network conn
 Le serveur ne sera pas joignable par d&apos;autres machines. Veuillez vérifier votre configuration réseau</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="754"/>
+        <location filename="../src/als/ui/windows.py" line="755"/>
         <source>Session started</source>
         <translation>Session démarrée</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="754"/>
+        <location filename="../src/als/ui/windows.py" line="755"/>
         <source>Session successfully started after retry</source>
         <translation>Session démarrée après une nouvelle tentative</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="759"/>
+        <location filename="../src/als/ui/windows.py" line="760"/>
         <source>Would you like to open the preferences box ?</source>
         <translation>Désirez-vous ouvrir l&apos;écran des préférences ?</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="765"/>
+        <location filename="../src/als/ui/windows.py" line="766"/>
         <source>Session start aborted</source>
         <translation>Démarrage de session abandonné</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="781"/>
-        <source>Stopping the current session will reset the stack and all image enhancements.
-
-Are you sure you want to stop the current session ?</source>
-        <translation>Stopper la session courante remettra le stack et les traitements à zéro.
-
-Etes-vous sûr de vouloir stopper la session courante ?</translation>
-    </message>
-    <message>
-        <location filename="../src/als/ui/windows.py" line="785"/>
-        <source>Really stop session ?</source>
-        <translation>Vraiment stopper la session ?</translation>
-    </message>
-    <message>
-        <location filename="../src/als/ui/windows.py" line="814"/>
+        <location filename="../src/als/ui/windows.py" line="813"/>
         <source>Your settings could not be saved
 
 Details : {}</source>
@@ -374,27 +360,27 @@ Details : {}</source>
 Détails : {}</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="164"/>
+        <location filename="../src/als/ui/windows.py" line="165"/>
         <source>Welcome to ALS</source>
         <translation>Bienvenue dans ALS</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="164"/>
+        <location filename="../src/als/ui/windows.py" line="165"/>
         <source>It appears this is your first use of ALS. Welcome !</source>
         <translation>Il semble que ce soit votre premier lancement d&apos;ALS. Bienvenue !</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="164"/>
+        <location filename="../src/als/ui/windows.py" line="165"/>
         <source>Clicking OK will bring up the settings page.</source>
         <translation>Cliquez &apos;OK&apos; et nous afficherons la page des réglages.</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="164"/>
+        <location filename="../src/als/ui/windows.py" line="165"/>
         <source>Make sure the scan &amp; work folders are set correctly : They must be created by you...</source>
         <translation>Assurez-vous que le &apos;dossier scanné&apos; et le &apos;dossier de travail&apos; sont correctement configurés. Ils doivent être créés par vous...</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/windows.py" line="668"/>
+        <location filename="../src/als/ui/windows.py" line="669"/>
         <source>Preferences are availalble when session and webserver are both stopped</source>
         <translation>Les préférences sont accessibles uniquement quand la session et le serveur d&apos;images sont stoppés</translation>
     </message>
@@ -402,32 +388,32 @@ Détails : {}</translation>
 <context>
     <name>PreferencesDialog</name>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="157"/>
+        <location filename="../src/als/ui/dialogs.py" line="160"/>
         <source>Web server port number must be a number between 1024 and 65535</source>
         <translation>Le numéro de port du serveur web doit être compris entre 1024 et 65535</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="158"/>
+        <location filename="../src/als/ui/dialogs.py" line="161"/>
         <source>Wrong value</source>
         <translation>Valeur incorrecte</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="191"/>
+        <location filename="../src/als/ui/dialogs.py" line="194"/>
         <source>Select scan folder</source>
         <translation>Sélectionner le dossier à scanner</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="203"/>
+        <location filename="../src/als/ui/dialogs.py" line="206"/>
         <source>Select work folder</source>
         <translation>Sélectionner le dossier de travail</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="215"/>
+        <location filename="../src/als/ui/dialogs.py" line="218"/>
         <source>Select web folder</source>
         <translation>Sélectionner le dossier web</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="227"/>
+        <location filename="../src/als/ui/dialogs.py" line="230"/>
         <source>Select dark file</source>
         <translation>Selectionner le fichier de dark</translation>
     </message>
@@ -445,7 +431,7 @@ Détails : {}</translation>
         <translation>Dossier &amp;scanné :</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="424"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="484"/>
         <source>Change...</source>
         <translation>Modifier...</translation>
     </message>
@@ -455,47 +441,42 @@ Détails : {}</translation>
         <translation>Dossier de tra&amp;vail :</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="272"/>
-        <source>File saving format</source>
-        <translation>Format d&apos;écriture des fichiers</translation>
-    </message>
-    <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="278"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="293"/>
         <source>&amp;TIFF</source>
         <translation>&amp;TIFF</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="285"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="300"/>
         <source>PN&amp;G</source>
         <translation>PN&amp;G</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="292"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="307"/>
         <source>&amp;JPEG</source>
         <translation>&amp;JPEG</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="302"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="362"/>
         <source>Web server</source>
         <translation>Serveur web</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="312"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="372"/>
         <source>Server &amp;port number (between 1024 and 65535) :</source>
         <translation>Numéro de &amp;port du serveur (entre 1024 et 65535) :</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="338"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="398"/>
         <source>Web page &amp;refresh period (in seconds) :</source>
         <translation>Période de &amp;rafraîchissement de la page web (en secondes) :</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="555"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="615"/>
         <source>Cancel</source>
         <translation>Annuler</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="562"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="622"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
@@ -535,7 +516,7 @@ Détails : {}</translation>
         <translation>Nombre &amp;minimum de points communs :</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="401"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="461"/>
         <source>We&amp;b folder :</source>
         <translation>Dossier we&amp;b :</translation>
     </message>
@@ -545,17 +526,12 @@ Détails : {}</translation>
         <translation>Chemins</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="436"/>
-        <source>Core (Require application restart)</source>
-        <translation>Interne (Nécessite un redémarrage)</translation>
-    </message>
-    <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="461"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="521"/>
         <source>System</source>
         <translation>Système</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="377"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="437"/>
         <source>Use dedicacted folder</source>
         <translation>Utiliser un dossier spécifique</translation>
     </message>
@@ -565,14 +541,39 @@ Détails : {}</translation>
         <translation>Matrice de Ba&amp;yer à utiliser pour le dématriçage :</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="499"/>
-        <source>Debug &amp;logs :</source>
-        <translation>&amp;Logs en mode debug :</translation>
-    </message>
-    <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="444"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="504"/>
         <source>L&amp;anguage :</source>
         <translation>L&amp;angue :</translation>
+    </message>
+    <message>
+        <location filename="../src/als/ui/prefs_ui.ui" line="278"/>
+        <source>File saving</source>
+        <translation>Enregistrement fichiers</translation>
+    </message>
+    <message>
+        <location filename="../src/als/ui/prefs_ui.ui" line="286"/>
+        <source>Format :</source>
+        <translation>Format :</translation>
+    </message>
+    <message>
+        <location filename="../src/als/ui/prefs_ui.ui" line="331"/>
+        <source>Save processed image to disk when stopping a running session. Can be overriden at runtime</source>
+        <translation>Enregistre l&apos;image traîtée sur disque à chaque arrêt de session</translation>
+    </message>
+    <message>
+        <location filename="../src/als/ui/prefs_ui.ui" line="496"/>
+        <source>Core</source>
+        <translation>Général</translation>
+    </message>
+    <message>
+        <location filename="../src/als/ui/prefs_ui.ui" line="337"/>
+        <source>Autosa&amp;ve on stop</source>
+        <translation>Enregsitrement aut&amp;o fin de session</translation>
+    </message>
+    <message>
+        <location filename="../src/als/ui/prefs_ui.ui" line="559"/>
+        <source>Debug &amp;logs</source>
+        <translation>Journaux détai&amp;llés</translation>
     </message>
 </context>
 <context>
@@ -596,6 +597,29 @@ Détails : {}</translation>
         <location filename="../src/als/ui/save_wait_ui.ui" line="93"/>
         <source>Discard unsaved images and quit</source>
         <translation>Abandonner les images restantes et quitter</translation>
+    </message>
+</context>
+<context>
+    <name>SessionStopDialog</name>
+    <message>
+        <location filename="../src/als/ui/stop_ui.ui" line="17"/>
+        <source>Session stop</source>
+        <translation>Arrêt de session</translation>
+    </message>
+    <message>
+        <location filename="../src/als/ui/stop_ui.ui" line="31"/>
+        <source>Stopping the current session will reset the stack and all image enhancements.</source>
+        <translation>Stopper la session courante remettra le stack et les traitements à zéro.</translation>
+    </message>
+    <message>
+        <location filename="../src/als/ui/stop_ui.ui" line="61"/>
+        <source>Are you sure you want to stop the current session ?</source>
+        <translation>Etes-vous sûr de vouloir stopper la session courante ?</translation>
+    </message>
+    <message>
+        <location filename="../src/als/ui/stop_ui.ui" line="93"/>
+        <source>Save result before stop</source>
+        <translation>Sauver image avant arrêt</translation>
     </message>
 </context>
 <context>

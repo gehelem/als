@@ -17,7 +17,8 @@ from als.logic import Controller, SessionError, CriticalFolderMissing, WebServer
 from als.messaging import MESSAGE_HUB
 from als.code_utilities import log, get_text_content_of_resource
 from als.model.data import DYNAMIC_DATA, I18n
-from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box, SaveWaitDialog, question, message_box
+from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box, SaveWaitDialog, question, \
+    message_box, SessionStopDialog
 from als.ui.params_utils import update_controls_from_params, update_params_from_controls, reset_params, \
     set_sliders_defaults
 from generated.als_ui import Ui_stack_window
@@ -776,17 +777,15 @@ class MainWindow(QMainWindow):
         if not DYNAMIC_DATA.session.is_stopped:
 
             do_stop_session = True
+            stop_dialog = SessionStopDialog()
 
             if ask_confirmation and DYNAMIC_DATA.stack_size > 0:
-                message = (
-                    self.tr("Stopping the current session will reset the stack and all image enhancements.\n\n"
-                            "Are you sure you want to stop the current session ?"))
 
-                do_stop_session = question(self.tr("Really stop session ?"),
-                                           message,
-                                           default_yes=False)
+                do_stop_session = stop_dialog.exec()
 
             if do_stop_session:
+                if stop_dialog.save_on_stop and DYNAMIC_DATA.post_processor_result is not None:
+                    self._controller.save_post_process_result(final=True)
                 self._controller.stop_session()
 
     @log

@@ -582,7 +582,7 @@ class Controller:
         favicon_image_path.chmod(0o644)
 
     @log
-    def save_post_process_result(self):
+    def save_post_process_result(self, final=False):
         """
         Saves stacking result image to disk
         """
@@ -593,20 +593,22 @@ class Controller:
         self.save_image(image,
                         config.get_image_save_format(),
                         config.get_work_folder_path(),
-                        STACKED_IMAGE_FILE_NAME_BASE)
+                        STACKED_IMAGE_FILE_NAME_BASE + ("_final" if final else ""),
+                        add_timestamp=final)
 
-        self.save_image(image,
-                        IMAGE_SAVE_TYPE_JPEG,
-                        config.get_web_folder_path(),
-                        WEB_SERVED_IMAGE_FILE_NAME_BASE)
-
-        # if user want to save every image, we save a timestamped version
-        if self._save_every_image:
+        if not final:
             self.save_image(image,
-                            config.get_image_save_format(),
-                            config.get_work_folder_path(),
-                            STACKED_IMAGE_FILE_NAME_BASE,
-                            add_timestamp=True)
+                            IMAGE_SAVE_TYPE_JPEG,
+                            config.get_web_folder_path(),
+                            WEB_SERVED_IMAGE_FILE_NAME_BASE)
+
+            # if user want to save every image, we save a timestamped version
+            if self._save_every_image:
+                self.save_image(image,
+                                config.get_image_save_format(),
+                                config.get_work_folder_path(),
+                                STACKED_IMAGE_FILE_NAME_BASE,
+                                add_timestamp=True)
 
     # pylint: disable=R0913
     @log

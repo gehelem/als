@@ -16,6 +16,7 @@ from als.model.data import VERSION, DYNAMIC_DATA, I18n
 from generated.about_ui import Ui_AboutDialog
 from generated.prefs_ui import Ui_PrefsDialog
 from generated.save_wait_ui import Ui_SaveWaitDialog
+from generated.stop_ui import Ui_SessionStopDialog
 
 _LOGGER = logging.getLogger(__name__)
 _WARNING_STYLE_SHEET = "border: 1px solid orange"
@@ -52,6 +53,7 @@ class PreferencesDialog(QDialog):
         self._ui.chk_use_dark.setChecked(config.get_use_master_dark())
         self._ui.ln_master_dark_path.setText(config.get_master_dark_file_path())
         self._ui.chk_use_hpr.setChecked(config.get_hot_pixel_remover())
+        self._ui.chk_save_on_stop.setChecked(config.get_save_on_stop())
 
         config_to_image_save_type_mapping = {
 
@@ -150,6 +152,7 @@ class PreferencesDialog(QDialog):
         config.set_use_master_dark(self._ui.chk_use_dark.isChecked())
         config.set_master_dark_file_path(self._ui.ln_master_dark_path.text())
         config.set_hot_pixel_remover(self._ui.chk_use_hpr.isChecked())
+        config.set_save_on_stop(self._ui.chk_save_on_stop.isChecked())
 
         if web_server_port_number_str.isdigit() and 1024 <= int(web_server_port_number_str) <= 65535:
             config.set_www_server_port_number(web_server_port_number_str)
@@ -330,6 +333,29 @@ class SaveWaitDialog(QDialog):
         Qt slot called when user clicks 'Discard unsaved images and quit'
         """
         self.close()
+
+
+class SessionStopDialog(QDialog):
+    """
+    confirm session stop
+    """
+
+    @log
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._ui = Ui_SessionStopDialog()
+        self._ui.setupUi(self)
+        self._ui.chk_save.setChecked(config.get_save_on_stop())
+
+    @property
+    def save_on_stop(self):
+        """
+        retrieves "save on stop" checkbox state
+
+        :return: True if "save on stop" checkbox is checked, False otherwise
+        :rtype: bool
+        """
+        return self._ui.chk_save.isChecked()
 
 
 @log

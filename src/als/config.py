@@ -45,6 +45,7 @@ _USE_HOT_PIXEL_REMOVER = "use_hot_pixel_remover"
 _LANG = "lang"
 _BAYER_PATTERN = "bayer_pattern"
 _NIGHT_MODE = "night_mode"
+_SAVE_ON_STOP = "save_on_stop"
 
 # keys used to describe logging level
 _LOG_LEVEL_DEBUG = "DEBUG"
@@ -81,6 +82,7 @@ _DEFAULTS = {
     _LANG:                  "sys",
     _BAYER_PATTERN:         "AUTO",
     _NIGHT_MODE:            1,
+    _SAVE_ON_STOP:          0,
 }
 _MAIN_SECTION_NAME = "main"
 
@@ -192,6 +194,31 @@ def get_hot_pixel_remover():
         return int(_get(_USE_HOT_PIXEL_REMOVER)) == 1
     except ValueError:
         return int(_DEFAULTS[_USE_HOT_PIXEL_REMOVER]) == 1
+
+
+def set_save_on_stop(save_on_stop: bool):
+    """
+    Set 'save on stop' flag
+
+    :param save_on_stop: should we save on stop
+    :type save_on_stop: bool
+    """
+
+    _set(_SAVE_ON_STOP, "1" if save_on_stop else "0")
+
+
+def get_save_on_stop():
+    """
+    Get 'save on stop' flag
+
+    :return: True if app should save on stop, False otherwise
+    :rtype: bool
+    """
+
+    try:
+        return int(_get(_SAVE_ON_STOP)) == 1
+    except ValueError:
+        return int(_DEFAULTS[_SAVE_ON_STOP]) == 1
 
 
 def get_image_save_format():
