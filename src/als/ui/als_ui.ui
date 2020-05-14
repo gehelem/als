@@ -339,6 +339,11 @@
               <height>40</height>
              </size>
             </property>
+            <property name="font">
+             <font>
+              <pointsize>15</pointsize>
+             </font>
+            </property>
             <property name="toolTip">
              <string>Start image server</string>
             </property>
@@ -360,6 +365,11 @@
               <width>0</width>
               <height>40</height>
              </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>15</pointsize>
+             </font>
             </property>
             <property name="toolTip">
              <string>Stop image server</string>
