@@ -42,10 +42,12 @@ if [ $tag_count -eq 1 ]
 then
   VERSION=$(git tag --contains HEAD)
 else
-  VERSION=$(grep __version__ src/als/__init__.py | tail -n1 | cut -d'"' -f2)-$(git rev-parse --short HEAD)
+  VERSION=$(grep version version.py | cut -d'"' -f2)-$(git rev-parse --short HEAD)
 fi
 
-echo "Building version: ${VERSION}"
+echo "version = \"${VERSION}\"" > version.py
+
+echo "Building package version: ${VERSION}"
 
 pyinstaller -i src/resources/als_logo.icns -n als --windowed --exclude-module tkinter  src/als/main.py
 cp -vf /usr/local/Cellar/libpng/1.6.37/lib/libpng16.16.dylib dist/als.app/Contents/MacOS

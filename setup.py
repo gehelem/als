@@ -13,6 +13,7 @@ from pathlib import Path
 from pkg_resources import VersionConflict, require
 from setuptools import setup
 
+from version import version
 from utils import compile_ui_and_rc
 
 try:
@@ -24,7 +25,7 @@ except VersionConflict:
 if __name__ == "__main__":
 
     if not (Path(__file__).parent / ".git").is_dir():
-        os.environ["SETUPTOOLS_SCM_PRETEND_VERSION"] = "v0.7-dev"
+        os.environ["SETUPTOOLS_SCM_PRETEND_VERSION"] = version
     if any([command in ['develop', 'install'] for command in sys.argv[1::]]):
         compile_ui_and_rc.main()
 

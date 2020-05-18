@@ -22,11 +22,31 @@ python setup.py develop
 
 ./ci/pylint.sh
 
-VERSION=$(grep __version__ src/als/__init__.py | tail -n1 | cut -d'"' -f2)
+tags=$(git tag --contains HEAD)
 
-if [ -z "${VERSION##*"dev"*}" -a -d .git ] ;then
-  VERSION=${VERSION}-$(git rev-parse --short HEAD)
+if [ -z "${tags}" ]
+then
+  tag_count=0
+else
+  tag_count=$(echo "${tags}" | wc -l)
 fi
+
+if [ ${tag_count} -gt 1 ]
+then
+    echo "More that one tag exist on HEAD. Cancelling ..."
+    exit 1
+fi
+
+if [ $tag_count -eq 1 ]
+then
+  VERSION=$(git tag --contains HEAD)
+else
+  VERSION=$(grep version version.py | cut -d'"' -f2)-$(git rev-parse --short HEAD)
+fi
+
+echo "version = \"${VERSION}\"" > version.py
+
+echo "Building package version: ${VERSION}"
 
 pyinstaller -F -n als-${VERSION}.run --windowed src/als/main.py
 
