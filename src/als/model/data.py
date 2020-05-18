@@ -66,6 +66,8 @@ class I18n(QObject):
 
     STACK_SIZE = "TEMP"
 
+    SESSION = "TEMP"
+
     def setup(self):
         """
         Sets real values for localized strings
@@ -96,6 +98,7 @@ class I18n(QObject):
         I18n.TOOLTIP_LEVELS_ACTIVE = self.tr("Levels active")
         I18n.TOOLTIP_STRETCH_METHOD = self.tr("Autostretch method")
         I18n.STACK_SIZE = self.tr("stack size")
+        I18n.SESSION = self.tr("Session")
 
 
 # pylint: disable=R0902, R0903

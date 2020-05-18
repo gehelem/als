@@ -135,6 +135,9 @@ class MainWindow(QMainWindow):
         self.reset_image_view()
 
         # setup statusbar
+        self._lbl_statusbar_session_status = QLabel(self._ui.statusBar)
+        self._lbl_statusbar_session_status.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+
         self._lbl_statusbar_scanner_status = QLabel(self._ui.statusBar)
         self._lbl_statusbar_scanner_status.setFrameStyle(QFrame.Panel | QFrame.Sunken)
 
@@ -147,6 +150,7 @@ class MainWindow(QMainWindow):
         self._lbl_statusbar_web_server_status.setOpenExternalLinks(True)
         self._lbl_statusbar_web_server_status.setFrameStyle(QFrame.Panel | QFrame.Sunken)
 
+        self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_session_status)
         self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_scanner_status)
         self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_stack_size)
         self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_web_server_status)
@@ -652,6 +656,7 @@ class MainWindow(QMainWindow):
                 # this should never happen, that's why we check ;)
                 session_status = "### BUG !"
             self._ui.lbl_session_status.setText(f"{session_status}")
+            self._lbl_statusbar_session_status.setText(f"{I18n.SESSION} {session_status}")
 
             # update preferences accessibility according to session and web server status
             preferences_enabled = not web_server_is_running and session_is_stopped
@@ -660,7 +665,7 @@ class MainWindow(QMainWindow):
             if preferences_enabled:
                 self._ui.action_prefs.setToolTip("")
             else:
-                self._ui.action_prefs.setToolTip(self.tr("Preferences are avaialble when session and webserver "
+                self._ui.action_prefs.setToolTip(self.tr("Preferences are availalble when session and webserver "
                                                          "are both stopped"))
 
             # handle Start / Pause / Stop  buttons
