@@ -96,7 +96,7 @@ class Image:
         :type data: numpy.ndarray
         """
         self._data = data
-        self._bayer_pattern: str = None
+        self._bayer_pattern: str = ""
         self._origin: str = "UNDEFINED"
         self._destination: str = "UNDEFINED"
 
@@ -221,7 +221,7 @@ class Image:
 
         :return: True if a bayer pattern is known and data does not have 3 dimensions
         """
-        return self._bayer_pattern is not None and self.data.ndim < 3
+        return self._bayer_pattern != "" and self.data.ndim < 3
 
     def is_color(self):
         """
