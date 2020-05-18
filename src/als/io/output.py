@@ -4,6 +4,9 @@ Everything we need to perform outputs from ALS
 For now, we only save some images to disk, but who knows...
 """
 import logging
+import os
+import sys
+from pathlib import Path
 
 import cv2
 from PyQt5.QtCore import QT_TRANSLATE_NOOP
@@ -41,6 +44,11 @@ class ImageSaver(QueueConsumer):
         :type image: Image
         """
         target_path = image.destination
+        cwd = os.getcwd()
+
+        if sys.platform == 'win32':
+            os.chdir(Path(target_path).parent)
+            target_path = Path(target_path).name
 
         if target_path.endswith('.' + als.model.data.IMAGE_SAVE_TYPE_TIFF):
             save_is_successful, failure_details = ImageSaver._save_image_as_tiff(image, target_path)
@@ -59,7 +67,9 @@ class ImageSaver(QueueConsumer):
             MESSAGE_HUB.dispatch_info(
                 __name__,
                 QT_TRANSLATE_NOOP("", "Image saved : {}"),
-                [target_path, ]
+                [
+                    ((os.getcwd() + os.sep) if sys.platform == 'win32' else "") + target_path,
+                ]
             )
 
         else:
@@ -69,6 +79,9 @@ class ImageSaver(QueueConsumer):
                 details += ' : ' + failure_details
 
             MESSAGE_HUB.dispatch_error(__name__, QT_TRANSLATE_NOOP("", "Failed to save image : {}"), [details, ])
+
+        if sys.platform == 'win32':
+            os.chdir(cwd)
 
     @staticmethod
     @log
