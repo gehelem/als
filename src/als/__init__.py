@@ -2,7 +2,7 @@
 """The main ALS package"""
 from pkg_resources import get_distribution, DistributionNotFound
 
-from version import version
+from als.version import version
 
 try:
     DIST_NAME = __name__
