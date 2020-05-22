@@ -1,1 +1,1 @@
-../../version.py
+version = "0.7-dev"
