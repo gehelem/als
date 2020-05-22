@@ -45,10 +45,10 @@ if [ $tag_count -eq 1 ]
 then
   VERSION=$(git tag --contains HEAD)
 else
-  VERSION=$(grep version version.py | cut -d'"' -f2)-$(git rev-parse --short HEAD)
+  VERSION=$(grep version src/als/version.py | cut -d'"' -f2)-$(git rev-parse --short HEAD)
 fi
 
-echo "version = \"${VERSION}\"" > version.py
+echo "version = \"${VERSION}\"" > src/als/version.py
 
 echo "Building package version: ${VERSION}"
 
