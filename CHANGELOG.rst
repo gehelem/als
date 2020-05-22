@@ -7,9 +7,10 @@ Version 0.7 (work in progress)
 
 - New features
 
-  - french translation
-  - dark frame subtraction
-  - hot pixel removal
+  - French translation
+  - Dark frame subtraction
+  - Hot pixel removal
+  - Switchable save on stop
 
 - Improvements
 
@@ -18,7 +19,14 @@ Version 0.7 (work in progress)
   - Ability to manually override Bayer pattern used for demosaicing
   - Minimum matches for alignment is user-definable
   - Write web content to a specific folder
-  - Show stack size in 'image only' mode
+  - session-critial info moved to statusbar so they are always visible
+  - Switchable night mode
+
+- Bug Fixes
+
+  - Windows : fail to write images to paths with non-ascii chars
+  - Does not handle .fts files
+  - RPI : crash when saving B&W images
 
 Version 0.6.1 (2019-11-18)
 ==========================
