@@ -573,11 +573,15 @@ class Controller:
 
         standby_image_path = Path(web_folder_path) / (WEB_SERVED_IMAGE_FILE_NAME_BASE + '.' + IMAGE_SAVE_TYPE_JPEG)
         standby_file = QFile(":/web/waiting.jpg")
+        if standby_image_path.is_file():
+            standby_image_path.unlink()
         standby_file.copy(str(standby_image_path.resolve()))
         standby_image_path.chmod(0o644)
 
         favicon_image_path = Path(web_folder_path) / "favicon.ico"
         standby_file = QFile(":/icons/als_logo.ico")
+        if favicon_image_path.is_file():
+            favicon_image_path.unlink()
         standby_file.copy(str(favicon_image_path.resolve()))
         favicon_image_path.chmod(0o644)
 
