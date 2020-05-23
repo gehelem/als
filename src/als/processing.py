@@ -457,71 +457,84 @@ class RemoveDark(ImageProcessor):
 
         if do_subtract:
 
-            masterdark = als_input.read_disk_image(Path(config.get_master_dark_file_path()))
+            dark = als_input.read_disk_image(Path(config.get_master_dark_file_path()))
 
-            if masterdark is not None:
-
-                if image.is_same_shape_as(masterdark):
-
-                    if image.data.dtype.name != masterdark.data.dtype.name:
-
-                        MESSAGE_HUB.dispatch_warning(
-                            __name__,
-                            QT_TRANSLATE_NOOP(
-                                "",
-                                "Dark & Light data types mismatch. Light: {} vs Dark: {}. Dark needs to be conformed."
-                            ),
-                            [image.data.dtype.name, masterdark.data.dtype.name])
-
-                        with Timer() as conforming_timer:
-
-                            if issubclass(image.data.dtype.type, np.integer):
-                                image_min_allowed = np.iinfo(image.data.dtype).min
-                                image_max_allowed = np.iinfo(image.data.dtype).max
-                            elif issubclass(image.data.dtype.type, np.floating):
-                                image_min_allowed = 0.0
-                                image_max_allowed = 1.0
-                            else:
-                                raise ProcessingError(f"unhandled image data type : {image.data.dtype.type}")
-
-                            if issubclass(masterdark.data.dtype.type, np.integer):
-                                masterdark_min_allowed = np.iinfo(masterdark.data.dtype).min
-                                masterdark_max_allowed = np.iinfo(masterdark.data.dtype).max
-                            elif issubclass(masterdark.data.dtype.type, np.floating):
-                                masterdark_min_allowed = 0.0
-                                masterdark_max_allowed = 1.0
-                            else:
-                                raise ProcessingError(f"unhandled masterdark data type : {masterdark.data.dtype.type}")
-
-                            masterdark.data = np.interp(
-                                masterdark.data,
-                                (masterdark_min_allowed, masterdark_max_allowed),
-                                (image_min_allowed, image_max_allowed)).astype(image.data.dtype)
-
-                        _LOGGER.debug(f"Dark frame conforming done in {conforming_timer.elapsed_in_milli_as_str} ms")
-
-                    _LOGGER.debug("Subtracting dark frame...")
-
-                    with Timer() as subtraction_timer:
-                        image.data = np.where(image.data > masterdark.data, image.data - masterdark.data, 0)
-                    _LOGGER.debug(f"Dark frame subtracted in {subtraction_timer.elapsed_in_milli_as_str} ms")
-
-                else:
-                    mismatch_message = QT_TRANSLATE_NOOP(
-                        "",
-                        "Data structure inconsistency. Light: {} vs Dark: {}. Dark subtraction is SKIPPED"
-                    )
-                    mismatch_values = [image.data.shape, masterdark.data.shape]
-                    MESSAGE_HUB.dispatch_warning(__name__, mismatch_message, mismatch_values)
-            else:
+            if dark is None:
                 read_error_message = QT_TRANSLATE_NOOP(
                     "",
                     "Could not read dark {}. Dark subtraction is SKIPPED"
                 )
                 read_error_values = [config.get_master_dark_file_path(), ]
                 MESSAGE_HUB.dispatch_warning(__name__, read_error_message, read_error_values)
+                return image
+
+            if not image.is_same_shape_as(dark):
+                mismatch_message = QT_TRANSLATE_NOOP(
+                    "",
+                    "Data structure inconsistency. Light: {} vs Dark: {}. Dark subtraction is SKIPPED"
+                )
+                mismatch_values = [image.data.shape, dark.data.shape]
+                MESSAGE_HUB.dispatch_warning(__name__, mismatch_message, mismatch_values)
+                return image
+
+            if image.data.dtype.name != dark.data.dtype.name:
+
+                MESSAGE_HUB.dispatch_warning(
+                    __name__,
+                    QT_TRANSLATE_NOOP(
+                        "",
+                        "Dark & Light data types mismatch. Light: {} vs Dark: {}. Dark needs to be conformed."
+                    ),
+                    [image.data.dtype.name, dark.data.dtype.name])
+
+                with Timer() as conforming_timer:
+
+                    try:
+                        image_min_allowed, image_max_allowed = RemoveDark._get_allowed_min_and_max(image.data)
+                    except TypeError:
+                        raise ProcessingError(f"unhandled image data type : {image.data.dtype.type}")
+
+                    try:
+                        dark_min_allowed, dark_max_allowed = RemoveDark._get_allowed_min_and_max(dark.data)
+                    except TypeError:
+                        raise ProcessingError(f"unhandled masterdark data type : {dark.data.dtype.type}")
+
+                    dark.data = np.interp(
+                        dark.data,
+                        (dark_min_allowed, dark_max_allowed),
+                        (image_min_allowed, image_max_allowed)).astype(image.data.dtype)
+
+                _LOGGER.debug(f"Dark frame conforming done in {conforming_timer.elapsed_in_milli_as_str} ms")
+
+            _LOGGER.debug("Subtracting dark frame...")
+
+            with Timer() as subtraction_timer:
+                image.data = np.where(image.data > dark.data, image.data - dark.data, 0)
+            _LOGGER.debug(f"Dark frame subtracted in {subtraction_timer.elapsed_in_milli_as_str} ms")
 
         return image
+
+    @staticmethod
+    def _get_allowed_min_and_max(data):
+        """
+        Get the allowed minimum and maximum values according to data type
+
+        :param data: image data
+        :type data: numpy.ndarray
+
+        :return: a tuple of 2 values : minimum and maximum allowed values for data type
+        """
+
+        if issubclass(data.dtype.type, np.integer):
+            allowed_min = np.iinfo(data.dtype).min
+            allowed_max = np.iinfo(data.dtype).max
+        elif issubclass(data.dtype.type, np.floating):
+            allowed_min = 0.0
+            allowed_max = 1.0
+        else:
+            raise TypeError("Data type must be float or integer")
+
+        return allowed_min, allowed_max
 
 
 class ConvertForOutput(ImageProcessor):
