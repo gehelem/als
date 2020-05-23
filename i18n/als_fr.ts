@@ -999,5 +999,10 @@ Détails : {}</translation>
         <source>switch night mode</source>
         <translation>Active le mode nuit</translation>
     </message>
+    <message>
+        <location filename="../src/als/ui/als_ui.ui" line="1239"/>
+        <source>use dark UI to preserve night vision</source>
+        <translation type="unfinished">utilise un affichage sombre pour préserver votre vision de nuit</translation>
+    </message>
 </context>
 </TS>

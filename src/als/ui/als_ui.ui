@@ -1235,6 +1235,9 @@
    <property name="toolTip">
     <string>switch night mode</string>
    </property>
+   <property name="statusTip">
+    <string>use dark UI to preserve night vision</string>
+   </property>
    <property name="shortcut">
     <string notr="true">N</string>
    </property>
