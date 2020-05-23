@@ -465,12 +465,13 @@ class RemoveDark(ImageProcessor):
 
                     if image.data.dtype.name != masterdark.data.dtype.name:
 
-                        data_mismatch_message = QT_TRANSLATE_NOOP(
-                            "",
-                            "Dark & Light data types mismatch. Light: {} vs Dark: {}. Dark needs to be conformed."
-                        )
-                        data_mismatch_values = [image.data.dtype.name, masterdark.data.dtype.name]
-                        MESSAGE_HUB.dispatch_warning(__name__, data_mismatch_message, data_mismatch_values)
+                        MESSAGE_HUB.dispatch_warning(
+                            __name__,
+                            QT_TRANSLATE_NOOP(
+                                "",
+                                "Dark & Light data types mismatch. Light: {} vs Dark: {}. Dark needs to be conformed."
+                            ),
+                            [image.data.dtype.name, masterdark.data.dtype.name])
 
                         with Timer() as conforming_timer:
 
