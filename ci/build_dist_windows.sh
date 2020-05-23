@@ -44,8 +44,22 @@ else
   VERSION=$(grep version src/als/version.py | cut -d'"' -f2)-$(git rev-parse --short HEAD)
 fi
 
+VERSION=$(echo ${VERSION} | sed "s/^v//")
 echo "version = \"${VERSION}\"" > src/als/version.py
+
+VERPARTS=(${VERSION//-/ })
+VERNUM=${VERPARTS[0]}
+DOTCOUNT=$(grep -o '\.' <<< "${VERNUM}" | grep -c .)
+
+for (( c=${DOTCOUNT}; c<3; c++ ))
+do
+  VERNUM=${VERNUM}.0
+done
+
+VERCODE=$(echo ${VERNUM} | sed "s/\./, /g")
 
 echo "Building package version: ${VERSION}"
 
-pyinstaller -i src/resources/als_logo.ico -F -n als-${VERSION} --windowed src/als/main.py
+sed -e "s/##VERSION##/${VERSION}/g" -e "s/##VERCODE##/${VERCODE}/g" ci/file_version_info_template.txt > ci/file_version_info.txt
+
+pyinstaller -i src/resources/als_logo.ico -F -n als --windowed --version-file=ci/file_version_info.txt src/als/main.py
