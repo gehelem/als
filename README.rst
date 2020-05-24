@@ -18,7 +18,7 @@ Features
 
 ALS polls a folder on your machine and aligns + stacks any new picture saved into that folder.
 
-ALS is compatible with `.fit` and `.fits` files and RAW camera files : https://www.libraw.org/supported-cameras
+ALS is compatible with `.fit`, `.fits` and `.fts` files and RAW camera files : https://www.libraw.org/supported-cameras
 
 After a pre-processing stage that includes dark subtraction, hot pixel removal and debayering (if needed), pictures
 are aligned and stacked. User can then enhance the resulting image with various processes :
