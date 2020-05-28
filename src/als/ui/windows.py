@@ -694,10 +694,10 @@ class MainWindow(QMainWindow):
             self._ui.lbl_save_queue_size.setText(str(DYNAMIC_DATA.save_queue.qsize()))
 
             # handle component statuses
-            self._ui.lbl_pre_processor_status.setText(DYNAMIC_DATA.pre_processor_status)
-            self._ui.lbl_stacker_status.setText(DYNAMIC_DATA.stacker_status)
-            self._ui.lbl_post_processor_status.setText(DYNAMIC_DATA.post_processor_status)
-            self._ui.lbl_saver_status.setText(DYNAMIC_DATA.saver_status)
+            self._ui.lbl_pre_processor_status.setText(I18n.WORKER_STATUS_BUSY if DYNAMIC_DATA.pre_processor_busy else "-")
+            self._ui.lbl_stacker_status.setText(I18n.WORKER_STATUS_BUSY if DYNAMIC_DATA.stacker_busy else "-")
+            self._ui.lbl_post_processor_status.setText(I18n.WORKER_STATUS_BUSY if DYNAMIC_DATA.post_processor_busy else "-")
+            self._ui.lbl_saver_status.setText(I18n.WORKER_STATUS_BUSY if DYNAMIC_DATA.saver_busy else "-")
 
             # manage warning sign
             if DYNAMIC_DATA.has_new_warnings:

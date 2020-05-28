@@ -300,14 +300,13 @@ class SaveWaitDialog(QDialog):
 
         remaining_image_save_count = 0
 
-        for status in [
+        remaining_image_save_count += [
 
-                DYNAMIC_DATA.pre_processor_status,
-                DYNAMIC_DATA.stacker_status,
-                DYNAMIC_DATA.post_processor_status,
-        ]:
-            if status == I18n.WORKER_STATUS_BUSY:
-                remaining_image_save_count += 1
+                DYNAMIC_DATA.pre_processor_busy,
+                DYNAMIC_DATA.stacker_busy,
+                DYNAMIC_DATA.post_processor_busy,
+
+        ].count(True)
 
         for queue_size in [
 
@@ -321,7 +320,7 @@ class SaveWaitDialog(QDialog):
 
         remaining_image_save_count *= 1 + additional_saves_per_image
 
-        remaining_image_save_count += 1 if DYNAMIC_DATA.saver_status == I18n.WORKER_STATUS_BUSY else 0
+        remaining_image_save_count += 1 if DYNAMIC_DATA.saver_busy else 0
         remaining_image_save_count += DYNAMIC_DATA.save_queue.qsize()
 
         return remaining_image_save_count

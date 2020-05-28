@@ -12,10 +12,10 @@ from PyQt5.QtCore import QThread, pyqtSignal, QT_TRANSLATE_NOOP
 from scipy.signal import convolve2d
 from skimage import exposure
 
-from als.code_utilities import log, Timer, SignalingQueue
+from als.code_utilities import log, Timer, SignalingQueue, human_readable_byte_size
 from als.messaging import MESSAGE_HUB
 from als.model.base import Image
-from als.model.data import I18n
+from als.model.data import I18n, DYNAMIC_DATA
 from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter, ListParameter
 from als.io import input as als_input
 from als import config
@@ -343,6 +343,7 @@ class Standardize(ImageProcessor):
 
         image.data = np.float32(image.data)
 
+        DYNAMIC_DATA.last_standardized_image_size = image.data.size
         return image
 
 

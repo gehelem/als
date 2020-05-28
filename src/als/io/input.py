@@ -19,6 +19,7 @@ from als import config
 from als.code_utilities import log
 from als.messaging import MESSAGE_HUB
 from als.model.base import Image
+from als.model.data import DYNAMIC_DATA
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -143,6 +144,7 @@ class FolderScanner(FileSystemEventHandler, InputScanner, QObject):
             image_path = event.dest_path
             _LOGGER.debug(f"File move detected : {image_path}")
 
+            FolderScanner.wait_for_resources()
             self.broadcast_image(read_disk_image(Path(image_path)))
 
     @log
@@ -165,7 +167,19 @@ class FolderScanner(FileSystemEventHandler, InputScanner, QObject):
                 if file_is_incomplete:
                     time.sleep(_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC)
 
+            FolderScanner.wait_for_resources()
             self.broadcast_image(read_disk_image(Path(image_path)))
+
+    @staticmethod
+    @log
+    def wait_for_resources():
+        """
+        make current thread (file read) wait for pre-processor and stacker (and respective queues) to be free
+        """
+        while DYNAMIC_DATA.stacker_busy or DYNAMIC_DATA.pre_processor_busy or \
+                DYNAMIC_DATA.stacker_queue.qsize() > 0 or DYNAMIC_DATA.pre_process_queue.qsize() > 0:
+            _LOGGER.debug(f"Waiting for downstream workers to be free...")
+            time.sleep(1)
 
 
 @log
