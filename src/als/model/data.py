@@ -123,7 +123,6 @@ class DynamicData:
         self.saver_busy = False
         self.has_new_warnings = False
         self.is_first_run = True
-        self.last_standardized_image_size = 0.0
 
 
 class HistogramContainer:

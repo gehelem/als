@@ -343,7 +343,6 @@ class Standardize(ImageProcessor):
 
         image.data = np.float32(image.data)
 
-        DYNAMIC_DATA.last_standardized_image_size = image.data.size
         return image
 
 
