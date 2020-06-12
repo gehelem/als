@@ -175,9 +175,12 @@ class FolderScanner(FileSystemEventHandler, InputScanner, QObject):
     def wait_for_resources():
         """
         make current thread (file read) wait for pre-processor and stacker (and respective queues) to be free
+
+        #TODO: Move this logic to Controller
         """
-        while DYNAMIC_DATA.stacker_busy or DYNAMIC_DATA.pre_processor_busy or \
-                DYNAMIC_DATA.stacker_queue.qsize() > 0 or DYNAMIC_DATA.pre_process_queue.qsize() > 0:
+        while (not DYNAMIC_DATA.session.is_stopped) and \
+                (DYNAMIC_DATA.stacker_busy or DYNAMIC_DATA.pre_processor_busy or
+                 DYNAMIC_DATA.stacker_queue.qsize() > 0 or DYNAMIC_DATA.pre_process_queue.qsize() > 0):
             _LOGGER.debug(f"Waiting for downstream workers to be free...")
             time.sleep(1)
 

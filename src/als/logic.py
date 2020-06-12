@@ -491,12 +491,12 @@ class Controller:
         Stops session : stop input scanner and purge input queue
         """
         if not DYNAMIC_DATA.session.is_stopped:
+            DYNAMIC_DATA.session.set_status(Session.stopped)
             self._stop_input_scanner()
             Controller.purge_queue(self._pre_process_queue)
             Controller.purge_queue(self._stacker_queue)
             Controller.purge_queue(self._post_process_queue)
             MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Session stopped"))
-            DYNAMIC_DATA.session.set_status(Session.stopped)
 
     @log
     def pause_session(self):
