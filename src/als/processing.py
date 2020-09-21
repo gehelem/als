@@ -437,6 +437,8 @@ class Debayer(ImageProcessor):
             debayered_data = cv2.cvtColor(image.data, cv2_debayer_dict[cv_debay])
         except KeyError:
             raise ProcessingError(f"unsupported bayer pattern : {bayer_pattern}")
+        except cv2.error as error:
+            raise ProcessingError(f"Debayering error : {str(error)}")
 
         image.data = debayered_data
 
