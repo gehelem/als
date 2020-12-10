@@ -77,10 +77,10 @@ class Controller:
         DYNAMIC_DATA.web_server_is_running = False
         self._save_every_image = False
 
-        DYNAMIC_DATA.pre_processor_status = WORKER_STATUS_IDLE
-        DYNAMIC_DATA.stacker_status = WORKER_STATUS_IDLE
-        DYNAMIC_DATA.post_processor_status = WORKER_STATUS_IDLE
-        DYNAMIC_DATA.saver_status = WORKER_STATUS_IDLE
+        DYNAMIC_DATA.pre_processor_busy = False
+        DYNAMIC_DATA.stacker_busy = False
+        DYNAMIC_DATA.post_processor_busy = False
+        DYNAMIC_DATA.saver_busy = False
 
         self._input_scanner: InputScanner = InputScanner.create_scanner()
 
@@ -371,7 +371,7 @@ class Controller:
         """
         pre-processor just started working on new image
         """
-        DYNAMIC_DATA.pre_processor_status = I18n.WORKER_STATUS_BUSY
+        DYNAMIC_DATA.pre_processor_busy = True
         self._notify_model_observers()
 
     @log
@@ -379,7 +379,7 @@ class Controller:
         """
         pre-processor just finished working on new image
         """
-        DYNAMIC_DATA.pre_processor_status = WORKER_STATUS_IDLE
+        DYNAMIC_DATA.pre_processor_busy = False
         self._notify_model_observers()
 
     @log
@@ -387,7 +387,7 @@ class Controller:
         """
         stacker just started working on new image
         """
-        DYNAMIC_DATA.stacker_status = I18n.WORKER_STATUS_BUSY
+        DYNAMIC_DATA.stacker_busy = True
         self._notify_model_observers()
 
     @log
@@ -395,7 +395,7 @@ class Controller:
         """
         stacker just finished working on new image
         """
-        DYNAMIC_DATA.stacker_status = WORKER_STATUS_IDLE
+        DYNAMIC_DATA.stacker_busy = False
         self._notify_model_observers()
 
     @log
@@ -403,7 +403,7 @@ class Controller:
         """
         post-processor just started working on new image
         """
-        DYNAMIC_DATA.post_processor_status = I18n.WORKER_STATUS_BUSY
+        DYNAMIC_DATA.post_processor_busy = True
         self._notify_model_observers()
 
     @log
@@ -411,7 +411,7 @@ class Controller:
         """
         post-processor just finished working on new image
         """
-        DYNAMIC_DATA.post_processor_status = WORKER_STATUS_IDLE
+        DYNAMIC_DATA.post_processor_busy = False
         self._notify_model_observers()
 
     @log
@@ -419,7 +419,7 @@ class Controller:
         """
         saver just started working on new image
         """
-        DYNAMIC_DATA.saver_status = I18n.WORKER_STATUS_BUSY
+        DYNAMIC_DATA.saver_busy = True
         self._notify_model_observers()
 
     @log
@@ -427,7 +427,7 @@ class Controller:
         """
         saver just finished working on new image
         """
-        DYNAMIC_DATA.saver_status = WORKER_STATUS_IDLE
+        DYNAMIC_DATA.saver_busy = False
         self._notify_model_observers()
 
     @log
@@ -491,12 +491,12 @@ class Controller:
         Stops session : stop input scanner and purge input queue
         """
         if not DYNAMIC_DATA.session.is_stopped:
+            DYNAMIC_DATA.session.set_status(Session.stopped)
             self._stop_input_scanner()
             Controller.purge_queue(self._pre_process_queue)
             Controller.purge_queue(self._stacker_queue)
             Controller.purge_queue(self._post_process_queue)
             MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Session stopped"))
-            DYNAMIC_DATA.session.set_status(Session.stopped)
 
     @log
     def pause_session(self):

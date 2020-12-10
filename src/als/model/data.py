@@ -117,10 +117,10 @@ class DynamicData:
         self.stacker_queue = SignalingQueue()
         self.process_queue = SignalingQueue()
         self.save_queue = SignalingQueue()
-        self.pre_processor_status = ""
-        self.stacker_status = ""
-        self.post_processor_status = ""
-        self.saver_status = ""
+        self.pre_processor_busy = False
+        self.stacker_busy = False
+        self.post_processor_busy = False
+        self.saver_busy = False
         self.has_new_warnings = False
         self.is_first_run = True
 

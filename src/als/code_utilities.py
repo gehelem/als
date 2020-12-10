@@ -7,6 +7,7 @@ from functools import wraps
 from queue import Queue
 from time import time
 
+import psutil
 from PyQt5.QtCore import QObject, pyqtSignal, QFile, QIODevice, QTextStream
 
 # WARNING !!!!! Don't ever remove this USED import !!!!!
@@ -146,6 +147,7 @@ def get_timestamp():
     return timestamp
 
 
+@log
 def human_readable_byte_size(num):
     """
     returns a human readable representation of a raw number of bytes
@@ -161,6 +163,7 @@ def human_readable_byte_size(num):
     return "%.3f %sB" % (num, 'Yi')
 
 
+@log
 def get_text_content_of_resource(resource_uri: str):
     """
     Get text content of a file stored inside Qt resources
@@ -177,3 +180,8 @@ def get_text_content_of_resource(resource_uri: str):
         return QTextStream(fake_file).readAll()
     except OSError:
         return ""
+
+
+@log
+def available_memory():
+    return psutil.virtual_memory().available
