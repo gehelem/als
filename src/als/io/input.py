@@ -8,6 +8,7 @@ import time
 from abc import abstractmethod
 from pathlib import Path
 
+import cv2
 from astropy.io import fits
 from PyQt5.QtCore import QFileInfo, pyqtSignal, QObject, QT_TRANSLATE_NOOP
 from rawpy import imread
@@ -208,10 +209,14 @@ def read_disk_image(path: Path):
     if not ignore_image:
         if path.suffix.lower() in ['.fit', '.fits', '.fts']:
             image = _read_fit_image(path)
+
+        elif path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.tif', '.tiff']:
+            image = _read_standard_image(path)
         else:
             image = _read_raw_image(path)
 
         if image is not None:
+            image.origin = f"FILE : {str(path.resolve())}"
             MESSAGE_HUB.dispatch_info(
                 __name__,
                 QT_TRANSLATE_NOOP("", "Successful image read from {}"),
@@ -243,12 +248,26 @@ def _read_fit_image(path: Path):
         if 'BAYERPAT' in header:
             image.bayer_pattern = header['BAYERPAT']
 
-        _set_image_file_origin(image, path)
-
     except (OSError, TypeError) as error:
         _report_fs_error(path, error)
         return None
 
+    return image
+
+
+@log
+def _read_standard_image(path: Path):
+    """
+    read standard image from filesystem using OpenCV
+
+    :param path: path to image file to load from
+    :type path: pathlib.Path
+
+    :return: the loaded image or None if a known error occurred
+    :rtype: Image or None
+    """
+
+    image = Image(cv2.cvtColor(cv2.imread(str(path.resolve())), cv2.COLOR_BGR2RGB))
     return image
 
 
@@ -325,7 +344,6 @@ def _read_raw_image(path: Path):
 
             new_image = Image(raw_image.raw_image_visible.copy())
             new_image.bayer_pattern = bayer_pattern
-            _set_image_file_origin(new_image, path)
             return new_image
 
     except LibRawNonFatalError as non_fatal_error:
@@ -342,8 +360,3 @@ def _report_fs_error(path: Path, error: Exception):
         __name__,
         QT_TRANSLATE_NOOP("", "Error reading from file {} : {}"),
         [str(path.resolve()), str(error)])
-
-
-@log
-def _set_image_file_origin(image: Image, path: Path):
-    image.origin = f"FILE : {str(path.resolve())}"
