@@ -635,8 +635,6 @@ class Controller:
         :param add_timestamp: Do we add a timestamp to image name
         :type add_timestamp: bool
         """
-        filename_base = filename_base
-
         if add_timestamp:
             filename_base += '-' + get_timestamp().replace(' ', "-").replace(":", '-').replace('.', '-')
 
