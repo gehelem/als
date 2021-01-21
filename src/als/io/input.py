@@ -267,8 +267,13 @@ def _read_standard_image(path: Path):
     :rtype: Image or None
     """
 
-    image = Image(cv2.cvtColor(cv2.imread(str(path.resolve())), cv2.COLOR_BGR2RGB))
-    return image
+    data = cv2.imread(str(path.resolve()), cv2.IMREAD_UNCHANGED)
+
+    # convert color layers order for color images
+    if data.ndim > 2:
+        data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
+
+    return Image(data)
 
 
 @log
