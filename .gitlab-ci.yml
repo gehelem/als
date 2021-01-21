@@ -13,14 +13,15 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_PIPELINE_SOURCE == "schedule"
     - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_PIPELINE_SOURCE == "tag"
     - if: $CI_PIPELINE_SOURCE == "push"
       when: never
 
 Configure Build:
-  extends: .default-job
   tags:
   - infra
   stage: setup
+  timeout: 5m
   script:
     - ci/setup_build.sh
   artifacts:
@@ -29,7 +30,6 @@ Configure Build:
 
 
 Build PC/Linux:
-  extends: .default-job
   tags:
   - amd64
   - linux
@@ -38,13 +38,11 @@ Build PC/Linux:
   script:
     - ci/build_dist_amd64_linux.sh
   artifacts:
-    expose_as: ALS for amd64 Linux
     paths:
       - als-$ALS_VERSION_STRING.run
 
 
 Build RaspBerry/Linux:
-  extends: .default-job
   tags:
   - arm64
   - linux
@@ -53,13 +51,11 @@ Build RaspBerry/Linux:
   script:
     - ci/build_dist_arm64_linux.sh
   artifacts:
-    expose_as: ALS for arm64 Linux
     paths:
       - als-$ALS_VERSION_STRING.tgz
 
 
 Build Mac/Intel:
-  extends: .default-job
   tags:
   - amd64
   - mac
@@ -68,26 +64,18 @@ Build Mac/Intel:
   script:
     - ci/build_dist_amd64_osx.sh
   artifacts:
-    expose_as: ALS for Mac Intel
     paths:
       - als-$ALS_VERSION_STRING.dmg
 
 
 Build PC/Windows:
-  extends: .default-job
   tags:
   - amd64
   - win
   stage: build
-  timeout: 35m
+  timeout: 20m
   script:
     - sh ci/build_dist_amd64_win.sh
   artifacts:
-    expose_as: ALS for amd64 Windows
     paths:
       - als-$ALS_VERSION_STRING.exe
-
-
-.default-job:
-  before_script:
-    - sh -c "env | sort"
