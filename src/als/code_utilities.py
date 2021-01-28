@@ -184,4 +184,9 @@ def get_text_content_of_resource(resource_uri: str):
 
 @log
 def available_memory():
+    """
+    Get system available memory in bytes
+    :return: available memory (bytes)
+    :rtype: int
+    """
     return psutil.virtual_memory().available

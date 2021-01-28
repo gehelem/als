@@ -13,7 +13,7 @@ from PyQt5.QtCore import QTranslator, QT_TRANSLATE_NOOP
 from PyQt5.QtWidgets import QApplication
 
 from als import config
-from als.code_utilities import Timer, human_readable_byte_size
+from als.code_utilities import Timer, human_readable_byte_size, available_memory
 from als.logic import Controller
 from als.messaging import MESSAGE_HUB
 from als.model.data import I18n, VERSION
@@ -36,7 +36,7 @@ def log_sys_info():
     _LOGGER.debug(f"CPU count             : {os.cpu_count()}")
     _LOGGER.debug(f"OS name               : {platform.system()}")
     _LOGGER.debug(f"OS release            : {platform.release()}")
-    _LOGGER.debug(f"Available memory      : {human_readable_byte_size(psutil.virtual_memory().available)}")
+    _LOGGER.debug(f"Available memory      : {human_readable_byte_size(available_memory())}")
     _LOGGER.debug(f"Python version        : {sys.version}")
     _LOGGER.debug('System info dump - END')
     _LOGGER.debug("***************************************************************************")

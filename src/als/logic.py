@@ -35,7 +35,7 @@ from als.io.output import ImageSaver
 from als.messaging import MESSAGE_HUB
 from als.model.base import Image, Session
 from als.model.data import (
-    DYNAMIC_DATA, WORKER_STATUS_IDLE,
+    DYNAMIC_DATA,
     I18n, STACKED_IMAGE_FILE_NAME_BASE,
     IMAGE_SAVE_TYPE_JPEG, WEB_SERVED_IMAGE_FILE_NAME_BASE
 )

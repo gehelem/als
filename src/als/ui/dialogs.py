@@ -12,7 +12,7 @@ from als import config
 from als.code_utilities import log
 from als.logic import Controller
 from als.messaging import MESSAGE_HUB
-from als.model.data import VERSION, DYNAMIC_DATA, I18n
+from als.model.data import VERSION, DYNAMIC_DATA
 from generated.about_ui import Ui_AboutDialog
 from generated.prefs_ui import Ui_PrefsDialog
 from generated.save_wait_ui import Ui_SaveWaitDialog
@@ -302,9 +302,9 @@ class SaveWaitDialog(QDialog):
 
         remaining_image_save_count += [
 
-                DYNAMIC_DATA.pre_processor_busy,
-                DYNAMIC_DATA.stacker_busy,
-                DYNAMIC_DATA.post_processor_busy,
+            DYNAMIC_DATA.pre_processor_busy,
+            DYNAMIC_DATA.stacker_busy,
+            DYNAMIC_DATA.post_processor_busy,
 
         ].count(True)
 
