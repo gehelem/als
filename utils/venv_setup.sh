@@ -29,7 +29,7 @@ PRJ=$(readlink -f $(dirname $(readlink -f ${0}))/../)
 cd ${PRJ}
 
 sudo apt-get update
-sudo apt-get install -y python3-venv
+sudo apt-get install -y python3-venv libraw-dev libraw-bin
 VENV=${1:-${PRJ}/venv}
 echo "Creating virtual env in : ${VENV} ..."
 python3 -m venv ${VENV}
