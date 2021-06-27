@@ -193,7 +193,8 @@ class PreferencesDialog(QDialog):
         """Opens a folder dialog to choose scan folder"""
         scan_folder_path = QFileDialog.getExistingDirectory(self,
                                                             self.tr("Select scan folder"),
-                                                            self._ui.ln_scan_folder_path.text())
+                                                            self._ui.ln_scan_folder_path.text(),
+                                                            QFileDialog.DontUseNativeDialog)
         if scan_folder_path:
             self._ui.ln_scan_folder_path.setText(scan_folder_path)
 
@@ -205,7 +206,8 @@ class PreferencesDialog(QDialog):
         """Opens a folder dialog to choose work folder"""
         work_folder_path = QFileDialog.getExistingDirectory(self,
                                                             self.tr("Select work folder"),
-                                                            self._ui.ln_work_folder_path.text())
+                                                            self._ui.ln_work_folder_path.text(),
+                                                            QFileDialog.DontUseNativeDialog)
         if work_folder_path:
             self._ui.ln_work_folder_path.setText(work_folder_path)
 
