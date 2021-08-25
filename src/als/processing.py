@@ -10,7 +10,6 @@ import cv2
 import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal, QT_TRANSLATE_NOOP
 from scipy.signal import convolve2d
-from skimage import exposure
 
 from als.code_utilities import log, Timer, SignalingQueue
 from als.messaging import MESSAGE_HUB
@@ -19,6 +18,7 @@ from als.model.data import I18n
 from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter, ListParameter
 from als.io import input as als_input
 from als import config
+from contrib.stretch import Stretch
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -175,19 +175,12 @@ class AutoStretch(ImageProcessor):
                 default=True))
 
         self._parameters.append(
-            ListParameter(
-                "stretch method",
-                I18n.TOOLTIP_STRETCH_METHOD,
-                default=I18n.STRETCH_MODE_GLOBAL,
-                choices=[I18n.STRETCH_MODE_GLOBAL, I18n.STRETCH_MODE_LOCAL]))
-
-        self._parameters.append(
             RangeParameter(
                 "strength",
                 I18n.TOOLTIP_STRETCH_STRENGTH,
-                default=0.75,
+                default=0.25,
                 minimum=0,
-                maximum=3))
+                maximum=1))
 
     @log
     def process_image(self, image: Image):
@@ -196,8 +189,7 @@ class AutoStretch(ImageProcessor):
             _LOGGER.debug(f"Autostretch param {param.name} = {param.value}")
 
         active = self._parameters[0]
-        stretch_method = self._parameters[1]
-        stretch_strength = self._parameters[2]
+        stretch_strength = self._parameters[1]
 
         if active.value:
             _LOGGER.debug("Performing Autostretch...")
@@ -205,31 +197,11 @@ class AutoStretch(ImageProcessor):
                                    (image.data.min(), image.data.max()),
                                    (0, _16_BITS_MAX_VALUE))
 
-            @log
-            def histo_adpative_equalization(data):
-
-                # special case for autostretch value == 0
-                strength = stretch_strength.value if stretch_strength.value != 0 else 0.1
-
-                return exposure.equalize_adapthist(
-                    np.uint16(data),
-                    nbins=_16_BITS_MAX_VALUE + 1,
-                    clip_limit=.01 * strength)
-
-            @log
-            def contrast_stretching(data):
-                low, high = np.percentile(data, (stretch_strength.value, 100 - stretch_strength.value))
-                return exposure.rescale_intensity(data, in_range=(low, high))
-
-            available_stretches = [contrast_stretching, histo_adpative_equalization]
-
-            chosen_stretch = available_stretches[stretch_method.choices.index(stretch_method.value)]
-
             if image.is_color():
                 for channel in range(3):
-                    image.data[channel] = chosen_stretch(image.data[channel])
+                    image.data[channel] = Stretch(target_bkg=stretch_strength.value).stretch(image.data[channel])
             else:
-                image.data = chosen_stretch(image.data)
+                image.data = Stretch(target_bkg=stretch_strength.value).stretch(image.data)
             _LOGGER.debug("Autostretch Done")
 
             # autostretch output range is [0, 1]

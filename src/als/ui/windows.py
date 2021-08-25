@@ -86,19 +86,15 @@ class MainWindow(QMainWindow):
         self._autostretch_controls = [
 
             self._ui.chk_stretch_active,
-            self._ui.cb_stretch_method,
             self._ui.sld_stretch_strength
         ]
 
         self._autostretch_parameters = self._controller.get_autostretch_parameters()
 
         set_sliders_defaults(
-            [self._autostretch_parameters[2]],
+            [self._autostretch_parameters[1]],
             [self._ui.sld_stretch_strength]
         )
-
-        for label in self._autostretch_parameters[1].choices:
-            self._ui.cb_stretch_method.addItem(label)
 
         self._reset_autostretch()
 
@@ -192,7 +188,6 @@ class MainWindow(QMainWindow):
         self._ui.btn_stretch_reload.setEnabled(checked)
         self._ui.btn_stretch_reset.setEnabled(checked)
         self._ui.btn_stretch_apply.setEnabled(checked)
-        self._ui.cb_stretch_method.setEnabled(checked)
         self._ui.sld_stretch_strength.setEnabled(checked)
 
         self._apply_autostretch()

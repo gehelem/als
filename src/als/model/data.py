@@ -36,8 +36,6 @@ class I18n(QObject):
 
     STACKING_MODE_SUM = "TEMP"
     STACKING_MODE_MEAN = "TEMP"
-    STRETCH_MODE_LOCAL = "TEMP"
-    STRETCH_MODE_GLOBAL = "TEMP"
     WORKER_STATUS_BUSY = "TEMP"
 
     SCANNER = "TEMP"
@@ -62,7 +60,6 @@ class I18n(QObject):
     TOOLTIP_RGB_ACTIVE = "TEMP"
     TOOLTIP_STRETCH_ACTIVE = "TEMP"
     TOOLTIP_LEVELS_ACTIVE = "TEMP"
-    TOOLTIP_STRETCH_METHOD = "TEMP"
 
     STACK_SIZE = "TEMP"
 
@@ -74,8 +71,6 @@ class I18n(QObject):
         """
         I18n.STACKING_MODE_SUM = self.tr("sum")
         I18n.STACKING_MODE_MEAN = self.tr("mean")
-        I18n.STRETCH_MODE_LOCAL = self.tr("local")
-        I18n.STRETCH_MODE_GLOBAL = self.tr("global")
         I18n.WORKER_STATUS_BUSY = self.tr("busy")
         I18n.SCANNER = self.tr("scanner")
         I18n.OF = self.tr("of")
@@ -96,7 +91,6 @@ class I18n(QObject):
         I18n.TOOLTIP_RGB_ACTIVE = self.tr("RGB balance active")
         I18n.TOOLTIP_STRETCH_ACTIVE = self.tr("Autostretch active")
         I18n.TOOLTIP_LEVELS_ACTIVE = self.tr("Levels active")
-        I18n.TOOLTIP_STRETCH_METHOD = self.tr("Autostretch method")
         I18n.STACK_SIZE = self.tr("stack size")
         I18n.SESSION = self.tr("Session")
 
