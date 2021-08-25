@@ -208,11 +208,6 @@ class AutoStretch(ImageProcessor):
             # so we remap values to our range [0, Levels._UPPER_LIMIT]
             image.data *= _16_BITS_MAX_VALUE
 
-            # final interpolation
-            image.data = np.float32(np.interp(image.data,
-                                              (image.data.min(), image.data.max()),
-                                              (0, _16_BITS_MAX_VALUE)))
-
         return image
 
 
