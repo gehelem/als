@@ -17,7 +17,7 @@ fi
 pip install --upgrade pip
 pip install --upgrade wheel
 pip install setuptools
-
+pip install /work/bamboo/pip-cache/wheels/60/50/55/2ba3115ad93b55e68a729da36185eb45ad7cfba657a25acd54/rawpy-0.13.1-cp37-cp37m-linux_armv7l.whl
 patch < ci/rpi4_requirements.patch
 pip install -I -r requirements.txt
 pip install --upgrade astroid==2.2.0

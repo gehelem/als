@@ -1,8 +1,8 @@
 diff --git a/requirements.txt b/requirements.txt
-index 0096989..ad5d1fd 100644
+index 7c0445f..7739dc2 100644
 --- a/requirements.txt
 +++ b/requirements.txt
-@@ -2,8 +2,6 @@ astroalign==1.0.4
+@@ -2,11 +2,8 @@ astroalign==1.0.4
  astropy==4.0.1.post1
  dtcwt==0.12.0
  numpy==1.16.4
@@ -10,4 +10,7 @@ index 0096989..ad5d1fd 100644
 -PyQt5==5.13.0
  pywi==0.3.dev12
  qimage2ndarray==1.8
- rawpy==0.13.1
+-rawpy==0.13.1
+ watchdog==0.9.0
+ pylint==2.3.1
+ Sphinx==2.2.0
