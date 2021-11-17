@@ -147,7 +147,6 @@ def get_timestamp():
     return timestamp
 
 
-@log
 def human_readable_byte_size(num):
     """
     returns a human readable representation of a raw number of bytes
@@ -182,7 +181,6 @@ def get_text_content_of_resource(resource_uri: str):
         return ""
 
 
-@log
 def available_memory():
     """
     Get system available memory in bytes
