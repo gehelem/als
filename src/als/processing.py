@@ -448,7 +448,7 @@ class RemoveDark(ImageProcessor):
 
             if image.data.dtype.name != dark.data.dtype.name:
 
-                MESSAGE_HUB.dispatch_warning(
+                MESSAGE_HUB.dispatch_info(
                     __name__,
                     QT_TRANSLATE_NOOP(
                         "",
