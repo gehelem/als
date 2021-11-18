@@ -24,7 +24,7 @@ import logging
 from pathlib import Path
 from typing import List
 
-from PyQt5.QtCore import QFile, QT_TRANSLATE_NOOP, QCoreApplication
+from PyQt5.QtCore import QFile, QT_TRANSLATE_NOOP, QCoreApplication, QThread
 
 from als import config
 from als.code_utilities import log, AlsException, SignalingQueue, get_text_content_of_resource, get_timestamp
@@ -89,13 +89,13 @@ class Controller:
             'pre-process',
             self._pre_process_queue,
             [RemoveDark(), HotPixelRemover(), Debayer(), Standardize()])
-        self._pre_process_pipeline.start()
+        self._pre_process_pipeline.start(QThread.NormalPriority)
 
         self._stacker_queue: SignalingQueue = DYNAMIC_DATA.stacker_queue
         self._stacker: Stacker = Stacker(self._stacker_queue)
         self._stacker.stacking_mode = I18n.STACKING_MODE_MEAN
         self._stacker.align_before_stack = True
-        self._stacker.start()
+        self._stacker.start(QThread.NormalPriority)
 
         self._post_process_queue = DYNAMIC_DATA.process_queue
         self._post_process_pipeline: Pipeline = Pipeline('post-process', self._post_process_queue, [ConvertForOutput()])
@@ -105,11 +105,11 @@ class Controller:
         self._post_process_pipeline.add_process(self._autostretch_processor)
         self._post_process_pipeline.add_process(self._levels_processor)
         self._post_process_pipeline.add_process(self._rgb_processor)
-        self._post_process_pipeline.start()
+        self._post_process_pipeline.start(QThread.HighestPriority)
 
         self._saver_queue = DYNAMIC_DATA.save_queue
         self._saver = ImageSaver(self._saver_queue)
-        self._saver.start()
+        self._saver.start(QThread.LowPriority)
 
         self._last_stacking_result = None
         self._web_server = None

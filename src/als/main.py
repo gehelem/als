@@ -9,7 +9,7 @@ import platform
 import sys
 
 import psutil
-from PyQt5.QtCore import QTranslator, QT_TRANSLATE_NOOP
+from PyQt5.QtCore import QTranslator, QT_TRANSLATE_NOOP, QThread
 from PyQt5.QtWidgets import QApplication
 
 from als import config
@@ -50,6 +50,7 @@ def main():
 
     with Timer() as startup:
         app = QApplication(sys.argv)
+        QThread.currentThread().setPriority(QThread.TimeCriticalPriority)
         config.setup()
         log_sys_info()
 
