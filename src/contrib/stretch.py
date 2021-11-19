@@ -11,7 +11,7 @@ Pleiades Astrophoto and its contributors (http://pixinsight.com/).
 class Stretch:
 
     @log
-    def __init__(self, target_bkg=0.25, shadows_clip=-1.25):
+    def __init__(self, target_bkg=0.25, shadows_clip=-2):
         self.shadows_clip = shadows_clip
         self.target_bkg = target_bkg
 

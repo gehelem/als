@@ -178,7 +178,7 @@ class AutoStretch(ImageProcessor):
             RangeParameter(
                 "strength",
                 I18n.TOOLTIP_STRETCH_STRENGTH,
-                default=0.25,
+                default=0.18,
                 minimum=0,
                 maximum=1))
 
