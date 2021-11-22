@@ -15,7 +15,7 @@ from als.code_utilities import log, Timer, SignalingQueue
 from als.messaging import MESSAGE_HUB
 from als.model.base import Image
 from als.model.data import I18n
-from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter, ListParameter
+from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter
 from als.io import input as als_input
 from als import config
 from contrib.stretch import Stretch
