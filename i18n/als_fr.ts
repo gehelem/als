@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="fr_FR">
+<!DOCTYPE TS><TS version="2.0" language="fr_FR" sourcelanguage="">
 <context>
     <name></name>
     <message>
-        <location filename="../src/als/main.py" line="102"/>
+        <location filename="../src/als/main.py" line="103"/>
         <source>Astro Live Stacker version {} started in {} ms.</source>
         <translation>Astro Live Stacker version {} démarré en {} ms.</translation>
     </message>
@@ -49,17 +48,17 @@
         <translation>Session démarrée en mode {} avec alignement {}</translation>
     </message>
     <message>
-        <location filename="../src/als/processing.py" line="577"/>
+        <location filename="../src/als/processing.py" line="572"/>
         <source>Start {} on {}</source>
         <translation>Démarrage {} sur {}</translation>
     </message>
     <message>
-        <location filename="../src/als/processing.py" line="582"/>
+        <location filename="../src/als/processing.py" line="577"/>
         <source>End {} on {} in {} ms</source>
         <translation>Fin de {} sur {} en {} ms</translation>
     </message>
     <message>
-        <location filename="../src/als/processing.py" line="596"/>
+        <location filename="../src/als/processing.py" line="591"/>
         <source>{} stopped</source>
         <translation>{} stoppé</translation>
     </message>
@@ -74,7 +73,7 @@
         <translation>Impossible de stacker l&apos;image {} : {}. L&apos;image est ABANDONNEE</translation>
     </message>
     <message>
-        <location filename="../src/als/processing.py" line="620"/>
+        <location filename="../src/als/processing.py" line="615"/>
         <source>Error applying process &apos;{}&apos; to image {} : {} *** Image will be ignored</source>
         <translation>Erreur en exécutant process {} à l&apos;image {} : {} *** L&apos;image sera ignorée</translation>
     </message>
@@ -104,22 +103,22 @@
         <translation>Numéro de port non valide : {}</translation>
     </message>
     <message>
-        <location filename="../src/als/processing.py" line="456"/>
+        <location filename="../src/als/processing.py" line="451"/>
         <source>Dark &amp; Light data types mismatch. Light: {} vs Dark: {}. Dark needs to be conformed.</source>
         <translation>Types de données différents. Light: {} vs Dark: {}. Le dark doit être mis en conformité.</translation>
     </message>
     <message>
-        <location filename="../src/als/processing.py" line="437"/>
+        <location filename="../src/als/processing.py" line="432"/>
         <source>Could not read dark {}. Dark subtraction is SKIPPED</source>
         <translation>Erreur de lecture du dark {}. La soustraction de dark est IGNOREE</translation>
     </message>
     <message>
-        <location filename="../src/als/processing.py" line="446"/>
+        <location filename="../src/als/processing.py" line="441"/>
         <source>Data structure inconsistency. Light: {} vs Dark: {}. Dark subtraction is SKIPPED</source>
         <translation>Incohérence de la structure des données. Light: {} vs Dark: {}. La soustraction de dark est IGNOREE</translation>
     </message>
     <message>
-        <location filename="../src/als/processing.py" line="394"/>
+        <location filename="../src/als/processing.py" line="389"/>
         <source>The bayer pattern defined in your preferences differs from the one present in current image. Preferred: {} vs image: {}. Debayering result may be wrong.</source>
         <translation>La matrice de Bayer définie dans vos préférence diffère de celle présente dans l&apos;image courante. Préférences: {} vs image: {}. Le dématriçage peut produire un résultat érroné.</translation>
     </message>
@@ -129,7 +128,7 @@
         <translation>Démarrage de nouvelle session...</translation>
     </message>
     <message>
-        <location filename="../src/als/processing.py" line="360"/>
+        <location filename="../src/als/processing.py" line="355"/>
         <source>Hot Pixel Remover cannot work on debayered color images.</source>
         <translation>La suppression des pixels chauds ne peut être faite sur une image dématricée.</translation>
     </message>
@@ -553,7 +552,7 @@ Détails : {}</translation>
     <message>
         <location filename="../src/als/ui/prefs_ui.ui" line="496"/>
         <source>Core</source>
-        <translation>Général</translation>
+        <translation type="obsolete">Général</translation>
     </message>
     <message>
         <location filename="../src/als/ui/prefs_ui.ui" line="337"/>
@@ -564,6 +563,11 @@ Détails : {}</translation>
         <location filename="../src/als/ui/prefs_ui.ui" line="559"/>
         <source>Debug &amp;logs</source>
         <translation>Journaux détai&amp;llés</translation>
+    </message>
+    <message>
+        <location filename="../src/als/ui/prefs_ui.ui" line="496"/>
+        <source>Core (Restart needed)</source>
+        <translation>Général (Redémarrage requis)</translation>
     </message>
 </context>
 <context>
