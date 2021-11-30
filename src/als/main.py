@@ -9,7 +9,7 @@ import platform
 import sys
 
 import psutil
-from PyQt5.QtCore import QTranslator, QT_TRANSLATE_NOOP, QThread
+from PyQt5.QtCore import QTranslator, QT_TRANSLATE_NOOP, QThread, Qt
 from PyQt5.QtWidgets import QApplication
 
 from als import config
@@ -47,6 +47,12 @@ def main():
     """
     Runs ALS
     """
+
+    if hasattr(Qt, 'AA_EnableHighDpiScaling'):
+        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+
+    if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
+        QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
     with Timer() as startup:
         app = QApplication(sys.argv)

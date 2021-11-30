@@ -62,4 +62,4 @@ echo "Building package version: ${VERSION}"
 
 sed -e "s/##VERSION##/${VERSION}/g" -e "s/##VERCODE##/${VERCODE}/g" ci/file_version_info_template.txt > ci/file_version_info.txt
 
-pyinstaller -i src/resources/als_logo.ico -F -n als --windowed --version-file=ci/file_version_info.txt src/als/main.py
+pyinstaller -i src/resources/als_logo.ico -F -n als --windowed --version-file=ci/file_version_info.txt --add-data 'src/resources/qt.conf:.' src/als/main.py
