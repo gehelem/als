@@ -125,7 +125,7 @@ class FolderScanner(FileSystemEventHandler, InputScanner, QObject):
         try:
             scan_folder_path = config.get_scan_folder_path()
             self._observer = PollingObserver()
-            self._observer.schedule(self, scan_folder_path, recursive=False)
+            self._observer.schedule(self, scan_folder_path, recursive=True)
             self._observer.start()
         except OSError as os_error:
             raise ScannerStartError(os_error)
