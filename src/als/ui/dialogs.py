@@ -194,7 +194,7 @@ class PreferencesDialog(QDialog):
         scan_folder_path = QFileDialog.getExistingDirectory(self,
                                                             self.tr("Select scan folder"),
                                                             self._ui.ln_scan_folder_path.text(),
-                                                            QFileDialog.DontUseNativeDialog)
+                                                            options=QFileDialog.DontUseNativeDialog)
         if scan_folder_path:
             self._ui.ln_scan_folder_path.setText(scan_folder_path)
 
@@ -207,7 +207,7 @@ class PreferencesDialog(QDialog):
         work_folder_path = QFileDialog.getExistingDirectory(self,
                                                             self.tr("Select work folder"),
                                                             self._ui.ln_work_folder_path.text(),
-                                                            QFileDialog.DontUseNativeDialog)
+                                                            options=QFileDialog.DontUseNativeDialog)
         if work_folder_path:
             self._ui.ln_work_folder_path.setText(work_folder_path)
 
@@ -219,7 +219,8 @@ class PreferencesDialog(QDialog):
         """Opens a folder dialog to choose web folder"""
         web_folder_path = QFileDialog.getExistingDirectory(self,
                                                            self.tr("Select web folder"),
-                                                           self._ui.ln_web_folder_path.text())
+                                                           self._ui.ln_web_folder_path.text(),
+                                                           options=QFileDialog.DontUseNativeDialog)
         if web_folder_path:
             self._ui.ln_web_folder_path.setText(web_folder_path)
 
@@ -231,7 +232,8 @@ class PreferencesDialog(QDialog):
         """Opens a folder dialog to choose dark file"""
         dark_file_path = QFileDialog.getOpenFileName(self,
                                                      self.tr("Select dark file"),
-                                                     self._ui.ln_master_dark_path.text())
+                                                     self._ui.ln_master_dark_path.text(),
+                                                     options=QFileDialog.DontUseNativeDialog)
         if dark_file_path[0]:
             self._ui.ln_master_dark_path.setText(dark_file_path[0])
 
