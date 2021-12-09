@@ -315,7 +315,7 @@ class MainWindow(QMainWindow):
         """
         for item in self._scene.items():
             self._scene.removeItem(item)
-        self._image_item = QGraphicsPixmapItem(QPixmap(":/icons/dslr-camera.svg"))
+        self._image_item = QGraphicsPixmapItem(QPixmap(":/icons/window_background.png"))
         self._ui.image_view.setBackgroundBrush(QBrush(QColor("#222222"), Qt.SolidPattern))
         self._scene.addItem(self._image_item)
 
