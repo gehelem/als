@@ -443,19 +443,20 @@ class Controller:
                 DYNAMIC_DATA.has_new_warnings = False
                 self._stacker.reset()
 
-                folders_dict = {
+                # checking presence of critical folders
+                critical_folders_dict = {
                     "scan": config.get_scan_folder_path(),
                     "work": config.get_work_folder_path(),
                     "web":  config.get_web_folder_path(),
                 }
 
-                # checking presence of both scan & work folders
-                for role, path in folders_dict.items():
+                for role, path in critical_folders_dict.items():
                     if not Path(path).is_dir():
-                        title = "Missing critical folder"
-                        message = f"Your currently configured {role} folder '{path}' is missing."
-                        raise CriticalFolderMissing(title, message)
-
+                        title = QT_TRANSLATE_NOOP("", "Missing critical folder")
+                        message = QT_TRANSLATE_NOOP("", "Your currently configured {} folder {} is missing.")
+                        raise CriticalFolderMissing(
+                            QCoreApplication.translate("", title),
+                            QCoreApplication.translate("", message).format(*[role, path]))
             else:
                 # session was paused when this start was ordered. No need for checks & setup
                 MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Restarting input scanner ..."))

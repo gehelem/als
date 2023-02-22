@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="fr_FR" sourcelanguage="">
+<!DOCTYPE TS>
+<TS version="2.1" language="fr_FR">
 <context>
     <name></name>
     <message>
-        <location filename="../src/als/main.py" line="103"/>
+        <location filename="../src/als/main.py" line="120"/>
         <source>Astro Live Stacker version {} started in {} ms.</source>
         <translation>Astro Live Stacker version {} démarré en {} ms.</translation>
     </message>
@@ -141,6 +142,16 @@
         <location filename="../src/als/io/input.py" line="364"/>
         <source>Error reading from file {} : {}</source>
         <translation>Erreur de lecture fichier {} : {}</translation>
+    </message>
+    <message>
+        <location filename="../src/als/logic.py" line="456"/>
+        <source>Missing critical folder</source>
+        <translation>Dossier critique manquant</translation>
+    </message>
+    <message>
+        <location filename="../src/als/logic.py" line="456"/>
+        <source>Your currently configured {} folder {} is missing.</source>
+        <translation>Dossier &apos;{}&apos; : {} non trouvé.</translation>
     </message>
 </context>
 <context>
@@ -402,7 +413,7 @@ Détails : {}</translation>
         <translation>Selection le dossier web</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="232"/>
+        <location filename="../src/als/ui/dialogs.py" line="233"/>
         <source>Select dark file</source>
         <translation>Sélectionner le fichier de dark</translation>
     </message>
@@ -548,11 +559,6 @@ Détails : {}</translation>
         <location filename="../src/als/ui/prefs_ui.ui" line="331"/>
         <source>Save processed image to disk when stopping a running session. Can be overriden at runtime</source>
         <translation>Enregistre l&apos;image traîtée sur disque à chaque arrêt de session</translation>
-    </message>
-    <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="496"/>
-        <source>Core</source>
-        <translation type="obsolete">Général</translation>
     </message>
     <message>
         <location filename="../src/als/ui/prefs_ui.ui" line="337"/>
