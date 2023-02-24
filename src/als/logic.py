@@ -24,7 +24,7 @@ import logging
 from pathlib import Path
 from typing import List
 
-from PyQt5.QtCore import QFile, QT_TRANSLATE_NOOP, QCoreApplication
+from PyQt5.QtCore import QFile, QT_TRANSLATE_NOOP, QCoreApplication, QThread
 
 from als import config
 from als.code_utilities import log, AlsException, SignalingQueue, get_text_content_of_resource, get_timestamp
@@ -35,7 +35,7 @@ from als.io.output import ImageSaver
 from als.messaging import MESSAGE_HUB
 from als.model.base import Image, Session
 from als.model.data import (
-    DYNAMIC_DATA, WORKER_STATUS_IDLE,
+    DYNAMIC_DATA,
     I18n, STACKED_IMAGE_FILE_NAME_BASE,
     IMAGE_SAVE_TYPE_JPEG, WEB_SERVED_IMAGE_FILE_NAME_BASE
 )
@@ -89,13 +89,13 @@ class Controller:
             'pre-process',
             self._pre_process_queue,
             [RemoveDark(), HotPixelRemover(), Debayer(), Standardize()])
-        self._pre_process_pipeline.start()
+        self._pre_process_pipeline.start(QThread.NormalPriority)
 
         self._stacker_queue: SignalingQueue = DYNAMIC_DATA.stacker_queue
         self._stacker: Stacker = Stacker(self._stacker_queue)
         self._stacker.stacking_mode = I18n.STACKING_MODE_MEAN
         self._stacker.align_before_stack = True
-        self._stacker.start()
+        self._stacker.start(QThread.NormalPriority)
 
         self._post_process_queue = DYNAMIC_DATA.process_queue
         self._post_process_pipeline: Pipeline = Pipeline('post-process', self._post_process_queue, [ConvertForOutput()])
@@ -105,11 +105,11 @@ class Controller:
         self._post_process_pipeline.add_process(self._autostretch_processor)
         self._post_process_pipeline.add_process(self._levels_processor)
         self._post_process_pipeline.add_process(self._rgb_processor)
-        self._post_process_pipeline.start()
+        self._post_process_pipeline.start(QThread.HighestPriority)
 
         self._saver_queue = DYNAMIC_DATA.save_queue
         self._saver = ImageSaver(self._saver_queue)
-        self._saver.start()
+        self._saver.start(QThread.LowPriority)
 
         self._last_stacking_result = None
         self._web_server = None
@@ -443,19 +443,20 @@ class Controller:
                 DYNAMIC_DATA.has_new_warnings = False
                 self._stacker.reset()
 
-                folders_dict = {
+                # checking presence of critical folders
+                critical_folders_dict = {
                     "scan": config.get_scan_folder_path(),
                     "work": config.get_work_folder_path(),
                     "web":  config.get_web_folder_path(),
                 }
 
-                # checking presence of both scan & work folders
-                for role, path in folders_dict.items():
+                for role, path in critical_folders_dict.items():
                     if not Path(path).is_dir():
-                        title = "Missing critical folder"
-                        message = f"Your currently configured {role} folder '{path}' is missing."
-                        raise CriticalFolderMissing(title, message)
-
+                        title = QT_TRANSLATE_NOOP("", "Missing critical folder")
+                        message = QT_TRANSLATE_NOOP("", "Your currently configured {} folder {} is missing.")
+                        raise CriticalFolderMissing(
+                            QCoreApplication.translate("", title),
+                            QCoreApplication.translate("", message).format(*[role, path]))
             else:
                 # session was paused when this start was ordered. No need for checks & setup
                 MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Restarting input scanner ..."))
@@ -635,8 +636,6 @@ class Controller:
         :param add_timestamp: Do we add a timestamp to image name
         :type add_timestamp: bool
         """
-        filename_base = filename_base
-
         if add_timestamp:
             filename_base += '-' + get_timestamp().replace(' ', "-").replace(":", '-').replace('.', '-')
 

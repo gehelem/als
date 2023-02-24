@@ -8,12 +8,13 @@ import os
 import platform
 import sys
 
+import argparse
 import psutil
-from PyQt5.QtCore import QTranslator, QT_TRANSLATE_NOOP
+from PyQt5.QtCore import QTranslator, QT_TRANSLATE_NOOP, QThread, Qt
 from PyQt5.QtWidgets import QApplication
 
 from als import config
-from als.code_utilities import Timer, human_readable_byte_size
+from als.code_utilities import Timer, human_readable_byte_size, available_memory
 from als.logic import Controller
 from als.messaging import MESSAGE_HUB
 from als.model.data import I18n, VERSION
@@ -36,7 +37,7 @@ def log_sys_info():
     _LOGGER.debug(f"CPU count             : {os.cpu_count()}")
     _LOGGER.debug(f"OS name               : {platform.system()}")
     _LOGGER.debug(f"OS release            : {platform.release()}")
-    _LOGGER.debug(f"Available memory      : {human_readable_byte_size(psutil.virtual_memory().available)}")
+    _LOGGER.debug(f"Available memory      : {human_readable_byte_size(available_memory())}")
     _LOGGER.debug(f"Python version        : {sys.version}")
     _LOGGER.debug('System info dump - END')
     _LOGGER.debug("***************************************************************************")
@@ -47,9 +48,20 @@ def main():
     """
     Runs ALS
     """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--start_session", help="Start session on application startup", action="store_true")
+    parser.add_argument("-w", "--start_server", help="Start web server on application startup", action="store_true")
+    args = parser.parse_args()
+
+    if hasattr(Qt, 'AA_EnableHighDpiScaling'):
+        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+
+    if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
+        QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
     with Timer() as startup:
         app = QApplication(sys.argv)
+        QThread.currentThread().setPriority(QThread.TimeCriticalPriority)
         config.setup()
         log_sys_info()
 
@@ -98,6 +110,12 @@ def main():
         window = MainWindow(controller)
 
         window.reset_image_view()
+
+        if args.start_session:
+            controller.start_session()
+
+        if args.start_server:
+            controller.start_www()
 
     start_message = QT_TRANSLATE_NOOP("", "Astro Live Stacker version {} started in {} ms.")
     start_message_values = [VERSION, startup.elapsed_in_milli_as_str]

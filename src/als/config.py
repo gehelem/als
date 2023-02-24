@@ -600,7 +600,7 @@ def setup():
     _get_logger().debug("***************************************************************************")
     _get_logger().debug("User config file dump - START")
     for option in _CONFIG_PARSER.options(_MAIN_SECTION_NAME):
-        _get_logger().debug("%-20s : %s", option, _get(option))
+        _get_logger().debug("%-30s : %s", option, _get(option))
     _get_logger().debug("User config file dump - END")
     _get_logger().debug("***************************************************************************")
 
