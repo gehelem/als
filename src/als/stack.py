@@ -147,7 +147,7 @@ class Stacker(QueueConsumer):
         self.stack_size_changed_signal.emit(self.size)
 
     @log
-    def _handle_image(self, image: Image):
+    def _handle_item(self, image: Image):
 
         if self.size == 0:
             _LOGGER.debug("This is the first image for this stack. Publishing right away")

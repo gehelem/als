@@ -41,7 +41,7 @@ from als.model.data import (
 )
 from als.model.params import ProcessingParameter
 from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput, Levels, ColorBalance, AutoStretch, \
-    HotPixelRemover, RemoveDark
+    HotPixelRemover, RemoveDark, FileReader
 from als.stack import Stacker
 
 
@@ -88,7 +88,7 @@ class Controller:
         self._pre_process_pipeline: Pipeline = Pipeline(
             'pre-process',
             self._pre_process_queue,
-            [RemoveDark(), HotPixelRemover(), Debayer(), Standardize()])
+            [FileReader(), RemoveDark(), HotPixelRemover(), Debayer(), Standardize()])
         self._pre_process_pipeline.start(QThread.NormalPriority)
 
         self._stacker_queue: SignalingQueue = DYNAMIC_DATA.stacker_queue
@@ -116,7 +116,7 @@ class Controller:
 
         self._model_observers = list()
 
-        self._input_scanner.new_image_signal[Image].connect(self.on_new_image_read)
+        self._input_scanner.new_image_path_signal[str].connect(self.on_new_image_path)
         self._pre_process_pipeline.new_result_signal[Image].connect(self.on_new_pre_processed_image)
         self._stacker.stack_size_changed_signal[int].connect(self.on_stack_size_changed)
         self._stacker.new_result_signal[Image].connect(self.on_new_stack_result)
@@ -303,14 +303,14 @@ class Controller:
         self._post_process_queue.put(image.clone())
 
     @log
-    def on_new_image_read(self, image: Image):
+    def on_new_image_path(self, image_path: str):
         """
-        A new image as been read by input scanner
+        A new image as been detected by input scanner
 
-        :param image: the new image
-        :type image: Image
+        :param image_path: the new image path
+        :type image_path: str
         """
-        self._pre_process_queue.put(image)
+        self._pre_process_queue.put(image_path)
 
     @log
     def on_new_pre_processed_image(self, image: Image):
