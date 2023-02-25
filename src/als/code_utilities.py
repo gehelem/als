@@ -171,7 +171,7 @@ def get_text_content_of_resource(resource_uri: str):
     :type resource_uri: str
 
     :return: textual content or empty-string if an OS error occurred
-    ;:rtype: str
+    :rtype: str
     """
     try:
         fake_file = QFile(resource_uri)
