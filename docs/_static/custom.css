@@ -121,12 +121,19 @@ div.als-right-wide {
   max-width: fit-content;
 }
 
+h2, h3 {
+	padding-left: 10px;
+	border-radius: 5px;
+}
+
 h2 {
 	margin-top: 80px;
+	background: #212121;
 }
 
 h3 {
 	margin-top: 50px;
+	background: #191919;
 }
 
 div.als-twocol{
