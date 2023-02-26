@@ -1,12 +1,16 @@
 ALS documentation
 =================
 
-ALS is a desktop application  trying to perform fast and easy live stacking of astronomical images, wether it be for
-electronically assisted astronomy or monitoring a running astrophotography session.
+.. figure:: ./_static/als-screenshot.png
+   :alt: Siril
+   :class: with-shadow
+   :width: 100%
 
-It works by polling the folder where your usual image acquisition system writes captured images.
-Each time a new image is captured and written to file, ALS aligns and stacks that image with the
-previous ones.
+ALS is a desktop application trying to perform fast and easy live stacking of astronomical images. It is a friend for
+electronically assisted astronomers and astrophotographers.
+
+It works by polling the folder where your image acquisition system writes captured frames.
+Each time a new frame is captured and written to file, ALS aligns and stacks it with the previous ones.
 
 Before alignment, these pre-processors are applied to each frame :
 
@@ -20,16 +24,11 @@ After alignment, these post-processors are applied to the new stacking result :
 - levels
 - RGB balance
 
-Configuration for the pre-processors is done in the preferences panel.
-Post-processors can be tweaked live with controls on ALS's main window.
+Configuration for the pre-processors is done in the preferences panel. Post-processors can be tweaked live with
+controls on ALS's main window.
 
-.. figure:: ./_static/als-screenshot.png
-   :alt: Siril
-   :class: with-shadow
-   :width: 800px
-
-The latest processing result is auto-saved to disk and can be served by a built-in web server,
-so your mates at the astro club can see your wonderful images.
+The latest processing result is auto-saved to disk and can be served by a built-in web server, so your mates at the
+astro club can see your wonderful images.
 
 ALS can read FITS files and RAW files from all major camera manufacturers. The list of compatible RAW camera formats is
 at : https://www.libraw.org/supported-cameras
