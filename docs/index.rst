@@ -42,10 +42,3 @@ at : https://www.libraw.org/supported-cameras
 
    Installation <installation>
    First Run <first_run>
-
-.. toctree::
-   :maxdepth: 2
-   :hidden:
-   :caption: Geek corner
-
-   Code documentation <api/modules>

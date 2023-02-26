@@ -29,6 +29,10 @@
 	background: #444;
 }
 
+.wy-menu-vertical li.toctree-l2.current > a {
+	background: #808080;
+}
+
 .wy-menu-vertical li.toctree-l2 a, .wy-menu-vertical li.toctree-l3 a, .wy-menu-vertical li.toctree-l4 a {
 	color: #cacaca;
 	background: #555;
@@ -44,7 +48,9 @@
 	background: #AAA;
 }
 
-
+.wy-body-for-nav {
+	background: #1c1c1c;
+}
 
 
 .wy-menu-vertical li.toctree-l1.current > a {
