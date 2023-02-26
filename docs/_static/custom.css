@@ -70,3 +70,42 @@ body {
 	color: #cacaca;
 	background: #274051;
 }
+
+div.als-left {
+  width: 50%;
+  padding: 0 3px 0 0;
+  float: left;
+}
+
+div.als-left-narrow {
+  width: 25%;
+  padding: 0 3px 0 0;
+  float: left;
+}
+
+div.als-left-wide {
+  width: 75%;
+  padding: 0 3px 0 0;
+  float: left;
+}
+
+div.als-right {
+  margin-left: 50%;
+  max-width: fit-content;
+}
+
+div.als-right-narrow {
+  margin-left: 75%;
+  max-width: fit-content;
+}
+
+div.als-right-wide {
+  margin-left: 25%;
+  max-width: fit-content;
+}
+
+div.als-twocol{
+	max-width: inherit;
+	height: fit-content;
+	overflow: hidden;
+}
