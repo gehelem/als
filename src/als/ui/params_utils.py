@@ -237,7 +237,7 @@ def _compute_slider_value_from_param_value(value: Any, amplitude: Any):
     :rtype: muneric
     """
 
-    return value / amplitude * Slider.MAX_VALUE
+    return int(value / amplitude * Slider.MAX_VALUE)
 
 
 @log

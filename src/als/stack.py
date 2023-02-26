@@ -294,7 +294,7 @@ class Stacker(QueueConsumer):
             source_data = image.data
             reference_data = reference.data
 
-        results_dict[target_index] = np.float32(al.apply_transform(transformation, source_data, reference_data))
+        results_dict[target_index] = np.float32(al.apply_transform(transformation, source_data, reference_data)[0])
 
     @log
     def _find_transformation(self, image: Image):
