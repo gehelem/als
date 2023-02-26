@@ -5,22 +5,21 @@ Get ALS
 System requirements
 ===================
 
-ALS is available ready to use for the following systems :
+**We provide downloads for the following systems** :
 
 - Linux on 64 bits PC
 - Linux on 32 bits Raspberry Pi (v4 highly recommended)
 - Windows
 - macOS on Intel CPUs only
 
-.. note::
-    For other systems you can run ALS from source code.
-    Just browse to https://github.com/gehelem/als to get the code ans setup procedure.
+
+If your system is not supported, you still can run ALS from source code.
+Just browse to https://github.com/gehelem/als to get the code and setup procedure.
 
 Download
 ========
 
-Get the latest release from ALS website :
-Browse to https://als-app.org/nightlies/latest and pick the package that suits you.
+Get the latest release from ALS website : https://als-app.org/nightlies/latest
 
 Install
 =======
@@ -28,22 +27,45 @@ Install
 Windows
 *******
 
-Download the ``als.exe`` file anywhere on your computer and you are good to go.
+Download the ``als.exe`` file anywhere on your computer.
+
+Launch ALS by the usual double-click :)
 
 Linux for desktop PCs
 *********************
 
-Download the .run file, make it executable and then launch it :)
+Download the ``als-<version>.run`` file anywhere on your computer
+
+Allow your system to execute it by editing its properties
+
+.. image:: ./_img/executable.png
+
+Launch ALS by executing the ``als-<version>.run`` file.
 
 Linux for 32bit Raspberry Pi
 ****************************
 
-Download the .tgz file wherever you wish, then execute the sdfsd file in there :)
+Download the ``als-<version>.tgz`` archive and extract it anywhere on your computer.
+Launch ALS by executing the ``als-<version>`` file located in the extracted folder.
+
 
 macOS
 *****
 
-Download the .dmg file and let the apple do its magic :)
+Download the ``ALS-<version>.dmg`` file and let your mac do its magic :)
+
+We are not registered Apple Developers, so you'll have to approve a security check.
+
+.. image:: ./_img/osx_unknown.png
+
+Browse to the "Security & Privacy " section of your system settings, make sure you see the warning about ALS and open
+it anyway :)
+
+.. image:: ./_img/osx_allow_als.png
+
+You way also bump into this one...
+
+.. image:: ./_img/osx_first_run_allow.png
 
 .. toctree::
    :hidden:

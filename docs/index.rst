@@ -1,5 +1,5 @@
-ALS documentation
-=================
+ALS Astro Live Stacker
+======================
 
 ALS is a desktop application trying to perform fast and easy live stacking of astronomical images. It is a friend for
 electronically assisted astronomers and astrophotographers.

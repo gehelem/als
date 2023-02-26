@@ -121,6 +121,14 @@ div.als-right-wide {
   max-width: fit-content;
 }
 
+h2 {
+	margin-top: 80px;
+}
+
+h3 {
+	margin-top: 50px;
+}
+
 div.als-twocol{
 	max-width: inherit;
 	height: fit-content;
