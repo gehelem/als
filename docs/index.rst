@@ -4,7 +4,7 @@ ALS documentation
 ALS is a desktop application trying to perform fast and easy live stacking of astronomical images. It is a friend for
 electronically assisted astronomers and astrophotographers.
 
-.. figure:: ./_static/als-screenshot.png
+.. figure:: ./_img/als-screenshot.png
    :alt: ALS main window
    :width: 100%
 
