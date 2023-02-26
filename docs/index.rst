@@ -34,5 +34,5 @@ formats is available at : https://www.libraw.org/supported-cameras
    :hidden:
    :caption: Getting started
 
-   Installation <installation>
+   Get ALS <get_als>
    First Run <first_run>
