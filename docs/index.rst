@@ -2,8 +2,7 @@ ALS documentation
 =================
 
 .. figure:: ./_static/als-screenshot.png
-   :alt: Siril
-   :class: with-shadow
+   :alt: ALS
    :width: 100%
 
 ALS is a desktop application trying to perform fast and easy live stacking of astronomical images. It is a friend for

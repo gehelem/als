@@ -29,6 +29,10 @@
 	background: #444;
 }
 
+.card-body {
+	background: #222;
+}
+
 .wy-menu-vertical li.toctree-l2.current > a {
 	background: #808080;
 }
