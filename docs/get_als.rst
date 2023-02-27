@@ -5,7 +5,7 @@ Get ALS
 System requirements
 ===================
 
-**We provide downloads for the following systems** :
+We provide downloads for the following systems :
 
 - Linux on 64 bits PC
 - Linux on 32 bits Raspberry Pi (v4 highly recommended)

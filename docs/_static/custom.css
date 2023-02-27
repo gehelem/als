@@ -71,6 +71,7 @@ code.notranslate {
 span.pre {
 	color: #CACACA;
 	background: #333;
+	font-size: 14pt;
 }
 
 .wy-menu-vertical li.toctree-l1.current > a {
@@ -125,14 +126,13 @@ div.als-right-wide {
   max-width: fit-content;
 }
 
-img.als-fixed-width {
 
-	width: fit-content;
+p  {
+	font-size: 15pt;
 }
 
 p strong {
 	color: #DDD;
-	font-size: 13pt;
 }
 
 h2, h3 {

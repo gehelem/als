@@ -81,7 +81,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'als'
+project = u'ALS'
 copyright = u'2023, ALZ International'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -159,7 +159,7 @@ except ImportError:
 else:
     release = version
 
-html_title = "ALS - Astro Live Stacker"
+html_title = "ALS"
 # A shorter title for the navigation bar.  Default is the same as html_title.
 # html_short_title = None
 
@@ -242,7 +242,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'user_guide.tex', u'als Documentation',
+  ('index', 'user_guide.tex', u'ALS Documentation',
    u'ALZ International', 'manual'),
 ]
 

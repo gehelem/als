@@ -28,7 +28,8 @@ This will complete the setup and bring up ALS on your screen.
 Your first live stacking session
 ================================
 
-Let's have a look at ALS window layout and focus on the top left panel named **Main controls** and its sections :
+Let's have a look at ALS window layout and focus on the top left panel. It is named **Main controls** and contains
+a few sections :
 
 .. container:: als-twocol
 
@@ -48,14 +49,13 @@ Let's have a look at ALS window layout and focus on the top left panel named **M
 
             - **align switch** : do we want to align frames before stacking. (Default to Yes)
             - **stack mode** : choose from mean to sum
-            - **stack size** : how many frame stacked in the current sessions so far
+            - **stack size** : how many frames have been stacked in the current sessions so far
 
     .. container:: als-right-narrow
 
         .. image:: ./_img/first_run_controls.png
-           :class: als-fixed-width
 
-As a quickstart, we are simply leaving everything as it is and hit that big ``RUN`` button.
+As a quickstart, we are simply leaving everything as it is and hit that big ``START`` button.
 
 JUST PUSH START :)
 ******************
