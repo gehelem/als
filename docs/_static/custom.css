@@ -125,6 +125,11 @@ div.als-right-wide {
   max-width: fit-content;
 }
 
+p strong {
+	color: #DDD;
+	font-size: 13pt;
+}
+
 h2, h3 {
 	padding-left: 10px;
 	border-radius: 5px;
