@@ -229,11 +229,11 @@ class Stacker(QueueConsumer):
 
             for channel in range(3):
                 processor = Process(target=Stacker._apply_single_channel_transformation,
-                                    args=[image,
+                                    args=(image,
                                           self._last_stacking_result,
                                           transformation,
                                           results_dict,
-                                          channel])
+                                          channel))
                 processor.start()
                 channel_processors.append(processor)
 
