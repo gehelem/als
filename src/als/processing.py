@@ -12,7 +12,8 @@ import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal, QT_TRANSLATE_NOOP
 from scipy.signal import convolve2d
 
-from als.code_utilities import log, Timer, SignalingQueue
+from als.code_utilities import log, Timer, SignalingQueue, human_readable_byte_size, available_memory
+from als.crunching import get_image_memory_size
 from als.io.input import read_disk_image
 from als.messaging import MESSAGE_HUB
 from als.model.base import Image
@@ -325,8 +326,14 @@ class FileReader(ImageProcessor):
         image_path = image
 
         # TODO: Move this logic to Controller somehow
-        while DYNAMIC_DATA.stacker_queue.qsize() > 0:
-            _LOGGER.debug(f"Waiting for downstream workers to be free...")
+        #       Checking if available memory is twice as big as what an image requires
+        #       twice because we preallocate a copy when aligning...
+        reference_image = DYNAMIC_DATA.post_processor_result
+        needed_memory_in_bytes = get_image_memory_size(reference_image) * 2 if reference_image else 0
+        _LOGGER.debug(f"Needed memory for next image: {human_readable_byte_size(needed_memory_in_bytes)}")
+        _LOGGER.debug(f"Available system memory : {human_readable_byte_size(available_memory())}")
+        while available_memory() < needed_memory_in_bytes:
+            _LOGGER.warning(f"Memory low : {human_readable_byte_size(available_memory())} Waiting...")
             time.sleep(1)
 
         return read_disk_image(Path(image_path))
