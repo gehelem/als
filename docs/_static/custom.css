@@ -131,8 +131,10 @@ p  {
 	font-size: 15pt;
 }
 
-p strong {
+strong {
+	font-weight: bold;
 	color: #DDD;
+	font-size: 16pt;
 }
 
 h2, h3 {
