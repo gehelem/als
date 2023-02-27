@@ -14,7 +14,7 @@ We provide downloads for the following systems :
 
 
 If your system is not supported, you still can run ALS from source code.
-Just browse to https://github.com/gehelem/als to get the code and setup procedure.
+Setup procedure is detailed at https://github.com/gehelem/als#download-and-run-from-sources
 
 Download
 ========
