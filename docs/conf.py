@@ -82,7 +82,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'als'
-copyright = u'2019, Gilles Le Maréchal'
+copyright = u'2023, ALZ International'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -159,6 +159,7 @@ except ImportError:
 else:
     release = version
 
+html_title = "ALS - Astro Live Stacker"
 # A shorter title for the navigation bar.  Default is the same as html_title.
 # html_short_title = None
 
@@ -208,7 +209,7 @@ html_css_files = [
 # html_show_sourcelink = True
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
-# html_show_sphinx = True
+html_show_sphinx = False
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
 # html_show_copyright = True
@@ -242,7 +243,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'user_guide.tex', u'als Documentation',
-   u'Gilles Le Maréchal', 'manual'),
+   u'ALZ International', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
