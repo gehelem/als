@@ -157,3 +157,11 @@ div.als-twocol{
 	height: fit-content;
 	overflow: hidden;
 }
+
+.wy-nav-content a {
+     color: #C00;
+}
+
+.wy-nav-content a:hover {
+     text-decoration: underline;
+}
