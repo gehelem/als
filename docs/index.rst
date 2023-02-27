@@ -8,7 +8,7 @@ electronically assisted astronomers and astrophotographers.
    :alt: ALS main window
    :width: 100%
 
-**ALS is not intrusive** : Leave your setup as it is and tell ALS to monitor the folder where your frames are saved.
+**ALS is not intrusive** : Keep your setup as it is and tell ALS to monitor the folder where your frames are saved.
 
 Each time a new frame is captured and written to file, ALS aligns and stacks it with the previous ones.
 

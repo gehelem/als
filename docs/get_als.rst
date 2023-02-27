@@ -19,7 +19,11 @@ Just browse to https://github.com/gehelem/als to get the code and setup procedur
 Download
 ========
 
-Get the latest release from ALS website : https://als-app.org/nightlies/latest
+.. image:: ./_img/download.png
+   :target: https://als-app.org/nightlies/latest
+   :align: center
+
+.. centered:: https://als-app.org/nightlies/latest
 
 Install
 =======
