@@ -9,42 +9,42 @@
         <translation>Astro Live Stacker version {} démarré en {} ms.</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="461"/>
+        <location filename="../src/als/logic.py" line="462"/>
         <source>Restarting input scanner ...</source>
         <translation>Redémarrage scanneur d&apos;entrée...</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="472"/>
+        <location filename="../src/als/logic.py" line="473"/>
         <source>Input scanner started</source>
         <translation>Scanneur d&apos;entrée démarré</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="499"/>
+        <location filename="../src/als/logic.py" line="500"/>
         <source>Session stopped</source>
         <translation>Session stoppée</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="508"/>
+        <location filename="../src/als/logic.py" line="509"/>
         <source>Session paused</source>
         <translation>Session en pause</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="524"/>
+        <location filename="../src/als/logic.py" line="525"/>
         <source>Web server started. Reachable at {}</source>
         <translation>Serveur d&apos;image démarré. Joignable à {}</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="544"/>
+        <location filename="../src/als/logic.py" line="545"/>
         <source>Web server stopped</source>
         <translation>Serveur d&apos;image stoppé</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="666"/>
+        <location filename="../src/als/logic.py" line="667"/>
         <source>Input scanner stopped</source>
         <translation>Scanneur d&apos;entrée stoppé</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="476"/>
+        <location filename="../src/als/logic.py" line="477"/>
         <source>Session running in mode {} with alignment {}</source>
         <translation>Session démarrée en mode {} avec alignement {}</translation>
     </message>
@@ -79,17 +79,17 @@
         <translation>Erreur en exécutant process {} à l&apos;image {} : {} *** L&apos;image sera ignorée</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="483"/>
+        <location filename="../src/als/logic.py" line="484"/>
         <source>Session error. {} : {}</source>
         <translation>Erreur de session {} : {}</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="532"/>
+        <location filename="../src/als/logic.py" line="533"/>
         <source>Could not start web server</source>
         <translation>Impossible de démarrer le serveur web</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="531"/>
+        <location filename="../src/als/logic.py" line="532"/>
         <source>Could not start web server : {}</source>
         <translation>Impossible de démarrer le serveur web : {}</translation>
     </message>
@@ -144,7 +144,7 @@
         <translation>Erreur de lecture fichier {} : {}</translation>
     </message>
     <message>
-        <location filename="../src/als/logic.py" line="456"/>
+        <location filename="../src/als/logic.py" line="455"/>
         <source>Missing critical folder</source>
         <translation>Dossier critique manquant</translation>
     </message>
@@ -574,6 +574,11 @@ Détails : {}</translation>
         <location filename="../src/als/ui/prefs_ui.ui" line="496"/>
         <source>Core (Restart needed)</source>
         <translation>Général (Redémarrage requis)</translation>
+    </message>
+    <message>
+        <location filename="../src/als/ui/prefs_ui.ui" line="142"/>
+        <source>Browse...</source>
+        <translation>Parcourir...</translation>
     </message>
 </context>
 <context>

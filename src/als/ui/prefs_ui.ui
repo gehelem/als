@@ -48,7 +48,7 @@
         <item>
          <widget class="QPushButton" name="btn_browse_scan">
           <property name="text">
-           <string>Change...</string>
+           <string>Browse...</string>
           </property>
          </widget>
         </item>
@@ -82,7 +82,7 @@
         <item>
          <widget class="QPushButton" name="btn_browse_work">
           <property name="text">
-           <string>Change...</string>
+           <string>Browse...</string>
           </property>
          </widget>
         </item>
@@ -139,7 +139,7 @@
         <item>
          <widget class="QPushButton" name="btn_dark_scan">
           <property name="text">
-           <string>Change...</string>
+           <string>Browse...</string>
           </property>
          </widget>
         </item>

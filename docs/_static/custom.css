@@ -125,6 +125,11 @@ div.als-right-wide {
   max-width: fit-content;
 }
 
+img.als-fixed-width {
+
+	width: fit-content;
+}
+
 p strong {
 	color: #DDD;
 	font-size: 13pt;
