@@ -39,3 +39,10 @@ formats is available at : https://www.libraw.org/supported-cameras
 
    Get ALS <get_als>
    First Run <first_run>
+
+.. toctree::
+   :maxdepth: 3
+   :hidden:
+   :caption: Geek corner
+
+   Code documentation <api/modules>
