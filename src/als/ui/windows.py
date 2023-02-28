@@ -13,7 +13,7 @@ from qimage2ndarray import array2qimage
 import als.model.data
 from als import config
 from als.config import CouldNotSaveConfig
-from als.logic import Controller, SessionError, CriticalFolderMissing, WebServerStartFailure
+from als.logic import Controller, SessionError, CriticalFolderMissing, WebServerFailedToStart, WebServerOnLoopback
 from als.messaging import MESSAGE_HUB
 from als.code_utilities import log, get_text_content_of_resource
 from als.model.data import DYNAMIC_DATA, I18n
@@ -447,7 +447,17 @@ class MainWindow(QMainWindow):
         """
         Qt slot executed when START web button is clicked
         """
-        self._start_www()
+        try:
+            self._controller.start_www()
+
+        except WebServerFailedToStart as start_failure:
+            error_box(start_failure.message, start_failure.details)
+
+        except WebServerOnLoopback:
+            title = self.tr("Web server access is limited")
+            message = self.tr("Web server IP address is 127.0.0.1.\n\nServer won't be reachable by other machines. "
+                              "Please check your network connection")
+            warning_box(title, message)
 
     @pyqtSlot()
     @log
@@ -713,20 +723,6 @@ class MainWindow(QMainWindow):
     def cb_pause(self):
         """Qt slot for mouse clicks on the 'Pause' button"""
         self._controller.pause_session()
-
-    @log
-    def _start_www(self):
-        """Starts web server"""
-
-        try:
-            self._controller.start_www()
-            if DYNAMIC_DATA.web_server_ip == "127.0.0.1":
-                title = self.tr("Web server access is limited")
-                message = self.tr("Web server IP address is 127.0.0.1.\n\nServer won't be reachable by other machines. "
-                                  "Please check your network connection")
-                warning_box(title, message)
-        except WebServerStartFailure as start_failure:
-            error_box(start_failure.message, start_failure.details)
 
     @log
     def _stop_www(self):

@@ -58,8 +58,12 @@ class CriticalFolderMissing(SessionError):
     """Raised when a critical folder is missing"""
 
 
-class WebServerStartFailure(AlsException):
+class WebServerFailedToStart(AlsException):
     """Raised when web server fails"""
+
+
+class WebServerOnLoopback(Exception):
+    """Raised when we can listen on loopback only"""
 
 
 # pylint: disable=R0902, R0904
@@ -528,11 +532,15 @@ class Controller:
             DYNAMIC_DATA.web_server_is_running = True
             self._notify_model_observers()
 
+            # if we can only listen on loopback, keep running but notify the powers that be
+            if ip_address == "127.0.0.1":
+                raise WebServerOnLoopback()
+
         except OSError as os_error:
             log_message = QT_TRANSLATE_NOOP("", "Could not start web server : {}")
             error_title = QCoreApplication.translate("", "Could not start web server")
             MESSAGE_HUB.dispatch_error(__name__, log_message, [str(os_error), ])
-            raise WebServerStartFailure(error_title, str(os_error))
+            raise WebServerFailedToStart(error_title, str(os_error))
 
     @log
     def stop_www(self):
