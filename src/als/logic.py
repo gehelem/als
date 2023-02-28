@@ -575,7 +575,9 @@ class Controller:
         web_folder_path = config.get_web_folder_path()
 
         index_content = get_text_content_of_resource(":/web/index.html")
-        index_content = index_content.replace('##PERIOD##', str(config.get_www_server_refresh_period()))
+
+        # UI period in sec. <=> JS refresh period in ms.
+        index_content = index_content.replace('##PERIOD##', str(config.get_www_server_refresh_period() * 1000))
 
         with open(web_folder_path + "/index.html", 'w') as index_file:
             index_file.write(index_content)
