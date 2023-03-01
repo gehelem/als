@@ -43,37 +43,53 @@ class ImageSaver(QueueConsumer):
         :param image: the image to save
         :type image: Image
         """
-        target_path = image.destination
+        target_path = str(Path(image.destination).parent / f"ALZ{Path(image.destination).name}")
         cwd = os.getcwd()
 
         if sys.platform == 'win32':
             os.chdir(Path(target_path).parent)
             target_path = Path(target_path).name
 
-        if target_path.endswith('.' + als.model.data.IMAGE_SAVE_TYPE_TIFF):
-            save_is_successful, failure_details = ImageSaver._save_image_as_tiff(image, target_path)
+        if image.destination.endswith('.' + als.model.data.IMAGE_SAVE_TYPE_TIFF):
+            pre_save_is_successful, failure_details = ImageSaver._save_image_as_tiff(image, target_path)
 
-        elif target_path.endswith('.' + als.model.data.IMAGE_SAVE_TYPE_PNG):
-            save_is_successful, failure_details = ImageSaver._save_image_as_png(image, target_path)
+        elif image.destination.endswith('.' + als.model.data.IMAGE_SAVE_TYPE_PNG):
+            pre_save_is_successful, failure_details = ImageSaver._save_image_as_png(image, target_path)
 
-        elif target_path.endswith('.' + als.model.data.IMAGE_SAVE_TYPE_JPEG):
-            save_is_successful, failure_details = ImageSaver._save_image_as_jpg(image, target_path)
+        elif image.destination.endswith('.' + als.model.data.IMAGE_SAVE_TYPE_JPEG):
+            pre_save_is_successful, failure_details = ImageSaver._save_image_as_jpg(image, target_path)
 
         else:
             # Unsupported format in config file. Should never happen
-            save_is_successful, failure_details = False, f"Unsupported File format for {target_path}"
+            pre_save_is_successful, failure_details = False, f"Unsupported File format for {image.destination}"
 
-        if save_is_successful:
+        post_save_is_successful = False
+
+        if pre_save_is_successful:
+
+            failure_details = ""
+            try:
+                os.rename(target_path, image.destination)
+                post_save_is_successful = True
+
+            except OSError:
+                try:
+                    os.remove(target_path)
+                except OSError:
+                    pass
+
+        if post_save_is_successful:
+
             MESSAGE_HUB.dispatch_info(
                 __name__,
                 QT_TRANSLATE_NOOP("", "Image saved : {}"),
                 [
-                    ((os.getcwd() + os.sep) if sys.platform == 'win32' else "") + target_path,
+                    ((os.getcwd() + os.sep) if sys.platform == 'win32' else "") + image.destination,
                 ]
             )
 
         else:
-            details = target_path
+            details = image.destination
 
             if failure_details.strip():
                 details += ' : ' + failure_details
