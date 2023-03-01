@@ -333,7 +333,8 @@ class FileReader(ImageProcessor):
         _LOGGER.debug(f"Needed memory for next image: {human_readable_byte_size(needed_memory_in_bytes)}")
         _LOGGER.debug(f"Available system memory : {human_readable_byte_size(available_memory())}")
         while available_memory() < needed_memory_in_bytes:
-            _LOGGER.warning(f"Memory low : {human_readable_byte_size(available_memory())} Waiting...")
+            _LOGGER.warning(f"Memory low ! Needed memory: {human_readable_byte_size(needed_memory_in_bytes)} "
+                            f"/ Available: {human_readable_byte_size(available_memory())} Waiting...")
             time.sleep(1)
 
         return read_disk_image(Path(image_path))
