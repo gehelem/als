@@ -461,15 +461,16 @@ class Controller:
                         raise CriticalFolderMissing(
                             QCoreApplication.translate("", title),
                             QCoreApplication.translate("", message).format(*[role, path]))
+
+                # setup web content
+                try:
+                    Controller._setup_web_content()
+                except OSError as os_error:
+                    raise SessionError("Web folder could not be prepared", str(os_error))
+
             else:
                 # session was paused when this start was ordered. No need for checks & setup
                 MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Restarting input scanner ..."))
-
-            # setup web content
-            try:
-                Controller._setup_web_content()
-            except OSError as os_error:
-                raise SessionError("Web folder could not be prepared", str(os_error))
 
             # start input scanner
             try:
