@@ -30,7 +30,7 @@ class ImageSaver(QueueConsumer):
         QueueConsumer.__init__(self, "save", save_queue)
 
     @log
-    def _handle_image(self, image: Image):
+    def _handle_item(self, image: Image):
 
         ImageSaver._save_image(image)
 

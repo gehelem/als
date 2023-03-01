@@ -2,6 +2,7 @@
 Provides all means of image processing
 """
 import logging
+import time
 from abc import abstractmethod
 from typing import List
 from pathlib import Path
@@ -11,10 +12,12 @@ import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal, QT_TRANSLATE_NOOP
 from scipy.signal import convolve2d
 
-from als.code_utilities import log, Timer, SignalingQueue
+from als.code_utilities import log, Timer, SignalingQueue, human_readable_byte_size, available_memory
+from als.crunching import get_image_memory_size
+from als.io.input import read_disk_image
 from als.messaging import MESSAGE_HUB
 from als.model.base import Image
-from als.model.data import I18n
+from als.model.data import I18n, DYNAMIC_DATA
 from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter
 from als.io import input as als_input
 from als import config
@@ -313,6 +316,30 @@ class Standardize(ImageProcessor):
         return image
 
 
+class FileReader(ImageProcessor):
+    """
+    Handles image read from file
+    """
+
+    # //FIXME : BEWARE, in this specific processor, what we actually process is file paths, not image objects
+    def process_image(self, image: Image):
+        image_path = image
+
+        # TODO: Move this logic to Controller somehow
+        #       Checking if available memory is twice as big as what an image requires
+        #       twice because we preallocate a copy when aligning...
+        reference_image = DYNAMIC_DATA.post_processor_result
+        needed_memory_in_bytes = get_image_memory_size(reference_image) * 2 if reference_image else 0
+        _LOGGER.debug(f"Needed memory for next image: {human_readable_byte_size(needed_memory_in_bytes)}")
+        _LOGGER.debug(f"Available system memory : {human_readable_byte_size(available_memory())}")
+        while available_memory() < needed_memory_in_bytes:
+            _LOGGER.warning(f"Memory low ! Needed memory: {human_readable_byte_size(needed_memory_in_bytes)} "
+                            f"/ Available: {human_readable_byte_size(available_memory())} Waiting...")
+            time.sleep(1)
+
+        return read_disk_image(Path(image_path))
+
+
 class HotPixelRemover(ImageProcessor):
     """Provides hot pixels removal"""
 
@@ -548,7 +575,7 @@ class QueueConsumer(QThread):
 
     @abstractmethod
     @log
-    def _handle_image(self, image: Image):
+    def _handle_item(self, image: Image):
         """
         Perform hopefully useful actions on image
 
@@ -568,16 +595,18 @@ class QueueConsumer(QThread):
             if self._queue.qsize() > 0:
 
                 self.busy_signal.emit()
-                image = self._queue.get()
-                MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Start {} on {}"), [self._name, image.origin])
+                item = self._queue.get()
+                MESSAGE_HUB.dispatch_info(__name__,
+                                          QT_TRANSLATE_NOOP("", "Start {} on {}"),
+                                          [self._name, item.origin if type(item) == Image else item])
 
                 with Timer() as timer:
-                    self._handle_image(image)
+                    self._handle_item(item)
 
                 MESSAGE_HUB.dispatch_info(
                     __name__,
                     QT_TRANSLATE_NOOP("", "End {} on {} in {} ms"),
-                    [self._name, image.origin, timer.elapsed_in_milli_as_str])
+                    [self._name, item.origin if type(item) == Image else item, timer.elapsed_in_milli_as_str])
                 self.waiting_signal.emit()
 
             self.msleep(20)
@@ -603,7 +632,7 @@ class Pipeline(QueueConsumer):
         self._final_processes = final_processes
 
     @log
-    def _handle_image(self, image: Image):
+    def _handle_item(self, image: Image):
 
         try:
             for processor in self._processes + self._final_processes:

@@ -54,19 +54,19 @@ class InputScanner:
       - broadcasting every new image
     """
 
-    new_image_signal = pyqtSignal(Image)
-    """Qt signal emitted when a new image is read by scanner"""
+    new_image_path_signal = pyqtSignal(str)
+    """Qt signal emitted when a new image is detected by scanner"""
 
     @log
-    def broadcast_image(self, image: Image):
+    def broadcast_image_path(self, path: str):
         """
-        Send a signal with newly read image to anyone who cares
+        Send a signal with newly detected image path to anyone who cares
 
-        :param image: the new image
-        :type image: Image
+        :param path: the new image path
+        :type path: str
         """
-        if image is not None:
-            self.new_image_signal.emit(image)
+        if path is not None:
+            self.new_image_path_signal.emit(path)
 
     @abstractmethod
     def start(self):
@@ -144,46 +144,14 @@ class FolderScanner(FileSystemEventHandler, InputScanner, QObject):
         if event.event_type == 'moved':
             image_path = event.dest_path
             _LOGGER.debug(f"File move detected : {image_path}")
-
-            FolderScanner.wait_for_resources()
-            self.broadcast_image(read_disk_image(Path(image_path)))
+            self.broadcast_image_path(image_path)
 
     @log
     def on_created(self, event):
         if event.event_type == 'created':
-            file_is_incomplete = True
-            last_file_size = -1
             image_path = event.src_path
-            _LOGGER.debug(f"File creation detected : {image_path}. Waiting until file is complete and readable ...")
-
-            while file_is_incomplete:
-                info = QFileInfo(image_path)
-                size = info.size()
-                _LOGGER.debug(f"File {image_path}'s size = {size}")
-                if size == last_file_size:
-                    file_is_incomplete = False
-                    _LOGGER.debug(f"File {image_path} is ready to be read")
-                last_file_size = size
-
-                if file_is_incomplete:
-                    time.sleep(_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC)
-
-            FolderScanner.wait_for_resources()
-            self.broadcast_image(read_disk_image(Path(image_path)))
-
-    @staticmethod
-    @log
-    def wait_for_resources():
-        """
-        make current thread (file read) wait for pre-processor and stacker (and respective queues) to be free
-
-        #TODO: Move this logic to Controller
-        """
-        while (not DYNAMIC_DATA.session.is_stopped) and \
-                (DYNAMIC_DATA.stacker_busy or DYNAMIC_DATA.pre_processor_busy or
-                 DYNAMIC_DATA.stacker_queue.qsize() > 0 or DYNAMIC_DATA.pre_process_queue.qsize() > 0):
-            _LOGGER.debug(f"Waiting for downstream workers to be free...")
-            time.sleep(1)
+            _LOGGER.debug(f"File creation detected : {image_path}")
+            self.broadcast_image_path(image_path)
 
 
 @log
@@ -207,6 +175,23 @@ def read_disk_image(path: Path):
             break
 
     if not ignore_image:
+
+        file_is_complete = False
+        last_file_size = -1
+
+        while not file_is_complete:
+            size = QFileInfo(str(path)).size()
+            _LOGGER.debug(f"File {path}'s size = {size}")
+
+            if size == last_file_size:
+                file_is_complete = True
+                _LOGGER.debug(f"File {path} is ready to be read")
+
+            last_file_size = size
+
+            if not file_is_complete:
+                time.sleep(_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC)
+
         if path.suffix.lower() in ['.fit', '.fits', '.fts']:
             image = _read_fit_image(path)
 
