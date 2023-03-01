@@ -117,6 +117,7 @@ class DynamicData:
         self.saver_busy = False
         self.has_new_warnings = False
         self.is_first_run = True
+        self.post_processor_result_qimage = None
 
 
 class HistogramContainer:

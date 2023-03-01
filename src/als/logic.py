@@ -41,7 +41,7 @@ from als.model.data import (
 )
 from als.model.params import ProcessingParameter
 from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput, Levels, ColorBalance, AutoStretch, \
-    HotPixelRemover, RemoveDark, FileReader, HistogramComputer
+    HotPixelRemover, RemoveDark, FileReader, HistogramComputer, QImageGenerator
 from als.stack import Stacker
 
 
@@ -103,7 +103,7 @@ class Controller:
         self._post_process_pipeline: Pipeline = Pipeline(
             'post-process',
             self._post_process_queue,
-            [ConvertForOutput(), HistogramComputer()])
+            [ConvertForOutput(), HistogramComputer(), QImageGenerator()])
         self._rgb_processor = ColorBalance()
         self._autostretch_processor = AutoStretch()
         self._levels_processor = Levels()

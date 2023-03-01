@@ -10,7 +10,9 @@ from pathlib import Path
 import cv2
 import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal, QT_TRANSLATE_NOOP
+from PyQt5.QtGui import QPixmap
 from scipy.signal import convolve2d
+from qimage2ndarray import array2qimage
 
 from als.code_utilities import log, Timer, SignalingQueue, human_readable_byte_size, available_memory
 from als.crunching import get_image_memory_size, compute_histograms_for_display
@@ -558,6 +560,15 @@ class HistogramComputer(ImageProcessor):
         DYNAMIC_DATA.histogram_container = compute_histograms_for_display(image, HistogramComputer._BIN_COUNT)
         return image
 
+
+class QImageGenerator(ImageProcessor):
+    """ Converts Numpy data to QPixmap """
+    def process_image(self, image: Image):
+        image_raw_data = image.data.copy()
+        temp_image = array2qimage(image_raw_data, normalize=(2 ** 16 - 1))
+        DYNAMIC_DATA.post_processor_result_qimage = QPixmap.fromImage(temp_image)
+
+        return image
 
 
 class QueueConsumer(QThread):

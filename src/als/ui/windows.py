@@ -8,7 +8,6 @@ from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap, QBrush, QColor, QIcon
 from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog, QApplication, \
     QListWidgetItem, qApp, QLabel, QFrame
-from qimage2ndarray import array2qimage
 
 import als.model.data
 from als import config
@@ -590,10 +589,7 @@ class MainWindow(QMainWindow):
         """
         Update central image display.
         """
-        image_raw_data = DYNAMIC_DATA.post_processor_result.data.copy()
-
-        image = array2qimage(image_raw_data, normalize=(2 ** 16 - 1))
-        self._image_item.setPixmap(QPixmap.fromImage(image))
+        self._image_item.setPixmap(DYNAMIC_DATA.post_processor_result_qimage)
 
     @pyqtSlot(name="on_pbPlay_clicked")
     @log
