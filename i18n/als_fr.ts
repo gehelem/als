@@ -99,7 +99,7 @@
         <translation>Echec de sauvegarde image {}</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="203"/>
+        <location filename="../src/als/ui/dialogs.py" line="205"/>
         <source>Port number validation failed : {}</source>
         <translation>Numéro de port non valide : {}</translation>
     </message>
@@ -388,32 +388,32 @@ Détails : {}</translation>
 <context>
     <name>PreferencesDialog</name>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="201"/>
+        <location filename="../src/als/ui/dialogs.py" line="203"/>
         <source>Web server port number must be a number between 1024 and 65535</source>
         <translation>Le numéro de port du serveur web doit être un nombre entre 1024 &amp; 65535</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="202"/>
+        <location filename="../src/als/ui/dialogs.py" line="204"/>
         <source>Wrong value</source>
         <translation>Valeur incorrecte</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="235"/>
+        <location filename="../src/als/ui/dialogs.py" line="237"/>
         <source>Select scan folder</source>
         <translation>Sélection le dossier à scanner</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="248"/>
+        <location filename="../src/als/ui/dialogs.py" line="250"/>
         <source>Select work folder</source>
         <translation>Sélectionner le dossier de travail</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="261"/>
+        <location filename="../src/als/ui/dialogs.py" line="263"/>
         <source>Select web folder</source>
         <translation>Selection le dossier web</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/dialogs.py" line="274"/>
+        <location filename="../src/als/ui/dialogs.py" line="276"/>
         <source>Select dark file</source>
         <translation>Sélectionner le fichier de dark</translation>
     </message>
@@ -431,7 +431,7 @@ Détails : {}</translation>
         <translation>Dossier &amp;scanné :</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="635"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="638"/>
         <source>Change...</source>
         <translation>Modifier...</translation>
     </message>
@@ -461,22 +461,12 @@ Détails : {}</translation>
         <translation>Serveur web</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="530"/>
-        <source>Server &amp;port number (between 1024 and 65535) :</source>
-        <translation>Numéro de &amp;port du serveur (entre 1024 et 65535) :</translation>
-    </message>
-    <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="556"/>
-        <source>Web page &amp;refresh period (in seconds) :</source>
-        <translation>Période de &amp;rafraîchissement de la page web (en secondes) :</translation>
-    </message>
-    <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="708"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="711"/>
         <source>Cancel</source>
         <translation>Annuler</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="715"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="718"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
@@ -516,7 +506,7 @@ Détails : {}</translation>
         <translation>Nombre &amp;minimum de points communs :</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="625"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="628"/>
         <source>We&amp;b folder :</source>
         <translation>Dossier we&amp;b :</translation>
     </message>
@@ -531,7 +521,7 @@ Détails : {}</translation>
         <translation>Système</translation>
     </message>
     <message>
-        <location filename="../src/als/ui/prefs_ui.ui" line="601"/>
+        <location filename="../src/als/ui/prefs_ui.ui" line="604"/>
         <source>Use dedicacted folder</source>
         <translation>Utiliser un dossier spécifique</translation>
     </message>
@@ -589,6 +579,26 @@ Détails : {}</translation>
         <location filename="../src/als/ui/prefs_ui.ui" line="424"/>
         <source>Output</source>
         <translation>Sortie</translation>
+    </message>
+    <message>
+        <location filename="../src/als/ui/prefs_ui.ui" line="528"/>
+        <source>Server &amp;port number</source>
+        <translation>Numéro de &amp;port serveur</translation>
+    </message>
+    <message>
+        <location filename="../src/als/ui/prefs_ui.ui" line="560"/>
+        <source>between 1024 and 65535</source>
+        <translation>entre 1024 et 65535</translation>
+    </message>
+    <message>
+        <location filename="../src/als/ui/prefs_ui.ui" line="567"/>
+        <source>Web page &amp;refresh period</source>
+        <translation>Période de &amp;rafraîchissement page</translation>
+    </message>
+    <message>
+        <location filename="../src/als/ui/prefs_ui.ui" line="593"/>
+        <source>seconds</source>
+        <translation>secondes</translation>
     </message>
 </context>
 <context>

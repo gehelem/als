@@ -34,6 +34,8 @@ class PreferencesDialog(QDialog):
         self._ui = Ui_PrefsDialog()
         self._ui.setupUi(self)
 
+        self._ui.tabWidget.setCurrentIndex(0)
+
         self._ui.cmb_lang.setItemData(0, 'sys')
         self._ui.cmb_lang.setItemData(1, 'en')
         self._ui.cmb_lang.setItemData(2, 'fr')
