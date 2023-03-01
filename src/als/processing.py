@@ -13,7 +13,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, QT_TRANSLATE_NOOP
 from scipy.signal import convolve2d
 
 from als.code_utilities import log, Timer, SignalingQueue, human_readable_byte_size, available_memory
-from als.crunching import get_image_memory_size
+from als.crunching import get_image_memory_size, compute_histograms_for_display
 from als.io.input import read_disk_image
 from als.messaging import MESSAGE_HUB
 from als.model.base import Image
@@ -546,6 +546,18 @@ class ConvertForOutput(ImageProcessor):
         image.data = np.uint16(np.clip(image.data, 0, 2 ** 16 - 1))
 
         return image
+
+
+class HistogramComputer(ImageProcessor):
+    """ Responsible of computing image histogram """
+
+    _BIN_COUNT = 512
+
+    @log
+    def process_image(self, image: Image):
+        DYNAMIC_DATA.histogram_container = compute_histograms_for_display(image, HistogramComputer._BIN_COUNT)
+        return image
+
 
 
 class QueueConsumer(QThread):

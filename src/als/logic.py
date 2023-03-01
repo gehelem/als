@@ -41,7 +41,7 @@ from als.model.data import (
 )
 from als.model.params import ProcessingParameter
 from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput, Levels, ColorBalance, AutoStretch, \
-    HotPixelRemover, RemoveDark, FileReader
+    HotPixelRemover, RemoveDark, FileReader, HistogramComputer
 from als.stack import Stacker
 
 
@@ -72,8 +72,6 @@ class Controller:
     The application controller, in charge of implementing application logic
     """
 
-    _BIN_COUNT = 512
-
     @log
     def __init__(self):
 
@@ -102,7 +100,10 @@ class Controller:
         self._stacker.start(QThread.NormalPriority)
 
         self._post_process_queue = DYNAMIC_DATA.process_queue
-        self._post_process_pipeline: Pipeline = Pipeline('post-process', self._post_process_queue, [ConvertForOutput()])
+        self._post_process_pipeline: Pipeline = Pipeline(
+            'post-process',
+            self._post_process_queue,
+            [ConvertForOutput(), HistogramComputer()])
         self._rgb_processor = ColorBalance()
         self._autostretch_processor = AutoStretch()
         self._levels_processor = Levels()
@@ -287,7 +288,6 @@ class Controller:
         :type image: Image
         """
         image.origin = "Process result"
-        DYNAMIC_DATA.histogram_container = compute_histograms_for_display(image, Controller._BIN_COUNT)
         DYNAMIC_DATA.post_processor_result = image
         self._notify_model_observers(image_only=True)
         self.save_post_process_result()
