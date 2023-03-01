@@ -44,14 +44,19 @@ class PreferencesDialog(QDialog):
         self._ui.cmb_bayer_pattern.setCurrentIndex(self._ui.cmb_bayer_pattern.findData(config.get_bayer_pattern()))
 
         self._ui.ln_scan_folder_path.setText(config.get_scan_folder_path())
+        self._ui.ln_scan_folder_path.setToolTip(config.get_scan_folder_path())
         self._ui.ln_work_folder_path.setText(config.get_work_folder_path())
+        self._ui.ln_work_folder_path.setToolTip(config.get_work_folder_path())
         self._ui.ln_web_folder_path.setText(config.get_web_folder_path())
+        self._ui.ln_web_folder_path.setToolTip(config.get_web_folder_path())
+        self._ui.ln_master_dark_path.setText(config.get_master_dark_file_path())
+        self._ui.ln_master_dark_path.setToolTip(config.get_master_dark_file_path())
+
         self._ui.ln_web_server_port.setText(str(config.get_www_server_port_number()))
         self._ui.spn_webpage_refresh_period.setValue(config.get_www_server_refresh_period())
         self._ui.chk_debug_logs.setChecked(config.is_debug_log_on())
         self._ui.spn_minimum_match_count.setValue(config.get_minimum_match_count())
         self._ui.chk_use_dark.setChecked(config.get_use_master_dark())
-        self._ui.ln_master_dark_path.setText(config.get_master_dark_file_path())
         self._ui.chk_use_hpr.setChecked(config.get_hot_pixel_remover())
         self._ui.chk_save_on_stop.setChecked(config.get_save_on_stop())
 
@@ -129,6 +134,42 @@ class PreferencesDialog(QDialog):
         """
         self._ui.ln_master_dark_path.clear()
         self._validate_all_paths()
+
+    @log
+    def on_ln_scan_folder_path_textChanged(self, text):
+        """
+        Qt signal for scan folder path widget text changed
+        :param text: new scan folder path
+        :type text: str
+        """
+        self._ui.ln_scan_folder_path.setToolTip(text)
+
+    @log
+    def on_ln_work_folder_path_textChanged(self, text):
+        """
+        Qt signal for work folder path widget text changed
+        :param text: new work folder path
+        :type text: str
+        """
+        self._ui.ln_work_folder_path.setToolTip(text)
+
+    @log
+    def on_ln_web_folder_path_textChanged(self, text):
+        """
+        Qt signal for web folder path widget text changed
+        :param text: new web folder path
+        :type text: str
+        """
+        self._ui.ln_web_folder_path.setToolTip(text)
+
+    @log
+    def on_ln_master_dark_path_textChanged(self, text):
+        """
+        Qt signal for master dark path widget text changed
+        :param text: new master dark path
+        :type text: str
+        """
+        self._ui.ln_master_dark_path.setToolTip(text)
 
     @log
     @pyqtSlot()
