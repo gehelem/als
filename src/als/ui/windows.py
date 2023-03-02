@@ -555,6 +555,7 @@ class MainWindow(QMainWindow):
 
         if visible:
             self._cancel_image_only_mode()
+            self._ui.log.scrollToBottom()
 
     # pylint: disable=no-self-use
     @log
@@ -601,6 +602,7 @@ class MainWindow(QMainWindow):
 
         self._start_session()
 
+    @log
     def on_message(self, message):
         """
         print received message to GUI log window
@@ -616,7 +618,7 @@ class MainWindow(QMainWindow):
         if _INFO_LOG_TAG in message and self._ui.btn_issues_only.isChecked():
             new_item.setHidden(True)
 
-        if self._ui.btn_follow_logs.isChecked():
+        if self._ui.btn_follow_logs.isChecked() and self._ui.log.isVisible():
             self._ui.log.scrollToBottom()
 
     # pylint: disable=too-many-statements
