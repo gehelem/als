@@ -652,7 +652,7 @@ class Controller:
         if add_timestamp:
             filename_base += '-' + get_timestamp().replace(' ', "-").replace(":", '-').replace('.', '-')
 
-        image_to_save = image
+        image_to_save = image.clone(keep_ref_to_data=True)
         image_to_save.destination = dest_folder_path + "/" + filename_base + '.' + file_extension
         self._saver_queue.put(image_to_save)
 
