@@ -40,6 +40,9 @@ class MainWindow(QMainWindow):
 
         super().__init__(parent)
 
+        self._warning_sign_off = QPixmap()
+        self._warning_sign_on = QPixmap(":/icons/warning_sign.svg")
+
         self.setWindowIcon(QIcon(":/icons/als_logo.png"))
 
         self._controller = controller
@@ -692,9 +695,9 @@ class MainWindow(QMainWindow):
 
             # manage warning sign
             if DYNAMIC_DATA.has_new_warnings:
-                warning_pixmap = QPixmap(":/icons/warning_sign.svg")
+                warning_pixmap = self._warning_sign_on
             else:
-                warning_pixmap = QPixmap()
+                warning_pixmap = self._warning_sign_off
 
             self._ui.lbl_warning_sign.setPixmap(warning_pixmap)
 
