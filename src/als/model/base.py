@@ -279,6 +279,7 @@ class Image:
 
     def __repr__(self):
         representation = (f'{self.__class__.__name__}('
+                          f'ID={self.__hash__()}, '
                           f'Color={self.is_color()}, '
                           f'Needs Debayer={self.needs_debayering()}, '
                           f'Bayer Pattern={self.bayer_pattern}, '

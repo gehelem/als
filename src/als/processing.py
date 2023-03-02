@@ -196,7 +196,12 @@ class AutoStretch(ImageProcessor):
         active = self._parameters[0]
         stretch_strength = self._parameters[1]
 
+        # make sure, as we are the first process in the pipeline, that our changes are made
+        # on a copy of the received image. So whoever kept a ref to it won't be affected
+        image = image.clone()
+
         if active.value:
+
             _LOGGER.debug("Performing Autostretch...")
             image.data = np.interp(image.data,
                                    (image.data.min(), image.data.max()),
@@ -541,6 +546,10 @@ class ConvertForOutput(ImageProcessor):
     """
     @log
     def process_image(self, image: Image):
+
+        # make sure  that our changes are made on a copy of the received image.
+        # So whoever kept a ref to it won't be affected
+        image = image.clone()
 
         if image.is_color():
             image.set_color_axis_as(2)
