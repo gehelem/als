@@ -58,8 +58,12 @@ class CriticalFolderMissing(SessionError):
     """Raised when a critical folder is missing"""
 
 
-class WebServerStartFailure(AlsException):
+class WebServerFailedToStart(AlsException):
     """Raised when web server fails"""
+
+
+class WebServerOnLoopback(Exception):
+    """Raised when we can listen on loopback only"""
 
 
 # pylint: disable=R0902, R0904
@@ -457,15 +461,16 @@ class Controller:
                         raise CriticalFolderMissing(
                             QCoreApplication.translate("", title),
                             QCoreApplication.translate("", message).format(*[role, path]))
+
+                # setup web content
+                try:
+                    Controller._setup_web_content()
+                except OSError as os_error:
+                    raise SessionError("Web folder could not be prepared", str(os_error))
+
             else:
                 # session was paused when this start was ordered. No need for checks & setup
                 MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Restarting input scanner ..."))
-
-            # setup web content
-            try:
-                Controller._setup_web_content()
-            except OSError as os_error:
-                raise SessionError("Web folder could not be prepared", str(os_error))
 
             # start input scanner
             try:
@@ -528,11 +533,15 @@ class Controller:
             DYNAMIC_DATA.web_server_is_running = True
             self._notify_model_observers()
 
+            # if we can only listen on loopback, keep running but notify the powers that be
+            if ip_address == "127.0.0.1":
+                raise WebServerOnLoopback()
+
         except OSError as os_error:
             log_message = QT_TRANSLATE_NOOP("", "Could not start web server : {}")
             error_title = QCoreApplication.translate("", "Could not start web server")
             MESSAGE_HUB.dispatch_error(__name__, log_message, [str(os_error), ])
-            raise WebServerStartFailure(error_title, str(os_error))
+            raise WebServerFailedToStart(error_title, str(os_error))
 
     @log
     def stop_www(self):
@@ -567,7 +576,9 @@ class Controller:
         web_folder_path = config.get_web_folder_path()
 
         index_content = get_text_content_of_resource(":/web/index.html")
-        index_content = index_content.replace('##PERIOD##', str(config.get_www_server_refresh_period()))
+
+        # UI period in sec. <=> JS refresh period in ms.
+        index_content = index_content.replace('##PERIOD##', str(config.get_www_server_refresh_period() * 1000))
 
         with open(web_folder_path + "/index.html", 'w') as index_file:
             index_file.write(index_content)
