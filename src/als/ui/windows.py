@@ -664,16 +664,6 @@ class MainWindow(QMainWindow):
             self._ui.lbl_session_status.setText(f"{session_status}")
             self._lbl_statusbar_session_status.setText(f"{I18n.SESSION} {session_status}")
 
-            # update preferences accessibility according to session and web server status
-            preferences_enabled = not web_server_is_running and session_is_stopped
-            self._ui.action_prefs.setEnabled(preferences_enabled)
-
-            if preferences_enabled:
-                self._ui.action_prefs.setToolTip("")
-            else:
-                self._ui.action_prefs.setToolTip(self.tr("Preferences are availalble when session and webserver "
-                                                         "are both stopped"))
-
             # handle Start / Pause / Stop  buttons
             self._ui.pbPlay.setEnabled(session_is_stopped or session_is_paused)
             self._ui.pbStop.setEnabled(session_is_running or session_is_paused)

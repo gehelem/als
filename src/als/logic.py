@@ -518,11 +518,13 @@ class Controller:
     def start_www(self):
         """Starts web server"""
 
-        web_folder_path = config.get_web_folder_path()
-        ip_address = get_ip()
-        port_number = config.get_www_server_port_number()
-
         try:
+            Controller._setup_web_content()
+
+            web_folder_path = config.get_web_folder_path()
+            ip_address = get_ip()
+            port_number = config.get_www_server_port_number()
+
             self._web_server = WebServer(web_folder_path)
             self._web_server.start()
 

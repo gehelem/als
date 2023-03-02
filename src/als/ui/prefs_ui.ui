@@ -31,7 +31,7 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_6">
        <item>
-        <widget class="QGroupBox" name="groupBox">
+        <widget class="QGroupBox" name="pathsBox">
          <property name="title">
           <string>Paths</string>
          </property>
@@ -218,7 +218,7 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_7">
        <item>
-        <widget class="QGroupBox" name="groupBox_2">
+        <widget class="QGroupBox" name="preprocessBox">
          <property name="title">
           <string>Pre-Processing</string>
          </property>
@@ -515,7 +515,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_5">
+        <widget class="QGroupBox" name="serverBox">
          <property name="title">
           <string>Web server</string>
          </property>
