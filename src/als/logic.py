@@ -461,12 +461,6 @@ class Controller:
                 # session was paused when this start was ordered. No need for checks & setup
                 MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Restarting input scanner ..."))
 
-            # setup web content
-            try:
-                Controller._setup_web_content()
-            except OSError as os_error:
-                raise SessionError("Web folder could not be prepared", str(os_error))
-
             # start input scanner
             try:
                 self._input_scanner.start()
@@ -513,11 +507,13 @@ class Controller:
     def start_www(self):
         """Starts web server"""
 
-        web_folder_path = config.get_web_folder_path()
-        ip_address = get_ip()
-        port_number = config.get_www_server_port_number()
-
         try:
+            Controller._setup_web_content()
+
+            web_folder_path = config.get_web_folder_path()
+            ip_address = get_ip()
+            port_number = config.get_www_server_port_number()
+
             self._web_server = WebServer(web_folder_path)
             self._web_server.start()
 

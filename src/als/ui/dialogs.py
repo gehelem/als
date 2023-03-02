@@ -35,6 +35,9 @@ class PreferencesDialog(QDialog):
         self._ui.setupUi(self)
 
         self._ui.tabWidget.setCurrentIndex(0)
+        self._ui.pathsBox.setEnabled(DYNAMIC_DATA.session.is_stopped)
+        self._ui.preprocessBox.setEnabled(DYNAMIC_DATA.session.is_stopped)
+        self._ui.serverBox.setDisabled(DYNAMIC_DATA.web_server_is_running)
 
         self._ui.cmb_lang.setItemData(0, 'sys')
         self._ui.cmb_lang.setItemData(1, 'en')
