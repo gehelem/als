@@ -423,7 +423,7 @@ class QRDisplay(QDialog):
         layout.addWidget(self._label)
         self._label.adjustSize()
         self.adjustSize()
-        self.move(50, 50)
+        self.move(50, 250)
         self._geometry = self.geometry()
         controller.add_model_observer(self)
 

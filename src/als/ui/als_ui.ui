@@ -1229,6 +1229,9 @@
    <property name="text">
     <string>QR Code</string>
    </property>
+   <property name="shortcut">
+    <string>Q</string>
+   </property>
   </action>
  </widget>
  <customwidgets>
