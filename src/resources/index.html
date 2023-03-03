@@ -11,8 +11,31 @@
             el.src = "/web_image.jpg" + queryString;
         }
     </script>
+    <style>
+
+        body {
+            margin: 0;
+        }
+
+        header {
+            position: fixed;
+            z-index: 666;
+            top: 0;
+            left: 0;
+            height: 75px;
+            font-size: 14pt;
+            color: white;
+            opacity: 40%;
+        }
+
+        a {
+            text-decoration: none;
+            color: white;
+        }
+    </style>
 </head>
-    <body style="margin: 0">
-    <img src="web_image.jpg" id="web_image">
+    <body>
+        <header><a href="https://als-app.org" target="_blank">Astro Live Stacker</a></header>
+        <img src="web_image.jpg" id="web_image">
     </body>
 </html>
