@@ -315,6 +315,9 @@ class Standardize(ImageProcessor):
     @log
     def process_image(self, image: Image):
 
+        if not image:
+            return None
+
         if image.is_color():
             image.set_color_axis_as(0)
 
@@ -376,6 +379,9 @@ class HotPixelRemover(ImageProcessor):
 
         # this can only work on B&W or non-debayered color images
 
+        if not image:
+            return None
+
         hpr_on = config.get_hot_pixel_remover()
 
         _LOGGER.debug(f"Hot pixel remover enabled : {hpr_on}")
@@ -402,6 +408,9 @@ class Debayer(ImageProcessor):
 
     @log
     def process_image(self, image: Image):
+
+        if not image:
+            return None
 
         preferred_bayer_pattern = config.get_bayer_pattern()
 
@@ -453,6 +462,9 @@ class RemoveDark(ImageProcessor):
 
     @log
     def process_image(self, image: Image):
+
+        if not image:
+            return None
 
         do_subtract = config.get_use_master_dark()
 
@@ -670,7 +682,8 @@ class Pipeline(QueueConsumer):
             for processor in self._processes + self._final_processes:
                 image = processor.process_image(image)
 
-            self.new_result_signal.emit(image)
+            if image:
+                self.new_result_signal.emit(image)
 
         except ProcessingError as processing_error:
             message = QT_TRANSLATE_NOOP("", "Error applying process '{}' to image {} : {} *** Image will be ignored")
