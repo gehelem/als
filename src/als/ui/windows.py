@@ -455,7 +455,7 @@ class MainWindow(QMainWindow):
         """
         try:
             self._controller.start_www()
-            self._qrDialog.update_display()
+            self._qrDialog.update_code()
 
         except WebServerFailedToStart as start_failure:
             error_box(start_failure.message, start_failure.details)

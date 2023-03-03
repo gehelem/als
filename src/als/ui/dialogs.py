@@ -7,7 +7,7 @@ from pathlib import Path
 from PIL.ImageQt import ImageQt
 import qrcode
 
-from PyQt5.QtCore import pyqtSlot, QT_TRANSLATE_NOOP, Qt, pyqtSignal
+from PyQt5.QtCore import pyqtSlot, QT_TRANSLATE_NOOP, pyqtSignal
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QApplication, QLabel, QHBoxLayout
 
@@ -422,14 +422,25 @@ class QRDisplay(QDialog):
         layout = QHBoxLayout(self)
         layout.addWidget(self._label)
         self._label.adjustSize()
-        self.adjustSize()
         self.move(50, 250)
         self._geometry = self.geometry()
+        self.setMaximumWidth(self.width())
+        self.setMaximumHeight(self.height())
+        self.setWindowTitle("ALS QR code")
 
     @log
-    def update_display(self):
+    def update_code(self):
         if DYNAMIC_DATA.web_server_is_running:
-            img = qrcode.make(f"http://{DYNAMIC_DATA.web_server_ip}:{config.get_www_server_port_number()}")
+
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=7,
+                border=1,
+            )
+            qr.add_data(f"http://{DYNAMIC_DATA.web_server_ip}:{config.get_www_server_port_number()}")
+            qr.make(fit=True)
+            img = qr.make_image()
             qim = ImageQt(img)
             pix = QPixmap.fromImage(qim)
             self._label.setPixmap(pix)
@@ -441,7 +452,7 @@ class QRDisplay(QDialog):
         old_state = self.isVisible()
         if visible:
             self.setGeometry(self._geometry)
-            self.update_display()
+            self.update_code()
         else:
             self._geometry = self.geometry()
 
