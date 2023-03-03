@@ -1227,10 +1227,10 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>QR Code</string>
+    <string notr="true">QR Code</string>
    </property>
    <property name="shortcut">
-    <string>Q</string>
+    <string notr="true">Q</string>
    </property>
   </action>
  </widget>
