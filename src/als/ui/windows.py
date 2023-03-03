@@ -17,7 +17,7 @@ from als.messaging import MESSAGE_HUB
 from als.code_utilities import log, get_text_content_of_resource
 from als.model.data import DYNAMIC_DATA, I18n
 from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box, SaveWaitDialog, question, \
-    message_box, SessionStopDialog
+    message_box, SessionStopDialog, QRDisplay
 from als.ui.params_utils import update_controls_from_params, update_params_from_controls, reset_params, \
     set_sliders_defaults
 from generated.als_ui import Ui_stack_window
@@ -49,6 +49,10 @@ class MainWindow(QMainWindow):
         self._ui = Ui_stack_window()
         self._ui.setupUi(self)
         self.setWindowTitle("Astro Live Stacker")
+
+        self._qrDialog = QRDisplay(self, controller)
+        self._qrDialog.hide()
+        self._qrDialog.visibility_changed_signal[bool].connect(self.on_qr_display_visibility_changed)
 
         # populate stacking mode combo box=
         self._ui.cb_stacking_mode.blockSignals(True)
@@ -499,6 +503,21 @@ class MainWindow(QMainWindow):
         else:
             qApp.setStyleSheet("")
 
+    @log
+    @pyqtSlot()
+    def on_action_qrcode_changed(self):
+        self._qrDialog.setVisible(self._ui.action_qrcode.isChecked())
+
+    @log
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key_Q:
+            if DYNAMIC_DATA.web_server_is_running:
+                self._ui.action_qrcode.setChecked(not self._ui.action_qrcode.isChecked())
+
+    @log
+    def on_qr_display_visibility_changed(self, visible):
+        self._ui.action_qrcode.setChecked(visible)
+
     @pyqtSlot()
     @log
     def on_action_image_only_triggered(self):
@@ -648,8 +667,11 @@ class MainWindow(QMainWindow):
             if web_server_is_running:
                 url = f"http://{DYNAMIC_DATA.web_server_ip}:{config.get_www_server_port_number()}"
                 webserver_status = f'{I18n.RUNNING_M} : <a href="{url}" style="color: #CC0000">{url}</a>'
+                self._ui.action_qrcode.setEnabled(True)
             else:
                 webserver_status = I18n.STOPPED_M
+                self._ui.action_qrcode.setDisabled(True)
+
             self._lbl_statusbar_web_server_status.setText(f"{I18n.WEB_SERVER} : {webserver_status}")
             self._ui.lbl_web_server_status_main.setText(f"{webserver_status}")
 

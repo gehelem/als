@@ -62,6 +62,7 @@
     <addaction name="separator"/>
     <addaction name="action_full_screen"/>
     <addaction name="action_night_mode"/>
+    <addaction name="action_qrcode"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
@@ -1219,6 +1220,14 @@
    </property>
    <property name="shortcut">
     <string notr="true">N</string>
+   </property>
+  </action>
+  <action name="action_qrcode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>QR Code</string>
    </property>
   </action>
  </widget>

@@ -4,8 +4,12 @@ Provides all dialogs used in ALS GUI
 import logging
 from pathlib import Path
 
-from PyQt5.QtCore import pyqtSlot, QT_TRANSLATE_NOOP
-from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QApplication
+from PIL.ImageQt import ImageQt
+import qrcode
+
+from PyQt5.QtCore import pyqtSlot, QT_TRANSLATE_NOOP, Qt, pyqtSignal
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QApplication, QLabel, QHBoxLayout
 
 import als.model.data
 from als import config
@@ -407,6 +411,47 @@ class SessionStopDialog(QDialog):
         return self._ui.chk_save.isChecked()
 
 
+class QRDisplay(QDialog):
+
+    visibility_changed_signal = pyqtSignal(bool)
+
+    def __init__(self, parent, controller: Controller):
+        super().__init__(parent)
+        self._parent = parent
+        self._label = QLabel(self)
+        layout = QHBoxLayout(self)
+        layout.addWidget(self._label)
+        self._label.adjustSize()
+        self.adjustSize()
+        self.move(50, 50)
+        self._geometry = self.geometry()
+        controller.add_model_observer(self)
+
+    @log
+    def update_display(self, _):
+        if DYNAMIC_DATA.web_server_is_running:
+            img = qrcode.make(f"http://{DYNAMIC_DATA.web_server_ip}:{config.get_www_server_port_number()}")
+            qim = ImageQt(img)
+            pix = QPixmap.fromImage(qim)
+            self._label.setPixmap(pix)
+        else:
+            self.setVisible(False)
+
+    @log
+    def setVisible(self, visible: bool):
+        if visible:
+            self.setGeometry(self._geometry)
+            self.update_display(False)
+        else:
+            self._geometry = self.geometry()
+
+        self.visibility_changed_signal.emit(visible)
+        super().setVisible(visible)
+
+    @log
+    def keyPressEvent(self, e):
+        self._parent.keyPressEvent(e)
+
 @log
 def question(title, message, default_yes: bool = True):
     """
@@ -470,3 +515,4 @@ def message_box(title, message, icon=QMessageBox.Information):
     box.setWindowTitle(title)
     box.setText(message)
     box.exec()
+
