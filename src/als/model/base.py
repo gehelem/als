@@ -101,18 +101,22 @@ class Image:
         self._destination: str = "UNDEFINED"
 
     @log
-    def clone(self):
+    def clone(self, keep_ref_to_data=False):
         """
         Clone an image
+
+        :param keep_ref_to_data: don't copy numpy data. This allows light image clone
+        :type keep_ref_to_data: bool
 
         :return: an image with global copied data
         :rtype: Image
         """
-        new = Image(self.data.copy())
-        new.bayer_pattern = self.bayer_pattern
-        new.origin = self.origin
-        new.destination = self.destination
-        return new
+        new_image_data = self.data if keep_ref_to_data else self.data.copy()
+        new_image = Image(new_image_data)
+        new_image.bayer_pattern = self.bayer_pattern
+        new_image.origin = self.origin
+        new_image.destination = self.destination
+        return new_image
 
     @property
     def destination(self):
@@ -279,6 +283,7 @@ class Image:
 
     def __repr__(self):
         representation = (f'{self.__class__.__name__}('
+                          f'ID={self.__hash__()}, '
                           f'Color={self.is_color()}, '
                           f'Needs Debayer={self.needs_debayering()}, '
                           f'Bayer Pattern={self.bayer_pattern}, '

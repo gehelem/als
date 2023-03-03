@@ -8,7 +8,6 @@ from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap, QBrush, QColor, QIcon
 from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog, QApplication, \
     QListWidgetItem, qApp, QLabel, QFrame
-from qimage2ndarray import array2qimage
 
 import als.model.data
 from als import config
@@ -40,6 +39,9 @@ class MainWindow(QMainWindow):
     def __init__(self, controller: Controller, parent=None):
 
         super().__init__(parent)
+
+        self._warning_sign_off = QPixmap()
+        self._warning_sign_on = QPixmap(":/icons/warning_sign.svg")
 
         self.setWindowIcon(QIcon(":/icons/als_logo.png"))
 
@@ -553,6 +555,7 @@ class MainWindow(QMainWindow):
 
         if visible:
             self._cancel_image_only_mode()
+            self._ui.log.scrollToBottom()
 
     # pylint: disable=no-self-use
     @log
@@ -590,10 +593,7 @@ class MainWindow(QMainWindow):
         """
         Update central image display.
         """
-        image_raw_data = DYNAMIC_DATA.post_processor_result.data.copy()
-
-        image = array2qimage(image_raw_data, normalize=(2 ** 16 - 1))
-        self._image_item.setPixmap(QPixmap.fromImage(image))
+        self._image_item.setPixmap(DYNAMIC_DATA.post_processor_result_qimage)
 
     @pyqtSlot(name="on_pbPlay_clicked")
     @log
@@ -602,6 +602,7 @@ class MainWindow(QMainWindow):
 
         self._start_session()
 
+    @log
     def on_message(self, message):
         """
         print received message to GUI log window
@@ -617,7 +618,7 @@ class MainWindow(QMainWindow):
         if _INFO_LOG_TAG in message and self._ui.btn_issues_only.isChecked():
             new_item.setHidden(True)
 
-        if self._ui.btn_follow_logs.isChecked():
+        if self._ui.btn_follow_logs.isChecked() and self._ui.log.isVisible():
             self._ui.log.scrollToBottom()
 
     # pylint: disable=too-many-statements
@@ -696,9 +697,9 @@ class MainWindow(QMainWindow):
 
             # manage warning sign
             if DYNAMIC_DATA.has_new_warnings:
-                warning_pixmap = QPixmap(":/icons/warning_sign.svg")
+                warning_pixmap = self._warning_sign_on
             else:
-                warning_pixmap = QPixmap()
+                warning_pixmap = self._warning_sign_off
 
             self._ui.lbl_warning_sign.setPixmap(warning_pixmap)
 

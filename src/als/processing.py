@@ -10,10 +10,12 @@ from pathlib import Path
 import cv2
 import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal, QT_TRANSLATE_NOOP
+from PyQt5.QtGui import QPixmap
 from scipy.signal import convolve2d
+from qimage2ndarray import array2qimage
 
 from als.code_utilities import log, Timer, SignalingQueue, human_readable_byte_size, available_memory
-from als.crunching import get_image_memory_size
+from als.crunching import get_image_memory_size, compute_histograms_for_display
 from als.io.input import read_disk_image
 from als.messaging import MESSAGE_HUB
 from als.model.base import Image
@@ -194,7 +196,12 @@ class AutoStretch(ImageProcessor):
         active = self._parameters[0]
         stretch_strength = self._parameters[1]
 
+        # make sure, as we are the first process in the pipeline, that our changes are made
+        # on a copy of the received image. So whoever kept a ref to it won't be affected
+        image = image.clone()
+
         if active.value:
+
             _LOGGER.debug("Performing Autostretch...")
             image.data = np.interp(image.data,
                                    (image.data.min(), image.data.max()),
@@ -540,10 +547,35 @@ class ConvertForOutput(ImageProcessor):
     @log
     def process_image(self, image: Image):
 
+        # make sure  that our changes are made on a copy of the received image.
+        # So whoever kept a ref to it won't be affected
+        image = image.clone()
+
         if image.is_color():
             image.set_color_axis_as(2)
 
         image.data = np.uint16(np.clip(image.data, 0, 2 ** 16 - 1))
+
+        return image
+
+
+class HistogramComputer(ImageProcessor):
+    """ Responsible of computing image histogram """
+
+    _BIN_COUNT = 512
+
+    @log
+    def process_image(self, image: Image):
+        DYNAMIC_DATA.histogram_container = compute_histograms_for_display(image, HistogramComputer._BIN_COUNT)
+        return image
+
+
+class QImageGenerator(ImageProcessor):
+    """ Converts Numpy data to QPixmap """
+    def process_image(self, image: Image):
+        image_raw_data = image.data.copy()
+        temp_image = array2qimage(image_raw_data, normalize=(2 ** 16 - 1))
+        DYNAMIC_DATA.post_processor_result_qimage = QPixmap.fromImage(temp_image)
 
         return image
 

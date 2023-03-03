@@ -32,7 +32,8 @@ class ImageSaver(QueueConsumer):
     @log
     def _handle_item(self, image: Image):
 
-        ImageSaver._save_image(image)
+        # image conversions involved in saving to various formats forces us to clone the received image
+        ImageSaver._save_image(image.clone())
 
     @staticmethod
     @log
