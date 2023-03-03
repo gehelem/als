@@ -61,5 +61,9 @@ def get_image_memory_size(image: Image):
     :return: memory footprint of image in bytes
     :rtype: int
     """
-    (a, b, c) = image.data.shape
-    return 4 * a * b * c
+    if image.is_color():
+        (a, b, c) = image.data.shape
+        return 4 * a * b * c
+
+    (a, b) = image.data.shape
+    return 4 * a * b
