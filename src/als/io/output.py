@@ -69,6 +69,10 @@ class ImageSaver(QueueConsumer):
 
             failure_details = ""
             try:
+
+                if sys.platform == 'win32':
+                    os.remove(image.destination)
+
                 os.rename(target_path, image.destination)
                 post_save_is_successful = True
 
