@@ -415,7 +415,7 @@ class QRDisplay(QDialog):
 
     visibility_changed_signal = pyqtSignal(bool)
 
-    def __init__(self, parent, controller: Controller):
+    def __init__(self, parent):
         super().__init__(parent)
         self._parent = parent
         self._label = QLabel(self)

@@ -50,7 +50,7 @@ class MainWindow(QMainWindow):
         self._ui.setupUi(self)
         self.setWindowTitle("Astro Live Stacker")
 
-        self._qrDialog = QRDisplay(self, controller)
+        self._qrDialog = QRDisplay(self)
         self._qrDialog.hide()
         self._qrDialog.visibility_changed_signal[bool].connect(self.on_qr_display_visibility_changed)
 
