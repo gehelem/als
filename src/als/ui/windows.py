@@ -455,6 +455,7 @@ class MainWindow(QMainWindow):
         """
         try:
             self._controller.start_www()
+            self._qrDialog.update_display()
 
         except WebServerFailedToStart as start_failure:
             error_box(start_failure.message, start_failure.details)
@@ -471,7 +472,8 @@ class MainWindow(QMainWindow):
         """
         Qt slot executed when START web button is clicked
         """
-        self._stop_www()
+        self._controller.stop_www()
+        self._qrDialog.setVisible(False)
 
     @log
     def on_action_full_screen_toggled(self, checked):
@@ -740,11 +742,6 @@ class MainWindow(QMainWindow):
     def cb_pause(self):
         """Qt slot for mouse clicks on the 'Pause' button"""
         self._controller.pause_session()
-
-    @log
-    def _stop_www(self):
-        """Stops web server"""
-        self._controller.stop_www()
 
     @log
     def _start_session(self, is_retry: bool = False):

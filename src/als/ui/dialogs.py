@@ -425,10 +425,9 @@ class QRDisplay(QDialog):
         self.adjustSize()
         self.move(50, 250)
         self._geometry = self.geometry()
-        controller.add_model_observer(self)
 
     @log
-    def update_display(self, _):
+    def update_display(self):
         if DYNAMIC_DATA.web_server_is_running:
             img = qrcode.make(f"http://{DYNAMIC_DATA.web_server_ip}:{config.get_www_server_port_number()}")
             qim = ImageQt(img)
@@ -439,13 +438,16 @@ class QRDisplay(QDialog):
 
     @log
     def setVisible(self, visible: bool):
+        old_state = self.isVisible()
         if visible:
             self.setGeometry(self._geometry)
-            self.update_display(False)
+            self.update_display()
         else:
             self._geometry = self.geometry()
 
-        self.visibility_changed_signal.emit(visible)
+        if old_state != visible:
+            self.visibility_changed_signal.emit(visible)
+
         super().setVisible(visible)
 
     @log
