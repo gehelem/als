@@ -508,16 +508,31 @@ class MainWindow(QMainWindow):
     @log
     @pyqtSlot()
     def on_action_qrcode_changed(self):
+        """ QR action has changed : we deal with QR Code display """
         self._qrDialog.setVisible(self._ui.action_qrcode.isChecked())
 
     @log
     def keyPressEvent(self, e):
+        """
+        A key has been pressed.
+
+        We only deal with special case 'Q' that can come from the QR Code dialog
+        which is set to redirect its keypress events to us.
+
+        :param e: The received Qt event
+        """
         if e.key() == Qt.Key_Q:
             if DYNAMIC_DATA.web_server_is_running:
                 self._ui.action_qrcode.setChecked(not self._ui.action_qrcode.isChecked())
 
     @log
     def on_qr_display_visibility_changed(self, visible):
+        """
+        QR Code display's visibility just changed.
+
+        :param visible: is QR code visible now ?
+        :type visible: bool
+        """
         self._ui.action_qrcode.setChecked(visible)
 
     @pyqtSlot()

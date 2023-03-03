@@ -430,6 +430,9 @@ class QRDisplay(QDialog):
 
     @log
     def update_code(self):
+        """
+        Create a new QR caode from server's  current IP & configured port.
+        """
         if DYNAMIC_DATA.web_server_is_running:
 
             qr = qrcode.QRCode(
@@ -449,6 +452,12 @@ class QRDisplay(QDialog):
 
     @log
     def setVisible(self, visible: bool):
+        """
+        Set our visibility.
+
+        :param visible: True if we must show ourself
+        :type visible: bool
+        """
         old_state = self.isVisible()
         if visible:
             self.setGeometry(self._geometry)
@@ -463,6 +472,11 @@ class QRDisplay(QDialog):
 
     @log
     def keyPressEvent(self, e):
+        """
+        A key has just been pressed : we simply forward the event to mum
+
+        :param e: the received Qt event
+        """
         self._parent.keyPressEvent(e)
 
 @log
