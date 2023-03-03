@@ -517,9 +517,11 @@ class Controller:
     @log
     def start_www(self):
         """Starts web server"""
-
         try:
-            Controller._setup_web_content()
+            # only setup web content if needed
+            if not all([Path(config.get_web_folder_path()).joinpath(Path(file)).is_file()
+                        for file in ["index.html", "favicon.ico", "web_image.jpg"]]):
+                Controller._setup_web_content()
 
             web_folder_path = config.get_web_folder_path()
             ip_address = get_ip()
