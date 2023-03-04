@@ -246,7 +246,7 @@ class Image:
         :return: True if no color info is stored in data array, False otherwise
         :rtype: bool
         """
-        return self._data.ndim == 2 and self._bayer_pattern is None
+        return self._data.ndim == 2 and self._bayer_pattern == ""
 
     @log
     def is_same_shape_as(self, other):
