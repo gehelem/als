@@ -421,6 +421,7 @@ class QRDisplay(QDialog):
         self.setWindowFlags(self.windowFlags() | Qt.WindowDoesNotAcceptFocus)
         self.setWindowFlags(self.windowFlags() | Qt.CustomizeWindowHint)
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
 
         self._ui = Ui_QrDialog()
         self._ui.setupUi(self)
