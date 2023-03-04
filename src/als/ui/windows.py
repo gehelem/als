@@ -506,10 +506,15 @@ class MainWindow(QMainWindow):
             qApp.setStyleSheet("")
 
     @log
-    @pyqtSlot()
-    def on_action_qrcode_changed(self):
-        """ QR action has changed : we deal with QR Code display """
-        self._qrDialog.setVisible(self._ui.action_qrcode.isChecked())
+    @pyqtSlot(bool)
+    def on_action_qrcode_toggled(self, checked):
+        """
+        QR action has changed : we deal with QR Code display
+
+        :param checked: is action now checked ?
+        :type checked: bool
+        """
+        self._qrDialog.setVisible(checked)
 
     @log
     def keyPressEvent(self, e):
