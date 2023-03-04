@@ -703,6 +703,10 @@ class MainWindow(QMainWindow):
 
             self._ui.lbl_warning_sign.setPixmap(warning_pixmap)
 
+            # disable color balance controls on B&W image
+            if DYNAMIC_DATA.post_processor_result:
+                self._ui.rgbProcessBox.setEnabled(DYNAMIC_DATA.post_processor_result.is_color())
+
     @pyqtSlot(name="on_pbStop_clicked")
     @log
     def cb_stop(self):

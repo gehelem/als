@@ -963,7 +963,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QGroupBox" name="groupBox_8">
+      <widget class="QGroupBox" name="rgbProcessBox">
        <property name="title">
         <string>RGB Balance</string>
        </property>
