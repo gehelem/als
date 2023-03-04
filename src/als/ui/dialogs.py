@@ -7,9 +7,9 @@ from pathlib import Path
 from PIL.ImageQt import ImageQt
 import qrcode
 
-from PyQt5.QtCore import pyqtSlot, QT_TRANSLATE_NOOP, pyqtSignal
+from PyQt5.QtCore import pyqtSlot, QT_TRANSLATE_NOOP, pyqtSignal, Qt
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QApplication, QLabel, QHBoxLayout
+from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QApplication
 
 import als.model.data
 from als import config
@@ -19,6 +19,7 @@ from als.messaging import MESSAGE_HUB
 from als.model.data import VERSION, DYNAMIC_DATA
 from generated.about_ui import Ui_AboutDialog
 from generated.prefs_ui import Ui_PrefsDialog
+from generated.qr_ui import Ui_QrDialog
 from generated.save_wait_ui import Ui_SaveWaitDialog
 from generated.stop_ui import Ui_SessionStopDialog
 
@@ -417,16 +418,15 @@ class QRDisplay(QDialog):
 
     def __init__(self, parent):
         super().__init__(parent)
-        self._parent = parent
-        self._label = QLabel(self)
-        layout = QHBoxLayout(self)
-        layout.addWidget(self._label)
-        self._label.adjustSize()
-        self.move(50, 250)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowDoesNotAcceptFocus)
+        self.setWindowFlags(self.windowFlags() | Qt.CustomizeWindowHint)
+
+        self._ui = Ui_QrDialog()
+        self._ui.setupUi(self)
+
+        self.move(QApplication.desktop().screen().rect().center())
+
         self._geometry = self.geometry()
-        self.setMaximumWidth(self.width())
-        self.setMaximumHeight(self.height())
-        self.setWindowTitle("ALS QR code")
 
     @log
     def update_code(self):
@@ -446,9 +446,9 @@ class QRDisplay(QDialog):
             img = qr.make_image()
             qim = ImageQt(img)
             pix = QPixmap.fromImage(qim)
-            self._label.setPixmap(pix)
-        else:
-            self.setVisible(False)
+            self._ui.lblQR.setPixmap(pix)
+            self._ui.lblQR.adjustSize()
+            self.adjustSize()
 
     @log
     def setVisible(self, visible: bool):
@@ -470,14 +470,6 @@ class QRDisplay(QDialog):
 
         super().setVisible(visible)
 
-    @log
-    def keyPressEvent(self, e):
-        """
-        A key has just been pressed : we simply forward the event to mum
-
-        :param e: the received Qt event
-        """
-        self._parent.keyPressEvent(e)
 
 @log
 def question(title, message, default_yes: bool = True):

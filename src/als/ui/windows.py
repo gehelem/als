@@ -50,9 +50,9 @@ class MainWindow(QMainWindow):
         self._ui.setupUi(self)
         self.setWindowTitle("Astro Live Stacker")
 
-        self._qrDialog = QRDisplay(self)
-        self._qrDialog.hide()
-        self._qrDialog.visibility_changed_signal[bool].connect(self.on_qr_display_visibility_changed)
+        self._qrDisplay = QRDisplay(self)
+        self._qrDisplay.hide()
+        self._qrDisplay.visibility_changed_signal[bool].connect(self.on_qr_display_visibility_changed)
 
         # populate stacking mode combo box=
         self._ui.cb_stacking_mode.blockSignals(True)
@@ -455,7 +455,7 @@ class MainWindow(QMainWindow):
         """
         try:
             self._controller.start_www()
-            self._qrDialog.update_code()
+            self._qrDisplay.update_code()
 
         except WebServerFailedToStart as start_failure:
             error_box(start_failure.message, start_failure.details)
@@ -473,7 +473,7 @@ class MainWindow(QMainWindow):
         Qt slot executed when START web button is clicked
         """
         self._controller.stop_www()
-        self._qrDialog.setVisible(False)
+        self._qrDisplay.setVisible(False)
 
     @log
     def on_action_full_screen_toggled(self, checked):
@@ -514,21 +514,7 @@ class MainWindow(QMainWindow):
         :param checked: is action now checked ?
         :type checked: bool
         """
-        self._qrDialog.setVisible(checked)
-
-    @log
-    def keyPressEvent(self, e):
-        """
-        A key has been pressed.
-
-        We only deal with special case 'Q' that can come from the QR Code dialog
-        which is set to redirect its keypress events to us.
-
-        :param e: The received Qt event
-        """
-        if e.key() == Qt.Key_Q:
-            if DYNAMIC_DATA.web_server_is_running:
-                self._ui.action_qrcode.setChecked(not self._ui.action_qrcode.isChecked())
+        self._qrDisplay.setVisible(checked)
 
     @log
     def on_qr_display_visibility_changed(self, visible):
