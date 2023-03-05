@@ -381,6 +381,9 @@ class MainWindow(QMainWindow):
             for i in range(self._ui.log.count()):
                 self._ui.log.item(i).setHidden(False)
 
+        if self._ui.btn_follow_logs.isChecked():
+            self._ui.log.scrollToBottom()
+
     @pyqtSlot(name="on_pbSave_clicked")
     @log
     def cb_save(self):
