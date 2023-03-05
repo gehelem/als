@@ -41,7 +41,7 @@ from als.model.data import (
 )
 from als.model.params import ProcessingParameter
 from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput, Levels, ColorBalance, AutoStretch, \
-    HotPixelRemover, RemoveDark
+    HotPixelRemover, RemoveDark, FileReader, HistogramComputer, QImageGenerator
 from als.stack import Stacker
 
 
@@ -58,8 +58,12 @@ class CriticalFolderMissing(SessionError):
     """Raised when a critical folder is missing"""
 
 
-class WebServerStartFailure(AlsException):
+class WebServerFailedToStart(AlsException):
     """Raised when web server fails"""
+
+
+class WebServerOnLoopback(Exception):
+    """Raised when we can listen on loopback only"""
 
 
 # pylint: disable=R0902, R0904
@@ -67,8 +71,6 @@ class Controller:
     """
     The application controller, in charge of implementing application logic
     """
-
-    _BIN_COUNT = 512
 
     @log
     def __init__(self):
@@ -88,7 +90,7 @@ class Controller:
         self._pre_process_pipeline: Pipeline = Pipeline(
             'pre-process',
             self._pre_process_queue,
-            [RemoveDark(), HotPixelRemover(), Debayer(), Standardize()])
+            [FileReader(), RemoveDark(), HotPixelRemover(), Debayer(), Standardize()])
         self._pre_process_pipeline.start(QThread.NormalPriority)
 
         self._stacker_queue: SignalingQueue = DYNAMIC_DATA.stacker_queue
@@ -98,7 +100,10 @@ class Controller:
         self._stacker.start(QThread.NormalPriority)
 
         self._post_process_queue = DYNAMIC_DATA.process_queue
-        self._post_process_pipeline: Pipeline = Pipeline('post-process', self._post_process_queue, [ConvertForOutput()])
+        self._post_process_pipeline: Pipeline = Pipeline(
+            'post-process',
+            self._post_process_queue,
+            [ConvertForOutput(), HistogramComputer(), QImageGenerator()])
         self._rgb_processor = ColorBalance()
         self._autostretch_processor = AutoStretch()
         self._levels_processor = Levels()
@@ -116,7 +121,7 @@ class Controller:
 
         self._model_observers = list()
 
-        self._input_scanner.new_image_signal[Image].connect(self.on_new_image_read)
+        self._input_scanner.new_image_path_signal[str].connect(self.on_new_image_path)
         self._pre_process_pipeline.new_result_signal[Image].connect(self.on_new_pre_processed_image)
         self._stacker.stack_size_changed_signal[int].connect(self.on_stack_size_changed)
         self._stacker.new_result_signal[Image].connect(self.on_new_stack_result)
@@ -201,7 +206,7 @@ class Controller:
         """
         if self._stacker.size > 0 and DYNAMIC_DATA.process_queue.qsize() == 0:
 
-            DYNAMIC_DATA.process_queue.put(self._last_stacking_result.clone())
+            DYNAMIC_DATA.process_queue.put(self._last_stacking_result)
 
     @log
     def get_save_every_image(self) -> bool:
@@ -283,7 +288,6 @@ class Controller:
         :type image: Image
         """
         image.origin = "Process result"
-        DYNAMIC_DATA.histogram_container = compute_histograms_for_display(image, Controller._BIN_COUNT)
         DYNAMIC_DATA.post_processor_result = image
         self._notify_model_observers(image_only=True)
         self.save_post_process_result()
@@ -297,20 +301,20 @@ class Controller:
         :type image: Image
         """
         image.origin = "Stacking result"
-        self._last_stacking_result = image.clone()
+        self._last_stacking_result = image
 
         self.purge_queue(self._post_process_queue)
-        self._post_process_queue.put(image.clone())
+        self._post_process_queue.put(image)
 
     @log
-    def on_new_image_read(self, image: Image):
+    def on_new_image_path(self, image_path: str):
         """
-        A new image as been read by input scanner
+        A new image as been detected by input scanner
 
-        :param image: the new image
-        :type image: Image
+        :param image_path: the new image path
+        :type image_path: str
         """
-        self._pre_process_queue.put(image)
+        self._pre_process_queue.put(image_path)
 
     @log
     def on_new_pre_processed_image(self, image: Image):
@@ -457,15 +461,16 @@ class Controller:
                         raise CriticalFolderMissing(
                             QCoreApplication.translate("", title),
                             QCoreApplication.translate("", message).format(*[role, path]))
+
+                # setup web content
+                try:
+                    Controller._setup_web_content()
+                except OSError as os_error:
+                    raise SessionError("Web folder could not be prepared", str(os_error))
+
             else:
                 # session was paused when this start was ordered. No need for checks & setup
                 MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Restarting input scanner ..."))
-
-            # setup web content
-            try:
-                Controller._setup_web_content()
-            except OSError as os_error:
-                raise SessionError("Web folder could not be prepared", str(os_error))
 
             # start input scanner
             try:
@@ -512,12 +517,16 @@ class Controller:
     @log
     def start_www(self):
         """Starts web server"""
-
-        web_folder_path = config.get_web_folder_path()
-        ip_address = get_ip()
-        port_number = config.get_www_server_port_number()
-
         try:
+            # only setup web content if needed
+            if not all([Path(config.get_web_folder_path()).joinpath(Path(file)).is_file()
+                        for file in ["index.html", "favicon.ico", "web_image.jpg"]]):
+                Controller._setup_web_content()
+
+            web_folder_path = config.get_web_folder_path()
+            ip_address = get_ip()
+            port_number = config.get_www_server_port_number()
+
             self._web_server = WebServer(web_folder_path)
             self._web_server.start()
 
@@ -528,11 +537,15 @@ class Controller:
             DYNAMIC_DATA.web_server_is_running = True
             self._notify_model_observers()
 
+            # if we can only listen on loopback, keep running but notify the powers that be
+            if ip_address == "127.0.0.1":
+                raise WebServerOnLoopback()
+
         except OSError as os_error:
             log_message = QT_TRANSLATE_NOOP("", "Could not start web server : {}")
             error_title = QCoreApplication.translate("", "Could not start web server")
             MESSAGE_HUB.dispatch_error(__name__, log_message, [str(os_error), ])
-            raise WebServerStartFailure(error_title, str(os_error))
+            raise WebServerFailedToStart(error_title, str(os_error))
 
     @log
     def stop_www(self):
@@ -567,7 +580,9 @@ class Controller:
         web_folder_path = config.get_web_folder_path()
 
         index_content = get_text_content_of_resource(":/web/index.html")
-        index_content = index_content.replace('##PERIOD##', str(config.get_www_server_refresh_period()))
+
+        # UI period in sec. <=> JS refresh period in ms.
+        index_content = index_content.replace('##PERIOD##', str(config.get_www_server_refresh_period() * 1000))
 
         with open(web_folder_path + "/index.html", 'w') as index_file:
             index_file.write(index_content)
@@ -639,7 +654,7 @@ class Controller:
         if add_timestamp:
             filename_base += '-' + get_timestamp().replace(' ', "-").replace(":", '-').replace('.', '-')
 
-        image_to_save = image.clone()
+        image_to_save = image.clone(keep_ref_to_data=True)
         image_to_save.destination = dest_folder_path + "/" + filename_base + '.' + file_extension
         self._saver_queue.put(image_to_save)
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1156</width>
-    <height>877</height>
+    <height>989</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -62,6 +62,7 @@
     <addaction name="separator"/>
     <addaction name="action_full_screen"/>
     <addaction name="action_night_mode"/>
+    <addaction name="action_qrcode"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
@@ -69,7 +70,14 @@
     </property>
     <addaction name="action_about_als"/>
    </widget>
+   <widget class="QMenu" name="menuSession">
+    <property name="title">
+     <string>&amp;Session</string>
+    </property>
+    <addaction name="action_ack_issues"/>
+   </widget>
    <addaction name="menu_File"/>
+   <addaction name="menuSession"/>
    <addaction name="menu_Edit"/>
    <addaction name="menuView"/>
    <addaction name="menu_Help"/>
@@ -597,6 +605,19 @@
        </property>
       </spacer>
      </item>
+     <item>
+      <widget class="QPushButton" name="btn_issues">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Issues</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
   </widget>
@@ -627,58 +648,15 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_10">
        <item>
-        <spacer name="verticalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
+        <widget class="QPushButton" name="btn_issues_ack">
+         <property name="minimumSize">
           <size>
-           <width>20</width>
+           <width>0</width>
            <height>40</height>
           </size>
          </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QLabel" name="lbl_warning_sign">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>48</width>
-           <height>48</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>48</width>
-           <height>48</height>
-          </size>
-         </property>
-         <property name="baseSize">
-          <size>
-           <width>48</width>
-           <height>48</height>
-          </size>
-         </property>
-         <property name="toolTip">
-          <string/>
-         </property>
          <property name="text">
-          <string notr="true"/>
-         </property>
-         <property name="pixmap">
-          <pixmap resource="../../resources/resource.qrc">:/icons/warning_sign.svg</pixmap>
-         </property>
-         <property name="scaledContents">
-          <bool>true</bool>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignJustify|Qt::AlignVCenter</set>
+          <string>Acknowledge</string>
          </property>
         </widget>
        </item>
@@ -693,7 +671,26 @@
         </widget>
        </item>
        <item>
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
         <widget class="QPushButton" name="btn_follow_logs">
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
           <string>follow</string>
          </property>
@@ -963,7 +960,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QGroupBox" name="groupBox_8">
+      <widget class="QGroupBox" name="rgbProcessBox">
        <property name="title">
         <string>RGB Balance</string>
        </property>
@@ -1219,6 +1216,28 @@
    </property>
    <property name="shortcut">
     <string notr="true">N</string>
+   </property>
+  </action>
+  <action name="action_ack_issues">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Ack. issues</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true">A</string>
+   </property>
+  </action>
+  <action name="action_qrcode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string notr="true">QR Code</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true">Q</string>
    </property>
   </action>
  </widget>

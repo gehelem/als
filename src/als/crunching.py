@@ -5,6 +5,7 @@ import logging
 
 import numpy as np
 from als.code_utilities import log
+from als.model.base import Image
 
 from als.model.data import HistogramContainer
 
@@ -43,3 +44,26 @@ def _compute_single_channel_histogram_for_display(channel_data, bin_count):
             break
 
     return histogram
+
+
+@log
+def get_image_memory_size(image: Image):
+    """
+    compute memory footprint of a standardize image.
+
+    each pixel needs 4 bytes as we normalize images data to np.float32
+
+    So, image memory footmrpint = 4 bytes * image width * image height * image channels
+
+    :param image: the image
+    :type image: Image
+
+    :return: memory footprint of image in bytes
+    :rtype: int
+    """
+    if image.is_color():
+        (a, b, c) = image.data.shape
+        return 4 * a * b * c
+
+    (a, b) = image.data.shape
+    return 4 * a * b

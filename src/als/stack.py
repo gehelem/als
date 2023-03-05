@@ -147,7 +147,7 @@ class Stacker(QueueConsumer):
         self.stack_size_changed_signal.emit(self.size)
 
     @log
-    def _handle_image(self, image: Image):
+    def _handle_item(self, image: Image):
 
         if self.size == 0:
             _LOGGER.debug("This is the first image for this stack. Publishing right away")
@@ -229,11 +229,11 @@ class Stacker(QueueConsumer):
 
             for channel in range(3):
                 processor = Process(target=Stacker._apply_single_channel_transformation,
-                                    args=[image,
+                                    args=(image,
                                           self._last_stacking_result,
                                           transformation,
                                           results_dict,
-                                          channel])
+                                          channel))
                 processor.start()
                 channel_processors.append(processor)
 

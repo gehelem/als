@@ -2,6 +2,7 @@
 Provides all means of image processing
 """
 import logging
+import time
 from abc import abstractmethod
 from typing import List
 from pathlib import Path
@@ -9,12 +10,16 @@ from pathlib import Path
 import cv2
 import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal, QT_TRANSLATE_NOOP
+from PyQt5.QtGui import QPixmap
 from scipy.signal import convolve2d
+from qimage2ndarray import array2qimage
 
-from als.code_utilities import log, Timer, SignalingQueue
+from als.code_utilities import log, Timer, SignalingQueue, human_readable_byte_size, available_memory
+from als.crunching import get_image_memory_size, compute_histograms_for_display
+from als.io.input import read_disk_image
 from als.messaging import MESSAGE_HUB
 from als.model.base import Image
-from als.model.data import I18n
+from als.model.data import I18n, DYNAMIC_DATA
 from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter
 from als.io import input as als_input
 from als import config
@@ -191,7 +196,12 @@ class AutoStretch(ImageProcessor):
         active = self._parameters[0]
         stretch_strength = self._parameters[1]
 
+        # make sure, as we are the first process in the pipeline, that our changes are made
+        # on a copy of the received image. So whoever kept a ref to it won't be affected
+        image = image.clone()
+
         if active.value:
+
             _LOGGER.debug("Performing Autostretch...")
             image.data = np.interp(image.data,
                                    (image.data.min(), image.data.max()),
@@ -305,12 +315,39 @@ class Standardize(ImageProcessor):
     @log
     def process_image(self, image: Image):
 
+        if not image:
+            return None
+
         if image.is_color():
             image.set_color_axis_as(0)
 
         image.data = np.float32(image.data)
 
         return image
+
+
+class FileReader(ImageProcessor):
+    """
+    Handles image read from file
+    """
+
+    # //FIXME : BEWARE, in this specific processor, what we actually process is file paths, not image objects
+    def process_image(self, image: Image):
+        image_path = image
+
+        # TODO: Move this logic to Controller somehow
+        #       Checking if available memory is twice as big as what an image requires
+        #       twice because we preallocate a copy when aligning...
+        reference_image = DYNAMIC_DATA.post_processor_result
+        needed_memory_in_bytes = get_image_memory_size(reference_image) * 2 if reference_image else 0
+        _LOGGER.debug(f"Needed memory for next image: {human_readable_byte_size(needed_memory_in_bytes)}")
+        _LOGGER.debug(f"Available system memory : {human_readable_byte_size(available_memory())}")
+        while available_memory() < needed_memory_in_bytes:
+            _LOGGER.warning(f"Memory low ! Needed memory: {human_readable_byte_size(needed_memory_in_bytes)} "
+                            f"/ Available: {human_readable_byte_size(available_memory())} Waiting...")
+            time.sleep(1)
+
+        return read_disk_image(Path(image_path))
 
 
 class HotPixelRemover(ImageProcessor):
@@ -342,6 +379,9 @@ class HotPixelRemover(ImageProcessor):
 
         # this can only work on B&W or non-debayered color images
 
+        if not image:
+            return None
+
         hpr_on = config.get_hot_pixel_remover()
 
         _LOGGER.debug(f"Hot pixel remover enabled : {hpr_on}")
@@ -368,6 +408,9 @@ class Debayer(ImageProcessor):
 
     @log
     def process_image(self, image: Image):
+
+        if not image:
+            return None
 
         preferred_bayer_pattern = config.get_bayer_pattern()
 
@@ -419,6 +462,9 @@ class RemoveDark(ImageProcessor):
 
     @log
     def process_image(self, image: Image):
+
+        if not image:
+            return None
 
         do_subtract = config.get_use_master_dark()
 
@@ -513,10 +559,35 @@ class ConvertForOutput(ImageProcessor):
     @log
     def process_image(self, image: Image):
 
+        # make sure  that our changes are made on a copy of the received image.
+        # So whoever kept a ref to it won't be affected
+        image = image.clone()
+
         if image.is_color():
             image.set_color_axis_as(2)
 
         image.data = np.uint16(np.clip(image.data, 0, 2 ** 16 - 1))
+
+        return image
+
+
+class HistogramComputer(ImageProcessor):
+    """ Responsible of computing image histogram """
+
+    _BIN_COUNT = 512
+
+    @log
+    def process_image(self, image: Image):
+        DYNAMIC_DATA.histogram_container = compute_histograms_for_display(image, HistogramComputer._BIN_COUNT)
+        return image
+
+
+class QImageGenerator(ImageProcessor):
+    """ Converts Numpy data to QPixmap """
+    def process_image(self, image: Image):
+        image_raw_data = image.data.copy()
+        temp_image = array2qimage(image_raw_data, normalize=(2 ** 16 - 1))
+        DYNAMIC_DATA.post_processor_result_qimage = QPixmap.fromImage(temp_image)
 
         return image
 
@@ -548,7 +619,7 @@ class QueueConsumer(QThread):
 
     @abstractmethod
     @log
-    def _handle_image(self, image: Image):
+    def _handle_item(self, image: Image):
         """
         Perform hopefully useful actions on image
 
@@ -568,16 +639,18 @@ class QueueConsumer(QThread):
             if self._queue.qsize() > 0:
 
                 self.busy_signal.emit()
-                image = self._queue.get()
-                MESSAGE_HUB.dispatch_info(__name__, QT_TRANSLATE_NOOP("", "Start {} on {}"), [self._name, image.origin])
+                item = self._queue.get()
+                MESSAGE_HUB.dispatch_info(__name__,
+                                          QT_TRANSLATE_NOOP("", "Start {} on {}"),
+                                          [self._name, item.origin if type(item) == Image else item])
 
                 with Timer() as timer:
-                    self._handle_image(image)
+                    self._handle_item(item)
 
                 MESSAGE_HUB.dispatch_info(
                     __name__,
                     QT_TRANSLATE_NOOP("", "End {} on {} in {} ms"),
-                    [self._name, image.origin, timer.elapsed_in_milli_as_str])
+                    [self._name, item.origin if type(item) == Image else item, timer.elapsed_in_milli_as_str])
                 self.waiting_signal.emit()
 
             self.msleep(20)
@@ -603,13 +676,14 @@ class Pipeline(QueueConsumer):
         self._final_processes = final_processes
 
     @log
-    def _handle_image(self, image: Image):
+    def _handle_item(self, image: Image):
 
         try:
             for processor in self._processes + self._final_processes:
                 image = processor.process_image(image)
 
-            self.new_result_signal.emit(image)
+            if image:
+                self.new_result_signal.emit(image)
 
         except ProcessingError as processing_error:
             message = QT_TRANSLATE_NOOP("", "Error applying process '{}' to image {} : {} *** Image will be ignored")
