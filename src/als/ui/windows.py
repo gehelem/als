@@ -728,7 +728,6 @@ class MainWindow(QMainWindow):
 
             self._ui.btn_issues_ack.setIcon(self._warning_sign_on if new_warnings else self._warning_sign_off)
             self._ui.btn_issues.setIcon(self._warning_sign_on if new_warnings else self._warning_sign_off)
-            self._ui.btn_issues.setVisible(not self._ui.log_dock.isVisible())
 
             self._update_issues_button_visibility()
 
