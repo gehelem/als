@@ -20,7 +20,7 @@
 Module holding all application logic
 """
 import logging
-
+import time
 from pathlib import Path
 from typing import List
 
@@ -28,7 +28,6 @@ from PyQt5.QtCore import QFile, QT_TRANSLATE_NOOP, QCoreApplication, QThread
 
 from als import config
 from als.code_utilities import log, AlsException, SignalingQueue, get_text_content_of_resource, get_timestamp
-from als.crunching import compute_histograms_for_display
 from als.io.input import InputScanner, ScannerStartError
 from als.io.network import get_ip, WebServer
 from als.io.output import ImageSaver
@@ -43,7 +42,6 @@ from als.model.params import ProcessingParameter
 from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput, Levels, ColorBalance, AutoStretch, \
     HotPixelRemover, RemoveDark, FileReader, HistogramComputer, QImageGenerator
 from als.stack import Stacker
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -84,6 +82,8 @@ class Controller:
         DYNAMIC_DATA.post_processor_busy = False
         DYNAMIC_DATA.saver_busy = False
 
+        DYNAMIC_DATA.last_timing = 0
+
         self._input_scanner: InputScanner = InputScanner.create_scanner()
 
         self._pre_process_queue: SignalingQueue = DYNAMIC_DATA.pre_process_queue
@@ -120,6 +120,7 @@ class Controller:
         self._web_server = None
 
         self._model_observers = list()
+        self._image_timings = dict()
 
         self._input_scanner.new_image_path_signal[str].connect(self.on_new_image_path)
         self._pre_process_pipeline.new_result_signal[Image].connect(self.on_new_pre_processed_image)
@@ -206,7 +207,10 @@ class Controller:
         """
         if self._stacker.size > 0 and DYNAMIC_DATA.process_queue.qsize() == 0:
 
-            DYNAMIC_DATA.process_queue.put(self._last_stacking_result)
+            # don't consider this new processing result for image timing
+            image_to_process = self._last_stacking_result.clone(keep_ref_to_data=True)
+            image_to_process.ticket = "ALZ"
+            DYNAMIC_DATA.process_queue.put(image_to_process)
 
     @log
     def get_save_every_image(self) -> bool:
@@ -287,6 +291,13 @@ class Controller:
         :param image: the new processing result
         :type image: Image
         """
+
+        if image.ticket in self._image_timings.keys():
+            message = QT_TRANSLATE_NOOP("", "* Full processing time for '{}' : {} s")
+            delta = round(time.time() - self._image_timings[image.ticket], 3)
+            DYNAMIC_DATA.last_timing = delta
+            MESSAGE_HUB.dispatch_info(__name__, message, [image.ticket, delta])
+
         image.origin = "Process result"
         DYNAMIC_DATA.post_processor_result = image
         self._notify_model_observers(image_only=True)
@@ -314,6 +325,7 @@ class Controller:
         :param image_path: the new image path
         :type image_path: str
         """
+        self._image_timings[image_path] = time.time()
         self._pre_process_queue.put(image_path)
 
     @log
@@ -446,6 +458,8 @@ class Controller:
 
                 DYNAMIC_DATA.has_new_warnings = False
                 self._stacker.reset()
+                self._image_timings.clear()
+                DYNAMIC_DATA.last_timing = 0
 
                 # checking presence of critical folders
                 critical_folders_dict = {
