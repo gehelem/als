@@ -4,7 +4,11 @@ Provides all dialogs used in ALS GUI
 import logging
 from pathlib import Path
 
-from PyQt5.QtCore import pyqtSlot, QT_TRANSLATE_NOOP
+from PIL.ImageQt import ImageQt
+import qrcode
+
+from PyQt5.QtCore import pyqtSlot, QT_TRANSLATE_NOOP, pyqtSignal, Qt
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QApplication
 
 import als.model.data
@@ -15,6 +19,7 @@ from als.messaging import MESSAGE_HUB
 from als.model.data import VERSION, DYNAMIC_DATA
 from generated.about_ui import Ui_AboutDialog
 from generated.prefs_ui import Ui_PrefsDialog
+from generated.qr_ui import Ui_QrDialog
 from generated.save_wait_ui import Ui_SaveWaitDialog
 from generated.stop_ui import Ui_SessionStopDialog
 
@@ -407,6 +412,67 @@ class SessionStopDialog(QDialog):
         return self._ui.chk_save.isChecked()
 
 
+class QRDisplay(QDialog):
+
+    visibility_changed_signal = pyqtSignal(bool)
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowDoesNotAcceptFocus)
+        self.setWindowFlags(self.windowFlags() | Qt.CustomizeWindowHint)
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+
+        self._ui = Ui_QrDialog()
+        self._ui.setupUi(self)
+
+        self.move(QApplication.desktop().screen().rect().center())
+
+        self._geometry = self.geometry()
+
+    @log
+    def update_code(self):
+        """
+        Create a new QR caode from server's  current IP & configured port.
+        """
+        if DYNAMIC_DATA.web_server_is_running:
+
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=7,
+                border=1,
+            )
+            qr.add_data(f"http://{DYNAMIC_DATA.web_server_ip}:{config.get_www_server_port_number()}")
+            qr.make(fit=True)
+            img = qr.make_image()
+            qim = ImageQt(img)
+            pix = QPixmap.fromImage(qim)
+            self._ui.lblQR.setPixmap(pix)
+            self._ui.lblQR.adjustSize()
+            self.adjustSize()
+
+    @log
+    def setVisible(self, visible: bool):
+        """
+        Set our visibility.
+
+        :param visible: True if we must show ourself
+        :type visible: bool
+        """
+        old_state = self.isVisible()
+        if visible:
+            self.setGeometry(self._geometry)
+            self.update_code()
+        else:
+            self._geometry = self.geometry()
+
+        if old_state != visible:
+            self.visibility_changed_signal.emit(visible)
+
+        super().setVisible(visible)
+
+
 @log
 def question(title, message, default_yes: bool = True):
     """
@@ -470,3 +536,4 @@ def message_box(title, message, icon=QMessageBox.Information):
     box.setWindowTitle(title)
     box.setText(message)
     box.exec()
+

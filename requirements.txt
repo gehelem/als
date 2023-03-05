@@ -17,6 +17,9 @@ numba==0.45.1
 sphinx-rtd-theme==0.4.3
 psutil==5.6.6
 PyInstaller==3.6
+qrcode==7.3.1
+
+
 # transitive dependency pinning
 llvmlite==0.32.1
 scipy==1.4.1
