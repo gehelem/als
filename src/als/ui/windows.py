@@ -353,13 +353,14 @@ class MainWindow(QMainWindow):
 
     @log
     @pyqtSlot(bool)
-    def on_chk_follow_logs_clicked(self, checked):
+    def on_btn_follow_logs_clicked(self, checked):
         """
         scroll session log to last message when checkbox is checked
 
         :param checked: is the checkbox checked ?
         :type checked: bool
         """
+
         if checked:
             self._ui.log.scrollToBottom()
 
