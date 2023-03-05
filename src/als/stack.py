@@ -18,6 +18,7 @@ Provides image stacking features
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 from multiprocessing import Process, Manager
+import platform
 
 import astroalign as al
 import numpy as np
@@ -26,7 +27,7 @@ from skimage.transform import SimilarityTransform
 
 from als.messaging import MESSAGE_HUB
 from als.model.data import I18n
-from als.code_utilities import log, Timer
+from als.code_utilities import log, Timer, available_memory
 from als.model.base import Image
 from als.processing import QueueConsumer
 from als import config
@@ -223,27 +224,52 @@ class Stacker(QueueConsumer):
         if image.is_color():
             _LOGGER.debug(f"Aligning color image...")
 
-            manager = Manager()
-            results_dict = manager.dict()
-            channel_processors = []
+            do_mp = platform.system() != "Darwin"
 
-            for channel in range(3):
-                processor = Process(target=Stacker._apply_single_channel_transformation,
-                                    args=(image,
-                                          self._last_stacking_result,
-                                          transformation,
-                                          results_dict,
-                                          channel))
-                processor.start()
-                channel_processors.append(processor)
+            if do_mp:
 
-            for processor in channel_processors:
-                processor.join()
+                _LOGGER.debug("Using multiprocessing to align color image...")
+                manager = Manager()
+                results_dict = manager.dict()
+                channel_processors = []
 
-            _LOGGER.debug("Color channel processes are done. Fetching results and storing results...")
+                for channel in range(3):
+                    processor = Process(target=Stacker._apply_single_channel_transformation,
+                                        args=(image,
+                                              self._last_stacking_result,
+                                              transformation,
+                                              results_dict,
+                                              channel))
+                    processor.start()
+                    channel_processors.append(processor)
 
-            for channel, data in results_dict.items():
-                image.data[channel] = data
+                for processor in channel_processors:
+                    processor.join()
+
+                _LOGGER.debug("Color channel processes are done. Fetching results and storing results...")
+
+                for channel, data in results_dict.items():
+                    image.data[channel] = data
+
+                _LOGGER.debug("Using multiprocessing to align color image: DONE")
+
+            else:
+
+                _LOGGER.debug("Aligning color image in single process...")
+
+                results_dict = dict()
+
+                for channel in range(3):
+                    Stacker._apply_single_channel_transformation(image,
+                                                                 self._last_stacking_result,
+                                                                 transformation,
+                                                                 results_dict,
+                                                                 channel)
+
+                for channel, data in results_dict.items():
+                    image.data[channel] = data
+
+                _LOGGER.debug("Aligning color image in single process: SONE")
 
             _LOGGER.debug(f"Aligning color image DONE")
 
