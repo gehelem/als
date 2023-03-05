@@ -40,8 +40,8 @@ class MainWindow(QMainWindow):
 
         super().__init__(parent)
 
-        self._warning_sign_off = QPixmap()
-        self._warning_sign_on = QPixmap(":/icons/warning_sign.svg")
+        self._warning_sign_off = QIcon()
+        self._warning_sign_on = QIcon(QPixmap(":/icons/warning_sign.svg"))
 
         self.setWindowIcon(QIcon(":/icons/als_logo.png"))
 
@@ -552,10 +552,34 @@ class MainWindow(QMainWindow):
         :param visible: is it now visible ?
         :type visible: bool
         """
+        self._update_issues_button_visibility()
 
         if visible:
             self._cancel_image_only_mode()
             self._ui.log.scrollToBottom()
+
+    @log
+    @pyqtSlot(bool)
+    def on_btn_issues_clicked(self, _):
+        """ Main control panel issues button clicked """
+
+        if not self._ui.log_dock.isVisible():
+            self._ui.log_dock.setVisible(True)
+
+    @log
+    @pyqtSlot(bool)
+    def on_btn_issues_ack_clicked(self, _):
+        """ issues ack button clicked """
+
+        self._ui.action_ack_issues.trigger()
+
+    @log
+    @pyqtSlot()
+    def on_action_ack_issues_triggered(self):
+        """ user acknowledged issues """
+
+        DYNAMIC_DATA.has_new_warnings = False
+        self.update_display(False)
 
     # pylint: disable=no-self-use
     @log
@@ -695,13 +719,18 @@ class MainWindow(QMainWindow):
             self._ui.lbl_post_processor_status.setText(I18n.WORKER_STATUS_BUSY if DYNAMIC_DATA.post_processor_busy else "-")
             self._ui.lbl_saver_status.setText(I18n.WORKER_STATUS_BUSY if DYNAMIC_DATA.saver_busy else "-")
 
-            # manage warning sign
-            if DYNAMIC_DATA.has_new_warnings:
-                warning_pixmap = self._warning_sign_on
-            else:
-                warning_pixmap = self._warning_sign_off
+            # manage warnings
+            new_warnings = DYNAMIC_DATA.has_new_warnings
+            self._ui.action_ack_issues.setEnabled(new_warnings)
 
-            self._ui.lbl_warning_sign.setPixmap(warning_pixmap)
+            self._ui.btn_issues_ack.setEnabled(new_warnings)
+            self._ui.btn_issues.setEnabled(new_warnings)
+
+            self._ui.btn_issues_ack.setIcon(self._warning_sign_on if new_warnings else self._warning_sign_off)
+            self._ui.btn_issues.setIcon(self._warning_sign_on if new_warnings else self._warning_sign_off)
+            self._ui.btn_issues.setVisible(not self._ui.log_dock.isVisible())
+
+            self._update_issues_button_visibility()
 
             # disable color balance controls on B&W image
             if DYNAMIC_DATA.post_processor_result:
@@ -799,3 +828,12 @@ class MainWindow(QMainWindow):
             error_box(
                 save_error.message,
                 self.tr("Your settings could not be saved\n\nDetails : {}").format(save_error.details))
+
+    @log
+    def _update_issues_button_visibility(self):
+        """ update issues button according to warnings & log visibility """
+
+        self._ui.btn_issues.setVisible(
+
+            self._ui.action_ack_issues.isEnabled() and not self._ui.log_dock.isVisible()
+        )
