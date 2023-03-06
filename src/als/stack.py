@@ -224,7 +224,7 @@ class Stacker(QueueConsumer):
         if image.is_color():
             _LOGGER.debug(f"Aligning color image...")
 
-            do_mp = platform.system() != "Darwin"
+            do_mp = platform.system() not in ["Darwin", "Windows"]
 
             if do_mp:
 
