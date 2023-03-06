@@ -420,6 +420,18 @@ class MainWindow(QMainWindow):
         dialog = AboutDialog(self)
         dialog.exec()
 
+    @log
+    def on_sld_align_threshold_valueChanged(self, value):
+        """
+        align threshold slider value just changed.
+
+        We register that value for next stacking operation
+
+        :param value: new stacking threshold
+        :type value: int
+        """
+        config.set_minimum_match_count(value)
+
     # pylint: disable=C0103
     @log
     def on_cb_stacking_mode_currentTextChanged(self, stacking_mode: str):
@@ -788,6 +800,8 @@ class MainWindow(QMainWindow):
                 self._ui.rgbProcessBox.setEnabled(DYNAMIC_DATA.post_processor_result.is_color())
 
             self._ui.lbl_last_timing.setText(self.tr("Last image total time: {} s").format(DYNAMIC_DATA.last_timing))
+
+            self._ui.sld_align_threshold.setValue(config.get_minimum_match_count())
 
     @pyqtSlot(name="on_pbStop_clicked")
     @log

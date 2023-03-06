@@ -4,9 +4,8 @@ Provides all dialogs used in ALS GUI
 import logging
 from pathlib import Path
 
-from PIL.ImageQt import ImageQt
 import qrcode
-
+from PIL.ImageQt import ImageQt
 from PyQt5.QtCore import pyqtSlot, QT_TRANSLATE_NOOP, pyqtSignal, Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QApplication
@@ -65,7 +64,6 @@ class PreferencesDialog(QDialog):
         self._ui.ln_web_server_port.setText(str(config.get_www_server_port_number()))
         self._ui.spn_webpage_refresh_period.setValue(config.get_www_server_refresh_period())
         self._ui.chk_debug_logs.setChecked(config.is_debug_log_on())
-        self._ui.spn_minimum_match_count.setValue(config.get_minimum_match_count())
         self._ui.chk_use_dark.setChecked(config.get_use_master_dark())
         self._ui.chk_use_hpr.setChecked(config.get_hot_pixel_remover())
         self._ui.chk_save_on_stop.setChecked(config.get_save_on_stop())
@@ -199,7 +197,6 @@ class PreferencesDialog(QDialog):
         config.set_web_folder_path(web_folder_path)
 
         web_server_port_number_str = self._ui.ln_web_server_port.text()
-        config.set_minimum_match_count(self._ui.spn_minimum_match_count.value())
         config.set_use_master_dark(self._ui.chk_use_dark.isChecked())
         config.set_master_dark_file_path(self._ui.ln_master_dark_path.text())
         config.set_hot_pixel_remover(self._ui.chk_use_hpr.isChecked())
