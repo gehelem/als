@@ -340,7 +340,7 @@
            <widget class="QLabel" name="lbl_stack_size">
             <property name="font">
              <font>
-              <pointsize>30</pointsize>
+              <pointsize>24</pointsize>
               <kerning>true</kerning>
              </font>
             </property>
@@ -355,21 +355,14 @@
          </layout>
         </item>
         <item>
+         <widget class="Line" name="line">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string>Threshold :</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="lbl_align_threshold">
-            <property name="text">
-             <string notr="true"/>
-            </property>
-           </widget>
-          </item>
           <item>
            <spacer name="horizontalSpacer_2">
             <property name="orientation">
@@ -384,12 +377,35 @@
            </spacer>
           </item>
           <item>
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Threshold:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="lbl_align_threshold">
+            <property name="minimumSize">
+             <size>
+              <width>25</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string notr="true"/>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QSlider" name="sld_align_threshold">
             <property name="minimumSize">
              <size>
               <width>170</width>
               <height>0</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string/>
             </property>
             <property name="minimum">
              <number>5</number>
@@ -404,7 +420,7 @@
              <enum>Qt::Horizontal</enum>
             </property>
             <property name="tickPosition">
-             <enum>QSlider::TicksAbove</enum>
+             <enum>QSlider::NoTicks</enum>
             </property>
             <property name="tickInterval">
              <number>10</number>
