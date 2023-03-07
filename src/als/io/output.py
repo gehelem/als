@@ -178,4 +178,4 @@ class ImageSaver(QueueConsumer):
 
         return cv2.imwrite(target_path,
                            cv2.cvtColor(image.data, cv2_color_conversion_flag),
-                           [int(cv2.IMWRITE_JPEG_QUALITY), 90]), ''
+                           [int(cv2.IMWRITE_JPEG_QUALITY), 100]), ''
