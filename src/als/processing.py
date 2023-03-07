@@ -4,25 +4,25 @@ Provides all means of image processing
 import logging
 import time
 from abc import abstractmethod
-from typing import List
 from pathlib import Path
+from typing import List
 
 import cv2
 import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal, QT_TRANSLATE_NOOP
 from PyQt5.QtGui import QPixmap
-from scipy.signal import convolve2d
 from qimage2ndarray import array2qimage
+from scipy.signal import convolve2d
 
+from als import config
 from als.code_utilities import log, Timer, SignalingQueue, human_readable_byte_size, available_memory
 from als.crunching import get_image_memory_size, compute_histograms_for_display
+from als.io import input as als_input
 from als.io.input import read_disk_image
 from als.messaging import MESSAGE_HUB
 from als.model.base import Image
 from als.model.data import I18n, DYNAMIC_DATA
 from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter
-from als.io import input as als_input
-from als import config
 from contrib.stretch import Stretch
 
 _LOGGER = logging.getLogger(__name__)
@@ -347,7 +347,10 @@ class FileReader(ImageProcessor):
                             f"/ Available: {human_readable_byte_size(available_memory())} Waiting...")
             time.sleep(1)
 
-        return read_disk_image(Path(image_path))
+        image = read_disk_image(Path(image_path))
+        if image:
+            image.ticket = image_path
+        return image
 
 
 class HotPixelRemover(ImageProcessor):

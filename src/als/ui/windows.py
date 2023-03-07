@@ -11,10 +11,10 @@ from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QD
 
 import als.model.data
 from als import config
+from als.code_utilities import log, get_text_content_of_resource
 from als.config import CouldNotSaveConfig
 from als.logic import Controller, SessionError, CriticalFolderMissing, WebServerFailedToStart, WebServerOnLoopback
 from als.messaging import MESSAGE_HUB
-from als.code_utilities import log, get_text_content_of_resource
 from als.model.data import DYNAMIC_DATA, I18n
 from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box, SaveWaitDialog, question, \
     message_box, SessionStopDialog, QRDisplay
@@ -380,6 +380,9 @@ class MainWindow(QMainWindow):
         else:
             for i in range(self._ui.log.count()):
                 self._ui.log.item(i).setHidden(False)
+
+        if self._ui.btn_follow_logs.isChecked():
+            self._ui.log.scrollToBottom()
 
     @pyqtSlot(name="on_pbSave_clicked")
     @log
@@ -765,6 +768,8 @@ class MainWindow(QMainWindow):
             # disable color balance controls on B&W image
             if DYNAMIC_DATA.post_processor_result:
                 self._ui.rgbProcessBox.setEnabled(DYNAMIC_DATA.post_processor_result.is_color())
+
+            self._ui.lbl_last_timing.setText(self.tr("Last image total time: {} s").format(DYNAMIC_DATA.last_timing))
 
     @pyqtSlot(name="on_pbStop_clicked")
     @log

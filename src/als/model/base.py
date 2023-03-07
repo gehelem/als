@@ -3,8 +3,8 @@ Provide base application data types
 """
 import logging
 
-from PyQt5.QtCore import pyqtSignal, QObject
 import numpy as np
+from PyQt5.QtCore import pyqtSignal, QObject
 
 from als.code_utilities import log
 
@@ -99,6 +99,7 @@ class Image:
         self._bayer_pattern: str = ""
         self._origin: str = "UNDEFINED"
         self._destination: str = "UNDEFINED"
+        self._ticket = ""
 
     @log
     def clone(self, keep_ref_to_data=False):
@@ -116,6 +117,7 @@ class Image:
         new_image.bayer_pattern = self.bayer_pattern
         new_image.origin = self.origin
         new_image.destination = self.destination
+        new_image.ticket = self.ticket
         return new_image
 
     @property
@@ -137,6 +139,26 @@ class Image:
         :type destination: str
         """
         self._destination = destination
+
+    @property
+    def ticket(self):
+        """
+        Retrieves image ticket
+
+        :return: the ticket
+        :rtype: str
+        """
+        return self._ticket
+
+    @ticket.setter
+    def ticket(self, ticket):
+        """
+        Sets image ticket
+
+        :param ticket: the image ticket
+        :type ticket: str
+        """
+        self._ticket = ticket
 
     @property
     def data(self):
