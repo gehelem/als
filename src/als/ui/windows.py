@@ -564,6 +564,24 @@ class MainWindow(QMainWindow):
                     action.trigger()
 
     @log
+    @pyqtSlot(bool)
+    def on_action_zoom_in_triggered(self, _):
+        """ user wants to zoom into the image """
+        self._ui.image_view.zoom_in()
+
+    @log
+    @pyqtSlot(bool)
+    def on_action_zoom_out_triggered(self, _):
+        """ user wants to zoom out of the image """
+        self._ui.image_view.zoom_out()
+
+    @log
+    @pyqtSlot(bool)
+    def on_action_adjust_image_triggered(self, _):
+        """ user wants to adjust image to view """
+        self._ui.image_view.adjustZoom()
+
+    @log
     def on_processing_dock_visibilityChanged(self, visible):
         """
         Qt slot executed when prcessing dock visibility changed

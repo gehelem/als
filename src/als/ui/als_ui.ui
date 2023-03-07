@@ -58,7 +58,6 @@
     <addaction name="action_show_processing_panel"/>
     <addaction name="action_show_session_log"/>
     <addaction name="separator"/>
-    <addaction name="action_image_only"/>
     <addaction name="separator"/>
     <addaction name="action_full_screen"/>
     <addaction name="action_night_mode"/>
@@ -76,9 +75,21 @@
     </property>
     <addaction name="action_ack_issues"/>
    </widget>
+   <widget class="QMenu" name="menu_Image">
+    <property name="title">
+     <string>&amp;Image</string>
+    </property>
+    <addaction name="action_image_only"/>
+    <addaction name="separator"/>
+    <addaction name="action_zoom_in"/>
+    <addaction name="action_zoom_out"/>
+    <addaction name="separator"/>
+    <addaction name="action_adjust_image"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menuSession"/>
    <addaction name="menu_Edit"/>
+   <addaction name="menu_Image"/>
    <addaction name="menuView"/>
    <addaction name="menu_Help"/>
   </widget>
@@ -1214,7 +1225,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Image only</string>
+    <string>Image onl&amp;y</string>
    </property>
    <property name="statusTip">
     <string>Hide currently visible panels to maximize image display</string>
@@ -1260,6 +1271,30 @@
    </property>
    <property name="shortcut">
     <string notr="true">Q</string>
+   </property>
+  </action>
+  <action name="action_zoom_in">
+   <property name="text">
+    <string>Zoom &amp;In</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true">Y</string>
+   </property>
+  </action>
+  <action name="action_zoom_out">
+   <property name="text">
+    <string>Zoom &amp;Out</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true">H</string>
+   </property>
+  </action>
+  <action name="action_adjust_image">
+   <property name="text">
+    <string>Ad&amp;just</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true">B</string>
    </property>
   </action>
  </widget>
