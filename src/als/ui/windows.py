@@ -8,17 +8,16 @@ from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap, QBrush, QColor, QIcon
 from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog, QApplication, \
     QListWidgetItem, qApp, QLabel, QFrame
-from qimage2ndarray import array2qimage
 
 import als.model.data
 from als import config
-from als.config import CouldNotSaveConfig
-from als.logic import Controller, SessionError, CriticalFolderMissing, WebServerStartFailure
-from als.messaging import MESSAGE_HUB
 from als.code_utilities import log, get_text_content_of_resource
+from als.config import CouldNotSaveConfig
+from als.logic import Controller, SessionError, CriticalFolderMissing, WebServerFailedToStart, WebServerOnLoopback
+from als.messaging import MESSAGE_HUB
 from als.model.data import DYNAMIC_DATA, I18n
 from als.ui.dialogs import PreferencesDialog, AboutDialog, error_box, warning_box, SaveWaitDialog, question, \
-    message_box, SessionStopDialog
+    message_box, SessionStopDialog, QRDisplay
 from als.ui.params_utils import update_controls_from_params, update_params_from_controls, reset_params, \
     set_sliders_defaults
 from generated.als_ui import Ui_stack_window
@@ -41,12 +40,19 @@ class MainWindow(QMainWindow):
 
         super().__init__(parent)
 
+        self._warning_sign_off = QIcon()
+        self._warning_sign_on = QIcon(QPixmap(":/icons/warning_sign.svg"))
+
         self.setWindowIcon(QIcon(":/icons/als_logo.png"))
 
         self._controller = controller
         self._ui = Ui_stack_window()
         self._ui.setupUi(self)
         self.setWindowTitle("Astro Live Stacker")
+
+        self._qrDisplay = QRDisplay(self)
+        self._qrDisplay.hide()
+        self._qrDisplay.visibility_changed_signal[bool].connect(self.on_qr_display_visibility_changed)
 
         # populate stacking mode combo box=
         self._ui.cb_stacking_mode.blockSignals(True)
@@ -347,13 +353,14 @@ class MainWindow(QMainWindow):
 
     @log
     @pyqtSlot(bool)
-    def on_chk_follow_logs_clicked(self, checked):
+    def on_btn_follow_logs_clicked(self, checked):
         """
         scroll session log to last message when checkbox is checked
 
         :param checked: is the checkbox checked ?
         :type checked: bool
         """
+
         if checked:
             self._ui.log.scrollToBottom()
 
@@ -373,6 +380,9 @@ class MainWindow(QMainWindow):
         else:
             for i in range(self._ui.log.count()):
                 self._ui.log.item(i).setHidden(False)
+
+        if self._ui.btn_follow_logs.isChecked():
+            self._ui.log.scrollToBottom()
 
     @pyqtSlot(name="on_pbSave_clicked")
     @log
@@ -447,7 +457,18 @@ class MainWindow(QMainWindow):
         """
         Qt slot executed when START web button is clicked
         """
-        self._start_www()
+        try:
+            self._controller.start_www()
+            self._qrDisplay.update_code()
+
+        except WebServerFailedToStart as start_failure:
+            error_box(start_failure.message, start_failure.details)
+
+        except WebServerOnLoopback:
+            title = self.tr("Web server access is limited")
+            message = self.tr("Web server IP address is 127.0.0.1.\n\nServer won't be reachable by other machines. "
+                              "Please check your network connection")
+            warning_box(title, message)
 
     @pyqtSlot()
     @log
@@ -455,7 +476,8 @@ class MainWindow(QMainWindow):
         """
         Qt slot executed when START web button is clicked
         """
-        self._stop_www()
+        self._controller.stop_www()
+        self._qrDisplay.setVisible(False)
 
     @log
     def on_action_full_screen_toggled(self, checked):
@@ -486,6 +508,27 @@ class MainWindow(QMainWindow):
             qApp.setStyleSheet(get_text_content_of_resource(":/main/main.css"))
         else:
             qApp.setStyleSheet("")
+
+    @log
+    @pyqtSlot(bool)
+    def on_action_qrcode_toggled(self, checked):
+        """
+        QR action has changed : we deal with QR Code display
+
+        :param checked: is action now checked ?
+        :type checked: bool
+        """
+        self._qrDisplay.setVisible(checked)
+
+    @log
+    def on_qr_display_visibility_changed(self, visible):
+        """
+        QR Code display's visibility just changed.
+
+        :param visible: is QR code visible now ?
+        :type visible: bool
+        """
+        self._ui.action_qrcode.setChecked(visible)
 
     @pyqtSlot()
     @log
@@ -540,9 +583,34 @@ class MainWindow(QMainWindow):
         :param visible: is it now visible ?
         :type visible: bool
         """
+        self._update_issues_button_visibility()
 
         if visible:
             self._cancel_image_only_mode()
+            self._ui.log.scrollToBottom()
+
+    @log
+    @pyqtSlot(bool)
+    def on_btn_issues_clicked(self, _):
+        """ Main control panel issues button clicked """
+
+        if not self._ui.log_dock.isVisible():
+            self._ui.log_dock.setVisible(True)
+
+    @log
+    @pyqtSlot(bool)
+    def on_btn_issues_ack_clicked(self, _):
+        """ issues ack button clicked """
+
+        self._ui.action_ack_issues.trigger()
+
+    @log
+    @pyqtSlot()
+    def on_action_ack_issues_triggered(self):
+        """ user acknowledged issues """
+
+        DYNAMIC_DATA.has_new_warnings = False
+        self.update_display(False)
 
     # pylint: disable=no-self-use
     @log
@@ -580,10 +648,7 @@ class MainWindow(QMainWindow):
         """
         Update central image display.
         """
-        image_raw_data = DYNAMIC_DATA.post_processor_result.data.copy()
-
-        image = array2qimage(image_raw_data, normalize=(2 ** 16 - 1))
-        self._image_item.setPixmap(QPixmap.fromImage(image))
+        self._image_item.setPixmap(DYNAMIC_DATA.post_processor_result_qimage)
 
     @pyqtSlot(name="on_pbPlay_clicked")
     @log
@@ -592,6 +657,7 @@ class MainWindow(QMainWindow):
 
         self._start_session()
 
+    @log
     def on_message(self, message):
         """
         print received message to GUI log window
@@ -607,7 +673,7 @@ class MainWindow(QMainWindow):
         if _INFO_LOG_TAG in message and self._ui.btn_issues_only.isChecked():
             new_item.setHidden(True)
 
-        if self._ui.btn_follow_logs.isChecked():
+        if self._ui.btn_follow_logs.isChecked() and self._ui.log.isVisible():
             self._ui.log.scrollToBottom()
 
     # pylint: disable=too-many-statements
@@ -637,8 +703,11 @@ class MainWindow(QMainWindow):
             if web_server_is_running:
                 url = f"http://{DYNAMIC_DATA.web_server_ip}:{config.get_www_server_port_number()}"
                 webserver_status = f'{I18n.RUNNING_M} : <a href="{url}" style="color: #CC0000">{url}</a>'
+                self._ui.action_qrcode.setEnabled(True)
             else:
                 webserver_status = I18n.STOPPED_M
+                self._ui.action_qrcode.setDisabled(True)
+
             self._lbl_statusbar_web_server_status.setText(f"{I18n.WEB_SERVER} : {webserver_status}")
             self._ui.lbl_web_server_status_main.setText(f"{webserver_status}")
 
@@ -653,16 +722,6 @@ class MainWindow(QMainWindow):
                 session_status = "### BUG !"
             self._ui.lbl_session_status.setText(f"{session_status}")
             self._lbl_statusbar_session_status.setText(f"{I18n.SESSION} {session_status}")
-
-            # update preferences accessibility according to session and web server status
-            preferences_enabled = not web_server_is_running and session_is_stopped
-            self._ui.action_prefs.setEnabled(preferences_enabled)
-
-            if preferences_enabled:
-                self._ui.action_prefs.setToolTip("")
-            else:
-                self._ui.action_prefs.setToolTip(self.tr("Preferences are availalble when session and webserver "
-                                                         "are both stopped"))
 
             # handle Start / Pause / Stop  buttons
             self._ui.pbPlay.setEnabled(session_is_stopped or session_is_paused)
@@ -694,13 +753,23 @@ class MainWindow(QMainWindow):
             self._ui.lbl_post_processor_status.setText(I18n.WORKER_STATUS_BUSY if DYNAMIC_DATA.post_processor_busy else "-")
             self._ui.lbl_saver_status.setText(I18n.WORKER_STATUS_BUSY if DYNAMIC_DATA.saver_busy else "-")
 
-            # manage warning sign
-            if DYNAMIC_DATA.has_new_warnings:
-                warning_pixmap = QPixmap(":/icons/warning_sign.svg")
-            else:
-                warning_pixmap = QPixmap()
+            # manage warnings
+            new_warnings = DYNAMIC_DATA.has_new_warnings
+            self._ui.action_ack_issues.setEnabled(new_warnings)
 
-            self._ui.lbl_warning_sign.setPixmap(warning_pixmap)
+            self._ui.btn_issues_ack.setEnabled(new_warnings)
+            self._ui.btn_issues.setEnabled(new_warnings)
+
+            self._ui.btn_issues_ack.setIcon(self._warning_sign_on if new_warnings else self._warning_sign_off)
+            self._ui.btn_issues.setIcon(self._warning_sign_on if new_warnings else self._warning_sign_off)
+
+            self._update_issues_button_visibility()
+
+            # disable color balance controls on B&W image
+            if DYNAMIC_DATA.post_processor_result:
+                self._ui.rgbProcessBox.setEnabled(DYNAMIC_DATA.post_processor_result.is_color())
+
+            self._ui.lbl_last_timing.setText(self.tr("Last image total time: {} s").format(DYNAMIC_DATA.last_timing))
 
     @pyqtSlot(name="on_pbStop_clicked")
     @log
@@ -713,25 +782,6 @@ class MainWindow(QMainWindow):
     def cb_pause(self):
         """Qt slot for mouse clicks on the 'Pause' button"""
         self._controller.pause_session()
-
-    @log
-    def _start_www(self):
-        """Starts web server"""
-
-        try:
-            self._controller.start_www()
-            if DYNAMIC_DATA.web_server_ip == "127.0.0.1":
-                title = self.tr("Web server access is limited")
-                message = self.tr("Web server IP address is 127.0.0.1.\n\nServer won't be reachable by other machines. "
-                                  "Please check your network connection")
-                warning_box(title, message)
-        except WebServerStartFailure as start_failure:
-            error_box(start_failure.message, start_failure.details)
-
-    @log
-    def _stop_www(self):
-        """Stops web server"""
-        self._controller.stop_www()
 
     @log
     def _start_session(self, is_retry: bool = False):
@@ -808,3 +858,12 @@ class MainWindow(QMainWindow):
             error_box(
                 save_error.message,
                 self.tr("Your settings could not be saved\n\nDetails : {}").format(save_error.details))
+
+    @log
+    def _update_issues_button_visibility(self):
+        """ update issues button according to warnings & log visibility """
+
+        self._ui.btn_issues.setVisible(
+
+            self._ui.action_ack_issues.isEnabled() and not self._ui.log_dock.isVisible()
+        )

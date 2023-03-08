@@ -4,6 +4,7 @@ import os
 import socket
 import threading
 from http.server import SimpleHTTPRequestHandler, HTTPServer as BaseHTTPServer
+from typing import Tuple
 
 from als import config
 from als.code_utilities import log
@@ -46,6 +47,10 @@ class HTTPServer(BaseHTTPServer):
     def __init__(self, base_path, server_address, request_handler_class=HTTPHandler):
         self.base_path = base_path
         BaseHTTPServer.__init__(self, server_address, request_handler_class)
+
+    @log
+    def process_request(self, request: bytes, client_address: Tuple[str, int]) -> None:
+        super().process_request(request, client_address)
 
 
 class WebServer(threading.Thread):

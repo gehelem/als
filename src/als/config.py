@@ -81,7 +81,7 @@ _DEFAULTS = {
     _USE_HOT_PIXEL_REMOVER: 0,
     _LANG:                  "sys",
     _BAYER_PATTERN:         "AUTO",
-    _NIGHT_MODE:            1,
+    _NIGHT_MODE:            0,
     _SAVE_ON_STOP:          0,
 }
 _MAIN_SECTION_NAME = "main"

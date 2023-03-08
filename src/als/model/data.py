@@ -5,7 +5,6 @@ import logging
 from typing import List
 
 import numpy as np
-
 from PyQt5.QtCore import QObject
 
 import als
@@ -117,6 +116,8 @@ class DynamicData:
         self.saver_busy = False
         self.has_new_warnings = False
         self.is_first_run = True
+        self.post_processor_result_qimage = None
+        self.last_timing = 0
 
 
 class HistogramContainer:
