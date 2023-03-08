@@ -291,10 +291,11 @@ class Levels(ImageProcessor):
                 image.data = np.clip(image.data, black.value, white.value)
                 _LOGGER.debug("Black / white level adjustments Done")
 
-            # final interpolation
-            image.data = np.float32(np.interp(image.data,
-                                              (image.data.min(), image.data.max()),
-                                              (0, _16_BITS_MAX_VALUE)))
+            # final interpolation if we touched the image
+            if do_midtones or do_black_white_levels:
+                image.data = np.float32(np.interp(image.data,
+                                                  (image.data.min(), image.data.max()),
+                                                  (0, _16_BITS_MAX_VALUE)))
 
         return image
 
