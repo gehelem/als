@@ -336,6 +336,9 @@ class Stacker(QueueConsumer):
         :raises: StackingError when no transformation is found using the whole image
         """
 
+        minimum_matches_for_valid_transform = config.get_minimum_match_count()
+        _LOGGER.debug(f"configured minimum match count: {minimum_matches_for_valid_transform}")
+
         for ratio in [.1, .33, 1.]:
 
             top, bottom, left, right = self._get_image_subset_boundaries(ratio)
@@ -361,11 +364,11 @@ class Stacker(QueueConsumer):
                 matches_count = len(matches[0])
                 _LOGGER.debug(f"image matched features count : {matches_count}")
 
-                minimum_matches_for_valid_transform = config.get_minimum_match_count()
                 if matches_count < minimum_matches_for_valid_transform:
                     raise StackingError(f"Alignment matches count is lower than configured threshold : "
                                         f"{matches_count} < {minimum_matches_for_valid_transform}.")
 
+                _LOGGER.debug("Image matching vs ref: Accepted")
                 return transformation
 
             # pylint: disable=W0703
@@ -373,6 +376,7 @@ class Stacker(QueueConsumer):
                 # we have no choice but catching Exception, here. That's what AstroAlign raises in some cases
                 # this will catch MaxIterError as well...
                 if ratio == 1.:
+                    _LOGGER.debug("Image matching vs ref: Rejected")
                     raise StackingError(alignment_error)
 
                 _LOGGER.debug(f"Could not find valid transformation on subset with ratio = {ratio}.")
