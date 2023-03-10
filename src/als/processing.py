@@ -342,7 +342,7 @@ class FileReader(ImageProcessor):
         reference_image = DYNAMIC_DATA.post_processor_result
         needed_memory_in_bytes = get_image_memory_size(reference_image) * 2 if reference_image else 0
         _LOGGER.debug(f"Needed memory for next image: {human_readable_byte_size(needed_memory_in_bytes)}")
-        _LOGGER.debug(f"Available system memory : {human_readable_byte_size(available_memory())}")
+        _LOGGER.debug(f" Available system memory : {human_readable_byte_size(available_memory())}")
         while available_memory() < needed_memory_in_bytes:
             _LOGGER.warning(f"Memory low ! Needed memory: {human_readable_byte_size(needed_memory_in_bytes)} "
                             f"/ Available: {human_readable_byte_size(available_memory())} Waiting...")

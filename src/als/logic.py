@@ -24,10 +24,11 @@ import time
 from pathlib import Path
 from typing import List
 
-from PyQt5.QtCore import QFile, QT_TRANSLATE_NOOP, QCoreApplication, QThread
+from PyQt5.QtCore import QFile, QT_TRANSLATE_NOOP, QCoreApplication, QThread, QTimer
 
 from als import config
-from als.code_utilities import log, AlsException, SignalingQueue, get_text_content_of_resource, get_timestamp
+from als.code_utilities import log, AlsException, SignalingQueue, get_text_content_of_resource, get_timestamp, \
+    available_memory
 from als.io.input import InputScanner, ScannerStartError
 from als.io.network import get_ip, WebServer
 from als.io.output import ImageSaver
@@ -156,6 +157,15 @@ class Controller:
         self._saver.waiting_signal.connect(self.on_saver_waiting)
 
         DYNAMIC_DATA.session.status_changed_signal.connect(self._notify_model_observers)
+
+        self._metrics_timer = QTimer()
+        self._metrics_timer.setInterval(2000)
+        self._metrics_timer.timeout.connect(self.collect_metrics)
+        self._metrics_timer.start()
+
+    @log
+    def collect_metrics(self):
+        _LOGGER.debug(f"*SM-MEM* Available memory (byte): {available_memory()}")
 
     @log
     def get_autostretch_parameters(self) -> List[ProcessingParameter]:
@@ -306,8 +316,10 @@ class Controller:
         """
 
         if image.ticket in self._image_timings.keys():
-            message = QT_TRANSLATE_NOOP("", "* Full processing time for '{}' : {} s")
             delta = round(time.time() - self._image_timings[image.ticket], 3)
+
+            _LOGGER.debug(f"*SD-FRMTIME* Total frame processing time: {delta}")
+            message = QT_TRANSLATE_NOOP("", "* Full processing time for '{}' : {} s")
             DYNAMIC_DATA.last_timing = delta
             MESSAGE_HUB.dispatch_info(__name__, message, [image.ticket, delta])
 
@@ -359,7 +371,7 @@ class Controller:
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.debug(f"New pre-processor queue size : {new_size}")
+        _LOGGER.debug(f"*SD-Q-PRE* New pre-processor queue size: {new_size}")
         self._notify_model_observers()
 
     @log
@@ -370,7 +382,7 @@ class Controller:
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.debug(f"New stacker queue size : {new_size}")
+        _LOGGER.debug(f"*SD-Q-STA* New stacker queue size : {new_size}")
         self._notify_model_observers()
 
     @log
@@ -381,7 +393,7 @@ class Controller:
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.debug(f"New post-processor queue size : {new_size}")
+        _LOGGER.debug(f"*SD-Q-POST* New post-processor queue size: {new_size}")
         self._notify_model_observers()
 
     @log
@@ -392,7 +404,7 @@ class Controller:
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.debug(f"New saver queue size : {new_size}")
+        _LOGGER.debug(f"*SD-Q-SAV* New saver queue size : {new_size}")
         self._notify_model_observers()
 
     @log
@@ -524,6 +536,7 @@ class Controller:
         Stops session : stop input scanner and purge input queue
         """
         if not DYNAMIC_DATA.session.is_stopped:
+            self._image_timings.clear()
             DYNAMIC_DATA.session.set_status(Session.stopped)
             self._stop_input_scanner()
             Controller.purge_queue(self._pre_process_queue)

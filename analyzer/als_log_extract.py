@@ -2,7 +2,6 @@ from argparse import ArgumentParser
 
 import csv
 import re
-import sys
 from pathlib import Path
 
 SECTION = "=" * 50
@@ -10,34 +9,21 @@ SUB_SECTION = "-" * 50
 
 _timing_candidates = list()
 
-preprocess_timing_functions = [
+processing_functions = [
     'read_disk_image()',
     "RemoveDark.process_image()",
     'HotPixelRemover.process_image()',
     "Debayer.process_image()",
-    "Standardize.process_image()"
-]
-
-stacking_timing_functions = [
-
+    "Standardize.process_image()",
     'Stacker._find_transformation()',
+    'Stacker._apply_transformation()',
     'Stacker._align_image()',
-    'Stacker._stack_image()'
-]
-
-post_process_timing_functions = [
-
+    'Stacker._stack_image()',
     "AutoStretch.process_image()",
     "Levels.process_image()",
     "ColorBalance.process_image()",
     "ImageSaver._save_image()"
 ]
-
-timing_families = {
-    "pre_processing": preprocess_timing_functions,
-    "stacking": stacking_timing_functions,
-    "post_process": post_process_timing_functions
-}
 
 
 def main():
@@ -76,25 +62,28 @@ def main():
             buffer += line
     entries.append(buffer)
     print(f'Reassembled {len(entries)} log entries')
-
-    print(SECTION)
-    print("Exporting functions timings...")
-    print(SUB_SECTION)
     function_returns = list(filter(lambda l: "returned" in l, entries))
-    print(f"Collected {len(function_returns)} function timings")
-    function_timings_dict = extract_function_timings(function_returns)
-    thread_timings_dict = extract_thread_timings(function_returns)
-    write_timings_csv_files(function_timings_dict, csv_out_folder)
-
-    print(SECTION)
-    print("Exporting alignment data...")
-    print(SUB_SECTION)
-    write_stack_data_csv(entries, csv_out_folder)
+    print(f'Collected {len(function_returns)} function returns')
 
     print(SECTION)
     print("Exporting every function return...")
     print(SUB_SECTION)
-    returns = {
+    write_csv("global_returns", csv_out_folder, extract_functions_returns(function_returns))
+
+    print(SECTION)
+    print("Exporting processing functions timings...")
+    print(SUB_SECTION)
+    processing_returns = list(filter(lambda l: tokenize(l)[5] in processing_functions, function_returns))
+    write_csv("processing_timings", csv_out_folder, extract_functions_returns(processing_returns))
+
+    print(SECTION)
+    print("Exporting session data...")
+    print(SUB_SECTION)
+    write_csv("session", csv_out_folder, extract_session_data(entries))
+
+
+def extract_functions_returns(function_returns):
+    returns_dict = {
         'timestamp': list(),
         'thread': list(),
         'module': list(),
@@ -102,62 +91,84 @@ def main():
         'ret_value': list(),
         'elapsed': list(),
     }
-
     for ret in function_returns:
         tokens = tokenize(ret)
-        returns['timestamp'].append(" ".join(tokens[:2]))
-        returns['thread'].append(tokens[2])
-        returns['module'].append(tokens[3])
-        returns['name'].append(tokens[5])
-        returns['ret_value'].append(tokens[7:-3])
-        returns['elapsed'].append(tokens[-2])
-    write_csv("global_returns", csv_out_folder, returns)
-
-    print(SECTION)
-    print("Threads total times (in s):")
-    print(SUB_SECTION)
-    for thread, total in thread_timings_dict.items():
-        print(f"{thread:<11}: {(total / 1000):>8.2f} s")
+        returns_dict['timestamp'].append(" ".join(tokens[:2]))
+        returns_dict['thread'].append(tokens[2])
+        returns_dict['module'].append(tokens[3])
+        returns_dict['name'].append(tokens[5])
+        returns_dict['ret_value'].append(tokens[7:-3])
+        returns_dict['elapsed'].append(tokens[-2])
+    return returns_dict
 
 
-def write_stack_data_csv(entries, out_folder):
-    stacker_logs = list(filter(lambda l: re.search("\\sals\\.stack\\s", l), entries))
-    stacking_data = {
-        'rotation': [],
-        'x_trans': [],
-        'y_trans': [],
-        'scale': [],
-        'matches': [],
-        'req_matches': [],
-        'ratio': [],
-        'accepted': []
+def extract_session_data(entries):
+
+    session_data = {
+        'timestamp': [],
+        'type': [],
+        'value': [],
     }
-    for i in range(len(stacker_logs)):
-        line = stacker_logs[i]
-        if re.search("als.stack.*Stacker._find_transformation.*returned", line):
-            ratio_line = stacker_logs[i - 6]
-            rotation_line = stacker_logs[i - 5]
-            translation_line = stacker_logs[i - 4]
-            scale_line = stacker_logs[i - 3]
-            matches_line = stacker_logs[i - 2]
 
-            ratio_tokens = tokenize(ratio_line)
-            rotation_tokens = tokenize(rotation_line)
-            scale_toknes = tokenize(scale_line)
-            matches_tokens = tokenize(matches_line)
+    image_translation_match = "\[\s*(\S+)\s+(\S+)\s*\]"
 
-            stacking_data['ratio'].append(float(ratio_tokens[-1]))
-            stacking_data['rotation'].append(float(rotation_tokens[-1]))
-            trans_matcher = re.search("\[\s*(\S+)\s+(\S+)\s*\]", translation_line)
-            stacking_data['x_trans'].append(float(trans_matcher.group(1)))
-            stacking_data['y_trans'].append(float(trans_matcher.group(2)))
-            stacking_data['scale'].append(float(scale_toknes[-1]))
-            stacking_data['matches'].append(int(matches_tokens[-1]))
-        if "configured minimum match count" in line:
-            stacking_data['req_matches'].append(int(tokenize(line)[-1]))
-        if "Image matching vs ref" in line:
-            stacking_data['accepted'].append(bool(tokenize(line)[-1] == "Accepted"))
-    write_csv("stacking_data", out_folder, stacking_data)
+    for line in entries:
+
+        if "*SD-RATIO*" in line:
+            extract_float_at_end("ratio", line, session_data)
+
+        elif "*SD-ROT*" in line:
+            extract_float_at_end('rotation', line, session_data)
+
+        elif "*SD-TRANS*" in line:
+            trans_matcher = re.search(image_translation_match, line)
+            session_data['value'].append(float(trans_matcher.group(1)))
+            session_data['timestamp'].append(" ".join((tokenize(line)[:2])))
+            session_data['type'].append("x_trans")
+
+            session_data['value'].append(float(trans_matcher.group(2)))
+            session_data['timestamp'].append(" ".join((tokenize(line)[:2])))
+            session_data['type'].append("y_trans")
+
+        elif "*SD-SCALE*" in line:
+            extract_float_at_end("scale", line, session_data)
+
+        elif "*SD-MATCHES*" in line:
+            extract_float_at_end("matches", line, session_data)
+
+        elif "*SD-REQ*" in line:
+            extract_float_at_end("req_matches", line, session_data)
+
+        elif "*SD-Q-PRE*" in line:
+            extract_float_at_end("q_pre", line, session_data)
+
+        elif "*SD-Q-STA*" in line:
+            extract_float_at_end("q_stack", line, session_data)
+
+        elif "*SD-FRMTIME*" in line:
+            extract_float_at_end("frm_total", line, session_data)
+
+        elif "*SD-Q-POST*" in line:
+            extract_float_at_end("q_post", line, session_data)
+
+        elif "*SD-Q-SAV*" in line:
+            extract_float_at_end("q_save", line, session_data)
+
+        elif "*SD-ALIGNOK*" in line:
+            session_data['value'].append(1. if (tokenize(line)[-1] == "Accepted") else 0.)
+            session_data['timestamp'].append(" ".join((tokenize(line)[:2])))
+            session_data['type'].append("align")
+
+        elif "*SM-MEM*" in line:
+            extract_float_at_end("memory", line, session_data)
+
+    return session_data
+
+
+def extract_float_at_end(event_type, line, data_dict):
+    data_dict['value'].append(float(tokenize(line)[-1]))
+    data_dict['timestamp'].append(" ".join((tokenize(line)[:2])))
+    data_dict['type'].append(event_type)
 
 
 def write_csv(file_name, out_folder, data_dict):
@@ -172,25 +183,9 @@ def write_csv(file_name, out_folder, data_dict):
     print(f"report {str(dest_path):<35} OK")
 
 
-def extract_thread_timings(timings):
-    MAIN = "MainThread"
-    OTHERS = "Others"
-
-    whole = {MAIN: 0., OTHERS: 0.}
-    for timing in timings:
-        tokens = tokenize(timing)
-        if tokens[5] == 'QueueConsumer.run()':
-            continue
-        key = MAIN if tokens[2] == MAIN else OTHERS
-        whole[key] += float(tokens[-2])
-
-    return whole
-
-
-def extract_function_timings(timings):
+def extract_processing_function_timings(timings):
     whole = dict()
-    for family in timing_families.keys():
-        function_timings = dict()
+    for target_function in processing_functions:
 
         for ret in timings:
             tokens = tokenize(ret)
@@ -198,14 +193,11 @@ def extract_function_timings(timings):
             function_name = tokens[5]
             execution_time = float(tokens[-2])
 
-            for target_function in timing_families[family]:
-                if function_name == target_function:
-                    if function_name in function_timings.keys():
-                        function_timings[function_name].append(execution_time)
-                    else:
-                        function_timings[function_name] = [execution_time]
-
-        whole[family] = (dict(filter(timing_functions_filter, function_timings.items())))
+            if function_name == target_function:
+                if function_name in whole.keys():
+                    whole[function_name].append(execution_time)
+                else:
+                    whole[function_name] = [execution_time]
 
     return whole
 
@@ -254,16 +246,5 @@ def tokenize(line):
     return re.split("\\s+", line)
 
 
-def build_timing_candidates():
-    for family in timing_families.keys():
-        _timing_candidates.extend(timing_families[family])
-
-
-def timing_functions_filter(pair):
-    k, v = pair
-    return k in _timing_candidates
-
-
 if __name__ == '__main__':
-    build_timing_candidates()
     main()
