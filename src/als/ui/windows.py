@@ -2,7 +2,7 @@
 Holds all windows used in the app
 """
 import datetime
-import logging
+from logging import getLogger
 from os import linesep
 
 from PyQt5.QtCore import pyqtSlot, Qt
@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QD
 
 import als.model.data
 from als import config
-from als.code_utilities import log, get_text_content_of_resource
+from als.code_utilities import log, get_text_content_of_resource, AlsLogAdapter
 from als.config import CouldNotSaveConfig
 from als.logic import Controller, SessionError, CriticalFolderMissing, WebServerFailedToStart, WebServerOnLoopback
 from als.messaging import MESSAGE_HUB
@@ -23,7 +23,7 @@ from als.ui.params_utils import update_controls_from_params, update_params_from_
     set_sliders_defaults
 from generated.als_ui import Ui_stack_window
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 _INFO_LOG_TAG = 'INFO'
 
 

@@ -3,25 +3,25 @@ Provides everything need to handle ALS main inputs : images.
 
 We need to read file and in the future, get images from INDI
 """
-import logging
 from abc import abstractmethod
+from logging import getLogger
 from pathlib import Path
 
 import cv2
+import exifread
 from PyQt5.QtCore import pyqtSignal, QObject, QT_TRANSLATE_NOOP
 from astropy.io import fits
-import exifread
 from rawpy import imread
 from rawpy._rawpy import LibRawNonFatalError, LibRawFatalError
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers.polling import PollingObserver
 
 from als import config
-from als.code_utilities import log
+from als.code_utilities import log, AlsLogAdapter
 from als.messaging import MESSAGE_HUB
 from als.model.base import Image
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 _IGNORED_FILENAME_START_PATTERNS = ['.', '~', 'tmp']
 _DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC = 0.5

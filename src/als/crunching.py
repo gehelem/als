@@ -1,15 +1,15 @@
 """
 A set of shared utilities for number crunching
 """
-import logging
+from logging import getLogger
 
 import numpy as np
-from als.code_utilities import log
-from als.model.base import Image
 
+from als.code_utilities import log, AlsLogAdapter
+from als.model.base import Image
 from als.model.data import HistogramContainer
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 
 @log

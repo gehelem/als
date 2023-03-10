@@ -1,9 +1,9 @@
 """
 Provides all means of image processing
 """
-import logging
 import time
 from abc import abstractmethod
+from logging import getLogger
 from pathlib import Path
 from typing import List
 
@@ -15,7 +15,7 @@ from qimage2ndarray import array2qimage
 from scipy.signal import convolve2d
 
 from als import config
-from als.code_utilities import log, Timer, SignalingQueue, human_readable_byte_size, available_memory
+from als.code_utilities import log, Timer, SignalingQueue, human_readable_byte_size, available_memory, AlsLogAdapter
 from als.crunching import get_image_memory_size, compute_histograms_for_display
 from als.io import input as als_input
 from als.io.input import read_disk_image
@@ -25,7 +25,7 @@ from als.model.data import I18n, DYNAMIC_DATA
 from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter
 from contrib.stretch import Stretch
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 _16_BITS_MAX_VALUE = 2**16 - 1
 _HOT_PIXEL_RATIO = 2

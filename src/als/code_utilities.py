@@ -1,19 +1,20 @@
 """
 Provides a set of utilities aimed at app developpers
 """
-from datetime import datetime
 import logging
+from datetime import datetime
 from functools import wraps
+from logging import LoggerAdapter
 from queue import Queue
 from time import time
 
 import psutil
 from PyQt5.QtCore import QObject, pyqtSignal, QFile, QIODevice, QTextStream
 
+
 # WARNING !!!!! Don't ever remove this USED import !!!!!
 # most IDEs report this as unused. They lie to you. We use it in get_text_content_of_resource()
 # pylint:disable=unused-import
-import generated.resource_rc
 
 
 def log(func):
@@ -30,11 +31,11 @@ def log(func):
     :param func: The function to decorate
     :return: The decorated function
     """
-
     @wraps(func)
     def wrapped(*args, **kwargs):
         function_name = func.__qualname__
-        logger = logging.getLogger(func.__module__)
+        original_logger = logging.getLogger(func.__module__)
+        logger = AlsLogAdapter(original_logger, {})
         logger.debug(f"{function_name}() called with : {str(args)} - {str(kwargs)}")
         start_time = time()
         result = func(*args, **kwargs)
@@ -135,7 +136,13 @@ class SignalingQueue(Queue, QObject):
         self.size_changed_signal.emit(self.qsize())
 
 
-@log
+class AlsLogAdapter(LoggerAdapter):
+
+    def process(self, msg, kwargs):
+        msg = f"{get_timestamp()} {msg}"
+        return super().process(msg, kwargs)
+
+
 def get_timestamp():
     """
     Return a timestamp built from current date and time

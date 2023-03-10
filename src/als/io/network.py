@@ -1,15 +1,15 @@
 """ Provide networking features"""
-import logging
 import os
 import socket
 import threading
 from http.server import SimpleHTTPRequestHandler, HTTPServer as BaseHTTPServer
+from logging import getLogger
 from typing import Tuple
 
 from als import config
-from als.code_utilities import log
+from als.code_utilities import log, AlsLogAdapter
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 
 @log

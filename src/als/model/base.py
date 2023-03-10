@@ -1,14 +1,14 @@
 """
 Provide base application data types
 """
-import logging
+from logging import getLogger
 
 import numpy as np
 from PyQt5.QtCore import pyqtSignal, QObject, QThread
 
-from als.code_utilities import log
+from als.code_utilities import log, AlsLogAdapter
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 
 class Session(QObject):

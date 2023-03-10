@@ -1,8 +1,8 @@
+import re
 from argparse import ArgumentParser
+from pathlib import Path
 
 import csv
-import re
-from pathlib import Path
 
 SECTION = "=" * 50
 SUB_SECTION = "-" * 50
@@ -55,9 +55,9 @@ def main():
     entries = list()
     for line in lines:
         line = line.replace("\n", "")
-        if re.search("^\\d{4}", line):
+        if re.search("^=", line):
             entries.append(buffer)
-            buffer = line
+            buffer = line[1:]
         else:
             buffer += line
     entries.append(buffer)
@@ -93,9 +93,9 @@ def extract_functions_returns(function_returns):
     }
     for ret in function_returns:
         tokens = tokenize(ret)
-        returns_dict['timestamp'].append(" ".join(tokens[:2]))
-        returns_dict['thread'].append(tokens[2])
-        returns_dict['module'].append(tokens[3])
+        returns_dict['timestamp'].append(" ".join(tokens[3:5]))
+        returns_dict['thread'].append(tokens[0])
+        returns_dict['module'].append(tokens[1])
         returns_dict['name'].append(tokens[5])
         returns_dict['ret_value'].append(tokens[7:-3])
         returns_dict['elapsed'].append(tokens[-2])
@@ -123,11 +123,11 @@ def extract_session_data(entries):
         elif "*SD-TRANS*" in line:
             trans_matcher = re.search(image_translation_match, line)
             session_data['value'].append(float(trans_matcher.group(1)))
-            session_data['timestamp'].append(" ".join((tokenize(line)[:2])))
+            session_data['timestamp'].append(" ".join((tokenize(line)[3:5])))
             session_data['type'].append("x_trans")
 
             session_data['value'].append(float(trans_matcher.group(2)))
-            session_data['timestamp'].append(" ".join((tokenize(line)[:2])))
+            session_data['timestamp'].append(" ".join((tokenize(line)[3:5])))
             session_data['type'].append("y_trans")
 
         elif "*SD-SCALE*" in line:
@@ -156,7 +156,7 @@ def extract_session_data(entries):
 
         elif "*SD-ALIGNOK*" in line:
             session_data['value'].append(1. if (tokenize(line)[-1] == "Accepted") else 0.)
-            session_data['timestamp'].append(" ".join((tokenize(line)[:2])))
+            session_data['timestamp'].append(" ".join((tokenize(line)[3:5])))
             session_data['type'].append("align")
 
         elif "*SM-MEM*" in line:
@@ -167,7 +167,7 @@ def extract_session_data(entries):
 
 def extract_float_at_end(event_type, line, data_dict):
     data_dict['value'].append(float(tokenize(line)[-1]))
-    data_dict['timestamp'].append(" ".join((tokenize(line)[:2])))
+    data_dict['timestamp'].append(" ".join((tokenize(line)[3:5])))
     data_dict['type'].append(event_type)
 
 
@@ -181,25 +181,6 @@ def write_csv(file_name, out_folder, data_dict):
         csv_writer = csv.writer(csv_file, delimiter=';')
         csv_writer.writerows(lines)
     print(f"report {str(dest_path):<35} OK")
-
-
-def extract_processing_function_timings(timings):
-    whole = dict()
-    for target_function in processing_functions:
-
-        for ret in timings:
-            tokens = tokenize(ret)
-
-            function_name = tokens[5]
-            execution_time = float(tokens[-2])
-
-            if function_name == target_function:
-                if function_name in whole.keys():
-                    whole[function_name].append(execution_time)
-                else:
-                    whole[function_name] = [execution_time]
-
-    return whole
 
 
 def write_timings_csv_files(data: dict, out_folder):

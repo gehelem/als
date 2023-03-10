@@ -1,18 +1,18 @@
 """
 Our custom widgets
 """
-import logging
 import typing
+from logging import getLogger
 
 from PyQt5 import QtGui
 from PyQt5.QtCore import QPoint, Qt
 from PyQt5.QtGui import QPainter, QPen, QColor
 from PyQt5.QtWidgets import QSlider, QGraphicsView, QWidget
 
-from als.code_utilities import log
+from als.code_utilities import log, AlsLogAdapter
 from als.model.data import DYNAMIC_DATA
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 
 class Slider(QSlider):

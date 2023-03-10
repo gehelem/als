@@ -1,7 +1,7 @@
 """
 Provides all dialogs used in ALS GUI
 """
-import logging
+from logging import getLogger
 from pathlib import Path
 
 import qrcode
@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QApplication
 
 import als.model.data
 from als import config
-from als.code_utilities import log
+from als.code_utilities import log, AlsLogAdapter
 from als.logic import Controller
 from als.messaging import MESSAGE_HUB
 from als.model.data import VERSION, DYNAMIC_DATA
@@ -22,7 +22,7 @@ from generated.qr_ui import Ui_QrDialog
 from generated.save_wait_ui import Ui_SaveWaitDialog
 from generated.stop_ui import Ui_SessionStopDialog
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 _WARNING_STYLE_SHEET = "border: 1px solid orange"
 _NORMAL_STYLE_SHEET = "border: 1px"
 

@@ -22,7 +22,7 @@ import sys
 from configparser import ConfigParser, DuplicateOptionError, ParsingError
 from pathlib import Path
 
-from als.code_utilities import AlsException
+from als.code_utilities import AlsException, AlsLogAdapter
 from als.model.data import IMAGE_SAVE_TYPE_JPEG, DYNAMIC_DATA
 
 _CONFIG_FILE_PATH = os.path.expanduser("~/.als.cfg")
@@ -635,7 +635,7 @@ def _setup_logging():
     Sets up logging system.
     """
 
-    global_log_format_string = '%(asctime)-15s %(threadName)-12s %(name)-20s %(levelname)-8s %(message)s'
+    global_log_format_string = '=%(threadName)-12s %(name)-20s %(levelname)-8s %(message)s'
     log_level = _LOG_LEVELS[_get(_LOG_LEVEL)]
 
     logging.basicConfig(level=log_level,
@@ -659,4 +659,4 @@ def _setup_logging():
 
 
 def _get_logger():
-    return logging.getLogger(__name__)
+    return AlsLogAdapter(logging.getLogger(__name__), {})

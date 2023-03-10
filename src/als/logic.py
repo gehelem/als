@@ -19,8 +19,8 @@
 """
 Module holding all application logic
 """
-import logging
 import time
+from logging import getLogger
 from pathlib import Path
 from typing import List
 
@@ -28,7 +28,7 @@ from PyQt5.QtCore import QFile, QT_TRANSLATE_NOOP, QCoreApplication, QThread, QT
 
 from als import config
 from als.code_utilities import log, AlsException, SignalingQueue, get_text_content_of_resource, get_timestamp, \
-    available_memory
+    available_memory, AlsLogAdapter
 from als.io.input import InputScanner, ScannerStartError
 from als.io.network import get_ip, WebServer
 from als.io.output import ImageSaver
@@ -44,7 +44,7 @@ from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput, Lev
     HotPixelRemover, RemoveDark, FileReader, HistogramComputer, QImageGenerator
 from als.stack import Stacker
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 
 class SessionError(AlsException):

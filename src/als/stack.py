@@ -16,22 +16,22 @@ Provides image stacking features
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import logging
+from logging import getLogger
 from multiprocessing import Process, Manager
-import platform
 
 import astroalign as al
 import numpy as np
 from PyQt5.QtCore import pyqtSignal, QT_TRANSLATE_NOOP
 from skimage.transform import SimilarityTransform
 
-from als.messaging import MESSAGE_HUB
-from als.model.data import I18n
-from als.code_utilities import log, Timer
-from als.model.base import Image, RunningProfile
-from als.processing import QueueConsumer
 from als import config
-_LOGGER = logging.getLogger(__name__)
+from als.code_utilities import log, Timer, AlsLogAdapter
+from als.messaging import MESSAGE_HUB
+from als.model.base import Image, RunningProfile
+from als.model.data import I18n
+from als.processing import QueueConsumer
+
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 
 class StackingError(Exception):
