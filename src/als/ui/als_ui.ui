@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1156</width>
-    <height>989</height>
+    <height>882</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -112,15 +112,19 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QLabel" name="lbl_session_status">
+         <widget class="QLabel" name="lbl_profile">
+          <property name="font">
+           <font>
+            <pointsize>12</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
           <property name="text">
-           <string/>
+           <string notr="true"/>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
-          </property>
-          <property name="openExternalLinks">
-           <bool>false</bool>
           </property>
          </widget>
         </item>
@@ -244,6 +248,31 @@
            </widget>
           </item>
          </layout>
+        </item>
+        <item>
+         <widget class="QLabel" name="lbl_session_status">
+          <property name="font">
+           <font>
+            <pointsize>11</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="openExternalLinks">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Line" name="line_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="lbl_last_timing">

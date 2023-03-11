@@ -32,7 +32,7 @@ from als.io.input import InputScanner, ScannerStartError
 from als.io.network import get_ip, WebServer
 from als.io.output import ImageSaver
 from als.messaging import MESSAGE_HUB
-from als.model.base import Image, Session
+from als.model.base import Image, Session, VisualProfile, PhotoProfile
 from als.model.data import (
     DYNAMIC_DATA,
     I18n, STACKED_IMAGE_FILE_NAME_BASE,
@@ -70,6 +70,15 @@ class Controller:
     The application controller, in charge of implementing application logic
     """
 
+    EAA_PROFILE = 0
+    PHOTO_PROFILE = 1
+
+    profiles = {
+
+        EAA_PROFILE: VisualProfile(),
+        PHOTO_PROFILE: PhotoProfile()
+    }
+
     @log
     def __init__(self):
 
@@ -86,18 +95,22 @@ class Controller:
 
         self._input_scanner: InputScanner = InputScanner.create_scanner()
 
+        profile_code = config.get_profile()
+        self._profile = Controller.profiles[profile_code]
+        _LOGGER.debug(f"*SD-PROFILE* Using running profile: {profile_code}")
+
         self._pre_process_queue: SignalingQueue = DYNAMIC_DATA.pre_process_queue
         self._pre_process_pipeline: Pipeline = Pipeline(
             'pre-process',
             self._pre_process_queue,
             [FileReader(), RemoveDark(), HotPixelRemover(), Debayer(), Standardize()])
-        self._pre_process_pipeline.start(QThread.NormalPriority)
+        self._pre_process_pipeline.start(self._profile.get_pre_process_priority)
 
         self._stacker_queue: SignalingQueue = DYNAMIC_DATA.stacker_queue
-        self._stacker: Stacker = Stacker(self._stacker_queue)
+        self._stacker: Stacker = Stacker(self._stacker_queue, self._profile)
         self._stacker.stacking_mode = I18n.STACKING_MODE_MEAN
         self._stacker.align_before_stack = True
-        self._stacker.start(QThread.NormalPriority)
+        self._stacker.start(self._profile.get_stacking_priority)
 
         self._post_process_queue = DYNAMIC_DATA.process_queue
         self._post_process_pipeline: Pipeline = Pipeline(
@@ -110,7 +123,7 @@ class Controller:
         self._post_process_pipeline.add_process(self._autostretch_processor)
         self._post_process_pipeline.add_process(self._levels_processor)
         self._post_process_pipeline.add_process(self._rgb_processor)
-        self._post_process_pipeline.start(QThread.HighestPriority)
+        self._post_process_pipeline.start(self._profile.get_post_process_priority)
 
         self._saver_queue = DYNAMIC_DATA.save_queue
         self._saver = ImageSaver(self._saver_queue)

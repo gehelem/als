@@ -27,8 +27,8 @@ from skimage.transform import SimilarityTransform
 
 from als.messaging import MESSAGE_HUB
 from als.model.data import I18n
-from als.code_utilities import log, Timer, available_memory
-from als.model.base import Image
+from als.code_utilities import log, Timer
+from als.model.base import Image, RunningProfile
 from als.processing import QueueConsumer
 from als import config
 _LOGGER = logging.getLogger(__name__)
@@ -50,13 +50,14 @@ class Stacker(QueueConsumer):
     """Qt signal emitted when stack size changed"""
 
     @log
-    def __init__(self, stack_queue):
+    def __init__(self, stack_queue, profile: RunningProfile):
         QueueConsumer.__init__(self, "stack", stack_queue)
         self._size: int = 0
         self._last_stacking_result: Image = None
         self._align_reference: Image = None
         self._stacking_mode = I18n.STACKING_MODE_MEAN
         self._align_before_stack = True
+        self._profile = profile
 
     @property
     @log
@@ -339,7 +340,7 @@ class Stacker(QueueConsumer):
         minimum_matches_for_valid_transform = config.get_minimum_match_count()
         _LOGGER.debug(f"configured minimum match count: {minimum_matches_for_valid_transform}")
 
-        for ratio in [.1, .33, 1.]:
+        for ratio in self._profile.ratios:
 
             top, bottom, left, right = self._get_image_subset_boundaries(ratio)
 

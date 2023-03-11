@@ -77,6 +77,15 @@ class PreferencesDialog(QDialog):
 
         config_to_image_save_type_mapping[config.get_image_save_format()].setChecked(True)
 
+        self._profile_config_mapping = {
+
+            0: self._ui.rd_visual_profile,
+            1: self._ui.rd_photo_profile
+        }
+
+        for k, v in self._profile_config_mapping.items():
+            v.setChecked(config.get_profile() == k)
+
         self._ui.chk_www_own_folder.setChecked(config.get_www_use_dedicated_folder())
 
         self._web_folder_controls = [self._ui.lbl_web_folder,
@@ -226,6 +235,11 @@ class PreferencesDialog(QDialog):
         for radio_button, image_save_type in image_save_type_to_config_mapping.items():
             if radio_button.isChecked():
                 config.set_image_save_format(image_save_type)
+                break
+
+        for k, v in self._profile_config_mapping.items():
+            if v.isChecked():
+                config.set_profile(str(k))
                 break
 
         config.set_lang(self._ui.cmb_lang.currentData())

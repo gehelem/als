@@ -176,6 +176,11 @@ class MainWindow(QMainWindow):
         self.update_display()
         MESSAGE_HUB.add_receiver(self)
 
+        if 0 == config.get_profile():
+            self._ui.lbl_profile.setText(f"{I18n.PROFILE} : {I18n.VISUAL}")
+        else:
+            self._ui.lbl_profile.setText(f"{I18n.PROFILE} : Photo")
+
         if config.get_full_screen_active():
             self._ui.action_full_screen.setChecked(True)
         else:
@@ -802,6 +807,7 @@ class MainWindow(QMainWindow):
             self._ui.lbl_last_timing.setText(self.tr("Last image total time: {} s").format(DYNAMIC_DATA.last_timing))
 
             self._ui.sld_align_threshold.setValue(config.get_minimum_match_count())
+            self._ui.lbl_align_threshold.setText(str(self._ui.sld_align_threshold.value()))
 
     @pyqtSlot(name="on_pbStop_clicked")
     @log

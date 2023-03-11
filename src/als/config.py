@@ -46,6 +46,7 @@ _LANG = "lang"
 _BAYER_PATTERN = "bayer_pattern"
 _NIGHT_MODE = "night_mode"
 _SAVE_ON_STOP = "save_on_stop"
+_PROFILE = "profile"
 
 # keys used to describe logging level
 _LOG_LEVEL_DEBUG = "DEBUG"
@@ -83,6 +84,7 @@ _DEFAULTS = {
     _BAYER_PATTERN:         "AUTO",
     _NIGHT_MODE:            0,
     _SAVE_ON_STOP:          0,
+    _PROFILE:               0,
 }
 _MAIN_SECTION_NAME = "main"
 
@@ -271,6 +273,29 @@ def set_debug_log(debug_active):
         _set(_LOG_LEVEL, _LOG_LEVEL_DEBUG)
     else:
         _set(_LOG_LEVEL, _LOG_LEVEL_INFO)
+
+
+def get_profile():
+    """
+    Retrieves the configured profile.
+
+    :return: The configured profile, or its default value if config entry
+             is not parsable as an int.
+    """
+    try:
+        return int(_get(_PROFILE))
+    except ValueError:
+        return _DEFAULTS[_PROFILE]
+
+
+def set_profile(profile):
+    """
+    Sets profile.
+
+    :param profile: the profile
+    :type profile: int
+    """
+    _set(_PROFILE, profile)
 
 
 def get_www_server_port_number():
