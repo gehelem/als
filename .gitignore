@@ -3,6 +3,7 @@
 /src/generated/*_ui.py
 /src/generated/*_rc.py
 *.log
+/analyzer/csv/
 
 # swap files
 *.swp
