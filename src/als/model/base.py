@@ -4,7 +4,7 @@ Provide base application data types
 import logging
 
 import numpy as np
-from PyQt5.QtCore import pyqtSignal, QObject
+from PyQt5.QtCore import pyqtSignal, QObject, QThread
 
 from als.code_utilities import log
 
@@ -317,3 +317,51 @@ class Image:
                           f'Destination={self.destination}')
 
         return representation
+
+
+class RunningProfile:
+
+    @log
+    def __init__(self):
+        self._align_detection_surface_ratios: list = []
+        self._pre_process_priority: int = -1
+        self._stacking_priority: int = -1
+        self._post_process_priority: int = -1
+
+    @property
+    def ratios(self):
+        return self._align_detection_surface_ratios
+
+    @property
+    def get_pre_process_priority(self):
+        return self._pre_process_priority
+
+    @property
+    def get_stacking_priority(self):
+        return self._stacking_priority
+
+    @property
+    def get_post_process_priority(self):
+        return self._post_process_priority
+
+
+class VisualProfile(RunningProfile):
+
+    @log
+    def __init__(self):
+        super().__init__()
+        self._align_detection_surface_ratios = [.1, .33, 1.]
+        self._pre_process_priority = QThread.HighestPriority
+        self._stacking_priority = QThread.HighestPriority
+        self._post_process_priority = QThread.LowPriority
+
+
+class PhotoProfile(RunningProfile):
+
+    @log
+    def __init__(self):
+        super().__init__()
+        self._align_detection_surface_ratios = [1.]
+        self._pre_process_priority = QThread.LowPriority
+        self._stacking_priority = QThread.LowPriority
+        self._post_process_priority = QThread.HighestPriority

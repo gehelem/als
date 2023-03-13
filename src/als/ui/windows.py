@@ -176,6 +176,11 @@ class MainWindow(QMainWindow):
         self.update_display()
         MESSAGE_HUB.add_receiver(self)
 
+        if 0 == config.get_profile():
+            self._ui.lbl_profile.setText(f"{I18n.PROFILE} : {I18n.VISUAL}")
+        else:
+            self._ui.lbl_profile.setText(f"{I18n.PROFILE} : Photo")
+
         if config.get_full_screen_active():
             self._ui.action_full_screen.setChecked(True)
         else:
@@ -420,6 +425,18 @@ class MainWindow(QMainWindow):
         dialog = AboutDialog(self)
         dialog.exec()
 
+    @log
+    def on_sld_align_threshold_valueChanged(self, value):
+        """
+        align threshold slider value just changed.
+
+        We register that value for next stacking operation
+
+        :param value: new stacking threshold
+        :type value: int
+        """
+        config.set_minimum_match_count(value)
+
     # pylint: disable=C0103
     @log
     def on_cb_stacking_mode_currentTextChanged(self, stacking_mode: str):
@@ -562,6 +579,24 @@ class MainWindow(QMainWindow):
 
                 if restore:
                     action.trigger()
+
+    @log
+    @pyqtSlot(bool)
+    def on_action_zoom_in_triggered(self, _):
+        """ user wants to zoom into the image """
+        self._ui.image_view.zoom_in()
+
+    @log
+    @pyqtSlot(bool)
+    def on_action_zoom_out_triggered(self, _):
+        """ user wants to zoom out of the image """
+        self._ui.image_view.zoom_out()
+
+    @log
+    @pyqtSlot(bool)
+    def on_action_adjust_image_triggered(self, _):
+        """ user wants to adjust image to view """
+        self._ui.image_view.adjustZoom()
 
     @log
     def on_processing_dock_visibilityChanged(self, visible):
@@ -770,6 +805,9 @@ class MainWindow(QMainWindow):
                 self._ui.rgbProcessBox.setEnabled(DYNAMIC_DATA.post_processor_result.is_color())
 
             self._ui.lbl_last_timing.setText(self.tr("Last image total time: {} s").format(DYNAMIC_DATA.last_timing))
+
+            self._ui.sld_align_threshold.setValue(config.get_minimum_match_count())
+            self._ui.lbl_align_threshold.setText(str(self._ui.sld_align_threshold.value()))
 
     @pyqtSlot(name="on_pbStop_clicked")
     @log

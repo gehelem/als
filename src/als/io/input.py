@@ -176,22 +176,6 @@ def read_disk_image(path: Path):
 
     if not ignore_image:
 
-        file_is_complete = False
-        last_file_size = -1
-
-        while not file_is_complete:
-            size = QFileInfo(str(path)).size()
-            _LOGGER.debug(f"File {path}'s size = {size}")
-
-            if size == last_file_size:
-                file_is_complete = True
-                _LOGGER.debug(f"File {path} is ready to be read")
-
-            last_file_size = size
-
-            if not file_is_complete:
-                time.sleep(_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC)
-
         if path.suffix.lower() in ['.fit', '.fits', '.fts']:
             image = _read_fit_image(path)
 

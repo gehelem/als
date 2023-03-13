@@ -40,6 +40,9 @@ class I18n(QObject):
     SCANNER = "TEMP"
     OF = "TEMP"
 
+    PROFILE = "TEMP"
+    VISUAL = "TEMP"
+
     RUNNING_M = "TEMP"
     RUNNING_F = "TEMP"
     STOPPED_M = "TEMP"
@@ -73,6 +76,8 @@ class I18n(QObject):
         I18n.WORKER_STATUS_BUSY = self.tr("busy")
         I18n.SCANNER = self.tr("scanner")
         I18n.OF = self.tr("of")
+        I18n.PROFILE = self.tr("Profile")
+        I18n.VISUAL = self.tr("Visual")
         I18n.RUNNING_M = self.tr("running", "gender m")
         I18n.RUNNING_F = self.tr("running", "gender f")
         I18n.STOPPED_M = self.tr("stopped", "gender m")

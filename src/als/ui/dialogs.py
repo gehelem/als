@@ -4,9 +4,8 @@ Provides all dialogs used in ALS GUI
 import logging
 from pathlib import Path
 
-from PIL.ImageQt import ImageQt
 import qrcode
-
+from PIL.ImageQt import ImageQt
 from PyQt5.QtCore import pyqtSlot, QT_TRANSLATE_NOOP, pyqtSignal, Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QApplication
@@ -65,7 +64,6 @@ class PreferencesDialog(QDialog):
         self._ui.ln_web_server_port.setText(str(config.get_www_server_port_number()))
         self._ui.spn_webpage_refresh_period.setValue(config.get_www_server_refresh_period())
         self._ui.chk_debug_logs.setChecked(config.is_debug_log_on())
-        self._ui.spn_minimum_match_count.setValue(config.get_minimum_match_count())
         self._ui.chk_use_dark.setChecked(config.get_use_master_dark())
         self._ui.chk_use_hpr.setChecked(config.get_hot_pixel_remover())
         self._ui.chk_save_on_stop.setChecked(config.get_save_on_stop())
@@ -78,6 +76,15 @@ class PreferencesDialog(QDialog):
         }
 
         config_to_image_save_type_mapping[config.get_image_save_format()].setChecked(True)
+
+        self._profile_config_mapping = {
+
+            0: self._ui.rd_visual_profile,
+            1: self._ui.rd_photo_profile
+        }
+
+        for k, v in self._profile_config_mapping.items():
+            v.setChecked(config.get_profile() == k)
 
         self._ui.chk_www_own_folder.setChecked(config.get_www_use_dedicated_folder())
 
@@ -199,7 +206,6 @@ class PreferencesDialog(QDialog):
         config.set_web_folder_path(web_folder_path)
 
         web_server_port_number_str = self._ui.ln_web_server_port.text()
-        config.set_minimum_match_count(self._ui.spn_minimum_match_count.value())
         config.set_use_master_dark(self._ui.chk_use_dark.isChecked())
         config.set_master_dark_file_path(self._ui.ln_master_dark_path.text())
         config.set_hot_pixel_remover(self._ui.chk_use_hpr.isChecked())
@@ -229,6 +235,11 @@ class PreferencesDialog(QDialog):
         for radio_button, image_save_type in image_save_type_to_config_mapping.items():
             if radio_button.isChecked():
                 config.set_image_save_format(image_save_type)
+                break
+
+        for k, v in self._profile_config_mapping.items():
+            if v.isChecked():
+                config.set_profile(str(k))
                 break
 
         config.set_lang(self._ui.cmb_lang.currentData())
