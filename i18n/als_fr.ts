@@ -522,7 +522,7 @@ Détails : {}</translation>
     <message>
         <location filename="../src/als/ui/prefs_ui.ui" line="242"/>
         <source>&amp;Use dark subtraction</source>
-        <translation>Utiliser soustraction de &amp;dark</translation>
+        <translation>Soustraction de &amp;dark</translation>
     </message>
     <message>
         <location filename="../src/als/ui/prefs_ui.ui" line="251"/>
@@ -537,7 +537,7 @@ Détails : {}</translation>
     <message>
         <location filename="../src/als/ui/prefs_ui.ui" line="296"/>
         <source>Use &amp;hot pixel remover</source>
-        <translation>Utiliser suppression des pixels c&amp;hauds</translation>
+        <translation>Suppression des pixels c&amp;hauds</translation>
     </message>
     <message>
         <location filename="../src/als/ui/prefs_ui.ui" line="586"/>
