@@ -225,7 +225,10 @@ class Stacker(QueueConsumer):
         if image.is_color():
             _LOGGER.debug(f"Aligning color image...")
 
-            do_mp = platform.system() not in ["Darwin", "Windows"]
+            # do_mp = platform.system() not in ["Darwin", "Windows"]
+            # TODO check if MP 'spawn' start method is stable, faster 
+            # and suppports frozen apps when we switch to python >= 3.8
+            do_mp = False
 
             if do_mp:
 
