@@ -100,6 +100,7 @@ class Image:
         self._origin: str = "UNDEFINED"
         self._destination: str = "UNDEFINED"
         self._ticket = ""
+        self._exposure_time: float = -1.
 
     @log
     def clone(self, keep_ref_to_data=False):
@@ -118,7 +119,16 @@ class Image:
         new_image.origin = self.origin
         new_image.destination = self.destination
         new_image.ticket = self.ticket
+        new_image.exposure_time = self.exposure_time
         return new_image
+
+    @property
+    def exposure_time(self):
+        return self._exposure_time
+
+    @exposure_time.setter
+    def exposure_time(self, value):
+        self._exposure_time = value
 
     @property
     def destination(self):
@@ -307,6 +317,7 @@ class Image:
         representation = (f'{self.__class__.__name__}('
                           f'ID={self.__hash__()}, '
                           f'Color={self.is_color()}, '
+                          f'Exp. t={self.exposure_time}, '
                           f'Needs Debayer={self.needs_debayering()}, '
                           f'Bayer Pattern={self.bayer_pattern}, '
                           f'Width={self.width}, '

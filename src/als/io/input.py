@@ -4,13 +4,13 @@ Provides everything need to handle ALS main inputs : images.
 We need to read file and in the future, get images from INDI
 """
 import logging
-import time
 from abc import abstractmethod
 from pathlib import Path
 
 import cv2
+from PyQt5.QtCore import pyqtSignal, QObject, QT_TRANSLATE_NOOP
 from astropy.io import fits
-from PyQt5.QtCore import QFileInfo, pyqtSignal, QObject, QT_TRANSLATE_NOOP
+import exifread
 from rawpy import imread
 from rawpy._rawpy import LibRawNonFatalError, LibRawFatalError
 from watchdog.events import FileSystemEventHandler
@@ -20,7 +20,6 @@ from als import config
 from als.code_utilities import log
 from als.messaging import MESSAGE_HUB
 from als.model.base import Image
-from als.model.data import DYNAMIC_DATA
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -217,6 +216,10 @@ def _read_fit_image(path: Path):
         if 'BAYERPAT' in header:
             image.bayer_pattern = header['BAYERPAT']
 
+        if 'EXPTIME' in header:
+            image.exposure_time = header['EXPTIME']
+            _LOGGER.debug(f"*SD-EXP_T* extracted exposure time: {image.exposure_time}")
+
     except (OSError, TypeError) as error:
         _report_fs_error(path, error)
         return None
@@ -247,6 +250,9 @@ def _read_standard_image(path: Path):
 
 @log
 def _read_raw_image(path: Path):
+
+    EXPOSURE_TIME_EXIF_TAG = 'EXIF ExposureTime'
+
     """
     Reads a RAW DLSR image from file
 
@@ -318,6 +324,17 @@ def _read_raw_image(path: Path):
 
             new_image = Image(raw_image.raw_image_visible.copy())
             new_image.bayer_pattern = bayer_pattern
+
+            # try and get exposure time
+            # exit tag desc. :
+            # 0x829a 	33434 	Photo 	Exif.Photo.ExposureTime 	Rational 	Exposure time, given in seconds (sec).
+            with open(path, 'rb') as raw:
+                tags = exifread.process_file(raw)
+                if tags and EXPOSURE_TIME_EXIF_TAG in tags.keys():
+                    exposure_time = float(tags[EXPOSURE_TIME_EXIF_TAG].values[0])
+                    _LOGGER.debug(f"*SD-EXP_T* extracted exposure time: {exposure_time}")
+                    new_image.exposure_time = exposure_time
+
             return new_image
 
     except LibRawNonFatalError as non_fatal_error:
