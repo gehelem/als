@@ -1,1 +1,1 @@
-jupyter nbconvert --to html --no-input notebooks/*.ipynb
+jupyter nbconvert --to html --output-dir build --no-input notebooks/*.ipynb
