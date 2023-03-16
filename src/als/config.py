@@ -652,6 +652,7 @@ def _setup_logging():
     # in here, we maintain a list of third party loggers for which we don't want to see anything but WARNING & up
     third_party_polluters = [
         'watchdog.observers.inotify_buffer',
+        'exifread',
     ]
     for third_party_log_polluter in third_party_polluters:
         logging.getLogger(third_party_log_polluter).setLevel(logging.WARNING)
