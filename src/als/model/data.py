@@ -123,6 +123,7 @@ class DynamicData:
         self.is_first_run = True
         self.post_processor_result_qimage = None
         self.last_timing = 0
+        self.total_exposure_time: int = 0
 
 
 class HistogramContainer:

@@ -76,6 +76,8 @@ class Session(QObject):
 
 # pylint: disable=too-many-instance-attributes
 class Image:
+
+    UNDEF_EXP_TIME = -1
     """
     Represents an image, our basic processing object.
 
@@ -100,7 +102,7 @@ class Image:
         self._origin: str = "UNDEFINED"
         self._destination: str = "UNDEFINED"
         self._ticket = ""
-        self._exposure_time: float = -1.
+        self._exposure_time: float = Image.UNDEF_EXP_TIME
 
     @log
     def clone(self, keep_ref_to_data=False):

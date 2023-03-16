@@ -1,6 +1,7 @@
 """
 Holds all windows used in the app
 """
+import datetime
 import logging
 from os import linesep
 
@@ -771,10 +772,16 @@ class MainWindow(QMainWindow):
             self._ui.btn_web_start.setEnabled(not web_server_is_running)
             self._ui.btn_web_stop.setEnabled(web_server_is_running)
 
-            # update stack size
+            # update stack size and total exposure time
             stack_size_str = str(DYNAMIC_DATA.stack_size)
             self._ui.lbl_stack_size.setText(stack_size_str)
             self._lbl_statusbar_stack_size.setText(f"{I18n.STACK_SIZE} : {stack_size_str}")
+
+            if DYNAMIC_DATA.total_exposure_time == 0:
+                exposure_time_str = "n/a"
+            else:
+                exposure_time_str = str(datetime.timedelta(seconds=int(round(DYNAMIC_DATA.total_exposure_time, 0))))
+            self._ui.lbl_stack_exposure.setText(exposure_time_str)
 
             # update queues sizes
             self._ui.lbl_pre_process_queue_size.setText(str(DYNAMIC_DATA.pre_process_queue.qsize()))

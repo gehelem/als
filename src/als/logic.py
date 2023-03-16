@@ -339,6 +339,9 @@ class Controller:
         image.origin = "Stacking result"
         self._last_stacking_result = image
 
+        if image.exposure_time != Image.UNDEF_EXP_TIME:
+            DYNAMIC_DATA.total_exposure_time += image.exposure_time
+
         self.purge_queue(self._post_process_queue)
         self._post_process_queue.put(image)
 
@@ -485,6 +488,7 @@ class Controller:
                 self._stacker.reset()
                 self._image_timings.clear()
                 DYNAMIC_DATA.last_timing = 0
+                DYNAMIC_DATA.total_exposure_time = 0
 
                 # checking presence of critical folders
                 critical_folders_dict = {

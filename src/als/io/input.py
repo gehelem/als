@@ -25,7 +25,7 @@ _LOGGER = logging.getLogger(__name__)
 
 _IGNORED_FILENAME_START_PATTERNS = ['.', '~', 'tmp']
 _DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC = 0.5
-
+EXPOSURE_TIME_EXIF_TAG = 'EXIF ExposureTime'
 SCANNER_TYPE_FILESYSTEM = "FS"
 
 
@@ -250,9 +250,6 @@ def _read_standard_image(path: Path):
 
 @log
 def _read_raw_image(path: Path):
-
-    EXPOSURE_TIME_EXIF_TAG = 'EXIF ExposureTime'
-
     """
     Reads a RAW DLSR image from file
 
@@ -325,15 +322,7 @@ def _read_raw_image(path: Path):
             new_image = Image(raw_image.raw_image_visible.copy())
             new_image.bayer_pattern = bayer_pattern
 
-            # try and get exposure time
-            # exit tag desc. :
-            # 0x829a 	33434 	Photo 	Exif.Photo.ExposureTime 	Rational 	Exposure time, given in seconds (sec).
-            with open(path, 'rb') as raw:
-                tags = exifread.process_file(raw)
-                if tags and EXPOSURE_TIME_EXIF_TAG in tags.keys():
-                    exposure_time = float(tags[EXPOSURE_TIME_EXIF_TAG].values[0])
-                    _LOGGER.debug(f"*SD-EXP_T* extracted exposure time: {exposure_time}")
-                    new_image.exposure_time = exposure_time
+            extract_exifs(new_image, path)
 
             return new_image
 
@@ -343,6 +332,30 @@ def _read_raw_image(path: Path):
     except LibRawFatalError as fatal_error:
         _report_fs_error(path, fatal_error)
         return None
+
+
+@log
+def extract_exifs(image, image_path):
+    """
+    Try and get some exifs from the image file
+
+    For now, we only look for exposure time, but who knows...
+    The image in modified in place
+
+    :param image: the image to feed
+    :type image: Image
+
+    :param image_path: path to original file
+    :type image_path: Path
+
+    :return: None
+    """
+    with open(image_path, 'rb') as raw:
+        tags = exifread.process_file(raw)
+        if tags and EXPOSURE_TIME_EXIF_TAG in tags.keys():
+            exposure_time = float(tags[EXPOSURE_TIME_EXIF_TAG].values[0])
+            _LOGGER.debug(f"*SD-EXP_T* extracted exposure time: {exposure_time}")
+            image.exposure_time = exposure_time
 
 
 @log
