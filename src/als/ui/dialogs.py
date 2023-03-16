@@ -191,6 +191,18 @@ class PreferencesDialog(QDialog):
     @log
     @pyqtSlot()
     def accept(self):
+
+        # prepare flags for settings that require restart to take effect
+        PROFILE = self.tr("Profile")
+        LOG = self.tr("Debug logs")
+        LANG = self.tr("Language")
+
+        settings_needing_restart = {
+            PROFILE: False,
+            LOG: False,
+            LANG: False
+        }
+
         """checks and stores user settings"""
         config.set_scan_folder_path(self._ui.ln_scan_folder_path.text())
         config.set_work_folder_path(self._ui.ln_work_folder_path.text())
@@ -212,7 +224,7 @@ class PreferencesDialog(QDialog):
         config.set_save_on_stop(self._ui.chk_save_on_stop.isChecked())
 
         if web_server_port_number_str.isdigit() and 1024 <= int(web_server_port_number_str) <= 65535:
-            config.set_www_server_port_number(web_server_port_number_str)
+            config.set_www_server_port_number(int(web_server_port_number_str))
         else:
             message = self.tr("Web server port number must be a number between 1024 and 65535")
             error_box(self.tr("Wrong value"), message)
@@ -223,7 +235,12 @@ class PreferencesDialog(QDialog):
 
         config.set_www_server_refresh_period(self._ui.spn_webpage_refresh_period.value())
 
-        config.set_debug_log(self._ui.chk_debug_logs.isChecked())
+        # debug log choice
+        debug_old_value = config.is_debug_log_on()
+        debug_new_value = self._ui.chk_debug_logs.isChecked()
+        if debug_new_value != debug_old_value:
+            config.set_debug_log(debug_new_value)
+            settings_needing_restart[LOG] = True
 
         image_save_type_to_config_mapping = {
 
@@ -237,15 +254,32 @@ class PreferencesDialog(QDialog):
                 config.set_image_save_format(image_save_type)
                 break
 
+        # profile choice
+        profile_old_value = config.get_profile()
         for k, v in self._profile_config_mapping.items():
             if v.isChecked():
-                config.set_profile(str(k))
+                if k != profile_old_value:
+                    settings_needing_restart[PROFILE] = True
+                    config.set_profile(k)
                 break
 
-        config.set_lang(self._ui.cmb_lang.currentData())
+        # lang choice
+        lang_old_value = config.get_lang()
+        lang_new_value = self._ui.cmb_lang.currentData()
+
+        if lang_new_value != lang_old_value:
+            settings_needing_restart[LANG] = True
+            config.set_lang(lang_new_value)
+
         config.set_bayer_pattern(self._ui.cmb_bayer_pattern.currentData())
 
         PreferencesDialog._save_config()
+
+        if any(settings_needing_restart.values()):
+            message = self.tr("You need to restart ALS for these changes to take effect :\n\n")
+            for k, v in settings_needing_restart.items():
+                message += f"* {k}\n" if v else ""
+            message_box(self.tr("Restart needed"), message)
 
         super().accept()
 

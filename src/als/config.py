@@ -587,7 +587,7 @@ def _set(key, value):
     :type value: any
     """
     if value != _get(key):
-        _CONFIG_PARSER.set(_MAIN_SECTION_NAME, key, value)
+        _CONFIG_PARSER.set(_MAIN_SECTION_NAME, key, str(value))
 
 
 def setup():
