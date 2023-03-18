@@ -4,12 +4,13 @@ Provides everything need to handle ALS main inputs : images.
 We need to read file and in the future, get images from INDI
 """
 from abc import abstractmethod
+import time
 from logging import getLogger
 from pathlib import Path
 
 import cv2
 import exifread
-from PyQt5.QtCore import pyqtSignal, QObject, QT_TRANSLATE_NOOP
+from PyQt5.QtCore import pyqtSignal, QObject, QT_TRANSLATE_NOOP, QFileInfo
 from astropy.io import fits
 from rawpy import imread
 from rawpy._rawpy import LibRawNonFatalError, LibRawFatalError
@@ -24,7 +25,7 @@ from als.model.base import Image
 _LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 _IGNORED_FILENAME_START_PATTERNS = ['.', '~', 'tmp']
-_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC = 0.5
+_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC = 0.005
 EXPOSURE_TIME_EXIF_TAG = 'EXIF ExposureTime'
 SCANNER_TYPE_FILESYSTEM = "FS"
 
@@ -174,6 +175,22 @@ def read_disk_image(path: Path):
             break
 
     if not ignore_image:
+
+        file_is_complete = False
+        last_file_size = -1
+
+        while not file_is_complete:
+            size = QFileInfo(str(path)).size()
+            _LOGGER.debug(f"File {path}'s size = {size}")
+
+            if size == last_file_size:
+                file_is_complete = True
+                _LOGGER.debug(f"File {path} is ready to be read")
+
+            last_file_size = size
+
+            if not file_is_complete:
+                time.sleep(_DEFAULT_SCAN_FILE_SIZE_RETRY_PERIOD_IN_SEC)
 
         if path.suffix.lower() in ['.fit', '.fits', '.fts']:
             image = _read_fit_image(path)
