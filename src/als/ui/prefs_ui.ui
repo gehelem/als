@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>ALS preferences</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_9">
+  <layout class="QVBoxLayout" name="verticalLayout_10">
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="minimumSize">
@@ -23,7 +23,7 @@
       </size>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="generalTab">
       <attribute name="title">
@@ -48,15 +48,18 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QPushButton" name="btn_browse_scan">
+            <item row="1" column="0">
+             <widget class="QLabel" name="lbl_work_folder">
               <property name="text">
-               <string>Change...</string>
+               <string>&amp;Work folder :</string>
+              </property>
+              <property name="buddy">
+               <cstring>btn_browse_work</cstring>
               </property>
              </widget>
             </item>
-            <item row="0" column="2">
-             <widget class="QLineEdit" name="ln_scan_folder_path">
+            <item row="1" column="2">
+             <widget class="QLineEdit" name="ln_work_folder_path">
               <property name="minimumSize">
                <size>
                 <width>350</width>
@@ -71,13 +74,10 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="lbl_work_folder">
+            <item row="0" column="1">
+             <widget class="QPushButton" name="btn_browse_scan">
               <property name="text">
-               <string>&amp;Work folder :</string>
-              </property>
-              <property name="buddy">
-               <cstring>btn_browse_work</cstring>
+               <string>Change...</string>
               </property>
              </widget>
             </item>
@@ -88,8 +88,8 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="2">
-             <widget class="QLineEdit" name="ln_work_folder_path">
+            <item row="0" column="2">
+             <widget class="QLineEdit" name="ln_scan_folder_path">
               <property name="minimumSize">
                <size>
                 <width>350</width>
@@ -114,101 +114,114 @@
          <property name="title">
           <string>Core (Restart needed)</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_5">
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_9">
-            <item>
-             <widget class="QLabel" name="lbl_lang">
-              <property name="text">
-               <string>L&amp;anguage :</string>
-              </property>
-              <property name="buddy">
-               <cstring>cmb_lang</cstring>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="cmb_lang">
-              <property name="minimumSize">
-               <size>
-                <width>120</width>
-                <height>0</height>
-               </size>
-              </property>
+           <widget class="QGroupBox" name="grp_profile">
+            <property name="title">
+             <string>Profile</string>
+            </property>
+            <widget class="QWidget" name="layoutWidget">
+             <property name="geometry">
+              <rect>
+               <x>40</x>
+               <y>30</y>
+               <width>67</width>
+               <height>50</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_9">
               <item>
-               <property name="text">
-                <string>System</string>
-               </property>
+               <widget class="QRadioButton" name="rd_visual_profile">
+                <property name="text">
+                 <string>&amp;Visual</string>
+                </property>
+               </widget>
               </item>
               <item>
-               <property name="text">
-                <string notr="true">English</string>
-               </property>
+               <widget class="QRadioButton" name="rd_photo_profile">
+                <property name="text">
+                 <string>&amp;Photo</string>
+                </property>
+               </widget>
               </item>
-              <item>
-               <property name="text">
-                <string notr="true">Français</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_2">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
+             </layout>
+            </widget>
+           </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_12">
-            <item>
-             <widget class="QCheckBox" name="chk_debug_logs">
-              <property name="layoutDirection">
-               <enum>Qt::LeftToRight</enum>
-              </property>
-              <property name="text">
-               <string>Debug &amp;logs</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_5">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
+           <widget class="QGroupBox" name="groupBox_2">
+            <property name="title">
+             <string>Misc</string>
+            </property>
+            <widget class="QWidget" name="layoutWidget">
+             <property name="geometry">
+              <rect>
+               <x>20</x>
+               <y>30</y>
+               <width>194</width>
+               <height>57</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_5">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_9">
+                <item>
+                 <widget class="QLabel" name="lbl_lang">
+                  <property name="text">
+                   <string>L&amp;anguage :</string>
+                  </property>
+                  <property name="buddy">
+                   <cstring>cmb_lang</cstring>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="cmb_lang">
+                  <property name="minimumSize">
+                   <size>
+                    <width>120</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>System</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string notr="true">English</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string notr="true">Français</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_12">
+                <item>
+                 <widget class="QCheckBox" name="chk_debug_logs">
+                  <property name="layoutDirection">
+                   <enum>Qt::LeftToRight</enum>
+                  </property>
+                  <property name="text">
+                   <string>Debug &amp;logs</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </widget>
           </item>
          </layout>
         </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </widget>
@@ -225,6 +238,11 @@
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
            <widget class="QCheckBox" name="chk_use_dark">
+            <property name="font">
+             <font>
+              <kerning>true</kerning>
+             </font>
+            </property>
             <property name="text">
              <string>&amp;Use dark subtraction</string>
             </property>
@@ -278,9 +296,35 @@
            </layout>
           </item>
           <item>
+           <widget class="Line" name="line">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>12</height>
+             </size>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QCheckBox" name="chk_use_hpr">
             <property name="text">
              <string>Use &amp;hot pixel remover</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="Line" name="line_2">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>12</height>
+             </size>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>
@@ -339,61 +383,6 @@
               <property name="sizeHint" stdset="0">
                <size>
                 <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox_3">
-         <property name="title">
-          <string>Alignment</string>
-         </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
-          <item>
-           <layout class="QGridLayout" name="gridLayout">
-            <item row="0" column="0">
-             <widget class="QLabel" name="lbl_minimum_match_count">
-              <property name="text">
-               <string>Minimum &amp;matches count :</string>
-              </property>
-              <property name="textFormat">
-               <enum>Qt::AutoText</enum>
-              </property>
-              <property name="buddy">
-               <cstring>spn_minimum_match_count</cstring>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QSpinBox" name="spn_minimum_match_count">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="minimum">
-               <number>5</number>
-              </property>
-              <property name="value">
-               <number>25</number>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="2">
-             <spacer name="horizontalSpacer_3">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>160</width>
                 <height>20</height>
                </size>
               </property>
@@ -726,6 +715,34 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>btn_browse_scan</tabstop>
+  <tabstop>ln_scan_folder_path</tabstop>
+  <tabstop>btn_browse_work</tabstop>
+  <tabstop>ln_work_folder_path</tabstop>
+  <tabstop>rd_visual_profile</tabstop>
+  <tabstop>rd_photo_profile</tabstop>
+  <tabstop>cmb_lang</tabstop>
+  <tabstop>chk_debug_logs</tabstop>
+  <tabstop>chk_use_dark</tabstop>
+  <tabstop>btn_dark_scan</tabstop>
+  <tabstop>ln_master_dark_path</tabstop>
+  <tabstop>btn_dark_clear</tabstop>
+  <tabstop>chk_use_hpr</tabstop>
+  <tabstop>cmb_bayer_pattern</tabstop>
+  <tabstop>radioSaveTiff</tabstop>
+  <tabstop>radioSavePng</tabstop>
+  <tabstop>radioSaveJpeg</tabstop>
+  <tabstop>chk_save_on_stop</tabstop>
+  <tabstop>ln_web_server_port</tabstop>
+  <tabstop>spn_webpage_refresh_period</tabstop>
+  <tabstop>chk_www_own_folder</tabstop>
+  <tabstop>btn_browse_web</tabstop>
+  <tabstop>ln_web_folder_path</tabstop>
+  <tabstop>btn_Cancel</tabstop>
+  <tabstop>btn_OK</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

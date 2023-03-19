@@ -4,6 +4,7 @@ Provides features for in-app communications
 import logging
 
 from PyQt5.QtCore import QObject, pyqtSignal, QCoreApplication
+
 from als.code_utilities import get_timestamp
 
 

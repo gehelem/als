@@ -1,19 +1,18 @@
 """
 Provides all dialogs used in ALS GUI
 """
-import logging
+from logging import getLogger
 from pathlib import Path
 
-from PIL.ImageQt import ImageQt
 import qrcode
-
+from PIL.ImageQt import ImageQt
 from PyQt5.QtCore import pyqtSlot, QT_TRANSLATE_NOOP, pyqtSignal, Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QApplication
 
 import als.model.data
 from als import config
-from als.code_utilities import log
+from als.code_utilities import log, AlsLogAdapter
 from als.logic import Controller
 from als.messaging import MESSAGE_HUB
 from als.model.data import VERSION, DYNAMIC_DATA
@@ -23,7 +22,7 @@ from generated.qr_ui import Ui_QrDialog
 from generated.save_wait_ui import Ui_SaveWaitDialog
 from generated.stop_ui import Ui_SessionStopDialog
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 _WARNING_STYLE_SHEET = "border: 1px solid orange"
 _NORMAL_STYLE_SHEET = "border: 1px"
 
@@ -65,7 +64,6 @@ class PreferencesDialog(QDialog):
         self._ui.ln_web_server_port.setText(str(config.get_www_server_port_number()))
         self._ui.spn_webpage_refresh_period.setValue(config.get_www_server_refresh_period())
         self._ui.chk_debug_logs.setChecked(config.is_debug_log_on())
-        self._ui.spn_minimum_match_count.setValue(config.get_minimum_match_count())
         self._ui.chk_use_dark.setChecked(config.get_use_master_dark())
         self._ui.chk_use_hpr.setChecked(config.get_hot_pixel_remover())
         self._ui.chk_save_on_stop.setChecked(config.get_save_on_stop())
@@ -78,6 +76,15 @@ class PreferencesDialog(QDialog):
         }
 
         config_to_image_save_type_mapping[config.get_image_save_format()].setChecked(True)
+
+        self._profile_config_mapping = {
+
+            0: self._ui.rd_visual_profile,
+            1: self._ui.rd_photo_profile
+        }
+
+        for k, v in self._profile_config_mapping.items():
+            v.setChecked(config.get_profile() == k)
 
         self._ui.chk_www_own_folder.setChecked(config.get_www_use_dedicated_folder())
 
@@ -184,6 +191,18 @@ class PreferencesDialog(QDialog):
     @log
     @pyqtSlot()
     def accept(self):
+
+        # prepare flags for settings that require restart to take effect
+        PROFILE = self.tr("Profile")
+        LOG = self.tr("Debug logs")
+        LANG = self.tr("Language")
+
+        settings_needing_restart = {
+            PROFILE: False,
+            LOG: False,
+            LANG: False
+        }
+
         """checks and stores user settings"""
         config.set_scan_folder_path(self._ui.ln_scan_folder_path.text())
         config.set_work_folder_path(self._ui.ln_work_folder_path.text())
@@ -199,14 +218,13 @@ class PreferencesDialog(QDialog):
         config.set_web_folder_path(web_folder_path)
 
         web_server_port_number_str = self._ui.ln_web_server_port.text()
-        config.set_minimum_match_count(self._ui.spn_minimum_match_count.value())
         config.set_use_master_dark(self._ui.chk_use_dark.isChecked())
         config.set_master_dark_file_path(self._ui.ln_master_dark_path.text())
         config.set_hot_pixel_remover(self._ui.chk_use_hpr.isChecked())
         config.set_save_on_stop(self._ui.chk_save_on_stop.isChecked())
 
         if web_server_port_number_str.isdigit() and 1024 <= int(web_server_port_number_str) <= 65535:
-            config.set_www_server_port_number(web_server_port_number_str)
+            config.set_www_server_port_number(int(web_server_port_number_str))
         else:
             message = self.tr("Web server port number must be a number between 1024 and 65535")
             error_box(self.tr("Wrong value"), message)
@@ -217,7 +235,12 @@ class PreferencesDialog(QDialog):
 
         config.set_www_server_refresh_period(self._ui.spn_webpage_refresh_period.value())
 
-        config.set_debug_log(self._ui.chk_debug_logs.isChecked())
+        # debug log choice
+        debug_old_value = config.is_debug_log_on()
+        debug_new_value = self._ui.chk_debug_logs.isChecked()
+        if debug_new_value != debug_old_value:
+            config.set_debug_log(debug_new_value)
+            settings_needing_restart[LOG] = True
 
         image_save_type_to_config_mapping = {
 
@@ -231,10 +254,32 @@ class PreferencesDialog(QDialog):
                 config.set_image_save_format(image_save_type)
                 break
 
-        config.set_lang(self._ui.cmb_lang.currentData())
+        # profile choice
+        profile_old_value = config.get_profile()
+        for k, v in self._profile_config_mapping.items():
+            if v.isChecked():
+                if k != profile_old_value:
+                    settings_needing_restart[PROFILE] = True
+                    config.set_profile(k)
+                break
+
+        # lang choice
+        lang_old_value = config.get_lang()
+        lang_new_value = self._ui.cmb_lang.currentData()
+
+        if lang_new_value != lang_old_value:
+            settings_needing_restart[LANG] = True
+            config.set_lang(lang_new_value)
+
         config.set_bayer_pattern(self._ui.cmb_bayer_pattern.currentData())
 
         PreferencesDialog._save_config()
+
+        if any(settings_needing_restart.values()):
+            message = self.tr("You need to restart ALS for these changes to take effect :\n\n")
+            for k, v in settings_needing_restart.items():
+                message += f"* {k}\n" if v else ""
+            message_box(self.tr("Restart needed"), message)
 
         super().accept()
 

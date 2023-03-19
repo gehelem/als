@@ -2,13 +2,13 @@
 Holds types used for processing parameters
 """
 
-import logging
 import math
+from logging import getLogger
 from typing import Any
 
-from als.code_utilities import log
+from als.code_utilities import log, AlsLogAdapter
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 
 # pylint: disable=R0903

@@ -22,7 +22,7 @@ import sys
 from configparser import ConfigParser, DuplicateOptionError, ParsingError
 from pathlib import Path
 
-from als.code_utilities import AlsException
+from als.code_utilities import AlsException, AlsLogAdapter
 from als.model.data import IMAGE_SAVE_TYPE_JPEG, DYNAMIC_DATA
 
 _CONFIG_FILE_PATH = os.path.expanduser("~/.als.cfg")
@@ -46,6 +46,7 @@ _LANG = "lang"
 _BAYER_PATTERN = "bayer_pattern"
 _NIGHT_MODE = "night_mode"
 _SAVE_ON_STOP = "save_on_stop"
+_PROFILE = "profile"
 
 # keys used to describe logging level
 _LOG_LEVEL_DEBUG = "DEBUG"
@@ -83,6 +84,7 @@ _DEFAULTS = {
     _BAYER_PATTERN:         "AUTO",
     _NIGHT_MODE:            0,
     _SAVE_ON_STOP:          0,
+    _PROFILE:               0,
 }
 _MAIN_SECTION_NAME = "main"
 
@@ -271,6 +273,29 @@ def set_debug_log(debug_active):
         _set(_LOG_LEVEL, _LOG_LEVEL_DEBUG)
     else:
         _set(_LOG_LEVEL, _LOG_LEVEL_INFO)
+
+
+def get_profile():
+    """
+    Retrieves the configured profile.
+
+    :return: The configured profile, or its default value if config entry
+             is not parsable as an int.
+    """
+    try:
+        return int(_get(_PROFILE))
+    except ValueError:
+        return _DEFAULTS[_PROFILE]
+
+
+def set_profile(profile):
+    """
+    Sets profile.
+
+    :param profile: the profile
+    :type profile: int
+    """
+    _set(_PROFILE, profile)
 
 
 def get_www_server_port_number():
@@ -562,7 +587,7 @@ def _set(key, value):
     :type value: any
     """
     if value != _get(key):
-        _CONFIG_PARSER.set(_MAIN_SECTION_NAME, key, value)
+        _CONFIG_PARSER.set(_MAIN_SECTION_NAME, key, str(value))
 
 
 def setup():
@@ -610,7 +635,7 @@ def _setup_logging():
     Sets up logging system.
     """
 
-    global_log_format_string = '%(asctime)-15s %(threadName)-12s %(name)-20s %(levelname)-8s %(message)s'
+    global_log_format_string = '=%(threadName)-12s %(name)-20s %(levelname)-8s %(message)s'
     log_level = _LOG_LEVELS[_get(_LOG_LEVEL)]
 
     logging.basicConfig(level=log_level,
@@ -627,10 +652,11 @@ def _setup_logging():
     # in here, we maintain a list of third party loggers for which we don't want to see anything but WARNING & up
     third_party_polluters = [
         'watchdog.observers.inotify_buffer',
+        'exifread',
     ]
     for third_party_log_polluter in third_party_polluters:
         logging.getLogger(third_party_log_polluter).setLevel(logging.WARNING)
 
 
 def _get_logger():
-    return logging.getLogger(__name__)
+    return AlsLogAdapter(logging.getLogger(__name__), {})

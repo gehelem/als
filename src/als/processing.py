@@ -1,9 +1,9 @@
 """
 Provides all means of image processing
 """
-import logging
 import time
 from abc import abstractmethod
+from logging import getLogger
 from pathlib import Path
 from typing import List
 
@@ -15,7 +15,7 @@ from qimage2ndarray import array2qimage
 from scipy.signal import convolve2d
 
 from als import config
-from als.code_utilities import log, Timer, SignalingQueue, human_readable_byte_size, available_memory
+from als.code_utilities import log, Timer, SignalingQueue, human_readable_byte_size, available_memory, AlsLogAdapter
 from als.crunching import get_image_memory_size, compute_histograms_for_display
 from als.io import input as als_input
 from als.io.input import read_disk_image
@@ -25,7 +25,7 @@ from als.model.data import I18n, DYNAMIC_DATA
 from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter
 from contrib.stretch import Stretch
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 _16_BITS_MAX_VALUE = 2**16 - 1
 _HOT_PIXEL_RATIO = 2
@@ -291,10 +291,11 @@ class Levels(ImageProcessor):
                 image.data = np.clip(image.data, black.value, white.value)
                 _LOGGER.debug("Black / white level adjustments Done")
 
-            # final interpolation
-            image.data = np.float32(np.interp(image.data,
-                                              (image.data.min(), image.data.max()),
-                                              (0, _16_BITS_MAX_VALUE)))
+            # final interpolation if we touched the image
+            if do_midtones or do_black_white_levels:
+                image.data = np.float32(np.interp(image.data,
+                                                  (image.data.min(), image.data.max()),
+                                                  (0, _16_BITS_MAX_VALUE)))
 
         return image
 
@@ -341,7 +342,7 @@ class FileReader(ImageProcessor):
         reference_image = DYNAMIC_DATA.post_processor_result
         needed_memory_in_bytes = get_image_memory_size(reference_image) * 2 if reference_image else 0
         _LOGGER.debug(f"Needed memory for next image: {human_readable_byte_size(needed_memory_in_bytes)}")
-        _LOGGER.debug(f"Available system memory : {human_readable_byte_size(available_memory())}")
+        _LOGGER.debug(f" Available system memory : {human_readable_byte_size(available_memory())}")
         while available_memory() < needed_memory_in_bytes:
             _LOGGER.warning(f"Memory low ! Needed memory: {human_readable_byte_size(needed_memory_in_bytes)} "
                             f"/ Available: {human_readable_byte_size(available_memory())} Waiting...")

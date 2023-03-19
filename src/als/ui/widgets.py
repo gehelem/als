@@ -1,18 +1,18 @@
 """
 Our custom widgets
 """
-import logging
 import typing
+from logging import getLogger
 
 from PyQt5 import QtGui
 from PyQt5.QtCore import QPoint, Qt
 from PyQt5.QtGui import QPainter, QPen, QColor
 from PyQt5.QtWidgets import QSlider, QGraphicsView, QWidget
 
-from als.code_utilities import log
+from als.code_utilities import log, AlsLogAdapter
 from als.model.data import DYNAMIC_DATA
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 
 class Slider(QSlider):
@@ -76,9 +76,9 @@ class ImageView(QGraphicsView):
         :type event: QtGui.QWheelEvent
         """
         if event.angleDelta().y() > 0:
-            self.scale(ImageView._ZOOM_FACTOR, ImageView._ZOOM_FACTOR)
-        elif event.angleDelta().y() < 0:
-            self.scale(1 / ImageView._ZOOM_FACTOR, 1 / ImageView._ZOOM_FACTOR)
+            self.zoom_in()
+        else:
+            self.zoom_out()
 
     # pylint: disable=C0103
     @log
@@ -88,8 +88,22 @@ class ImageView(QGraphicsView):
 
         :param _: ignored Qt event
         """
+        self.adjustZoom()
 
+    @log
+    def adjustZoom(self):
+        """ Fir image into view """
         self.fitInView(self.scene().items()[0], Qt.KeepAspectRatio)
+
+    @log
+    def zoom_in(self):
+        """ zoom in """
+        self.scale(ImageView._ZOOM_FACTOR, ImageView._ZOOM_FACTOR)
+
+    @log
+    def zoom_out(self):
+        """ zoom out """
+        self.scale(1 / ImageView._ZOOM_FACTOR, 1 / ImageView._ZOOM_FACTOR)
 
 
 class HistogramView(QWidget):

@@ -16,22 +16,22 @@ Provides image stacking features
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import logging
+from logging import getLogger
 from multiprocessing import Process, Manager
-import platform
 
 import astroalign as al
 import numpy as np
 from PyQt5.QtCore import pyqtSignal, QT_TRANSLATE_NOOP
 from skimage.transform import SimilarityTransform
 
-from als.messaging import MESSAGE_HUB
-from als.model.data import I18n
-from als.code_utilities import log, Timer, available_memory
-from als.model.base import Image
-from als.processing import QueueConsumer
 from als import config
-_LOGGER = logging.getLogger(__name__)
+from als.code_utilities import log, Timer, AlsLogAdapter
+from als.messaging import MESSAGE_HUB
+from als.model.base import Image, RunningProfile
+from als.model.data import I18n
+from als.processing import QueueConsumer
+
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 
 class StackingError(Exception):
@@ -50,13 +50,14 @@ class Stacker(QueueConsumer):
     """Qt signal emitted when stack size changed"""
 
     @log
-    def __init__(self, stack_queue):
+    def __init__(self, stack_queue, profile: RunningProfile):
         QueueConsumer.__init__(self, "stack", stack_queue)
         self._size: int = 0
         self._last_stacking_result: Image = None
         self._align_reference: Image = None
         self._stacking_mode = I18n.STACKING_MODE_MEAN
         self._align_before_stack = True
+        self._profile = profile
 
     @property
     @log
@@ -224,7 +225,10 @@ class Stacker(QueueConsumer):
         if image.is_color():
             _LOGGER.debug(f"Aligning color image...")
 
-            do_mp = platform.system() not in ["Darwin", "Windows"]
+            # do_mp = platform.system() not in ["Darwin", "Windows"]
+            # TODO check if MP 'spawn' start method is stable, faster 
+            # and suppports frozen apps when we switch to python >= 3.8
+            do_mp = False
 
             if do_mp:
 
@@ -336,7 +340,10 @@ class Stacker(QueueConsumer):
         :raises: StackingError when no transformation is found using the whole image
         """
 
-        for ratio in [.1, .33, 1.]:
+        minimum_matches_for_valid_transform = config.get_minimum_match_count()
+        _LOGGER.debug(f"*SD-REQ* configured minimum match count: {minimum_matches_for_valid_transform}")
+
+        for ratio in self._profile.ratios:
 
             top, bottom, left, right = self._get_image_subset_boundaries(ratio)
 
@@ -353,19 +360,18 @@ class Stacker(QueueConsumer):
                               f"with ratio:{ratio} and shape: {new_subset.shape}")
 
                 transformation, matches = al.find_transform(new_subset, ref_subset)
-
-                _LOGGER.debug(f"Found transformation with subset ratio = {ratio}")
-                _LOGGER.debug(f"rotation : {transformation.rotation}")
-                _LOGGER.debug(f"translation : {transformation.translation}")
-                _LOGGER.debug(f"scale : {transformation.scale}")
                 matches_count = len(matches[0])
-                _LOGGER.debug(f"image matched features count : {matches_count}")
 
-                minimum_matches_for_valid_transform = config.get_minimum_match_count()
                 if matches_count < minimum_matches_for_valid_transform:
                     raise StackingError(f"Alignment matches count is lower than configured threshold : "
                                         f"{matches_count} < {minimum_matches_for_valid_transform}.")
 
+                _LOGGER.debug("*SD-ALIGNOK* Image matching vs ref: Accepted")
+                _LOGGER.debug(f"*SD-RATIO* Accepted transformation with subset ratio: {ratio}")
+                _LOGGER.debug(f"*SD-ROT* Accepted rotation: {transformation.rotation}")
+                _LOGGER.debug(f"*SD-TRANS* Accepted translation: {transformation.translation}")
+                _LOGGER.debug(f"*SD-SCALE* Accepted scale: {transformation.scale}")
+                _LOGGER.debug(f"*SD-MATCHES* Accepted image matched features count : {matches_count}")
                 return transformation
 
             # pylint: disable=W0703
@@ -373,6 +379,7 @@ class Stacker(QueueConsumer):
                 # we have no choice but catching Exception, here. That's what AstroAlign raises in some cases
                 # this will catch MaxIterError as well...
                 if ratio == 1.:
+                    _LOGGER.debug("*SD-ALIGNOK* Image matching vs ref: Rejected")
                     raise StackingError(alignment_error)
 
                 _LOGGER.debug(f"Could not find valid transformation on subset with ratio = {ratio}.")

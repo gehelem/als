@@ -1,17 +1,17 @@
 """
 Provides base application data
 """
-import logging
+from logging import getLogger
 from typing import List
 
 import numpy as np
 from PyQt5.QtCore import QObject
 
 import als
-from als.code_utilities import SignalingQueue, log
+from als.code_utilities import SignalingQueue, log, AlsLogAdapter
 from als.model.base import Session
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 VERSION = als.__version__
 
@@ -39,6 +39,9 @@ class I18n(QObject):
 
     SCANNER = "TEMP"
     OF = "TEMP"
+
+    PROFILE = "TEMP"
+    VISUAL = "TEMP"
 
     RUNNING_M = "TEMP"
     RUNNING_F = "TEMP"
@@ -73,6 +76,8 @@ class I18n(QObject):
         I18n.WORKER_STATUS_BUSY = self.tr("busy")
         I18n.SCANNER = self.tr("scanner")
         I18n.OF = self.tr("of")
+        I18n.PROFILE = self.tr("Profile")
+        I18n.VISUAL = self.tr("Visual")
         I18n.RUNNING_M = self.tr("running", "gender m")
         I18n.RUNNING_F = self.tr("running", "gender f")
         I18n.STOPPED_M = self.tr("stopped", "gender m")
@@ -118,6 +123,7 @@ class DynamicData:
         self.is_first_run = True
         self.post_processor_result_qimage = None
         self.last_timing = 0
+        self.total_exposure_time: int = 0
 
 
 class HistogramContainer:

@@ -19,20 +19,21 @@
 """
 Module holding all application logic
 """
-import logging
 import time
+from logging import getLogger
 from pathlib import Path
 from typing import List
 
-from PyQt5.QtCore import QFile, QT_TRANSLATE_NOOP, QCoreApplication, QThread
+from PyQt5.QtCore import QFile, QT_TRANSLATE_NOOP, QCoreApplication, QThread, QTimer
 
 from als import config
-from als.code_utilities import log, AlsException, SignalingQueue, get_text_content_of_resource, get_timestamp
+from als.code_utilities import log, AlsException, SignalingQueue, get_text_content_of_resource, get_timestamp, \
+    available_memory, AlsLogAdapter
 from als.io.input import InputScanner, ScannerStartError
 from als.io.network import get_ip, WebServer
 from als.io.output import ImageSaver
 from als.messaging import MESSAGE_HUB
-from als.model.base import Image, Session
+from als.model.base import Image, Session, VisualProfile, PhotoProfile
 from als.model.data import (
     DYNAMIC_DATA,
     I18n, STACKED_IMAGE_FILE_NAME_BASE,
@@ -43,7 +44,7 @@ from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput, Lev
     HotPixelRemover, RemoveDark, FileReader, HistogramComputer, QImageGenerator
 from als.stack import Stacker
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 
 class SessionError(AlsException):
@@ -70,6 +71,15 @@ class Controller:
     The application controller, in charge of implementing application logic
     """
 
+    EAA_PROFILE = 0
+    PHOTO_PROFILE = 1
+
+    profiles = {
+
+        EAA_PROFILE: VisualProfile(),
+        PHOTO_PROFILE: PhotoProfile()
+    }
+
     @log
     def __init__(self):
 
@@ -86,18 +96,22 @@ class Controller:
 
         self._input_scanner: InputScanner = InputScanner.create_scanner()
 
+        profile_code = config.get_profile()
+        self._profile = Controller.profiles[profile_code]
+        _LOGGER.debug(f"*SD-PROFILE* Using running profile: {profile_code}")
+
         self._pre_process_queue: SignalingQueue = DYNAMIC_DATA.pre_process_queue
         self._pre_process_pipeline: Pipeline = Pipeline(
             'pre-process',
             self._pre_process_queue,
             [FileReader(), RemoveDark(), HotPixelRemover(), Debayer(), Standardize()])
-        self._pre_process_pipeline.start(QThread.NormalPriority)
+        self._pre_process_pipeline.start(self._profile.get_pre_process_priority)
 
         self._stacker_queue: SignalingQueue = DYNAMIC_DATA.stacker_queue
-        self._stacker: Stacker = Stacker(self._stacker_queue)
+        self._stacker: Stacker = Stacker(self._stacker_queue, self._profile)
         self._stacker.stacking_mode = I18n.STACKING_MODE_MEAN
         self._stacker.align_before_stack = True
-        self._stacker.start(QThread.NormalPriority)
+        self._stacker.start(self._profile.get_stacking_priority)
 
         self._post_process_queue = DYNAMIC_DATA.process_queue
         self._post_process_pipeline: Pipeline = Pipeline(
@@ -110,7 +124,7 @@ class Controller:
         self._post_process_pipeline.add_process(self._autostretch_processor)
         self._post_process_pipeline.add_process(self._levels_processor)
         self._post_process_pipeline.add_process(self._rgb_processor)
-        self._post_process_pipeline.start(QThread.HighestPriority)
+        self._post_process_pipeline.start(self._profile.get_post_process_priority)
 
         self._saver_queue = DYNAMIC_DATA.save_queue
         self._saver = ImageSaver(self._saver_queue)
@@ -143,6 +157,15 @@ class Controller:
         self._saver.waiting_signal.connect(self.on_saver_waiting)
 
         DYNAMIC_DATA.session.status_changed_signal.connect(self._notify_model_observers)
+
+        self._metrics_timer = QTimer()
+        self._metrics_timer.setInterval(2000)
+        self._metrics_timer.timeout.connect(self.collect_metrics)
+        self._metrics_timer.start()
+
+    @log
+    def collect_metrics(self):
+        _LOGGER.debug(f"*SM-MEM* Available memory (byte): {available_memory()}")
 
     @log
     def get_autostretch_parameters(self) -> List[ProcessingParameter]:
@@ -293,8 +316,10 @@ class Controller:
         """
 
         if image.ticket in self._image_timings.keys():
-            message = QT_TRANSLATE_NOOP("", "* Full processing time for '{}' : {} s")
             delta = round(time.time() - self._image_timings[image.ticket], 3)
+
+            _LOGGER.debug(f"*SD-FRMTIME* Total frame processing time: {delta}")
+            message = QT_TRANSLATE_NOOP("", "* Full processing time for '{}' : {} s")
             DYNAMIC_DATA.last_timing = delta
             MESSAGE_HUB.dispatch_info(__name__, message, [image.ticket, delta])
 
@@ -313,6 +338,9 @@ class Controller:
         """
         image.origin = "Stacking result"
         self._last_stacking_result = image
+
+        if image.exposure_time != Image.UNDEF_EXP_TIME:
+            DYNAMIC_DATA.total_exposure_time += image.exposure_time
 
         self.purge_queue(self._post_process_queue)
         self._post_process_queue.put(image)
@@ -346,7 +374,7 @@ class Controller:
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.debug(f"New pre-processor queue size : {new_size}")
+        _LOGGER.debug(f"*SD-Q-PRE* New pre-processor queue size: {new_size}")
         self._notify_model_observers()
 
     @log
@@ -357,7 +385,7 @@ class Controller:
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.debug(f"New stacker queue size : {new_size}")
+        _LOGGER.debug(f"*SD-Q-STA* New stacker queue size : {new_size}")
         self._notify_model_observers()
 
     @log
@@ -368,7 +396,7 @@ class Controller:
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.debug(f"New post-processor queue size : {new_size}")
+        _LOGGER.debug(f"*SD-Q-POST* New post-processor queue size: {new_size}")
         self._notify_model_observers()
 
     @log
@@ -379,7 +407,7 @@ class Controller:
         :param new_size: new queue size
         :type new_size: int
         """
-        _LOGGER.debug(f"New saver queue size : {new_size}")
+        _LOGGER.debug(f"*SD-Q-SAV* New saver queue size : {new_size}")
         self._notify_model_observers()
 
     @log
@@ -460,6 +488,7 @@ class Controller:
                 self._stacker.reset()
                 self._image_timings.clear()
                 DYNAMIC_DATA.last_timing = 0
+                DYNAMIC_DATA.total_exposure_time = 0
 
                 # checking presence of critical folders
                 critical_folders_dict = {
@@ -511,6 +540,7 @@ class Controller:
         Stops session : stop input scanner and purge input queue
         """
         if not DYNAMIC_DATA.session.is_stopped:
+            self._image_timings.clear()
             DYNAMIC_DATA.session.set_status(Session.stopped)
             self._stop_input_scanner()
             Controller.purge_queue(self._pre_process_queue)
