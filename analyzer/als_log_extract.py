@@ -51,7 +51,7 @@ def main():
         lines = logfile.readlines()
 
     # reassemble multiline entries
-    buffer: str = "START"
+    buffer: str = "START START START"
     entries = list()
     for line in lines:
         line = line.replace("\n", "")
@@ -80,6 +80,34 @@ def main():
     print("Exporting session data...")
     print(SUB_SECTION)
     write_csv("session", csv_out_folder, extract_session_data(entries))
+
+    print(SECTION)
+    print("Exporting issues...")
+    print(SUB_SECTION)
+    issues_entries = filter(lambda l: re.split("\\s+", l)[2] in ['ERROR', 'WARNING'], entries)
+    write_csv("issues", csv_out_folder, extract_issues(issues_entries))
+
+
+def extract_issues(entries):
+
+    issues_dict = {
+        "timestamp": [],
+        "thread": [],
+        "module": [],
+        "level": [],
+        "message": []
+    }
+
+    for entry in entries:
+
+        tokens = tokenize(entry)
+        issues_dict['timestamp'].append(" ".join(tokens[3:5]))
+        issues_dict['thread'].append(tokens[0])
+        issues_dict['module'].append(tokens[1])
+        issues_dict['level'].append(tokens[2])
+        issues_dict['message'].append(" ".join(tokens[5:]))
+
+    return issues_dict
 
 
 def extract_functions_returns(function_returns):

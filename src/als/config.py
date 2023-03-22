@@ -677,9 +677,10 @@ def _setup_logging():
     third_party_polluters = [
         'watchdog.observers.inotify_buffer',
         'exifread',
+        'astropy',
     ]
     for third_party_log_polluter in third_party_polluters:
-        logging.getLogger(third_party_log_polluter).setLevel(logging.WARNING)
+        logging.getLogger(third_party_log_polluter).setLevel(logging.CRITICAL)
 
 
 def _get_logger():
