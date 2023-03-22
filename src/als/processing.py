@@ -331,22 +331,30 @@ class FileReader(ImageProcessor):
     """
     Handles image read from file
     """
+    MEMORY_CODES_MAPPING = {
+
+        0: 256 * 1024 ** 2,
+        1: 512 * 1024 ** 2,
+        2: 1024 ** 3,
+        3: 2 * 1024 ** 3
+    }
 
     # //FIXME : BEWARE, in this specific processor, what we actually process is file paths, not image objects
     def process_image(self, image: Image):
         image_path = image
 
         # TODO: Move this logic to Controller somehow
-        #       Checking if available memory is twice as big as what an image requires
-        #       twice because we preallocate a copy when aligning...
-        reference_image = DYNAMIC_DATA.post_processor_result
-        needed_memory_in_bytes = get_image_memory_size(reference_image) * 2 if reference_image else 0
-        _LOGGER.debug(f"Needed memory for next image: {human_readable_byte_size(needed_memory_in_bytes)}")
+        ram_to_preserve = FileReader.MEMORY_CODES_MAPPING[config.get_preserved_mem()]
+
+        _LOGGER.debug(f"RAM amount to preserve: {human_readable_byte_size(ram_to_preserve)}")
         _LOGGER.debug(f" Available system memory : {human_readable_byte_size(available_memory())}")
-        while available_memory() < needed_memory_in_bytes:
-            _LOGGER.warning(f"Memory low ! Needed memory: {human_readable_byte_size(needed_memory_in_bytes)} "
-                            f"/ Available: {human_readable_byte_size(available_memory())} Waiting...")
-            time.sleep(1)
+
+        while available_memory() < ram_to_preserve:
+            _LOGGER.info(f"RAM amount to preserve: {human_readable_byte_size(ram_to_preserve)} "
+                         f"/ Available: {human_readable_byte_size(available_memory())}. Waiting...")
+            time.sleep(.2)
+
+        _LOGGER.debug('RAM amount is OK. Reading new file...')
 
         image = read_disk_image(Path(image_path))
         if image:
@@ -562,10 +570,6 @@ class ConvertForOutput(ImageProcessor):
     """
     @log
     def process_image(self, image: Image):
-
-        # make sure  that our changes are made on a copy of the received image.
-        # So whoever kept a ref to it won't be affected
-        image = image.clone()
 
         if image.is_color():
             image.set_color_axis_as(2)

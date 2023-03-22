@@ -47,6 +47,7 @@ _BAYER_PATTERN = "bayer_pattern"
 _NIGHT_MODE = "night_mode"
 _SAVE_ON_STOP = "save_on_stop"
 _PROFILE = "profile"
+_PRESERVED_MEM = "preserved_mem"
 
 # keys used to describe logging level
 _LOG_LEVEL_DEBUG = "DEBUG"
@@ -85,6 +86,7 @@ _DEFAULTS = {
     _NIGHT_MODE:            0,
     _SAVE_ON_STOP:          0,
     _PROFILE:               0,
+    _PRESERVED_MEM:         1,
 }
 _MAIN_SECTION_NAME = "main"
 
@@ -319,6 +321,28 @@ def set_www_server_port_number(port_number):
     :type port_number: int
     """
     _set(_WWW_SERVER_PORT, port_number)
+
+
+def get_preserved_mem():
+    """
+    Retrieves the configured preserved memory amount
+
+    :return: The configured preserved memory amount
+    """
+    try:
+        return int(_get(_PRESERVED_MEM))
+    except ValueError:
+        return _DEFAULTS[_PRESERVED_MEM]
+
+
+def set_preserved_mem(code):
+    """
+    Sets preserved memory amount
+
+    :param code: see values mapping in config._MEMORY_CODES_MAPPING dict
+    :type code: int
+    """
+    _set(_PRESERVED_MEM, code)
 
 
 def get_www_server_refresh_period():
