@@ -43,7 +43,7 @@ class StackingError(Exception):
 # pylint: disable=R0902
 class Stacker(QueueConsumer):
     """
-    Responsible of image stacking : alignment and registration
+    Responsible for image stacking : alignment and registration
     """
 
     stack_size_changed_signal = pyqtSignal(int)

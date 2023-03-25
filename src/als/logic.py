@@ -104,7 +104,7 @@ class Controller:
         self._pre_process_pipeline: Pipeline = Pipeline(
             'pre-process',
             self._pre_process_queue,
-            [FileReader(), RemoveDark(), HotPixelRemover(), Debayer(), Standardize()])
+            [FileReader(self._profile), RemoveDark(), HotPixelRemover(), Debayer(), Standardize()])
         self._pre_process_pipeline.start(self._profile.get_pre_process_priority)
 
         self._stacker_queue: SignalingQueue = DYNAMIC_DATA.stacker_queue

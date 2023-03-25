@@ -9,18 +9,18 @@ from typing import List
 
 import cv2
 import numpy as np
-from PyQt5.QtCore import QThread, pyqtSignal, QT_TRANSLATE_NOOP
+from PyQt5.QtCore import QThread, pyqtSignal, QT_TRANSLATE_NOOP, QFileInfo
 from PyQt5.QtGui import QPixmap
 from qimage2ndarray import array2qimage
 from scipy.signal import convolve2d
 
 from als import config
 from als.code_utilities import log, Timer, SignalingQueue, human_readable_byte_size, available_memory, AlsLogAdapter
-from als.crunching import get_image_memory_size, compute_histograms_for_display
+from als.crunching import compute_histograms_for_display
 from als.io import input as als_input
 from als.io.input import read_disk_image
 from als.messaging import MESSAGE_HUB
-from als.model.base import Image
+from als.model.base import Image, RunningProfile
 from als.model.data import I18n, DYNAMIC_DATA
 from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter
 from contrib.stretch import Stretch
@@ -331,6 +331,11 @@ class FileReader(ImageProcessor):
     """
     Handles image read from file
     """
+
+    def __init__(self, profile: RunningProfile):
+        super().__init__()
+        self._profile = profile
+
     MEMORY_CODES_MAPPING = {
 
         0: 256 * 1024 ** 2,
@@ -355,6 +360,22 @@ class FileReader(ImageProcessor):
             time.sleep(.2)
 
         _LOGGER.debug('RAM amount is OK. Reading new file...')
+
+        file_is_complete = False
+        last_file_size = -1
+
+        while not file_is_complete:
+            size = QFileInfo(image_path).size()
+            _LOGGER.debug(f"File {image_path}'s size = {size}")
+
+            if size == last_file_size:
+                file_is_complete = True
+                _LOGGER.debug(f"File {image_path} is ready to be read")
+
+            last_file_size = size
+
+            if not file_is_complete:
+                time.sleep(self._profile.get_file_read_size_polling_period)
 
         image = read_disk_image(Path(image_path))
         if image:
