@@ -1,26 +1,25 @@
 """
 Main module, basically in charge of application init / start
 """
+import argparse
 import locale
-import logging
-import multiprocessing
 import os
 import platform
 import sys
+from logging import getLogger
 
-import argparse
 import psutil
 from PyQt5.QtCore import QTranslator, QT_TRANSLATE_NOOP, QThread, Qt
 from PyQt5.QtWidgets import QApplication
 
 from als import config
-from als.code_utilities import Timer, human_readable_byte_size, available_memory
+from als.code_utilities import Timer, human_readable_byte_size, available_memory, AlsLogAdapter
 from als.logic import Controller
 from als.messaging import MESSAGE_HUB
 from als.model.data import I18n, VERSION
 from als.ui.windows import MainWindow
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 
 def log_sys_info():
@@ -38,7 +37,8 @@ def log_sys_info():
     _LOGGER.debug(f"OS name               : {platform.system()}")
     _LOGGER.debug(f"OS release            : {platform.release()}")
     _LOGGER.debug(f"Available memory      : {human_readable_byte_size(available_memory())}")
-    _LOGGER.debug(f"Python version        : {sys.version}")
+    python_version = sys.version.replace('\n', '')
+    _LOGGER.debug(f"Python version        : {python_version}")
     _LOGGER.debug('System info dump - END')
     _LOGGER.debug("***************************************************************************")
 

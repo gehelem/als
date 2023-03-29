@@ -1,16 +1,16 @@
 """
 Provide logic for mapping processing params < = > GUI controls
 """
-import logging
+from logging import getLogger
 from typing import List, Any
 
 from PyQt5.QtWidgets import QWidget, QSlider, QCheckBox, QComboBox
 
-from als.code_utilities import AlsException, log
+from als.code_utilities import AlsException, log, AlsLogAdapter
 from als.model.params import ProcessingParameter, RangeParameter, SwitchParameter, ListParameter
 from als.ui.widgets import Slider
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 
 class UnsupportedParamMapping(AlsException):

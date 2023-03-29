@@ -3,21 +3,21 @@ Everything we need to perform outputs from ALS
 
 For now, we only save some images to disk, but who knows...
 """
-import logging
 import os
 import sys
+from logging import getLogger
 from pathlib import Path
 
 import cv2
 from PyQt5.QtCore import QT_TRANSLATE_NOOP
 
 import als.model.data
-from als.code_utilities import log, SignalingQueue
+from als.code_utilities import log, SignalingQueue, AlsLogAdapter
 from als.messaging import MESSAGE_HUB
 from als.model.base import Image
 from als.processing import QueueConsumer
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 
 class ImageSaver(QueueConsumer):

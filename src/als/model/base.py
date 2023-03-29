@@ -1,14 +1,14 @@
 """
 Provide base application data types
 """
-import logging
+from logging import getLogger
 
 import numpy as np
 from PyQt5.QtCore import pyqtSignal, QObject, QThread
 
-from als.code_utilities import log
+from als.code_utilities import log, AlsLogAdapter
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 
 class Session(QObject):
@@ -76,6 +76,8 @@ class Session(QObject):
 
 # pylint: disable=too-many-instance-attributes
 class Image:
+
+    UNDEF_EXP_TIME = -1
     """
     Represents an image, our basic processing object.
 
@@ -100,6 +102,7 @@ class Image:
         self._origin: str = "UNDEFINED"
         self._destination: str = "UNDEFINED"
         self._ticket = ""
+        self._exposure_time: float = Image.UNDEF_EXP_TIME
 
     @log
     def clone(self, keep_ref_to_data=False):
@@ -118,7 +121,16 @@ class Image:
         new_image.origin = self.origin
         new_image.destination = self.destination
         new_image.ticket = self.ticket
+        new_image.exposure_time = self.exposure_time
         return new_image
+
+    @property
+    def exposure_time(self):
+        return self._exposure_time
+
+    @exposure_time.setter
+    def exposure_time(self, value):
+        self._exposure_time = value
 
     @property
     def destination(self):
@@ -307,6 +319,7 @@ class Image:
         representation = (f'{self.__class__.__name__}('
                           f'ID={self.__hash__()}, '
                           f'Color={self.is_color()}, '
+                          f'Exp. t={self.exposure_time}, '
                           f'Needs Debayer={self.needs_debayering()}, '
                           f'Bayer Pattern={self.bayer_pattern}, '
                           f'Width={self.width}, '
@@ -327,6 +340,7 @@ class RunningProfile:
         self._pre_process_priority: int = -1
         self._stacking_priority: int = -1
         self._post_process_priority: int = -1
+        self._file_read_size_polling_period: float = -1
 
     @property
     def ratios(self):
@@ -344,6 +358,10 @@ class RunningProfile:
     def get_post_process_priority(self):
         return self._post_process_priority
 
+    @property
+    def get_file_read_size_polling_period(self):
+        return self._file_read_size_polling_period
+
 
 class VisualProfile(RunningProfile):
 
@@ -354,6 +372,7 @@ class VisualProfile(RunningProfile):
         self._pre_process_priority = QThread.HighestPriority
         self._stacking_priority = QThread.HighestPriority
         self._post_process_priority = QThread.LowPriority
+        self._file_read_size_polling_period = .01
 
 
 class PhotoProfile(RunningProfile):
@@ -365,3 +384,4 @@ class PhotoProfile(RunningProfile):
         self._pre_process_priority = QThread.LowPriority
         self._stacking_priority = QThread.LowPriority
         self._post_process_priority = QThread.HighestPriority
+        self._file_read_size_polling_period = .5

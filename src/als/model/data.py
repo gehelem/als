@@ -1,17 +1,17 @@
 """
 Provides base application data
 """
-import logging
+from logging import getLogger
 from typing import List
 
 import numpy as np
 from PyQt5.QtCore import QObject
 
 import als
-from als.code_utilities import SignalingQueue, log
+from als.code_utilities import SignalingQueue, log, AlsLogAdapter
 from als.model.base import Session
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 VERSION = als.__version__
 
@@ -123,6 +123,7 @@ class DynamicData:
         self.is_first_run = True
         self.post_processor_result_qimage = None
         self.last_timing = 0
+        self.total_exposure_time: int = 0
 
 
 class HistogramContainer:

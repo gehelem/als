@@ -19,8 +19,8 @@
 """
 Module holding all application logic
 """
-import logging
 import time
+from logging import getLogger
 from pathlib import Path
 from typing import List
 
@@ -28,7 +28,7 @@ from PyQt5.QtCore import QFile, QT_TRANSLATE_NOOP, QCoreApplication, QThread, QT
 
 from als import config
 from als.code_utilities import log, AlsException, SignalingQueue, get_text_content_of_resource, get_timestamp, \
-    available_memory
+    available_memory, AlsLogAdapter
 from als.io.input import InputScanner, ScannerStartError
 from als.io.network import get_ip, WebServer
 from als.io.output import ImageSaver
@@ -44,7 +44,7 @@ from als.processing import Pipeline, Debayer, Standardize, ConvertForOutput, Lev
     HotPixelRemover, RemoveDark, FileReader, HistogramComputer, QImageGenerator
 from als.stack import Stacker
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 
 
 class SessionError(AlsException):
@@ -104,7 +104,7 @@ class Controller:
         self._pre_process_pipeline: Pipeline = Pipeline(
             'pre-process',
             self._pre_process_queue,
-            [FileReader(), RemoveDark(), HotPixelRemover(), Debayer(), Standardize()])
+            [FileReader(self._profile), RemoveDark(), HotPixelRemover(), Debayer(), Standardize()])
         self._pre_process_pipeline.start(self._profile.get_pre_process_priority)
 
         self._stacker_queue: SignalingQueue = DYNAMIC_DATA.stacker_queue
@@ -339,6 +339,9 @@ class Controller:
         image.origin = "Stacking result"
         self._last_stacking_result = image
 
+        if image.exposure_time != Image.UNDEF_EXP_TIME:
+            DYNAMIC_DATA.total_exposure_time += image.exposure_time
+
         self.purge_queue(self._post_process_queue)
         self._post_process_queue.put(image)
 
@@ -485,6 +488,7 @@ class Controller:
                 self._stacker.reset()
                 self._image_timings.clear()
                 DYNAMIC_DATA.last_timing = 0
+                DYNAMIC_DATA.total_exposure_time = 0
 
                 # checking presence of critical folders
                 critical_folders_dict = {

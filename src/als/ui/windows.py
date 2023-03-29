@@ -1,7 +1,8 @@
 """
 Holds all windows used in the app
 """
-import logging
+import datetime
+from logging import getLogger
 from os import linesep
 
 from PyQt5.QtCore import pyqtSlot, Qt
@@ -11,7 +12,7 @@ from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QD
 
 import als.model.data
 from als import config
-from als.code_utilities import log, get_text_content_of_resource
+from als.code_utilities import log, get_text_content_of_resource, AlsLogAdapter
 from als.config import CouldNotSaveConfig
 from als.logic import Controller, SessionError, CriticalFolderMissing, WebServerFailedToStart, WebServerOnLoopback
 from als.messaging import MESSAGE_HUB
@@ -22,7 +23,7 @@ from als.ui.params_utils import update_controls_from_params, update_params_from_
     set_sliders_defaults
 from generated.als_ui import Ui_stack_window
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = AlsLogAdapter(getLogger(__name__), {})
 _INFO_LOG_TAG = 'INFO'
 
 
@@ -138,6 +139,12 @@ class MainWindow(QMainWindow):
         self.reset_image_view()
 
         # setup statusbar
+        self._lbl_statusbar_frame_total_proc = QLabel(self._ui.statusBar)
+        self._lbl_statusbar_frame_total_proc.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+
+        self._lbl_statusbar_stack_exposure = QLabel(self._ui.statusBar)
+        self._lbl_statusbar_stack_exposure.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+
         self._lbl_statusbar_session_status = QLabel(self._ui.statusBar)
         self._lbl_statusbar_session_status.setFrameStyle(QFrame.Panel | QFrame.Sunken)
 
@@ -156,7 +163,9 @@ class MainWindow(QMainWindow):
         self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_session_status)
         self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_scanner_status)
         self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_stack_size)
+        self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_stack_exposure)
         self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_web_server_status)
+        self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_frame_total_proc)
 
         self._ui.action_night_mode.setChecked(config.get_night_mode_active())
 
@@ -729,11 +738,6 @@ class MainWindow(QMainWindow):
             session_is_stopped = session.is_stopped
             session_is_paused = session.is_paused
 
-            # update scanner statuses
-            scanner_status_message = f"{I18n.SCANNER} {I18n.OF} {config.get_scan_folder_path()} : "
-            scanner_status_message += f"{I18n.RUNNING_M}" if session_is_running else f"{I18n.STOPPED_M}"
-            self._lbl_statusbar_scanner_status.setText(scanner_status_message)
-
             # update web server status
             if web_server_is_running:
                 url = f"http://{DYNAMIC_DATA.web_server_ip}:{config.get_www_server_port_number()}"
@@ -743,7 +747,6 @@ class MainWindow(QMainWindow):
                 webserver_status = I18n.STOPPED_M
                 self._ui.action_qrcode.setDisabled(True)
 
-            self._lbl_statusbar_web_server_status.setText(f"{I18n.WEB_SERVER} : {webserver_status}")
             self._ui.lbl_web_server_status_main.setText(f"{webserver_status}")
 
             if session_is_stopped:
@@ -755,8 +758,8 @@ class MainWindow(QMainWindow):
             else:
                 # this should never happen, that's why we check ;)
                 session_status = "### BUG !"
+
             self._ui.lbl_session_status.setText(f"{session_status}")
-            self._lbl_statusbar_session_status.setText(f"{I18n.SESSION} {session_status}")
 
             # handle Start / Pause / Stop  buttons
             self._ui.pbPlay.setEnabled(session_is_stopped or session_is_paused)
@@ -771,10 +774,26 @@ class MainWindow(QMainWindow):
             self._ui.btn_web_start.setEnabled(not web_server_is_running)
             self._ui.btn_web_stop.setEnabled(web_server_is_running)
 
-            # update stack size
+            # update stack size and total exposure time
             stack_size_str = str(DYNAMIC_DATA.stack_size)
             self._ui.lbl_stack_size.setText(stack_size_str)
+            if DYNAMIC_DATA.total_exposure_time == 0:
+                exposure_time_str = "n/a"
+            else:
+                exposure_time_str = str(datetime.timedelta(seconds=int(round(DYNAMIC_DATA.total_exposure_time, 0))))
+            self._ui.lbl_stack_exposure.setText(exposure_time_str)
+
+            # update statusbar labels
+            scanner_status_message = f"{I18n.SCANNER} {I18n.OF} {config.get_scan_folder_path()} : "
+            scanner_status_message += f"{I18n.RUNNING_M}" if session_is_running else f"{I18n.STOPPED_M}"
+            self._lbl_statusbar_scanner_status.setText(scanner_status_message)
+            self._lbl_statusbar_web_server_status.setText(f"{I18n.WEB_SERVER} : {webserver_status}")
+            self._lbl_statusbar_session_status.setText(f"{I18n.SESSION} {session_status}")
             self._lbl_statusbar_stack_size.setText(f"{I18n.STACK_SIZE} : {stack_size_str}")
+            self._lbl_statusbar_stack_exposure.setText(
+                self.tr("Total stack exp. time: {}").format(exposure_time_str))
+            self._lbl_statusbar_frame_total_proc.setText(
+                self.tr("Total frame proc. time: {} s").format(f"{DYNAMIC_DATA.last_timing:6.1f}"))
 
             # update queues sizes
             self._ui.lbl_pre_process_queue_size.setText(str(DYNAMIC_DATA.pre_process_queue.qsize()))
@@ -803,8 +822,6 @@ class MainWindow(QMainWindow):
             # disable color balance controls on B&W image
             if DYNAMIC_DATA.post_processor_result:
                 self._ui.rgbProcessBox.setEnabled(DYNAMIC_DATA.post_processor_result.is_color())
-
-            self._ui.lbl_last_timing.setText(self.tr("Last image total time: {} s").format(DYNAMIC_DATA.last_timing))
 
             self._ui.sld_align_threshold.setValue(config.get_minimum_match_count())
             self._ui.lbl_align_threshold.setText(str(self._ui.sld_align_threshold.value()))

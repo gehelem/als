@@ -22,7 +22,7 @@ import sys
 from configparser import ConfigParser, DuplicateOptionError, ParsingError
 from pathlib import Path
 
-from als.code_utilities import AlsException
+from als.code_utilities import AlsException, AlsLogAdapter
 from als.model.data import IMAGE_SAVE_TYPE_JPEG, DYNAMIC_DATA
 
 _CONFIG_FILE_PATH = os.path.expanduser("~/.als.cfg")
@@ -47,6 +47,7 @@ _BAYER_PATTERN = "bayer_pattern"
 _NIGHT_MODE = "night_mode"
 _SAVE_ON_STOP = "save_on_stop"
 _PROFILE = "profile"
+_PRESERVED_MEM = "preserved_mem"
 
 # keys used to describe logging level
 _LOG_LEVEL_DEBUG = "DEBUG"
@@ -85,6 +86,7 @@ _DEFAULTS = {
     _NIGHT_MODE:            0,
     _SAVE_ON_STOP:          0,
     _PROFILE:               0,
+    _PRESERVED_MEM:         1,
 }
 _MAIN_SECTION_NAME = "main"
 
@@ -319,6 +321,28 @@ def set_www_server_port_number(port_number):
     :type port_number: int
     """
     _set(_WWW_SERVER_PORT, port_number)
+
+
+def get_preserved_mem():
+    """
+    Retrieves the configured preserved memory amount
+
+    :return: The configured preserved memory amount
+    """
+    try:
+        return int(_get(_PRESERVED_MEM))
+    except ValueError:
+        return _DEFAULTS[_PRESERVED_MEM]
+
+
+def set_preserved_mem(code):
+    """
+    Sets preserved memory amount
+
+    :param code: see values mapping in config._MEMORY_CODES_MAPPING dict
+    :type code: int
+    """
+    _set(_PRESERVED_MEM, code)
 
 
 def get_www_server_refresh_period():
@@ -635,7 +659,7 @@ def _setup_logging():
     Sets up logging system.
     """
 
-    global_log_format_string = '%(asctime)-15s %(threadName)-12s %(name)-20s %(levelname)-8s %(message)s'
+    global_log_format_string = '=%(threadName)-12s %(name)-20s %(levelname)-8s %(message)s'
     log_level = _LOG_LEVELS[_get(_LOG_LEVEL)]
 
     logging.basicConfig(level=log_level,
@@ -652,10 +676,12 @@ def _setup_logging():
     # in here, we maintain a list of third party loggers for which we don't want to see anything but WARNING & up
     third_party_polluters = [
         'watchdog.observers.inotify_buffer',
+        'exifread',
+        'astropy',
     ]
     for third_party_log_polluter in third_party_polluters:
-        logging.getLogger(third_party_log_polluter).setLevel(logging.WARNING)
+        logging.getLogger(third_party_log_polluter).setLevel(logging.CRITICAL)
 
 
 def _get_logger():
-    return logging.getLogger(__name__)
+    return AlsLogAdapter(logging.getLogger(__name__), {})
