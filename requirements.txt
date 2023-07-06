@@ -23,7 +23,7 @@ exifread
 
 # transitive dependency pinning
 llvmlite==0.32.1
-scipy==1.4.1
+scipy==1.10.0
 matplotlib==3.2.1
 Pillow==7.1.2
 pandas==1.0.4
