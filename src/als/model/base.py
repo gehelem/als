@@ -103,6 +103,8 @@ class Image:
         self._destination: str = "UNDEFINED"
         self._ticket = ""
         self._exposure_time: float = Image.UNDEF_EXP_TIME
+        self._total_exposure_time: float = Image.UNDEF_EXP_TIME
+        self._stack_size = 0
 
     @log
     def clone(self, keep_ref_to_data=False):
@@ -122,7 +124,25 @@ class Image:
         new_image.destination = self.destination
         new_image.ticket = self.ticket
         new_image.exposure_time = self.exposure_time
+        new_image.total_exposure_time = self.total_exposure_time
+        new_image.stack_size = self.stack_size
         return new_image
+
+    @property
+    def stack_size(self):
+        return self._stack_size
+
+    @stack_size.setter
+    def stack_size(self, value):
+        self._stack_size = value
+
+    @property
+    def total_exposure_time(self):
+        return self._total_exposure_time
+
+    @total_exposure_time.setter
+    def total_exposure_time(self, value):
+        self._total_exposure_time = value
 
     @property
     def exposure_time(self):

@@ -9,6 +9,9 @@ from logging import getLogger
 from pathlib import Path
 
 import cv2
+import json
+from PIL import Image as PILImage
+from PIL import ExifTags
 from PyQt5.QtCore import QT_TRANSLATE_NOOP
 
 import als.model.data
@@ -168,14 +171,30 @@ class ImageSaver(QueueConsumer):
 
           - True if save succeeded, False otherwise
           - Details on cause of save failure, if occurs
-
-        As we are using cv2.imwrite, we won't get any details on failures. So failure details will always
-        be the empty string.
         """
         # here we are sure that image data type is unsigned 16 bits. We need to downscale to 8 bits
         image.data = (image.data / (((2 ** 16) - 1) / ((2 ** 8) - 1))).astype('uint8')
         cv2_color_conversion_flag = cv2.COLOR_RGB2BGR if image.is_color() else cv2.COLOR_GRAY2BGR
+        image_data_rgb = cv2.cvtColor(image.data, cv2_color_conversion_flag)
 
-        return cv2.imwrite(target_path,
-                           cv2.cvtColor(image.data, cv2_color_conversion_flag),
-                           [int(cv2.IMWRITE_JPEG_QUALITY), 100]), ''
+        # Prepare EXIF
+        user_comment = {
+            "stack_size": image.stack_size,
+            "total_exposure_time": image.total_exposure_time
+        }
+
+        # Prepare output image
+        pilimage = PILImage.fromarray(image_data_rgb)
+        exif = pilimage.getexif()
+        exif[ExifTags.Base.ImageDescription] = json.dumps(user_comment)
+        exif[ExifTags.Base.Software] = 'Astro Live Stacker'
+        exif[ExifTags.Base.CompositeImage] = 2 # 2 = General Composite Image
+        exif[ExifTags.Base.CompositeImageCount] = image.stack_size
+        exif[ExifTags.Base.ExposureTime] = image.total_exposure_time
+
+        # Save image
+        try:
+            pilimage.save(target_path, exif=exif, quality=100)
+            return True, None
+        except Exception as e:
+            return False, str(e)

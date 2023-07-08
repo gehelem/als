@@ -699,6 +699,8 @@ class Controller:
             filename_base += '-' + get_timestamp().replace(' ', "-").replace(":", '-').replace('.', '-')
 
         image_to_save = image.clone(keep_ref_to_data=True)
+        image_to_save.total_exposure_time = DYNAMIC_DATA.total_exposure_time
+        image_to_save.stack_size = DYNAMIC_DATA.stack_size
         image_to_save.destination = dest_folder_path + "/" + filename_base + '.' + file_extension
         self._saver_queue.put(image_to_save)
 
