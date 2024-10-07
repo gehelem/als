@@ -68,13 +68,15 @@ class ImageSaver(QueueConsumer):
 
         if pre_save_is_successful:
 
+            actual_destination = str(Path(image.destination))
+
             failure_details = ""
             try:
 
-                if sys.platform == 'win32':
-                    os.remove(image.destination)
+                if sys.platform == 'win32' and Path(actual_destination).exists():
+                    os.remove(actual_destination)
 
-                os.rename(target_path, image.destination)
+                os.rename(target_path, actual_destination)
                 post_save_is_successful = True
 
             except OSError:
@@ -88,9 +90,7 @@ class ImageSaver(QueueConsumer):
             MESSAGE_HUB.dispatch_info(
                 __name__,
                 QT_TRANSLATE_NOOP("", "Image saved : {}"),
-                [
-                    ((os.getcwd() + os.sep) if sys.platform == 'win32' else "") + image.destination,
-                ]
+                [image.destination]
             )
 
         else:
