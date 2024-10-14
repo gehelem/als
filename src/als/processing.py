@@ -17,8 +17,8 @@ from scipy.signal import convolve2d
 from als import config
 from als.code_utilities import log, Timer, SignalingQueue, human_readable_byte_size, available_memory, AlsLogAdapter
 from als.crunching import compute_histograms_for_display
-from als.io import input as als_input
-from als.io.input import read_disk_image
+from als.streams import input as als_input
+from als.streams.input import read_disk_image
 from als.messaging import MESSAGE_HUB
 from als.model.base import Image, RunningProfile
 from als.model.data import I18n, DYNAMIC_DATA
