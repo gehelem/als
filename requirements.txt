@@ -16,7 +16,7 @@ coverage==4.5.4
 numba==0.45.1
 sphinx-rtd-theme==0.4.3
 psutil==5.6.6
-PyInstaller==3.6
+PyInstaller==4.10
 qrcode==7.3.1
 exifread
 

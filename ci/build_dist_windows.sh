@@ -17,34 +17,12 @@ pip install setuptools
 pip install $(grep numpy requirements.txt)
 pip install -r requirements.txt
 pip install --upgrade astroid==2.2.0
-
 python setup.py develop
 
 ./ci/pylint.sh
 
-tags=$(git tag --contains HEAD)
-
-if [ -z "${tags}" ]
-then
-  tag_count=0
-else
-  tag_count=$(echo "${tags}" | wc -l)
-fi
-
-if [ ${tag_count} -gt 1 ]
-then
-    echo "More that one tag exist on HEAD. Cancelling ..."
-    exit 1
-fi
-
-if [ $tag_count -eq 1 ]
-then
-  VERSION=$(git tag --contains HEAD)
-else
-  VERSION=$(grep version src/als/version.py | cut -d'"' -f2)-$(git rev-parse --short HEAD)
-fi
-
-VERSION=$(echo ${VERSION} | sed "s/^v//")
+VERSION=$(echo ${ALS_VERSION_STRING} | sed "s/^v//")
+artifact_name="als-${VERSION}"
 echo "version = \"${VERSION}\"" > src/als/version.py
 
 VERPARTS=(${VERSION//-/ })
@@ -58,8 +36,7 @@ done
 
 VERCODE=$(echo ${VERNUM} | sed "s/\./, /g")
 
-echo "Building package version: ${VERSION}"
-
+echo "Building package ${artifact_name}.exe ..."
 sed -e "s/##VERSION##/${VERSION}/g" -e "s/##VERCODE##/${VERCODE}/g" ci/file_version_info_template.txt > ci/file_version_info.txt
-
-pyinstaller -i src/resources/als_logo.ico -F -n als --windowed --version-file=ci/file_version_info.txt --add-data 'src/resources/qt.conf:.' src/als/main.py
+pyinstaller -i src/resources/als_logo.ico -F -n ${artifact_name} --windowed --version-file=ci/file_version_info.txt --add-data 'src/resources/qt.conf:.' src/als/main.py
+echo "Build of package ${artifact_name}.exe completed OK."
