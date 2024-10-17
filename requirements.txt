@@ -32,7 +32,7 @@ more_itertools==8.3.0
 networkx==2.4
 attrs==19.3.0
 certifi==2020.4.5.2
-idna==2.9
+idna==3.7
 imageio==2.8.0
 py==1.8.1
 Pygments==2.6.1
