@@ -38,6 +38,6 @@ py==1.8.1
 Pygments==2.6.1
 PyQt5_sip==12.8.0
 requests==2.23.0
-urllib3==1.25.9
+urllib3==1.26.19
 wcwidth==0.2.4
 kiwisolver==1.3.1
