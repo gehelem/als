@@ -340,6 +340,7 @@ class RunningProfile:
         self._pre_process_priority: int = -1
         self._stacking_priority: int = -1
         self._post_process_priority: int = -1
+        self._file_read_size_polling_period: float = -1
 
     @property
     def ratios(self):
@@ -357,6 +358,10 @@ class RunningProfile:
     def get_post_process_priority(self):
         return self._post_process_priority
 
+    @property
+    def get_file_read_size_polling_period(self):
+        return self._file_read_size_polling_period
+
 
 class VisualProfile(RunningProfile):
 
@@ -367,6 +372,7 @@ class VisualProfile(RunningProfile):
         self._pre_process_priority = QThread.HighestPriority
         self._stacking_priority = QThread.HighestPriority
         self._post_process_priority = QThread.LowPriority
+        self._file_read_size_polling_period = .01
 
 
 class PhotoProfile(RunningProfile):
@@ -378,3 +384,4 @@ class PhotoProfile(RunningProfile):
         self._pre_process_priority = QThread.LowPriority
         self._stacking_priority = QThread.LowPriority
         self._post_process_priority = QThread.HighestPriority
+        self._file_read_size_polling_period = .5

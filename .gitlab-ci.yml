@@ -1,0 +1,67 @@
+default:
+    interruptible: true
+
+stages:
+  - setup
+  - validate
+  - build
+  - deploy
+  - changelog
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_PIPELINE_SOURCE == "push"
+      when: never
+
+Setup Build:
+  extends: .default-job
+  tags:
+  - infra
+  stage: setup
+  script:
+    - ci/setup_build.sh
+  artifacts:
+    reports:
+      dotenv: .dotenv
+
+
+Build PC/Linux:
+  extends: .default-job
+  tags:
+  - amd_64
+  - linux
+  stage: build
+  timeout: 20m
+  script:
+    - ci/build_dist_amd64_linux.sh
+  after_script:
+    - pyenv virtualenv-delete -f alsbuild$CI_PIPELINE_ID
+  artifacts:
+    name: als-amd64-linux-build$CI_PIPELINE_ID
+    expose_as: ALS for amd64 Linux
+    paths:
+      - dist/als-$ALS_VERSION_STRING.run
+
+
+Build PC/Windows:
+  extends: .default-job
+  tags:
+  - amd_64
+  - win
+  stage: build
+  timeout: 35m
+  script:
+    - sh ci/build_dist_windows.sh
+  artifacts:
+    name: als-amd64-windows-build$CI_PIPELINE_ID
+    expose_as: ALS for amd64 Windows
+    paths:
+      - dist/als-$ALS_VERSION_STRING.exe
+
+
+.default-job:
+  before_script:
+    - sh -c "env | sort"

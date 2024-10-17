@@ -8,9 +8,9 @@ SOURCES += src/als/main.py \
   src/als/model/data.py \
   src/als/model/base.py \
   src/als/model/params.py \
-  src/als/io/network.py \
-  src/als/io/input.py \
-  src/als/io/output.py \
+  src/als/streams/network.py \
+  src/als/streams/input.py \
+  src/als/streams/output.py \
   src/als/ui/params_utils.py \
   src/als/ui/widgets.py \
   src/als/ui/windows.py \

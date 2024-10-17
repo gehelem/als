@@ -1,11 +1,11 @@
 """
 Provides features for in-app communications
 """
-import logging
+from logging import getLogger
 
 from PyQt5.QtCore import QObject, pyqtSignal, QCoreApplication
 
-from als.code_utilities import get_timestamp
+from als.code_utilities import get_timestamp, AlsLogAdapter
 
 
 class MessageHub(QObject):
@@ -57,7 +57,7 @@ class MessageHub(QObject):
         :type values: list
         """
 
-        self._dispatch_message(logging.getLogger(name).info, "INFO", message, values)
+        self._dispatch_message(AlsLogAdapter(getLogger(name), {}).info, "INFO", message, values)
 
     def dispatch_warning(self, name: str, message: str, values: list = None):
         """
@@ -71,7 +71,7 @@ class MessageHub(QObject):
         :type values: list
         """
 
-        self._dispatch_message(logging.getLogger(name).warning, "WARNING", message, values)
+        self._dispatch_message(AlsLogAdapter(getLogger(name), {}).warning, "WARNING", message, values)
 
     def dispatch_error(self, name: str, message: str, values: list = None):
         """
@@ -85,7 +85,7 @@ class MessageHub(QObject):
         :type values: list
         """
 
-        self._dispatch_message(logging.getLogger(name).error, "ERROR", message, values)
+        self._dispatch_message(AlsLogAdapter(getLogger(name), {}).error, "ERROR", message, values)
 
     def add_receiver(self, receiver):
         """

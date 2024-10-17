@@ -97,6 +97,8 @@ class PreferencesDialog(QDialog):
 
         self._validate_all_paths()
 
+        self._ui.sld_mem_preserve.setValue(config.get_preserved_mem())
+
     @log
     def _validate_all_paths(self):
         """
@@ -280,6 +282,8 @@ class PreferencesDialog(QDialog):
             for k, v in settings_needing_restart.items():
                 message += f"* {k}\n" if v else ""
             message_box(self.tr("Restart needed"), message)
+
+        config.set_preserved_mem(self._ui.sld_mem_preserve.value())
 
         super().accept()
 
