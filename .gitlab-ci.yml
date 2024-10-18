@@ -46,6 +46,22 @@ Build PC/Linux:
       - dist/als-$ALS_VERSION_STRING.run
 
 
+Build Mac/Intel:
+  extends: .default-job
+  tags:
+  - amd_64
+  - mac
+  stage: build
+  timeout: 20m
+  script:
+    - ci/build_dist_OSX.sh
+  artifacts:
+    name: als-amd64-osx-build$CI_PIPELINE_ID
+    expose_as: ALS for Mac Intel
+    paths:
+      - dist/als-$ALS_VERSION_STRING.dmg
+
+
 Build PC/Windows:
   extends: .default-job
   tags:

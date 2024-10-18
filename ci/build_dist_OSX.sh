@@ -7,50 +7,23 @@
 #######################################################################
 set -e
 
+venv_name="venv"
+artifact_name="als-${ALS_VERSION_STRING}.dmg"
+
 pyenv local 3.6.9
-
-python3 -m venv venv
-. venv/bin/activate
-
-pip install --upgrade pip
-pip install wheel
-pip install setuptools
-pip install $(grep numpy requirements.txt)
+python -m venv "${venv_name}"
+. "${venv_name}"/bin/activate
 pip install -r requirements.txt
-pip install --upgrade astroid==2.2.0
 
 python setup.py develop
-
 ./ci/pylint.sh
 
-tags=$(git tag --contains HEAD)
+echo "version = \"${ALS_VERSION_STRING}\"" > src/als/version.py
 
-if [ -z "${tags}" ]
-then
-  tag_count=0
-else
-  tag_count=$(echo "${tags}" | wc -l)
-fi
-
-if [ ${tag_count} -gt 1 ]
-then
-    echo "More that one tag exist on HEAD. Cancelling ..."
-    exit 1
-fi
-
-if [ $tag_count -eq 1 ]
-then
-  VERSION=$(git tag --contains HEAD)
-else
-  VERSION=$(grep version src/als/version.py | cut -d'"' -f2)-$(git rev-parse --short HEAD)
-fi
-
-echo "version = \"${VERSION}\"" > src/als/version.py
-
-echo "Building package version: ${VERSION}"
+echo "Building package ${artifact_name} ..."
 
 pyinstaller -i src/resources/als_logo.icns -n als --windowed --exclude-module tkinter  src/als/main.py
-cp -vf /usr/local/Cellar/libpng/1.6.37/lib/libpng16.16.dylib dist/als.app/Contents/MacOS
-sed -e "s/##VERSION##/${VERSION}/"  ci/Info.plist > dist/als.app/Contents/Info.plist
-
-create-dmg --volname "ALS ${VERSION}" --window-pos 200 120 --window-size 500 300 --icon-size 100 --icon "als.app" 120 140 --hide-extension "als.app" --app-drop-link 370 140 --background src/resources/starfield.png dist/ALS-${VERSION}.dmg dist/als.app
+cp -vf /usr/local/Cellar/libpng/1.6.44/lib/libpng16.16.dylib dist/als.app/Contents/MacOS
+sed -e "s/##VERSION##/${ALS_VERSION_STRING}/"  ci/Info.plist > dist/als.app/Contents/Info.plist
+create-dmg --volname "ALS ${ALS_VERSION_STRING}" --window-pos 200 120 --window-size 500 300 --icon-size 100 --icon "als.app" 120 140 --hide-extension "als.app" --app-drop-link 370 140 --background src/resources/starfield.png dist/${artifact_name} dist/als.app
+echo "Build of package ${artifact_name} completed OK."

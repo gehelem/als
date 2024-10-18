@@ -15,7 +15,7 @@ python -m pip install --upgrade pip
 pip install wheel
 pip install setuptools
 pip install $(grep numpy requirements.txt)
-pip install -r requirements.txt
+pip install -r ci/build_dist_windows_req.txt
 pip install --upgrade astroid==2.2.0
 python setup.py develop
 
