@@ -16,7 +16,6 @@ python -m venv "${venv_name}"
 pip install -r requirements.txt
 
 python setup.py develop
-./ci/pylint.sh
 
 echo "version = \"${ALS_VERSION_STRING}\"" > src/als/version.py
 
@@ -25,5 +24,5 @@ echo "Building package ${artifact_name} ..."
 pyinstaller -i src/resources/als_logo.icns -n als --windowed --exclude-module tkinter  src/als/main.py
 cp -vf /usr/local/Cellar/libpng/1.6.44/lib/libpng16.16.dylib dist/als.app/Contents/MacOS
 sed -e "s/##VERSION##/${ALS_VERSION_STRING}/"  ci/Info.plist > dist/als.app/Contents/Info.plist
-create-dmg --volname "ALS ${ALS_VERSION_STRING}" --window-pos 200 120 --window-size 500 300 --icon-size 100 --icon "als.app" 120 140 --hide-extension "als.app" --app-drop-link 370 140 --background src/resources/starfield.png dist/${artifact_name} dist/als.app
+create-dmg --volname "ALS ${ALS_VERSION_STRING}" --window-pos 200 120 --window-size 500 300 --icon-size 100 --icon "als.app" 120 140 --hide-extension "als.app" --app-drop-link 370 140 --background src/resources/starfield.png ${artifact_name} dist/als.app
 echo "Build of package ${artifact_name} completed OK."

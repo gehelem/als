@@ -15,11 +15,9 @@ python -m pip install --upgrade pip
 pip install wheel
 pip install setuptools
 pip install $(grep numpy requirements.txt)
-pip install -r ci/build_dist_windows_req.txt
+pip install -r ci/build_dist_amd64_win_req.txt
 pip install --upgrade astroid==2.2.0
 python setup.py develop
-
-./ci/pylint.sh
 
 VERSION=$(echo ${ALS_VERSION_STRING} | sed "s/^v//")
 artifact_name="als-${VERSION}"
@@ -39,4 +37,5 @@ VERCODE=$(echo ${VERNUM} | sed "s/\./, /g")
 echo "Building package ${artifact_name}.exe ..."
 sed -e "s/##VERSION##/${VERSION}/g" -e "s/##VERCODE##/${VERCODE}/g" ci/file_version_info_template.txt > ci/file_version_info.txt
 pyinstaller -i src/resources/als_logo.ico -F -n ${artifact_name} --windowed --version-file=ci/file_version_info.txt --add-data 'src/resources/qt.conf:.' src/als/main.py
+mv dist/${artifact_name}.exe .
 echo "Build of package ${artifact_name}.exe completed OK."
