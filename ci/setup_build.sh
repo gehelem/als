@@ -23,20 +23,20 @@ fi
 
 if [ $tag_count -eq 1 ]
 then
-  VERSION=$(git tag --contains HEAD)
+  ALS_VERSION_STRING=$(git tag --contains HEAD)
 else
-  VERSION=$(grep version src/als/version.py | cut -d'"' -f2)-$(git rev-parse --short HEAD)
+  ALS_VERSION_STRING=$(grep version src/als/version.py | cut -d'"' -f2)-$(git rev-parse --short HEAD)
+  ALS_VERSION_STRING="${ALS_VERSION_STRING}-bld${CI_PIPELINE_ID}"
 fi
 
 
 
 ###########################################################################
 #
-# export all variables in .dotenv file
+# export all variables into .dotenv file
 #
 ###########################################################################
-echo "ALS_VERSION_STRING=${VERSION}" > .dotenv
-
+echo "ALS_VERSION_STRING=${ALS_VERSION_STRING}" > .dotenv
 
 
 ###########################################################################

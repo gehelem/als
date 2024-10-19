@@ -8,21 +8,18 @@
 #######################################################################
 set -e
 
-venv_name="alsbuild${CI_PIPELINE_ID}"
 artifact_name="als-${ALS_VERSION_STRING}.run"
 
 pyenv local 3.6.9
-pyenv virtualenv "${venv_name}"
-. ~/.pyenv/versions/${venv_name}/bin/activate
+python -m venv venv
+. ./venv/bin/activate
 pip install -r requirements.txt
 python setup.py develop
 
-./ci/pylint.sh
-
 echo "version = \"${ALS_VERSION_STRING}\"" > src/als/version.py
-
 
 echo "Building package ${artifact_name} ..."
 pyinstaller -F -n "${artifact_name}" --windowed src/als/main.py
+mv dist/${artifact_name} .
 echo "Build of package ${artifact_name} completed OK."
 

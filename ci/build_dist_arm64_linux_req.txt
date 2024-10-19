@@ -1,0 +1,24 @@
+astroalign==1.0.4
+astropy==4.0.1.post1
+dtcwt==0.12.0
+numpy<2.0
+opencv-python-headless==4.10.0.84
+pywi==0.3.dev12
+qimage2ndarray==1.8
+rawpy==0.17
+watchdog==0.9.0
+pylint==2.3.1
+Sphinx==2.2.0
+pytest==5.1.2
+pytest-cov==2.7.1
+coverage==4.5.4
+numba==0.45.1
+sphinx-rtd-theme==0.4.3
+psutil==5.6.6
+pyinstaller==6.8.0
+qrcode==7.3.1
+ExifRead==3.0.0
+
+
+# transdep pinning
+pillow<10.0
