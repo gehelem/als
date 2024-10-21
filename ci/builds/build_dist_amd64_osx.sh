@@ -16,7 +16,7 @@ echo "Building package ${artifact_name} ..."
 
 pyinstaller -i src/resources/als_logo.icns -n als --windowed --exclude-module tkinter  src/als/main.py
 cp -vf /usr/local/Cellar/libpng/1.6.44/lib/libpng16.16.dylib dist/als.app/Contents/MacOS
-sed -e "s/##VERSION##/${ALS_VERSION_STRING}/"  ci/Info.plist > dist/als.app/Contents/Info.plist
+sed -e "s/##VERSION##/${ALS_VERSION_STRING}/"  ci/builds/Info.plist > dist/als.app/Contents/Info.plist
 create-dmg --volname "ALS ${ALS_VERSION_STRING}" \
            --window-pos 200 120 \
            --window-size 500 300 \

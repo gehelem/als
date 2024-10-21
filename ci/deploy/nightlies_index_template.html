@@ -1,0 +1,93 @@
+<html>
+<head>
+    <title>ALS nighly build ${NEW_FOLDER_NAME}</title>
+
+    <style>
+	#nightlies {
+            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #nightlies td, #nightlies th {
+            border: 1px solid #500;
+            padding: 8px;
+        }
+
+        #nightlies tr {
+            background-color: #666;
+        }
+
+
+        #nightlies th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            background-color: #860000;
+            color: #CACACA;
+        }
+
+        td a {
+
+            color: #CACACA;
+        }
+
+        a {
+
+            color: #D00
+        }
+
+        body {
+
+            background: #222;
+            color: #CACACA;
+        }
+    </style>
+<!-- Matomo -->
+	<script>
+	  var _paq = window._paq = window._paq || [];
+	  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+	  _paq.push(['trackPageView']);
+	  _paq.push(['enableLinkTracking']);
+	  (function() {
+	    var u="//hq.wardsback.org/webstats/";
+	    _paq.push(['setTrackerUrl', u+'matomo.php']);
+	    _paq.push(['setSiteId', '1']);
+	    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+	    g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+	  })();
+	</script>
+<!-- End Matomo Code -->
+</head>
+
+<body>
+<h1>ALS nighlty build ${NEW_FOLDER_NAME}</h1>
+
+<table id="nightlies">
+    <thead>
+    <tr>
+        <th width="25%">Platform</th>
+        <th>File</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>AMD/Intel 64bit Linux</td>
+        <td><a href="${ALS_AMD64_LINUX_ARTIFACT_NAME}">${ALS_AMD64_LINUX_ARTIFACT_NAME}</a></td>
+    </tr>
+    <tr>
+        <td>OSX (Intel CPU)</td>
+        <td><a href="${ALS_AMD64_OSX_ARTIFACT_NAME}">${ALS_AMD64_OSX_ARTIFACT_NAME}</a></td>
+    </tr>
+    <tr>
+        <td>Raspberry Pi - arm 64bit Linux</td>
+        <td><a href="${ALS_ARM64_LINUX_ARTIFACT_NAME}">${ALS_ARM64_LINUX_ARTIFACT_NAME}</a></td>
+    </tr>
+    <tr>
+        <td>Windows</td>
+        <td><a href="${ALS_AMD64_WIN_ARTIFACT_NAME}">${ALS_AMD64_WIN_ARTIFACT_NAME}</a></td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

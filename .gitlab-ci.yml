@@ -23,7 +23,7 @@ Configure Build:
   stage: setup
   timeout: 5m
   script:
-    - ci/setup_build.sh
+    - ci/builds/setup_build.sh
   artifacts:
     reports:
       dotenv: .dotenv
@@ -36,7 +36,7 @@ Build PC/Linux:
   stage: build
   timeout: 20m
   script:
-    - ci/build_dist_amd64_linux.sh
+    - ci/builds/build_dist_amd64_linux.sh
   artifacts:
     paths:
       - als-$ALS_VERSION_STRING.run
@@ -49,7 +49,7 @@ Build RaspBerry/Linux:
   stage: build
   timeout: 20m
   script:
-    - ci/build_dist_arm64_linux.sh
+    - ci/builds/build_dist_arm64_linux.sh
   artifacts:
     paths:
       - als-$ALS_VERSION_STRING.tgz
@@ -62,7 +62,7 @@ Build Mac/Intel:
   stage: build
   timeout: 20m
   script:
-    - ci/build_dist_amd64_osx.sh
+    - ci/builds/build_dist_amd64_osx.sh
   artifacts:
     paths:
       - als-$ALS_VERSION_STRING.dmg
@@ -75,7 +75,19 @@ Build PC/Windows:
   stage: build
   timeout: 20m
   script:
-    - sh ci/build_dist_amd64_win.sh
+    - sh ci/builds/build_dist_amd64_win.sh
   artifacts:
     paths:
       - als-$ALS_VERSION_STRING.exe
+
+
+Deploy nightlies:
+  tags:
+    - infra
+  stage: deploy
+  script: ci/deploy/deploy_nightlies.sh
+  environment:
+    name: Nightlies
+    url: https://als-app.org/nightlies
+  rules:
+    - if: $CI_SCHEDULE_ID == "1"

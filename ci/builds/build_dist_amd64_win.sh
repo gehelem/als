@@ -7,7 +7,7 @@ python -m pip install --upgrade pip
 pip install wheel
 pip install setuptools
 pip install $(grep numpy requirements.txt)
-pip install -r ci/build_dist_amd64_win_req.txt
+pip install -r ci/builds/build_dist_amd64_win_req.txt
 pip install --upgrade astroid==2.2.0
 python setup.py develop
 
@@ -30,13 +30,13 @@ echo "Building package ${artifact_name}.exe ..."
 
 sed -e "s/##VERSION##/${VERSION}/g" \
     -e "s/##VERCODE##/${VERCODE}/g" \
-    ci/file_version_info_template.txt > ci/file_version_info.txt
+    ci/builds/file_version_info_template.txt > file_version_info.txt
 
 pyinstaller -i src/resources/als_logo.ico \
             -F \
             -n ${artifact_name} \
             --windowed \
-            --version-file=ci/file_version_info.txt \
+            --version-file=file_version_info.txt \
             --add-data 'src/resources/qt.conf:.' \
             src/als/main.py
 

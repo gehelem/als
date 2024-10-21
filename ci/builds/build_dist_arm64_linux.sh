@@ -4,7 +4,7 @@ artifact_name="als-${ALS_VERSION_STRING}"
 
 python -m venv --system-site-packages venv
 . venv/bin/activate
-pip install -r ci/build_dist_arm64_linux_req.txt
+pip install -r ci/builds/build_dist_arm64_linux_req.txt
 python setup.py develop
 
 echo "version = \"${ALS_VERSION_STRING}\"" > src/als/version.py
