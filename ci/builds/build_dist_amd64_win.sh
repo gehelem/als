@@ -6,7 +6,7 @@ python -m venv venv
 python -m pip install --upgrade pip
 pip install wheel
 pip install setuptools
-pip install $(grep numpy requirements.txt)
+pip install $(grep numpy ci/builds/build_dist_amd64_win_req.txt)
 pip install -r ci/builds/build_dist_amd64_win_req.txt
 pip install --upgrade astroid==2.2.0
 python setup.py develop

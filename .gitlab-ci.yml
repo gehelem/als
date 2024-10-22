@@ -38,6 +38,7 @@ Build PC/Linux:
   script:
     - ci/builds/build_dist_amd64_linux.sh
   artifacts:
+    expose_as: 'ALS for Linux amd64'
     paths:
       - als-$ALS_VERSION_STRING.run
 
@@ -51,6 +52,7 @@ Build RaspBerry/Linux:
   script:
     - ci/builds/build_dist_arm64_linux.sh
   artifacts:
+    expose_as: 'ALS for Linux arm64'
     paths:
       - als-$ALS_VERSION_STRING.tgz
 
@@ -64,6 +66,7 @@ Build Mac/Intel:
   script:
     - ci/builds/build_dist_amd64_osx.sh
   artifacts:
+    expose_as: 'ALS for OSX amd64'
     paths:
       - als-$ALS_VERSION_STRING.dmg
 
@@ -77,6 +80,7 @@ Build PC/Windows:
   script:
     - sh ci/builds/build_dist_amd64_win.sh
   artifacts:
+    expose_as: 'ALS for Windows amd64'
     paths:
       - als-$ALS_VERSION_STRING.exe
 

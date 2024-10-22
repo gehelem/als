@@ -11,7 +11,7 @@ echo "version = \"${ALS_VERSION_STRING}\"" > src/als/version.py
 
 echo "Build of package ${artifact_name}..."
 
-pyinstaller -n als-${ALS_VERSION_STRING} --windowed --hidden-import='pkg_resources.py2_warn' src/als/main.py
+pyinstaller -n "${artifact_name}" --windowed --hidden-import='pkg_resources.py2_warn' src/als/main.py
 
 cd dist
 tar zcf ../${artifact_name}.tgz ${artifact_name}
