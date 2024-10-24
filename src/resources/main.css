@@ -49,7 +49,12 @@ QMenu::indicator {
 
 #lbl_stack_size {
 
-    font-size: 32px;
+    font-size: 15pt;
+}
+
+#lbl_stack_exposure {
+
+    font-size: 15pt;
 }
 
 QComboBox {

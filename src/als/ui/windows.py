@@ -138,34 +138,7 @@ class MainWindow(QMainWindow):
         self._image_item = None
         self.reset_image_view()
 
-        # setup statusbar
-        self._lbl_statusbar_frame_total_proc = QLabel(self._ui.statusBar)
-        self._lbl_statusbar_frame_total_proc.setFrameStyle(QFrame.Panel | QFrame.Sunken)
-
-        self._lbl_statusbar_stack_exposure = QLabel(self._ui.statusBar)
-        self._lbl_statusbar_stack_exposure.setFrameStyle(QFrame.Panel | QFrame.Sunken)
-
-        self._lbl_statusbar_session_status = QLabel(self._ui.statusBar)
-        self._lbl_statusbar_session_status.setFrameStyle(QFrame.Panel | QFrame.Sunken)
-
-        self._lbl_statusbar_scanner_status = QLabel(self._ui.statusBar)
-        self._lbl_statusbar_scanner_status.setFrameStyle(QFrame.Panel | QFrame.Sunken)
-
-        self._lbl_statusbar_stack_size = QLabel(self._ui.statusBar)
-        self._lbl_statusbar_stack_size.setMinimumWidth(150)
-        self._lbl_statusbar_stack_size.setAlignment(Qt.AlignHCenter)
-        self._lbl_statusbar_stack_size.setFrameStyle(QFrame.Panel | QFrame.Sunken)
-
-        self._lbl_statusbar_web_server_status = QLabel(self._ui.statusBar)
-        self._lbl_statusbar_web_server_status.setOpenExternalLinks(True)
-        self._lbl_statusbar_web_server_status.setFrameStyle(QFrame.Panel | QFrame.Sunken)
-
-        self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_session_status)
-        self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_scanner_status)
-        self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_stack_size)
-        self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_stack_exposure)
-        self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_web_server_status)
-        self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_frame_total_proc)
+        self._setup_statusbar()
 
         self._ui.action_night_mode.setChecked(config.get_night_mode_active())
 
@@ -186,14 +159,40 @@ class MainWindow(QMainWindow):
         MESSAGE_HUB.add_receiver(self)
 
         if 0 == config.get_profile():
-            self._ui.lbl_profile.setText(f"{I18n.PROFILE} : {I18n.VISUAL}")
+            self._lbl_statusbar_current_profile.setText(f"{I18n.PROFILE} : {I18n.VISUAL}")
         else:
-            self._ui.lbl_profile.setText(f"{I18n.PROFILE} : Photo")
+            self._lbl_statusbar_current_profile.setText(f"{I18n.PROFILE} : Photo")
 
         if config.get_full_screen_active():
             self._ui.action_full_screen.setChecked(True)
         else:
             self.show()
+
+    def _setup_statusbar(self):
+        self._lbl_statusbar_current_profile = QLabel(self._ui.statusBar)
+        self._lbl_statusbar_current_profile.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+        self._lbl_statusbar_frame_total_proc = QLabel(self._ui.statusBar)
+        self._lbl_statusbar_frame_total_proc.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+        self._lbl_statusbar_stack_exposure = QLabel(self._ui.statusBar)
+        self._lbl_statusbar_stack_exposure.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+        self._lbl_statusbar_session_status = QLabel(self._ui.statusBar)
+        self._lbl_statusbar_session_status.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+        self._lbl_statusbar_scanner_status = QLabel(self._ui.statusBar)
+        self._lbl_statusbar_scanner_status.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+        self._lbl_statusbar_stack_size = QLabel(self._ui.statusBar)
+        self._lbl_statusbar_stack_size.setMinimumWidth(150)
+        self._lbl_statusbar_stack_size.setAlignment(Qt.AlignHCenter)
+        self._lbl_statusbar_stack_size.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+        self._lbl_statusbar_web_server_status = QLabel(self._ui.statusBar)
+        self._lbl_statusbar_web_server_status.setOpenExternalLinks(True)
+        self._lbl_statusbar_web_server_status.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+        self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_session_status)
+        self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_current_profile)
+        self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_scanner_status)
+        self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_stack_size)
+        self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_stack_exposure)
+        self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_web_server_status)
+        self._ui.statusBar.addPermanentWidget(self._lbl_statusbar_frame_total_proc)
 
     @log
     @pyqtSlot(bool)
